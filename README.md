@@ -1,12 +1,12 @@
 # Accumulate Studio
 
-A developer onboarding platform for the [Accumulate](https://accumulatenetwork.io/) blockchain protocol. Build transaction workflows visually, execute them against live testnets, and export production-ready code in five languages.
+A developer onboarding platform for the [Accumulate](https://accumulatenetwork.io/) blockchain protocol. Build transaction workflows visually, execute them against live testnets, and export production-ready code targeting the five [OpenDLT](https://github.com/opendlt) Accumulate SDKs.
 
 ## Overview
 
-Accumulate Studio is a monorepo containing a visual flow builder, a multi-language code generation engine, a Python SDK proxy for transaction signing, and an MCP server for AI-assisted development with Claude.
+Accumulate Studio is built to showcase and onboard developers onto the OpenDLT Accumulate SDKs for Rust, Python, Dart, C#, and JavaScript. The monorepo contains a visual flow builder, a multi-language code generation engine, a Python SDK proxy for transaction signing, and an MCP server for AI-assisted development with Claude.
 
-Users design Accumulate workflows by connecting blocks (Generate Keys, Faucet, Create Identity, Send Tokens, etc.) in a visual canvas. The platform executes these flows against a selected network, displays results in real time, and generates equivalent standalone code that developers can take into their own projects.
+Users design Accumulate workflows by connecting blocks (Generate Keys, Faucet, Create Identity, Send Tokens, etc.) in a visual canvas. The platform executes these flows against a selected network, displays results in real time, and generates equivalent standalone code targeting the appropriate OpenDLT SDK for each language.
 
 ## Repository Structure
 
@@ -14,7 +14,7 @@ Users design Accumulate workflows by connecting blocks (Generate Keys, Faucet, C
 accumulate-studio/
   apps/
     studio/          React/Vite web application (visual flow builder)
-    sdk-proxy/       FastAPI backend for transaction signing via the Python SDK
+    sdk-proxy/       FastAPI backend for transaction signing via the OpenDLT Python SDK
     mcp-server/      Model Context Protocol server for Claude integration
   packages/
     types/           Shared TypeScript type definitions
@@ -26,15 +26,17 @@ accumulate-studio/
   scripts/           Code generation and validation scripts
 ```
 
-## Supported Languages
+## Supported Languages and SDKs
 
-The code generation engine produces standalone, runnable code in:
+The code generation engine produces standalone, runnable code targeting the five OpenDLT Accumulate SDKs:
 
-- **Python** -- via the official `accumulate` Python SDK
-- **Rust** -- via the `accumulate-sdk` crate
-- **C#** -- via `Acme.Net.Sdk`
-- **JavaScript/TypeScript** -- via `@accumulatenetwork/sdk`
-- **Dart** -- via the `accumulate_dart_client` package
+| Language | OpenDLT SDK | Package / Crate |
+|----------|-------------|-----------------|
+| Python | [opendlt-python-v2v3-sdk](https://github.com/opendlt/opendlt-python-v2v3-sdk) | `accumulate_client` |
+| Rust | [opendlt-rust-v2v3-sdk](https://github.com/opendlt/opendlt-rust-v2v3-sdk) | `accumulate-sdk` |
+| C# | [opendlt-c-sharp-v2v3-sdk](https://github.com/opendlt/opendlt-c-sharp-v2v3-sdk) | `Acme.Net.Sdk` |
+| JavaScript/TypeScript | [accumulate.js](https://github.com/opendlt/accumulate.js) | `accumulate.js` |
+| Dart | [opendlt-dart-v2v3-sdk](https://github.com/opendlt/opendlt-dart-v2v3-sdk) | `opendlt_accumulate` |
 
 ## Prerequisites
 
@@ -152,7 +154,7 @@ npm run dev:mcp
 The browser cannot perform Accumulate transaction signing directly (binary TLV encoding, Ed25519 signatures). The SDK proxy bridges this gap:
 
 ```
-Studio (browser) --> FastAPI SDK Proxy --> Accumulate Python SDK --> Accumulate Network
+Studio (browser) --> FastAPI SDK Proxy --> OpenDLT Python SDK --> Accumulate Network
 ```
 
 The proxy supports network selection via the `ACCUMULATE_NETWORK` environment variable (`mainnet`, `testnet`, `kermit`, `devnet`, `local`). The default is `testnet`.
