@@ -10,7 +10,7 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outputDir = 'C:/Accumulate_Stuff/on-boarding-platform/temp-download-Action-Palette-templates-C_sharp';
+const outputDir = path.join(__dirname, '..', 'output', 'action-palette-csharp');
 
 // Action palette flows: target block type → prerequisite recipe (from PREREQUISITE_GRAPH)
 // Batch 3: Key Management (UpdateKeyPage, UpdateKey), Authority (UpdateAccountAuth), Utilities (LockAccount, Faucet, QueryAccount)

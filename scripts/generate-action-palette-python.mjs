@@ -11,7 +11,7 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outputDir = 'C:/Accumulate_Stuff/on-boarding-platform/temp-download-Action-Palette-templates-python';
+const outputDir = path.join(__dirname, '..', 'output', 'action-palette-python');
 
 const ACTION_PALETTE_BLOCKS = [
   // ── Identity (3, minus CreateKeyPage which crashes) ──

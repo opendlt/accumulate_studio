@@ -14,7 +14,7 @@ import { execSync } from 'child_process';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
-const SDK_DIR = 'C:/Accumulate_Stuff/opendlt-javascript-v2v3-sdk/javascript';
+const SDK_DIR = process.env.JS_SDK_DIR || 'C:/Accumulate_Stuff/opendlt-javascript-v2v3-sdk/javascript';
 const SDK_EXAMPLE_DIR = join(SDK_DIR, 'examples/v3');
 const HARNESS_PATH = join(__dirname, 'validate_javascript.py');
 const BASELINES_DIR = join(__dirname, 'baselines/javascript');

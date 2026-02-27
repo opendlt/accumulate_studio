@@ -30,13 +30,13 @@ accumulate-studio/
 
 The code generation engine produces standalone, runnable code targeting the five OpenDLT Accumulate SDKs:
 
-| Language | OpenDLT SDK | Package / Crate |
-|----------|-------------|-----------------|
-| Python | [opendlt-python-v2v3-sdk](https://github.com/opendlt/opendlt-python-v2v3-sdk) | `accumulate_client` |
-| Rust | [opendlt-rust-v2v3-sdk](https://github.com/opendlt/opendlt-rust-v2v3-sdk) | `accumulate-sdk` |
-| C# | [opendlt-c-sharp-v2v3-sdk](https://github.com/opendlt/opendlt-c-sharp-v2v3-sdk) | `Acme.Net.Sdk` |
-| JavaScript/TypeScript | [accumulate.js](https://github.com/opendlt/accumulate.js) | `accumulate.js` |
-| Dart | [opendlt-dart-v2v3-sdk](https://github.com/opendlt/opendlt-dart-v2v3-sdk) | `opendlt_accumulate` |
+| Language | Package | Registry | Source |
+|----------|---------|----------|--------|
+| Rust | `accumulate-sdk` | [crates.io](https://crates.io/crates/accumulate-sdk) | [GitHub](https://github.com/opendlt/opendlt-rust-v2v3-sdk) |
+| Python | `accumulate-sdk-opendlt` | [PyPI](https://pypi.org/project/accumulate-sdk-opendlt/) | [GitHub](https://github.com/opendlt/opendlt-python-v2v3-sdk) |
+| C# | `Acme.Net.Sdk` | [NuGet](https://www.nuget.org/packages/Acme.Net.Sdk) | [GitHub](https://github.com/opendlt/opendlt-c-sharp-v2v3-sdk) |
+| Dart | `opendlt_accumulate` | [pub.dev](https://pub.dev/packages/opendlt_accumulate) | [GitHub](https://github.com/opendlt/opendlt-dart-v2v3-sdk) |
+| JavaScript | `accumulate.js` | -- | [GitHub](https://github.com/opendlt/accumulate-javascript-sdk) |
 
 ## Prerequisites
 

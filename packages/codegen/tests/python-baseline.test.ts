@@ -13,7 +13,7 @@ import { execSync } from 'child_process';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
-const SDK_EXAMPLES_DIR = 'C:/Accumulate_Stuff/opendlt-python-v2v3-sdk/unified/examples/v3';
+const SDK_EXAMPLES_DIR = process.env.PYTHON_SDK_EXAMPLES_DIR || 'C:/Accumulate_Stuff/opendlt-python-v2v3-sdk/unified/examples/v3';
 const HARNESS_PATH = join(__dirname, 'validate_python.py');
 const BASELINES_DIR = join(__dirname, 'baselines');
 

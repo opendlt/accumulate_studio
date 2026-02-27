@@ -4,7 +4,6 @@ version: 0.1.0
 environment:
   sdk: '>=3.3.0 <4.0.0'
 dependencies:
-  opendlt_accumulate:
-    path: ../../../../../../opendlt-dart-v2v3-sdk/unified
+  opendlt_accumulate: ^0.1.0
   crypto: ^3.0.3
 publish_to: none

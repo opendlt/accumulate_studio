@@ -55,6 +55,7 @@ venv/
 
 # ── Temp / generated downloads ──
 temp-download-*/
+output/
 
 # ── Lock files (non-root) ──
 # Root package-lock.json IS committed; these are test harness locks

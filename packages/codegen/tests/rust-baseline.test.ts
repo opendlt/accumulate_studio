@@ -12,7 +12,7 @@ import { execSync } from 'child_process';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
-const SDK_WORKSPACE_DIR = 'C:/Accumulate_Stuff/opendlt-rust-v2v3-sdk/unified';
+const SDK_WORKSPACE_DIR = process.env.RUST_SDK_DIR || 'C:/Accumulate_Stuff/opendlt-rust-v2v3-sdk/unified';
 const HARNESS_PATH = join(__dirname, 'validate_rust.py');
 const BASELINES_DIR = join(__dirname, 'baselines/rust');
 

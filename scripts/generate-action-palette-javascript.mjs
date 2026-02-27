@@ -9,7 +9,7 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outputDir = 'C:/Accumulate_Stuff/on-boarding-platform/temp-download-Action-Palette-templates-javascript';
+const outputDir = path.join(__dirname, '..', 'output', 'action-palette-javascript');
 
 // The 6 Action Palette block types for Key Management, Authority, and Utilities
 const ACTION_PALETTE_BLOCKS = [
