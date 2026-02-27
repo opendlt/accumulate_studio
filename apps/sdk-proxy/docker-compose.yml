@@ -1,0 +1,9 @@
+services:
+  sdk-proxy:
+    build: .
+    container_name: accumulate-sdk-proxy
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ACCUMULATE_NETWORK=testnet
