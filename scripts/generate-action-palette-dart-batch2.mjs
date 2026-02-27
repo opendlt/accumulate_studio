@@ -9,7 +9,7 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outputDir = 'C:/Accumulate_Stuff/on-boarding-platform/temp-download-Action-Palette-templates-dart';
+const outputDir = path.join(__dirname, '..', 'output', 'action-palette-dart');
 
 const ACTION_PALETTE_BLOCKS = [
   // ── Credits (3) ──

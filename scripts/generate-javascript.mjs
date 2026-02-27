@@ -8,7 +8,7 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outputDir = 'C:/Accumulate_Stuff/on-boarding-platform/temp-download-templates-javascript';
+const outputDir = path.join(__dirname, '..', 'output', 'templates-javascript');
 
 async function main() {
   const vite = await createServer({

@@ -12,8 +12,9 @@ import { execSync } from 'child_process';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
-const SDK_EXAMPLE_DIR = 'C:/Accumulate_Stuff/opendlt-dart-v2v3-sdk/unified/example/v3';
-const SDK_HARNESS_DIR = 'C:/Accumulate_Stuff/opendlt-dart-v2v3-sdk/unified';
+const SDK_ROOT = process.env.DART_SDK_DIR || 'C:/Accumulate_Stuff/opendlt-dart-v2v3-sdk/unified';
+const SDK_EXAMPLE_DIR = join(SDK_ROOT, 'example/v3');
+const SDK_HARNESS_DIR = SDK_ROOT;
 const HARNESS_PATH = join(__dirname, 'validate_dart.py');
 const BASELINES_DIR = join(__dirname, 'baselines/dart');
 

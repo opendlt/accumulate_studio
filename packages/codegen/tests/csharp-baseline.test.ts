@@ -15,7 +15,7 @@ import { join, basename } from 'path';
 
 const CSHARP_HARNESS_PY = join(__dirname, 'validate_csharp.py');
 const BASELINES_DIR = join(__dirname, 'baselines', 'csharp');
-const EXAMPLES_DIR = 'C:\\Accumulate_Stuff\\opendlt-c-sharp-v2v3-sdk\\examples\\v3';
+const EXAMPLES_DIR = process.env.CSHARP_SDK_EXAMPLES_DIR || 'C:\\Accumulate_Stuff\\opendlt-c-sharp-v2v3-sdk\\examples\\v3';
 
 // Map example directory names to baseline names
 const EXAMPLES: Array<{ dir: string; baseline: string }> = [
