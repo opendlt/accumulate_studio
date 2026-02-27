@@ -12,7 +12,7 @@ const outputDir = 'C:/Accumulate_Stuff/on-boarding-platform/temp-download-templa
 
 async function main() {
   const vite = await createServer({
-    root: path.join(__dirname, 'apps/studio'),
+    root: path.join(__dirname, '..', 'apps/studio'),
     server: { middlewareMode: true },
     appType: 'custom',
     logLevel: 'warn',

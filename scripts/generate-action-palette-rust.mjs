@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
- * Generate Action Palette Dart template files
- * Categories: Identity (3), Accounts (4), Tokens (3) = 10 total
+ * Generate Action Palette Rust template files
+ * These are single-action flows with auto-inserted prerequisite chains.
+ * Batch 1: Identity (3), Accounts (4), Tokens (3) = 10 total
+ * Batch 2: Credits (3), Data (2), Key Mgmt (3), Authority (1), Utilities (2) = 11 total
  */
 import { createServer } from 'vite';
 import path from 'path';
@@ -9,7 +11,7 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outputDir = 'C:/Accumulate_Stuff/on-boarding-platform/temp-download-Action-Palette-templates-dart';
+const outputDir = 'C:/Accumulate_Stuff/on-boarding-platform/temp-download-Action-Palette-templates-rust';
 
 const ACTION_PALETTE_BLOCKS = [
   // ── Identity (3) ──
@@ -28,7 +30,7 @@ const ACTION_PALETTE_BLOCKS = [
     name: 'Create Key Page',
     blockType: 'CreateKeyPage',
     recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
-      'CreateIdentity', 'AddCredits', 'WaitForCredits'],
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'GenerateKeys'],
   },
   // ── Accounts (4) ──
   {
@@ -74,6 +76,73 @@ const ACTION_PALETTE_BLOCKS = [
     recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
       'CreateIdentity', 'AddCredits', 'WaitForCredits', 'CreateToken',
       'CreateTokenAccount', 'IssueTokens'],
+  },
+  // ── Credits (3) ──
+  {
+    name: 'Add Credits',
+    blockType: 'AddCredits',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance'],
+  },
+  {
+    name: 'Transfer Credits',
+    blockType: 'TransferCredits',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'CreateKeyPage'],
+  },
+  {
+    name: 'Burn Credits',
+    blockType: 'BurnCredits',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits'],
+  },
+  // ── Data (2) ──
+  {
+    name: 'Write Data',
+    blockType: 'WriteData',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'CreateDataAccount'],
+  },
+  {
+    name: 'Write Data To',
+    blockType: 'WriteDataTo',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
+      'GenerateKeys'],
+  },
+  // ── Key Management (3) ──
+  {
+    name: 'Update Key Page',
+    blockType: 'UpdateKeyPage',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'GenerateKeys'],
+  },
+  {
+    name: 'Update Key',
+    blockType: 'UpdateKey',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'GenerateKeys'],
+  },
+  {
+    name: 'Lock Account',
+    blockType: 'LockAccount',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
+      'CreateIdentity', 'AddCredits', 'WaitForCredits'],
+  },
+  // ── Authority (1) ──
+  {
+    name: 'Update Account Auth',
+    blockType: 'UpdateAccountAuth',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'CreateTokenAccount'],
+  },
+  // ── Utilities (2) ──
+  {
+    name: 'Faucet',
+    blockType: 'Faucet',
+    recipe: ['GenerateKeys'],
+  },
+  {
+    name: 'Query Account',
+    blockType: 'QueryAccount',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance'],
   },
 ];
 
@@ -132,7 +201,7 @@ function buildFlow(name, blockType, recipe) {
 
 async function main() {
   const vite = await createServer({
-    root: path.join(__dirname, 'apps/studio'),
+    root: path.join(__dirname, '..', 'apps/studio'),
     server: { middlewareMode: true },
     appType: 'custom',
     logLevel: 'warn',
@@ -141,7 +210,7 @@ async function main() {
   try {
     const codeGen = await vite.ssrLoadModule('/src/services/code-generator/index.ts');
 
-    console.log(`Generating ${ACTION_PALETTE_BLOCKS.length} Action Palette templates (Dart)`);
+    console.log(`Generating ${ACTION_PALETTE_BLOCKS.length} Action Palette templates (Rust)`);
     mkdirSync(outputDir, { recursive: true });
 
     for (let i = 0; i < ACTION_PALETTE_BLOCKS.length; i++) {
@@ -151,9 +220,9 @@ async function main() {
       console.log(`  Prerequisite chain: ${recipe.join(' → ')} → ${blockType}`);
 
       try {
-        const code = codeGen.generateCode(flow, 'dart', 'sdk');
+        const code = codeGen.generateCode(flow, 'rust', 'sdk');
         const suffix = i === 0 ? '' : ` (${i})`;
-        const filename = `accumulate_flow${suffix}.dart`;
+        const filename = `accumulate_flow${suffix}.rs`;
         writeFileSync(path.join(outputDir, filename), code, 'utf-8');
         console.log(`  -> ${filename} (${code.length} bytes)`);
       } catch (err) {
