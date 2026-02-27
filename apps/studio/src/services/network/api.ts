@@ -63,9 +63,9 @@ export class AccumulateAPI {
    */
   private get proxyEndpoint(): string {
     return (
-      this.config.proxyEndpoint ||
       (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SDK_PROXY_URL) ||
-      'http://localhost:8000'
+      this.config.proxyEndpoint ||
+      ''
     );
   }
 
