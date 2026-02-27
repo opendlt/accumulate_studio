@@ -1,0 +1,5 @@
+        # =========================================================
+        # {{label}} (Action: QueryAccount)
+        # =========================================================
+        {{varName}}_result = client.v3.query({{#if queryUrlIsRef}}{{queryUrl}}{{else}}"{{queryUrl}}"{{/if}})
+        print(f"Account state: { {{~varName}}_result}")

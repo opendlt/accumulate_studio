@@ -1,0 +1,14 @@
+        // =========================================================
+        // {{label}} (Action: WriteData)
+        // =========================================================
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if writeDataPrincipalIsRef}}{{writeDataPrincipal}}{{else}}"{{writeDataPrincipal}}"{{/if}},
+            TxBody.writeData([{{entriesExpr}}]),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`WriteData SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["WriteData", {{varName}}Result.txid]);
+        } else {
+            console.log(`WriteData FAILED: ${ {{~varName}}Result.error}`);
+        }

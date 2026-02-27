@@ -1,0 +1,13 @@
+    // =========================================================
+    // {{label}} (GenerateKeys)
+    // =========================================================
+    final {{varName}}Kp = await Ed25519KeyPair.generate();
+    final {{varName}}Key = UnifiedKeyPair.fromEd25519({{varName}}Kp);
+    final {{varName}}Lid = await {{varName}}Kp.deriveLiteIdentityUrl();
+    final {{varName}}Lta = await {{varName}}Kp.deriveLiteTokenAccountUrl();
+    final {{varName}}PubKey = await {{varName}}Kp.publicKeyBytes();
+    final {{varName}}PubHash = toHexString(sha256.convert({{varName}}PubKey).bytes);
+    print('Generated keypair:');
+    print('  Lite Identity: ${ {{~varName}}Lid}');
+    print('  Lite Token Account: ${ {{~varName}}Lta}');
+    print('  Public Key Hash: ${ {{~varName}}PubHash}');

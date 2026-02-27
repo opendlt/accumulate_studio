@@ -1,0 +1,32 @@
+    // =========================================================
+    // {{label}} (Action: CreateKeyPage)
+    // =========================================================
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{keyPagePrincipal}},
+      body: TxBody.createKeyPage(
+        keys: [
+{{#if keyPageDefaultKey}}
+          KeySpecParams.fromHex({{keyPageDefaultKey}}),
+{{else}}
+{{#each keyPageKeys}}
+          KeySpecParams.fromHex('{{this}}'),
+{{/each}}
+{{/if}}
+        ],
+      ),
+      memo: 'Create key page',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('CreateKeyPage SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('CreateKeyPage', {{varName}}Result.txid!));
+      }
+    } else {
+      print('CreateKeyPage FAILED: ${ {{~varName}}Result.error}');
+    }

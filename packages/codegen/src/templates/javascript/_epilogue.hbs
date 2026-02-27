@@ -1,0 +1,12 @@
+
+        console.log("\n========== Transaction Summary ==========");
+        for (const [label, txid] of txIds) {
+            console.log(`  ${label}: ${txid}`);
+        }
+        console.log("Flow completed successfully!");
+    } catch (err) {
+        console.error("Flow failed:", err);
+    }
+}
+
+main().catch(console.error);

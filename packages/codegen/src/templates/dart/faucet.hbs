@@ -1,0 +1,17 @@
+    // =========================================================
+    // {{label}} (Faucet)
+    // =========================================================
+    print('Requesting tokens from faucet...');
+    for (var i = 0; i < {{faucetTimes}}; i++) {
+      try {
+        final resp = await client.v2.faucet({
+          'type': 'acmeFaucet',
+          'url': {{faucetAccount}},
+        });
+        print('  Faucet ${i + 1}/{{faucetTimes}}: ${resp["txid"]}');
+      } catch (e) {
+        print('  Faucet ${i + 1}/{{faucetTimes}} failed: $e');
+      }
+      await Future.delayed(Duration(seconds: 2));
+    }
+    print('Faucet request completed');

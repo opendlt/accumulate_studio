@@ -1,0 +1,149 @@
+# Multi-Signature Setup - Configure multi-sig authentication
+# Creates key management structure with multiple signers and thresholds
+version: "1.0"
+name: "Multi-Signature Setup"
+description: >
+  Advanced security configuration for ADIs. Sets up a multi-signature
+  scheme with multiple key pages and signature thresholds. Essential
+  for enterprise and high-security use cases.
+
+variables:
+  ADI_URL:
+    type: url
+    description: "Your ADI URL (e.g., 'acc://my-adi.acme')"
+    required: true
+  KEY_BOOK_NAME:
+    type: string
+    description: "Name for the multi-sig key book"
+    default: "multisig-book"
+  SIGNER_1_PUBLIC_KEY_HASH:
+    type: string
+    description: "First signer's public key hash"
+    required: true
+  SIGNER_2_PUBLIC_KEY_HASH:
+    type: string
+    description: "Second signer's public key hash"
+    required: true
+  SIGNER_3_PUBLIC_KEY_HASH:
+    type: string
+    description: "Third signer's public key hash"
+    required: true
+  THRESHOLD:
+    type: int
+    description: "Number of signatures required (e.g., 2 of 3)"
+    default: 2
+
+blocks:
+  # Step 1: Create a dedicated key book for multi-sig
+  - id: create_key_book
+    type: CreateKeyBook
+    config:
+      url: "{{ADI_URL}}/{{KEY_BOOK_NAME}}"
+      publicKeyHash: "{{SIGNER_1_PUBLIC_KEY_HASH}}"
+    transaction:
+      type: CreateKeyBook
+      principal: "{{ADI_URL}}"
+      body:
+        url: "{{ADI_URL}}/{{KEY_BOOK_NAME}}"
+        publicKeyHash: "{{SIGNER_1_PUBLIC_KEY_HASH}}"
+    outputs:
+      - keyBookUrl
+
+  # Step 2: Create the initial key page with first signer
+  - id: create_key_page
+    type: CreateKeyPage
+    depends_on:
+      - create_key_book
+    config:
+      url: "{{ADI_URL}}/{{KEY_BOOK_NAME}}/1"
+      keys:
+        - "{{SIGNER_1_PUBLIC_KEY_HASH}}"
+    transaction:
+      type: CreateKeyPage
+      principal: "{{ADI_URL}}/{{KEY_BOOK_NAME}}"
+      body:
+        keys:
+          - keyHash: "{{SIGNER_1_PUBLIC_KEY_HASH}}"
+    outputs:
+      - keyPageUrl
+
+  # Step 3: Add second signer to key page
+  - id: add_signer_2
+    type: UpdateKeyPage
+    depends_on:
+      - create_key_page
+    config:
+      operations:
+        - type: add
+          key: "{{SIGNER_2_PUBLIC_KEY_HASH}}"
+    transaction:
+      type: UpdateKeyPage
+      principal: "{{ADI_URL}}/{{KEY_BOOK_NAME}}/1"
+      body:
+        operation:
+          - type: add
+            entry:
+              keyHash: "{{SIGNER_2_PUBLIC_KEY_HASH}}"
+    outputs:
+      - txHash
+
+  # Step 4: Add third signer to key page
+  - id: add_signer_3
+    type: UpdateKeyPage
+    depends_on:
+      - add_signer_2
+    config:
+      operations:
+        - type: add
+          key: "{{SIGNER_3_PUBLIC_KEY_HASH}}"
+    transaction:
+      type: UpdateKeyPage
+      principal: "{{ADI_URL}}/{{KEY_BOOK_NAME}}/1"
+      body:
+        operation:
+          - type: add
+            entry:
+              keyHash: "{{SIGNER_3_PUBLIC_KEY_HASH}}"
+    outputs:
+      - txHash
+
+  # Step 5: Set the signature threshold (e.g., 2 of 3)
+  - id: set_threshold
+    type: UpdateKeyPage
+    depends_on:
+      - add_signer_3
+    config:
+      operations:
+        - type: setThreshold
+          threshold: "{{THRESHOLD}}"
+    transaction:
+      type: UpdateKeyPage
+      principal: "{{ADI_URL}}/{{KEY_BOOK_NAME}}/1"
+      body:
+        operation:
+          - type: setThreshold
+            threshold: "{{THRESHOLD}}"
+    outputs:
+      - txHash
+
+# Verify multi-sig setup
+assertions:
+  - type: account.exists
+    url: "{{ADI_URL}}/{{KEY_BOOK_NAME}}"
+    message: "Multi-sig key book should exist"
+
+  - type: account.exists
+    url: "{{ADI_URL}}/{{KEY_BOOK_NAME}}/1"
+    message: "Key page should exist"
+
+  - type: receipt.verified
+    sourceStep: create_key_book
+    message: "Key book creation receipt should be valid"
+
+  - type: receipt.verified
+    sourceStep: create_key_page
+    message: "Key page creation receipt should be valid"
+
+  - type: receipt.verified
+    sourceStep: set_threshold
+    message: "Threshold update receipt should be valid"

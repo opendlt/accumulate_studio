@@ -1,0 +1,5 @@
+        // =========================================================
+        // {{label}} (QueryAccount)
+        // =========================================================
+        const {{varName}}Result = await client.queryAccount({{#if queryUrlIsRef}}{{queryUrl}}{{else}}"{{queryUrl}}"{{/if}});
+        console.log(`Account state: ${JSON.stringify({{varName}}Result, null, 2)}`);

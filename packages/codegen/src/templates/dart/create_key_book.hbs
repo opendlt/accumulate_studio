@@ -1,0 +1,26 @@
+    // =========================================================
+    // {{label}} (Action: CreateKeyBook)
+    // =========================================================
+    final {{varName}}Url = {{#if keyBookUrlIsRef}}{{keyBookUrl}}{{else}}'{{keyBookUrl}}'{{/if}};
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{keyBookPrincipal}},
+      body: TxBody.createKeyBook(
+        url: {{varName}}Url,
+        publicKeyHash: {{keyBookKeyHash}},
+      ),
+      memo: 'Create key book',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('CreateKeyBook SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('CreateKeyBook', {{varName}}Result.txid!));
+      }
+    } else {
+      print('CreateKeyBook FAILED: ${ {{~varName}}Result.error}');
+    }

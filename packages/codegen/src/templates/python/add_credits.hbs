@@ -1,0 +1,22 @@
+        # =========================================================
+        # {{label}} (Action: AddCredits)
+        # =========================================================
+        {{varName}}_oracle = client.v3.network_status(
+            NetworkStatusOptions(partition="directory")
+        ).get("oracle", {}).get("price", 500000)
+        print(f"Oracle price: { {{~varName}}_oracle}")
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{addCreditsPrincipal}},
+            body=TxBody.add_credits(
+                recipient={{addCreditsRecipient}},
+                amount="{{creditAmount}}",
+                oracle={{varName}}_oracle,
+            ),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"AddCredits SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("AddCredits", {{varName}}_result.txid))
+        else:
+            print(f"AddCredits FAILED: { {{~varName}}_result.error}")

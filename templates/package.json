@@ -1,0 +1,16 @@
+{
+  "name": "@accumulate-studio/templates",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Golden Path templates for Accumulate Studio",
+  "type": "module",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "dependencies": {
+    "@accumulate-studio/types": "*",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9"
+  }
+}

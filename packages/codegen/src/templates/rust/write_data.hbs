@@ -1,0 +1,19 @@
+    // =========================================================
+    // {{label}} (Action: WriteData)
+    // =========================================================
+    let {{varName}}_entries: Vec<&str> = vec![{{{entriesExpr}}}];
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if writeDataPrincipalIsRef}}&{{writeDataPrincipal}}{{else}}"{{writeDataPrincipal}}"{{/if}},
+        &TxBody::write_data_hex(&{{varName}}_entries),
+        Some("Write data"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("WriteData SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("WriteData", txid.clone()));
+        }
+    } else {
+        println!("WriteData FAILED: {:?}", {{varName}}_result.error);
+    }

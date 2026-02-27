@@ -1,0 +1,18 @@
+        // =========================================================
+        // {{label}} (Action: CreateTokenAccount)
+        // =========================================================
+        const {{varName}}Url = {{#if tokenAccUrlIsRef}}{{tokenAccUrl}}{{else}}"{{tokenAccUrl}}"{{/if}};
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if tokenAccPrincipalIsRef}}{{tokenAccPrincipal}}{{else}}"{{tokenAccPrincipal}}"{{/if}},
+            TxBody.createTokenAccount(
+                {{#if tokenAccUrlIsRef}}{{tokenAccUrl}}{{else}}"{{tokenAccUrl}}"{{/if}},
+                {{#if tokenUrlIsRef}}{{tokenUrl}}{{else}}"{{tokenUrl}}"{{/if}},
+            ),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`CreateTokenAccount SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["CreateTokenAccount", {{varName}}Result.txid]);
+        } else {
+            console.log(`CreateTokenAccount FAILED: ${ {{~varName}}Result.error}`);
+        }

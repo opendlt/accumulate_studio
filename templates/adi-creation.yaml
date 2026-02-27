@@ -1,0 +1,152 @@
+# ADI Creation - Full ADI setup with key management
+# Creates an ADI with key book and key page
+version: "1.0"
+name: "Full ADI Creation"
+description: >
+  Creates a complete Accumulate Digital Identity (ADI) with proper key
+  management structure. Includes a key book with an initial key page.
+  This is the standard way to set up an ADI for production use.
+
+variables:
+  ADI_NAME:
+    type: string
+    description: "Name for your ADI (e.g., 'my-company')"
+    required: true
+  KEY_BOOK_NAME:
+    type: string
+    description: "Name for the key book (default: 'book')"
+    default: "book"
+
+blocks:
+  # Step 1: Generate primary keypair
+  - id: generate_keys
+    type: GenerateKeys
+    config:
+      algorithm: Ed25519
+    outputs:
+      - keypair
+      - publicKey
+      - publicKeyHash
+      - liteIdentity
+      - liteTokenAccount
+
+  # Step 2: Fund lite account
+  - id: faucet
+    type: Faucet
+    depends_on:
+      - generate_keys
+    config:
+      account: "{{generate_keys.liteTokenAccount}}"
+      times: 3
+
+  # Step 3: Wait for ACME to arrive
+  - id: wait_for_balance
+    type: WaitForBalance
+    depends_on:
+      - faucet
+    config:
+      account: "{{generate_keys.liteTokenAccount}}"
+      minBalance: "15.00000000"
+      maxAttempts: 30
+      delayMs: 2000
+
+  # Step 4: Add credits to lite identity
+  - id: add_credits
+    type: AddCredits
+    depends_on:
+      - wait_for_balance
+    config:
+      recipient: "{{generate_keys.liteIdentity}}"
+      amount: "10.00000000"
+    transaction:
+      type: AddCredits
+      principal: "{{generate_keys.liteTokenAccount}}"
+      body:
+        recipient: "{{generate_keys.liteIdentity}}"
+        amount: 1000000000
+
+  # Step 5: Create the ADI with key book
+  - id: create_identity
+    type: CreateIdentity
+    depends_on:
+      - add_credits
+    config:
+      url: "acc://{{ADI_NAME}}.acme"
+      keyBookUrl: "acc://{{ADI_NAME}}.acme/{{KEY_BOOK_NAME}}"
+      publicKeyHash: "{{generate_keys.publicKeyHash}}"
+    transaction:
+      type: CreateIdentity
+      principal: "{{generate_keys.liteIdentity}}"
+      body:
+        url: "acc://{{ADI_NAME}}.acme"
+        keyBookUrl: "acc://{{ADI_NAME}}.acme/{{KEY_BOOK_NAME}}"
+        keyHash: "{{generate_keys.publicKeyHash}}"
+    outputs:
+      - adiUrl
+      - keyBookUrl
+      - keyPageUrl
+
+  # Step 6: Create an additional key book for advanced key management
+  - id: create_key_book
+    type: CreateKeyBook
+    depends_on:
+      - create_identity
+    config:
+      url: "acc://{{ADI_NAME}}.acme/admin-book"
+      publicKeyHash: "{{generate_keys.publicKeyHash}}"
+    transaction:
+      type: CreateKeyBook
+      principal: "acc://{{ADI_NAME}}.acme"
+      body:
+        url: "acc://{{ADI_NAME}}.acme/admin-book"
+        publicKeyHash: "{{generate_keys.publicKeyHash}}"
+    outputs:
+      - keyBookUrl
+
+  # Step 7: Create a key page in the new key book
+  - id: create_key_page
+    type: CreateKeyPage
+    depends_on:
+      - create_key_book
+    config:
+      url: "acc://{{ADI_NAME}}.acme/admin-book/2"
+      keys:
+        - "{{generate_keys.publicKeyHash}}"
+    transaction:
+      type: CreateKeyPage
+      principal: "acc://{{ADI_NAME}}.acme/admin-book"
+      body:
+        keys:
+          - keyHash: "{{generate_keys.publicKeyHash}}"
+    outputs:
+      - keyPageUrl
+
+# Verify ADI structure is complete
+assertions:
+  - type: account.exists
+    url: "acc://{{ADI_NAME}}.acme"
+    message: "ADI should exist"
+
+  - type: account.exists
+    url: "acc://{{ADI_NAME}}.acme/{{KEY_BOOK_NAME}}"
+    message: "Primary key book should exist"
+
+  - type: account.exists
+    url: "acc://{{ADI_NAME}}.acme/admin-book"
+    message: "Admin key book should exist"
+
+  - type: account.exists
+    url: "acc://{{ADI_NAME}}.acme/admin-book/2"
+    message: "Additional key page should exist"
+
+  - type: receipt.verified
+    sourceStep: create_identity
+    message: "ADI creation receipt should be valid"
+
+  - type: receipt.verified
+    sourceStep: create_key_book
+    message: "Key book creation receipt should be valid"
+
+  - type: receipt.verified
+    sourceStep: create_key_page
+    message: "Key page creation receipt should be valid"

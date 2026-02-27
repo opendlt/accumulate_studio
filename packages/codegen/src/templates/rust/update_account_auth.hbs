@@ -1,0 +1,18 @@
+    // =========================================================
+    // {{label}} (Action: UpdateAccountAuth)
+    // =========================================================
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if updateAuthPrincipalIsRef}}&{{updateAuthPrincipal}}{{else}}"{{updateAuthPrincipal}}"{{/if}},
+        &TxBody::update_account_auth(&json!({{{updateAuthOps}}})),
+        Some("Update account auth"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("UpdateAccountAuth SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("UpdateAccountAuth", txid.clone()));
+        }
+    } else {
+        println!("UpdateAccountAuth FAILED: {:?}", {{varName}}_result.error);
+    }

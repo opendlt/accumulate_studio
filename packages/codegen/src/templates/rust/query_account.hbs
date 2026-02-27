@@ -1,0 +1,8 @@
+    // =========================================================
+    // {{label}} (Action: QueryAccount)
+    // =========================================================
+    let {{varName}}_params = json!({{lb}} "scope": {{#if queryUrlIsRef}}{{queryUrl}}{{else}}"{{queryUrl}}"{{/if}}, "query": {{lb}} "queryType": "default" {{rb}} {{rb}});
+    match client.v3_client.call_v3::<Value>("query", {{varName}}_params).await {
+        Ok({{varName}}_result) => println!("Account state: {:?}", {{varName}}_result),
+        Err(e) => println!("Query failed: {:?}", e),
+    }

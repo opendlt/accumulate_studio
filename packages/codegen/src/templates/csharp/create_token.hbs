@@ -1,0 +1,26 @@
+            // =========================================================
+            // {{label}} (Action: CreateToken)
+            // =========================================================
+{{#if tokenIssuerUrlIsRef}}
+            var {{varName}}Url = {{tokenIssuerUrl}};
+{{else}}
+            var {{varName}}Url = "{{tokenIssuerUrl}}";
+{{/if}}
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{createTokenPrincipal}},
+                TxBody.CreateToken(
+                    {{#if tokenIssuerUrlIsRef}}{{tokenIssuerUrl}}{{else}}"{{tokenIssuerUrl}}"{{/if}},
+                    {{#if tokenSymbolIsRef}}{{tokenSymbol}}{{else}}"{{tokenSymbol}}"{{/if}},
+                    {{tokenPrecision}}
+                )
+            );
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"CreateToken SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("CreateToken", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"CreateToken FAILED: { {{~varName}}Result.Error}");
+            }

@@ -1,0 +1,19 @@
+    // =========================================================
+    // {{label}} (Action: CreateIdentity)
+    // =========================================================
+    let {{varName}}_url = {{#if adiUrlIsRef}}{{adiUrl}}{{else}}"{{adiUrl}}".to_string(){{/if}};
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        &{{keyVarName}}_lta,
+        &TxBody::create_identity(&{{varName}}_url, &format!("{}/book", {{varName}}_url), &{{keyVarName}}_pub_hash),
+        Some("Create ADI"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("CreateIdentity SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("CreateIdentity", txid.clone()));
+        }
+    } else {
+        println!("CreateIdentity FAILED: {:?}", {{varName}}_result.error);
+    }

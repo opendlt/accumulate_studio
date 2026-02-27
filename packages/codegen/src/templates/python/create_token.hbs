@@ -1,0 +1,19 @@
+        # =========================================================
+        # {{label}} (Action: CreateToken)
+        # =========================================================
+        {{varName}}_url = {{#if tokenIssuerUrlIsRef}}{{tokenIssuerUrl}}{{else}}"{{tokenIssuerUrl}}"{{/if}}
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if createTokenPrincipalIsRef}}{{createTokenPrincipal}}{{else}}"{{createTokenPrincipal}}"{{/if}},
+            body=TxBody.create_token(
+                url={{varName}}_url,
+                symbol={{#if tokenSymbolIsRef}}{{tokenSymbol}}{{else}}"{{tokenSymbol}}"{{/if}},
+                precision={{tokenPrecision}},
+            ),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"CreateToken SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("CreateToken", {{varName}}_result.txid))
+        else:
+            print(f"CreateToken FAILED: { {{~varName}}_result.error}")

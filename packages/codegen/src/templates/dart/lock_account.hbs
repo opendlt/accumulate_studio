@@ -1,0 +1,24 @@
+    // =========================================================
+    // {{label}} (Action: LockAccount)
+    // =========================================================
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{lockAccountPrincipal}},
+      body: TxBody.lockAccount(
+        height: {{lockHeight}},
+      ),
+      memo: 'Lock account',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('LockAccount SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('LockAccount', {{varName}}Result.txid!));
+      }
+    } else {
+      print('LockAccount FAILED: ${ {{~varName}}Result.error}');
+    }

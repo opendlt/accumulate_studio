@@ -1,0 +1,6 @@
+        // =========================================================
+        // {{label}} (WaitForCredits)
+        // =========================================================
+        console.log("Waiting for credits >= {{minCredits}}...");
+        await pollForCredits(client, {{waitCreditAccount}}, {{minCredits}});
+        console.log("Credits reached");

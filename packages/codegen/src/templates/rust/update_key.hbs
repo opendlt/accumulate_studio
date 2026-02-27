@@ -1,0 +1,18 @@
+    // =========================================================
+    // {{label}} (Action: UpdateKey)
+    // =========================================================
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if updateKeyPrincipalIsRef}}&{{updateKeyPrincipal}}{{else}}"{{updateKeyPrincipal}}"{{/if}},
+        &TxBody::update_key({{#if updateKeyNewKeyIsRef}}&{{updateKeyNewKey}}{{else}}"{{updateKeyNewKey}}"{{/if}}),
+        Some("Update key"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("UpdateKey SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("UpdateKey", txid.clone()));
+        }
+    } else {
+        println!("UpdateKey FAILED: {:?}", {{varName}}_result.error);
+    }

@@ -1,0 +1,444 @@
+{
+  "sdk_name": "opendlt-python-v2v3-sdk",
+  "sdk_version": "0.1.0",
+  "commit": "0000000",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "entrypoints": [
+    {
+      "symbol": "Accumulate",
+      "path": "accumulate_client",
+      "kind": "class",
+      "doc": "Main client facade with factory methods for network connection"
+    },
+    {
+      "symbol": "TxBody",
+      "path": "accumulate_client.convenience",
+      "kind": "class",
+      "doc": "Static methods that build transaction body objects"
+    },
+    {
+      "symbol": "SmartSigner",
+      "path": "accumulate_client.convenience",
+      "kind": "class",
+      "doc": "Signs, submits, and waits for transaction results"
+    },
+    {
+      "symbol": "Ed25519KeyPair",
+      "path": "accumulate_client.crypto.ed25519",
+      "kind": "class",
+      "doc": "Ed25519 key pair generation and derivation"
+    }
+  ],
+  "operations": [
+    {
+      "op": "generate_keys",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "Ed25519KeyPair.generate", "path": "accumulate_client.crypto.ed25519", "signature": "() -> Ed25519KeyPair" },
+        { "symbol": "Ed25519KeyPair.derive_lite_identity_url", "path": "accumulate_client.crypto.ed25519", "signature": "(self) -> str" },
+        { "symbol": "Ed25519KeyPair.derive_lite_token_account_url", "path": "accumulate_client.crypto.ed25519", "signature": "(self, token: str) -> str" },
+        { "symbol": "Ed25519KeyPair.public_key_bytes", "path": "accumulate_client.crypto.ed25519", "signature": "(self) -> bytes" }
+      ],
+      "inputs": [],
+      "outputs": [
+        { "name": "keypair", "type": "Ed25519KeyPair" },
+        { "name": "liteIdentity", "type": "str" },
+        { "name": "liteTokenAccount", "type": "str" },
+        { "name": "publicKeyHash", "type": "str" }
+      ],
+      "requires": [],
+      "examples": ["examples/generate_keys.py"]
+    },
+    {
+      "op": "faucet",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "Accumulate.faucet", "path": "accumulate_client", "signature": "(self, account: str) -> dict" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "str", "required": true, "description": "Lite token account URL to fund" },
+        { "name": "times", "type": "int", "required": false, "description": "Number of faucet calls", "example": 1 }
+      ],
+      "outputs": [],
+      "requires": ["keypair"],
+      "examples": ["examples/faucet.py"]
+    },
+    {
+      "op": "wait_for_balance",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "Accumulate.v3.query", "path": "accumulate_client", "signature": "(self, url: str) -> dict" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "str", "required": true, "description": "Account URL to poll" },
+        { "name": "minBalance", "type": "str", "required": true, "description": "Minimum balance to wait for" }
+      ],
+      "outputs": [
+        { "name": "balance", "type": "str" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/wait_for_balance.py"]
+    },
+    {
+      "op": "wait_for_credits",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "Accumulate.v3.query", "path": "accumulate_client", "signature": "(self, url: str) -> dict" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "str", "required": true, "description": "Key page URL to poll" },
+        { "name": "minCredits", "type": "int", "required": true, "description": "Minimum credit balance to wait for" }
+      ],
+      "outputs": [
+        { "name": "credits", "type": "int" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/wait_for_credits.py"]
+    },
+    {
+      "op": "add_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.add_credits", "path": "accumulate_client.convenience", "signature": "(recipient: str, amount: str, oracle: int) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "str", "required": true, "description": "Key page URL to credit" },
+        { "name": "amount", "type": "str", "required": true, "description": "ACME amount to spend" },
+        { "name": "oracle", "type": "int", "required": true, "description": "Oracle price (fetched at runtime)" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/add_credits.py"]
+    },
+    {
+      "op": "create_identity",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.create_identity", "path": "accumulate_client.convenience", "signature": "(url: str, key_book_url: str, public_key_hash: str) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "str", "required": true, "description": "ADI URL" },
+        { "name": "keyBookUrl", "type": "str", "required": true, "description": "Key book URL" },
+        { "name": "publicKeyHash", "type": "str", "required": true, "description": "SHA256 hash of public key" }
+      ],
+      "outputs": [
+        { "name": "adiUrl", "type": "str" },
+        { "name": "keyBookUrl", "type": "str" },
+        { "name": "keyPageUrl", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_identity.py"]
+    },
+    {
+      "op": "create_key_book",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.create_key_book", "path": "accumulate_client.convenience", "signature": "(url: str, public_key_hash: str) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "str", "required": true, "description": "Key book URL" },
+        { "name": "publicKeyHash", "type": "str", "required": false, "description": "Initial key hash" }
+      ],
+      "outputs": [
+        { "name": "keyBookUrl", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_key_book.py"]
+    },
+    {
+      "op": "create_key_page",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.create_key_page", "path": "accumulate_client.convenience", "signature": "(url: str, keys: list[str]) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "str", "required": true, "description": "Key page URL" },
+        { "name": "keys", "type": "list[str]", "required": true, "description": "Initial key hashes" }
+      ],
+      "outputs": [
+        { "name": "keyPageUrl", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_key_page.py"]
+    },
+    {
+      "op": "create_token_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.create_token_account", "path": "accumulate_client.convenience", "signature": "(url: str, token_url: str) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "str", "required": true, "description": "Token account URL" },
+        { "name": "tokenUrl", "type": "str", "required": true, "description": "Token type URL" }
+      ],
+      "outputs": [
+        { "name": "tokenAccountUrl", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_token_account.py"]
+    },
+    {
+      "op": "create_data_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.create_data_account", "path": "accumulate_client.convenience", "signature": "(url: str) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "str", "required": true, "description": "Data account URL" }
+      ],
+      "outputs": [
+        { "name": "dataAccountUrl", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_data_account.py"]
+    },
+    {
+      "op": "create_token",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.create_token", "path": "accumulate_client.convenience", "signature": "(url: str, symbol: str, precision: int, supply_limit: str | None) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "str", "required": true, "description": "Token URL" },
+        { "name": "symbol", "type": "str", "required": true, "description": "Token symbol" },
+        { "name": "precision", "type": "int", "required": true, "description": "Decimal precision" },
+        { "name": "supplyLimit", "type": "str", "required": false, "description": "Maximum supply" }
+      ],
+      "outputs": [
+        { "name": "tokenUrl", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_token.py"]
+    },
+    {
+      "op": "send_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.send_tokens_single", "path": "accumulate_client.convenience", "signature": "(to_url: str, amount: str) -> dict" },
+        { "symbol": "TxBody.send_tokens", "path": "accumulate_client.convenience", "signature": "(recipients: list[tuple[str, str]]) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "recipients", "type": "list[tuple[str, str]]", "required": true, "description": "List of (url, amount) tuples" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/send_tokens.py"]
+    },
+    {
+      "op": "issue_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.issue_tokens", "path": "accumulate_client.convenience", "signature": "(recipient: str, amount: str) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "str", "required": true, "description": "Recipient token account" },
+        { "name": "amount", "type": "str", "required": true, "description": "Amount to issue" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/issue_tokens.py"]
+    },
+    {
+      "op": "burn_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.burn_tokens", "path": "accumulate_client.convenience", "signature": "(amount: str) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "amount", "type": "str", "required": true, "description": "Amount to burn" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/burn_tokens.py"]
+    },
+    {
+      "op": "write_data",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.write_data", "path": "accumulate_client.convenience", "signature": "(data: list[str]) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "entries", "type": "list[str]", "required": true, "description": "Hex-encoded data entries" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" },
+        { "name": "entryHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/write_data.py"]
+    },
+    {
+      "op": "query_account",
+      "category": "query",
+      "symbols": [
+        { "symbol": "Accumulate.v3.query", "path": "accumulate_client", "signature": "(self, url: str) -> dict" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "str", "required": true, "description": "Account URL to query" }
+      ],
+      "outputs": [
+        { "name": "account", "type": "dict" }
+      ],
+      "requires": [],
+      "examples": ["examples/query_account.py"]
+    },
+    {
+      "op": "update_key_page",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.update_key_page", "path": "accumulate_client.convenience", "signature": "(operations: list) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "operations", "type": "list", "required": true, "description": "Key page operations (add, remove, setThreshold)" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_key_page.py"]
+    },
+    {
+      "op": "update_key",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.update_key", "path": "accumulate_client.convenience", "signature": "(new_key: str) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "newKey", "type": "str", "required": true, "description": "New public key hash" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_key.py"]
+    },
+    {
+      "op": "create_lite_token_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "Ed25519KeyPair.derive_lite_token_account_url", "path": "accumulate_client.crypto.ed25519", "signature": "(self, token: str) -> str" }
+      ],
+      "inputs": [],
+      "outputs": [
+        { "name": "liteTokenAccountUrl", "type": "str" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/create_lite_token_account.py"]
+    },
+    {
+      "op": "transfer_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.transfer_credits", "path": "accumulate_client.convenience", "signature": "(recipient: str, amount: int) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "str", "required": true, "description": "Destination key page" },
+        { "name": "amount", "type": "int", "required": true, "description": "Credits to transfer" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/transfer_credits.py"]
+    },
+    {
+      "op": "burn_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.burn_credits", "path": "accumulate_client.convenience", "signature": "(amount: int) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "amount", "type": "int", "required": true, "description": "Credits to burn" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/burn_credits.py"]
+    },
+    {
+      "op": "write_data_to",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.write_data_to", "path": "accumulate_client.convenience", "signature": "(recipient: str, data: list[str]) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "str", "required": true, "description": "Target data account" },
+        { "name": "entries", "type": "list[str]", "required": true, "description": "Hex-encoded data entries" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/write_data_to.py"]
+    },
+    {
+      "op": "lock_account",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.lock_account", "path": "accumulate_client.convenience", "signature": "(height: int) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "height", "type": "int", "required": true, "description": "Block height to lock until" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/lock_account.py"]
+    },
+    {
+      "op": "update_account_auth",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.update_account_auth", "path": "accumulate_client.convenience", "signature": "(operations: list) -> dict" },
+        { "symbol": "SmartSigner.sign_submit_and_wait", "path": "accumulate_client.convenience", "signature": "(self, principal: str, body: dict) -> dict" }
+      ],
+      "inputs": [
+        { "name": "operations", "type": "list", "required": true, "description": "Auth operations (enable, disable, add, remove)" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "str" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_account_auth.py"]
+    },
+    {
+      "op": "comment",
+      "category": "utility",
+      "symbols": [],
+      "inputs": [
+        { "name": "text", "type": "str", "required": true, "description": "Comment text" }
+      ],
+      "outputs": [],
+      "requires": [],
+      "examples": []
+    }
+  ],
+  "notes": "Python SDK uses snake_case conventions. TxBody methods are static. SmartSigner handles signing, submission and waiting."
+}

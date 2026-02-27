@@ -1,0 +1,18 @@
+        # =========================================================
+        # {{label}} (Action: CreateTokenAccount)
+        # =========================================================
+        {{varName}}_url = {{#if tokenAccUrlIsRef}}{{tokenAccUrl}}{{else}}"{{tokenAccUrl}}"{{/if}}
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if tokenAccPrincipalIsRef}}{{tokenAccPrincipal}}{{else}}"{{tokenAccPrincipal}}"{{/if}},
+            body=TxBody.create_token_account(
+                url={{varName}}_url,
+                token_url={{#if tokenUrlIsRef}}{{tokenUrl}}{{else}}"{{tokenUrl}}"{{/if}},
+            ),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"CreateTokenAccount SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("CreateTokenAccount", {{varName}}_result.txid))
+        else:
+            print(f"CreateTokenAccount FAILED: { {{~varName}}_result.error}")

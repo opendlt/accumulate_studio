@@ -1,0 +1,22 @@
+        // =========================================================
+        // {{label}} (Action: CreateKeyPage)
+        // =========================================================
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if keyPagePrincipalIsRef}}{{keyPagePrincipal}}{{else}}"{{keyPagePrincipal}}"{{/if}},
+            TxBody.createKeyPage([
+{{#if keyPageDefaultKey}}
+                {{keyPageDefaultKey}},
+{{else}}
+{{#each keyPageKeys}}
+                "{{this}}",
+{{/each}}
+{{/if}}
+            ]),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`CreateKeyPage SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["CreateKeyPage", {{varName}}Result.txid]);
+        } else {
+            console.log(`CreateKeyPage FAILED: ${ {{~varName}}Result.error}`);
+        }

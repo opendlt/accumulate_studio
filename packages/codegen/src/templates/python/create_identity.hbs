@@ -1,0 +1,19 @@
+        # =========================================================
+        # {{label}} (Action: CreateIdentity)
+        # =========================================================
+        {{varName}}_url = {{#if adiUrlIsRef}}{{adiUrl}}{{else}}"{{adiUrl}}"{{/if}}
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal=str({{keyVarName}}_lta),
+            body=TxBody.create_identity(
+                url={{varName}}_url,
+                key_book_url=f"{ {{~varName}}_url}/book",
+                public_key_hash={{keyVarName}}_pub_hash,
+            ),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"CreateIdentity SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("CreateIdentity", {{varName}}_result.txid))
+        else:
+            print(f"CreateIdentity FAILED: { {{~varName}}_result.error}")

@@ -1,0 +1,10 @@
+name: codegen_dart_validation
+description: Dart code generation validation harness
+version: 0.1.0
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+dependencies:
+  opendlt_accumulate:
+    path: ../../../../../../opendlt-dart-v2v3-sdk/unified
+  crypto: ^3.0.3
+publish_to: none

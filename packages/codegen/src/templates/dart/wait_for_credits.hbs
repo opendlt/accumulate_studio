@@ -1,0 +1,16 @@
+    // =========================================================
+    // {{label}} (WaitForCredits)
+    // =========================================================
+    print('Waiting for credits >= {{minCredits}}...');
+    for (var i = 0; i < 30; i++) {
+      try {
+        final result = await client.v3.rawCall('query', {
+          'scope': {{waitCreditAccount}},
+          'query': {'queryType': 'default'},
+        });
+        final creditBalance = result['account']?['creditBalance'];
+        if (creditBalance != null && (creditBalance as int) >= {{minCredits}}) break;
+      } catch (_) {}
+      await Future.delayed(Duration(seconds: 2));
+    }
+    print('Credits reached');

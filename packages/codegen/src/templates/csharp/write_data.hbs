@@ -1,0 +1,17 @@
+            // =========================================================
+            // {{label}} (Action: WriteData)
+            // =========================================================
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{writeDataPrincipal}},
+                TxBody.WriteData(new List<string> { {{{entriesExpr}}} })
+            );
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"WriteData SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("WriteData", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"WriteData FAILED: { {{~varName}}Result.Error}");
+            }

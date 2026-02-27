@@ -1,0 +1,82 @@
+# =============================================================================
+# Accumulate Studio - .gitignore
+# =============================================================================
+
+# ── Dependencies ──
+node_modules/
+
+# ── Build outputs ──
+**/dist/
+*.tsbuildinfo
+
+# ── TypeScript composite build artifacts in source trees ──
+# (tsc with composite:true emits .js/.d.ts/.map alongside .tsx sources)
+apps/studio/src/**/*.js
+apps/studio/src/**/*.js.map
+apps/studio/src/**/*.d.ts
+apps/studio/src/**/*.d.ts.map
+
+# ── Vite ──
+.vite/
+
+# ── Environment variables ──
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+
+# ── Test harness build artifacts ──
+# Rust (can be 3+ GB)
+packages/codegen/tests/rust-harness/target/
+# C# build outputs
+packages/codegen/tests/csharp-harness/bin/
+packages/codegen/tests/csharp-harness/bin-gen/
+packages/codegen/tests/csharp-harness/obj/
+# Dart
+packages/codegen/tests/dart-harness/.dart_tool/
+# JS harness deps
+packages/codegen/tests/js-harness/node_modules/
+
+# ── Test snapshots & generated output ──
+packages/codegen/tests/__snapshots__/
+packages/codegen/tests/action-palette-output/
+packages/codegen/tests/snapshots/
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
+.venv/
+venv/
+
+# ── Temp / generated downloads ──
+temp-download-*/
+
+# ── Lock files (non-root) ──
+# Root package-lock.json IS committed; these are test harness locks
+packages/codegen/tests/rust-harness/Cargo.lock
+packages/codegen/tests/dart-harness/pubspec.lock
+
+# ── IDE / Editor ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS artifacts ──
+.DS_Store
+Thumbs.db
+nul
+*.bak
+
+# ── Claude Code local settings ──
+.claude/
+
+# ── Logs ──
+*.log
+npm-debug.log*

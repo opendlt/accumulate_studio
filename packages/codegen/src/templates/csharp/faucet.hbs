@@ -1,0 +1,18 @@
+            // =========================================================
+            // {{label}} (Faucet)
+            // =========================================================
+            Console.WriteLine("Requesting tokens from faucet...");
+            for (int i = 0; i < {{faucetTimes}}; i++)
+            {
+                try
+                {
+                    var resp = await client.V2.FaucetAsync({{faucetAccount}});
+                    Console.WriteLine($"  Faucet {i + 1}/{{faucetTimes}}: submitted");
+                    await Task.Delay(2000);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"  Faucet {i + 1}/{{faucetTimes}} failed: {ex.Message}");
+                }
+            }
+            Console.WriteLine("Faucet request completed");

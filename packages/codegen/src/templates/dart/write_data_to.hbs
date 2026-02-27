@@ -1,0 +1,35 @@
+    // =========================================================
+    // {{label}} (Action: WriteDataTo)
+    // =========================================================
+{{#if useComputedLiteDataUrl}}
+    // Compute lite data account URL (Factom ChainID algorithm)
+    final {{varName}}ExtIdBytes = [
+      for (var i = 0; i < {{liteDataChainNameExpr}}.length; i += 2)
+        int.parse({{liteDataChainNameExpr}}.substring(i, i + 2), radix: 16)
+    ];
+    final {{varName}}IdHash = sha256.convert({{varName}}ExtIdBytes).bytes;
+    final {{varName}}ChainId = sha256.convert({{varName}}IdHash).bytes;
+    final {{varName}}LiteDataUrl = 'acc://${toHexString({{varName}}ChainId)}';
+{{/if}}
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{writeDataToPrincipal}},
+      body: TxBody.writeDataTo(
+        recipient: {{writeDataToRecipient}},
+        entriesHex: [{{entriesExpr}}],
+      ),
+      memo: 'Write data to',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('WriteDataTo SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('WriteDataTo', {{varName}}Result.txid!));
+      }
+    } else {
+      print('WriteDataTo FAILED: ${ {{~varName}}Result.error}');
+    }

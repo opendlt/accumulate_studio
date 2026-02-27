@@ -1,0 +1,21 @@
+        # =========================================================
+        # {{label}} (Action: UpdateKey → UpdateKeyPage remove+add)
+        # =========================================================
+        # The SDK doesn't support updateKey natively, so we use
+        # updateKeyPage with remove(old) + add(new) operations.
+        {{varName}}_old_key_hash = hashlib.sha256({{keyVarName}}_kp.public_key_bytes()).digest()
+        {{varName}}_new_key_hash = bytes.fromhex({{#if updateKeyNewKeyIsRef}}{{updateKeyNewKey}}{{else}}"{{updateKeyNewKey}}"{{/if}})
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if updateKeyPrincipalIsRef}}{{updateKeyPrincipal}}{{else}}"{{updateKeyPrincipal}}"{{/if}},
+            body=TxBody.update_key_page([
+                TxBody.remove_key_operation({{varName}}_old_key_hash),
+                TxBody.add_key_operation({{varName}}_new_key_hash),
+            ]),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"UpdateKey SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("UpdateKey", {{varName}}_result.txid))
+        else:
+            print(f"UpdateKey FAILED: { {{~varName}}_result.error}")

@@ -1,0 +1,22 @@
+            // =========================================================
+            // {{label}} (Action: AddCredits)
+            // =========================================================
+            var {{varName}}Oracle = await helper.GetOracleAsync();
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{addCreditsPrincipal}},
+                TxBody.AddCredits(
+                    {{addCreditsRecipient}},
+                    "{{creditAmount}}",
+                    {{varName}}Oracle
+                )
+            );
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"AddCredits SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("AddCredits", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"AddCredits FAILED: { {{~varName}}Result.Error}");
+            }

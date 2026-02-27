@@ -1,0 +1,443 @@
+{
+  "sdk_name": "accumulate.js",
+  "sdk_version": "0.12.0",
+  "commit": "0000000",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "entrypoints": [
+    {
+      "symbol": "Accumulate",
+      "path": "accumulate.js",
+      "kind": "class",
+      "doc": "Main client facade with factory methods for network connection"
+    },
+    {
+      "symbol": "TxBody",
+      "path": "accumulate.js",
+      "kind": "class",
+      "doc": "Static methods that build transaction body objects"
+    },
+    {
+      "symbol": "SmartSigner",
+      "path": "accumulate.js",
+      "kind": "class",
+      "doc": "Signs, submits, and waits for transaction results"
+    },
+    {
+      "symbol": "Ed25519KeyPair",
+      "path": "accumulate.js",
+      "kind": "class",
+      "doc": "Ed25519 key pair generation and derivation"
+    }
+  ],
+  "operations": [
+    {
+      "op": "generate_keys",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "Ed25519KeyPair.generate", "path": "accumulate.js", "signature": "() -> Ed25519KeyPair" },
+        { "symbol": "Ed25519KeyPair.deriveLiteIdentityUrl", "path": "accumulate.js", "signature": "() -> string" },
+        { "symbol": "Ed25519KeyPair.deriveLiteTokenAccountUrl", "path": "accumulate.js", "signature": "() -> string" },
+        { "symbol": "Ed25519KeyPair.publicKeyHashHex", "path": "accumulate.js", "signature": "() -> string" }
+      ],
+      "inputs": [],
+      "outputs": [
+        { "name": "keypair", "type": "Ed25519KeyPair" },
+        { "name": "liteIdentity", "type": "string" },
+        { "name": "liteTokenAccount", "type": "string" },
+        { "name": "publicKeyHash", "type": "string" }
+      ],
+      "requires": [],
+      "examples": ["examples/generate_keys.js"]
+    },
+    {
+      "op": "faucet",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "Accumulate.faucet", "path": "accumulate.js", "signature": "(url: string, times: number, delay: number) -> Promise<void>" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "string", "required": true, "description": "Lite token account URL to fund" },
+        { "name": "times", "type": "number", "required": false, "description": "Number of faucet calls", "example": 1 }
+      ],
+      "outputs": [],
+      "requires": ["keypair"],
+      "examples": ["examples/faucet.js"]
+    },
+    {
+      "op": "wait_for_balance",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "pollForBalance", "path": "accumulate.js", "signature": "(client: Accumulate, url: string) -> Promise<bigint>" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "string", "required": true, "description": "Account URL to poll" },
+        { "name": "minBalance", "type": "string", "required": true, "description": "Minimum balance to wait for" }
+      ],
+      "outputs": [
+        { "name": "balance", "type": "bigint" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/wait_for_balance.js"]
+    },
+    {
+      "op": "wait_for_credits",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "pollForCredits", "path": "accumulate.js", "signature": "(client: Accumulate, url: string) -> Promise<number>" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "string", "required": true, "description": "Key page URL to poll" },
+        { "name": "minCredits", "type": "number", "required": true, "description": "Minimum credit balance to wait for" }
+      ],
+      "outputs": [
+        { "name": "credits", "type": "number" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/wait_for_credits.js"]
+    },
+    {
+      "op": "add_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.addCredits", "path": "accumulate.js", "signature": "(recipient: string, amount: string, oracle: number) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "string", "required": true, "description": "Key page URL to credit" },
+        { "name": "amount", "type": "string", "required": true, "description": "ACME amount to spend" },
+        { "name": "oracle", "type": "number", "required": true, "description": "Oracle price (fetched at runtime)" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/add_credits.js"]
+    },
+    {
+      "op": "create_identity",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.createIdentity", "path": "accumulate.js", "signature": "(url: string, keyBookUrl: string, keyHash: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "ADI URL" },
+        { "name": "keyBookUrl", "type": "string", "required": true, "description": "Key book URL" },
+        { "name": "publicKeyHash", "type": "string", "required": true, "description": "SHA256 hash of public key" }
+      ],
+      "outputs": [
+        { "name": "adiUrl", "type": "string" },
+        { "name": "keyBookUrl", "type": "string" },
+        { "name": "keyPageUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_identity.js"]
+    },
+    {
+      "op": "create_key_book",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.createKeyBook", "path": "accumulate.js", "signature": "(url: string, publicKeyHash: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Key book URL" },
+        { "name": "publicKeyHash", "type": "string", "required": false, "description": "Initial key hash" }
+      ],
+      "outputs": [
+        { "name": "keyBookUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_key_book.js"]
+    },
+    {
+      "op": "create_key_page",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.createKeyPage", "path": "accumulate.js", "signature": "(url: string, keys: string[]) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Key page URL" },
+        { "name": "keys", "type": "string[]", "required": true, "description": "Initial key hashes" }
+      ],
+      "outputs": [
+        { "name": "keyPageUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_key_page.js"]
+    },
+    {
+      "op": "create_token_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.createTokenAccount", "path": "accumulate.js", "signature": "(url: string, tokenUrl: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Token account URL" },
+        { "name": "tokenUrl", "type": "string", "required": true, "description": "Token type URL" }
+      ],
+      "outputs": [
+        { "name": "tokenAccountUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_token_account.js"]
+    },
+    {
+      "op": "create_data_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.createDataAccount", "path": "accumulate.js", "signature": "(url: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Data account URL" }
+      ],
+      "outputs": [
+        { "name": "dataAccountUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_data_account.js"]
+    },
+    {
+      "op": "create_token",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.createToken", "path": "accumulate.js", "signature": "(url: string, symbol: string, precision: number) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Token URL" },
+        { "name": "symbol", "type": "string", "required": true, "description": "Token symbol" },
+        { "name": "precision", "type": "number", "required": true, "description": "Decimal precision" }
+      ],
+      "outputs": [
+        { "name": "tokenUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_token.js"]
+    },
+    {
+      "op": "send_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.sendTokensSingle", "path": "accumulate.js", "signature": "(toUrl: string, amount: string) -> object" },
+        { "symbol": "TxBody.sendTokensMulti", "path": "accumulate.js", "signature": "(recipients: Array<{url, amount}>) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "recipients", "type": "Array<{url: string, amount: string}>", "required": true, "description": "List of {url, amount} recipients" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/send_tokens.js"]
+    },
+    {
+      "op": "issue_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.issueTokens", "path": "accumulate.js", "signature": "(recipient: string, amount: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "string", "required": true, "description": "Recipient token account" },
+        { "name": "amount", "type": "string", "required": true, "description": "Amount to issue" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/issue_tokens.js"]
+    },
+    {
+      "op": "burn_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.burnTokens", "path": "accumulate.js", "signature": "(amount: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "amount", "type": "string", "required": true, "description": "Amount to burn" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/burn_tokens.js"]
+    },
+    {
+      "op": "write_data",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.writeData", "path": "accumulate.js", "signature": "(entries: string[]) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "entries", "type": "string[]", "required": true, "description": "Hex-encoded data entries" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" },
+        { "name": "entryHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/write_data.js"]
+    },
+    {
+      "op": "query_account",
+      "category": "query",
+      "symbols": [
+        { "symbol": "Accumulate.queryAccount", "path": "accumulate.js", "signature": "(url: string) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Account URL to query" }
+      ],
+      "outputs": [
+        { "name": "account", "type": "object" }
+      ],
+      "requires": [],
+      "examples": ["examples/query_account.js"]
+    },
+    {
+      "op": "update_key_page",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.updateKeyPage", "path": "accumulate.js", "signature": "(operations: Array) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "operations", "type": "Array", "required": true, "description": "Key page operations (add, remove, setThreshold)" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_key_page.js"]
+    },
+    {
+      "op": "update_key",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.updateKey", "path": "accumulate.js", "signature": "(newKey: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "newKey", "type": "string", "required": true, "description": "New public key hash" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_key.js"]
+    },
+    {
+      "op": "create_lite_token_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "Ed25519KeyPair.deriveLiteTokenAccountUrl", "path": "accumulate.js", "signature": "() -> string" }
+      ],
+      "inputs": [],
+      "outputs": [
+        { "name": "liteTokenAccountUrl", "type": "string" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/create_lite_token_account.js"]
+    },
+    {
+      "op": "transfer_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.transferCredits", "path": "accumulate.js", "signature": "(recipient: string, amount: number) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "string", "required": true, "description": "Destination key page" },
+        { "name": "amount", "type": "number", "required": true, "description": "Credits to transfer" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/transfer_credits.js"]
+    },
+    {
+      "op": "burn_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.burnCredits", "path": "accumulate.js", "signature": "(amount: number) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "amount", "type": "number", "required": true, "description": "Credits to burn" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/burn_credits.js"]
+    },
+    {
+      "op": "write_data_to",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.writeDataTo", "path": "accumulate.js", "signature": "(recipient: string, entries: string[]) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "string", "required": true, "description": "Target data account" },
+        { "name": "entries", "type": "string[]", "required": true, "description": "Hex-encoded data entries" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/write_data_to.js"]
+    },
+    {
+      "op": "lock_account",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.lockAccount", "path": "accumulate.js", "signature": "(height: number) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "height", "type": "number", "required": true, "description": "Block height to lock until" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/lock_account.js"]
+    },
+    {
+      "op": "update_account_auth",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.updateAccountAuth", "path": "accumulate.js", "signature": "(operations: Array) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+      ],
+      "inputs": [
+        { "name": "operations", "type": "Array", "required": true, "description": "Auth operations (enable, disable, add, remove)" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_account_auth.js"]
+    },
+    {
+      "op": "comment",
+      "category": "utility",
+      "symbols": [],
+      "inputs": [
+        { "name": "text", "type": "string", "required": true, "description": "Comment text" }
+      ],
+      "outputs": [],
+      "requires": [],
+      "examples": []
+    }
+  ],
+  "notes": "JavaScript SDK uses camelCase conventions. TxBody methods are static. SmartSigner handles signing, submission and waiting. Uses async/await with Promises."
+}

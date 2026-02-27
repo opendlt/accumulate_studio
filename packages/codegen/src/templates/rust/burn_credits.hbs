@@ -1,0 +1,18 @@
+    // =========================================================
+    // {{label}} (Action: BurnCredits)
+    // =========================================================
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if burnCreditsPrincipalIsRef}}&{{burnCreditsPrincipal}}{{else}}"{{burnCreditsPrincipal}}"{{/if}},
+        &TxBody::burn_credits({{burnCreditsAmount}}),
+        Some("Burn credits"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("BurnCredits SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("BurnCredits", txid.clone()));
+        }
+    } else {
+        println!("BurnCredits FAILED: {:?}", {{varName}}_result.error);
+    }

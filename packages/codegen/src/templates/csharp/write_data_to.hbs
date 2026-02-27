@@ -1,0 +1,27 @@
+            // =========================================================
+            // {{label}} (Action: WriteDataTo)
+            // =========================================================
+{{#if useComputedLiteDataUrl}}
+            // Compute lite data account URL (Factom ChainID algorithm)
+            var {{varName}}ExtIdBytes = Convert.FromHexString({{liteDataChainNameExpr}});
+            var {{varName}}IdHash = SHA256.HashData({{varName}}ExtIdBytes);
+            var {{varName}}ChainId = SHA256.HashData({{varName}}IdHash);
+            var {{varName}}LiteDataUrl = $"acc://{Convert.ToHexString({{varName}}ChainId).ToLowerInvariant()}";
+{{/if}}
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{writeDataToPrincipal}},
+                TxBody.WriteDataTo(
+                    {{#if writeDataToRecipientIsRef}}{{writeDataToRecipient}}{{else}}"{{writeDataToRecipient}}"{{/if}},
+                    new List<string> { {{{entriesExpr}}} }
+                )
+            );
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"WriteDataTo SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("WriteDataTo", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"WriteDataTo FAILED: { {{~varName}}Result.Error}");
+            }

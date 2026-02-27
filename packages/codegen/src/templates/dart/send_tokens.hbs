@@ -1,0 +1,40 @@
+    // =========================================================
+    // {{label}} (Action: SendTokens)
+    // =========================================================
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+{{#if singleRecipient}}
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{sendTokensPrincipal}},
+      body: TxBody.sendTokensSingle(
+        toUrl: {{#if firstRecipientUrlIsRef}}{{firstRecipientUrl}}{{else}}'{{firstRecipientUrl}}'{{/if}},
+        amount: {{#if firstRecipientAmountIsRef}}{{firstRecipientAmount}}{{else}}'{{firstRecipientAmount}}'{{/if}},
+      ),
+      memo: 'Send tokens',
+      maxAttempts: 30,
+    );
+{{else}}
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{sendTokensPrincipal}},
+      body: TxBody.sendTokens(
+        to: [
+{{#each recipients}}
+          TokenRecipient(url: '{{this.url}}', amount: '{{this.amount}}'),
+{{/each}}
+        ],
+      ),
+      memo: 'Send tokens',
+      maxAttempts: 30,
+    );
+{{/if}}
+    if ({{varName}}Result.success) {
+      print('SendTokens SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('SendTokens', {{varName}}Result.txid!));
+      }
+    } else {
+      print('SendTokens FAILED: ${ {{~varName}}Result.error}');
+    }

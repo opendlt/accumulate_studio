@@ -1,0 +1,17 @@
+        // =========================================================
+        // {{label}} (Action: IssueTokens)
+        // =========================================================
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if issueTokensPrincipalIsRef}}{{issueTokensPrincipal}}{{else}}"{{issueTokensPrincipal}}"{{/if}},
+            TxBody.issueTokens(
+                {{#if issueRecipientIsRef}}{{issueRecipient}}{{else}}"{{issueRecipient}}"{{/if}},
+                {{#if issueAmountIsRef}}{{issueAmount}}{{else}}"{{issueAmount}}"{{/if}},
+            ),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`IssueTokens SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["IssueTokens", {{varName}}Result.txid]);
+        } else {
+            console.log(`IssueTokens FAILED: ${ {{~varName}}Result.error}`);
+        }

@@ -1,0 +1,22 @@
+    // =========================================================
+    // {{label}} (Action: Faucet)
+    // =========================================================
+    println!("Requesting tokens from faucet...");
+    let {{varName}}_faucet_url = {{faucetAccount}}.to_string();
+    for _i in 0..{{faucetTimes}} {
+        let {{varName}}_faucet_params = json!({{lb}} "account": {{varName}}_faucet_url {{rb}});
+        match client.v3_client.call_v3::<Value>("faucet", {{varName}}_faucet_params).await {
+            Ok(response) => {
+                let txid = response.get("transactionHash")
+                    .or_else(|| response.get("txid"))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("submitted");
+                println!("  Faucet: {}", txid);
+            }
+            Err(e) => {
+                println!("  Faucet failed: {}", e);
+            }
+        }
+        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+    }
+    println!("Faucet request completed");

@@ -1,0 +1,25 @@
+    // =========================================================
+    // {{label}} (Action: TransferCredits)
+    // =========================================================
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{transferCreditsPrincipal}},
+      body: TxBody.transferCreditsSingle(
+        toUrl: {{transferCreditsRecipient}},
+        amount: {{transferCreditsAmount}},
+      ),
+      memo: 'Transfer credits',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('TransferCredits SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('TransferCredits', {{varName}}Result.txid!));
+      }
+    } else {
+      print('TransferCredits FAILED: ${ {{~varName}}Result.error}');
+    }

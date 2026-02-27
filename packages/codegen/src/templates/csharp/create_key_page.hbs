@@ -1,0 +1,28 @@
+            // =========================================================
+            // {{label}} (Action: CreateKeyPage)
+            // =========================================================
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{keyPagePrincipal}},
+                TxBody.CreateKeyPage(
+                    new List<KeySpecParams>
+                    {
+{{#if keyPageDefaultKey}}
+                        new KeySpecParams({{keyPageDefaultKey}}),
+{{else}}
+{{#each keyPageKeys}}
+                        new KeySpecParams("{{this}}"),
+{{/each}}
+{{/if}}
+                    }
+                )
+            );
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"CreateKeyPage SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("CreateKeyPage", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"CreateKeyPage FAILED: { {{~varName}}Result.Error}");
+            }

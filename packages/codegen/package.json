@@ -1,0 +1,42 @@
+{
+  "name": "@accumulate-studio/codegen",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:python": "vitest run python-validation",
+    "test:rust": "vitest run rust-validation",
+    "test:baselines": "vitest run python-baseline",
+    "test:rust-baselines": "vitest run rust-baseline",
+    "test:dart": "vitest run dart-validation",
+    "test:dart-baselines": "vitest run dart-baseline",
+    "test:javascript": "vitest run javascript-validation",
+    "test:javascript-baselines": "vitest run javascript-baseline",
+    "test:csharp": "vitest run csharp-validation",
+    "test:csharp-baselines": "vitest run csharp-baseline"
+  },
+  "dependencies": {
+    "@accumulate-studio/types": "*",
+    "archiver": "^7.0.1",
+    "handlebars": "^4.7.8",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/archiver": "^6.0.2",
+    "@types/js-yaml": "^4.0.9",
+    "typescript": "^5.3.3",
+    "vitest": "^1.6.1"
+  }
+}

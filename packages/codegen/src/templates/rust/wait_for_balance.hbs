@@ -1,0 +1,18 @@
+    // =========================================================
+    // {{label}} (Action: WaitForBalance)
+    // =========================================================
+    println!("Waiting for balance...");
+    let {{varName}}_scope = {{waitAccount}}.to_string();
+    let {{varName}}_min_bal: u64 = "{{minBalance}}".replace('.', "").parse().unwrap_or(10000000);
+    for {{varName}}_i in 0..30u32 {
+        let {{varName}}_params = json!({{lb}} "scope": {{varName}}_scope, "query": {{lb}} "queryType": "default" {{rb}} {{rb}});
+        if let Ok({{varName}}_acct) = client.v3_client.call_v3::<Value>("query", {{varName}}_params).await {
+            if let Some(bal) = {{varName}}_acct.get("account").and_then(|a| a.get("balance")).and_then(|b| b.as_str()) {
+                if bal.parse::<u64>().unwrap_or(0) >= {{varName}}_min_bal { break; }
+            }
+        } else {
+            println!("  Account not found yet... (attempt {}/30)", {{varName}}_i + 1);
+        }
+        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+    }
+    println!("Balance reached");

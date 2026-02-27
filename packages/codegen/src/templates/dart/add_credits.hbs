@@ -1,0 +1,28 @@
+    // =========================================================
+    // {{label}} (Action: AddCredits)
+    // =========================================================
+    final {{varName}}Oracle = await client.v3.rawCall('network-status', {});
+    final {{varName}}OraclePrice = {{varName}}Oracle['oracle']['price'] as int;
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{addCreditsPrincipal}},
+      body: TxBody.addCredits(
+        recipient: {{creditRecipient}},
+        amount: '{{creditAmount}}',
+        oracle: {{varName}}OraclePrice,
+      ),
+      memo: 'Add credits',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('AddCredits SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('AddCredits', {{varName}}Result.txid!));
+      }
+    } else {
+      print('AddCredits FAILED: ${ {{~varName}}Result.error}');
+    }

@@ -1,0 +1,17 @@
+        // =========================================================
+        // {{label}} (Action: TransferCredits)
+        // =========================================================
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if transferCreditsPrincipalIsRef}}{{transferCreditsPrincipal}}{{else}}"{{transferCreditsPrincipal}}"{{/if}},
+            TxBody.transferCredits(
+                {{#if transferCreditsRecipientIsRef}}{{transferCreditsRecipient}}{{else}}"{{transferCreditsRecipient}}"{{/if}},
+                {{transferCreditsAmount}},
+            ),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`TransferCredits SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["TransferCredits", {{varName}}Result.txid]);
+        } else {
+            console.log(`TransferCredits FAILED: ${ {{~varName}}Result.error}`);
+        }

@@ -1,0 +1,16 @@
+        # =========================================================
+        # {{label}} (Action: UpdateKeyPage)
+        # =========================================================
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if updateKeyPagePrincipalIsRef}}{{updateKeyPagePrincipal}}{{else}}"{{updateKeyPagePrincipal}}"{{/if}},
+            body=TxBody.update_key_page(
+                operations={{updateKeyPageOps}},
+            ),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"UpdateKeyPage SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("UpdateKeyPage", {{varName}}_result.txid))
+        else:
+            print(f"UpdateKeyPage FAILED: { {{~varName}}_result.error}")

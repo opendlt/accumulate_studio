@@ -1,0 +1,24 @@
+        # =========================================================
+        # {{label}} (Action: WriteDataTo)
+        # =========================================================
+{{#if useComputedLiteDataUrl}}
+        # Compute lite data account URL (Factom ChainID algorithm)
+        {{varName}}_ext_id_bytes = bytes.fromhex({{liteDataChainNameExpr}})
+        {{varName}}_id_hash = hashlib.sha256({{varName}}_ext_id_bytes).digest()
+        {{varName}}_chain_id = hashlib.sha256({{varName}}_id_hash).digest()
+        {{varName}}LiteDataUrl = f"acc://{ {{~varName}}_chain_id.hex()}"
+{{/if}}
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if writeDataToPrincipalIsRef}}{{writeDataToPrincipal}}{{else}}"{{writeDataToPrincipal}}"{{/if}},
+            body=TxBody.write_data_to(
+                recipient={{#if writeDataToRecipientIsRef}}{{writeDataToRecipient}}{{else}}"{{writeDataToRecipient}}"{{/if}},
+                entries_hex=[{{{entriesExpr}}}],
+            ),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"WriteDataTo SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("WriteDataTo", {{varName}}_result.txid))
+        else:
+            print(f"WriteDataTo FAILED: { {{~varName}}_result.error}")

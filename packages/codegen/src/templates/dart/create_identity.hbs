@@ -1,0 +1,27 @@
+    // =========================================================
+    // {{label}} (Action: CreateIdentity)
+    // =========================================================
+    final {{varName}}Url = {{#if adiUrlIsRef}}{{adiUrl}}{{else}}'{{adiUrl}}'{{/if}};
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{createIdentityPrincipal}},
+      body: TxBody.createIdentity(
+        url: {{varName}}Url,
+        keyBookUrl: '${ {{~varName}}Url}/book',
+        publicKeyHash: {{keyVarName}}PubHash,
+      ),
+      memo: 'Create ADI',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('CreateIdentity SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('CreateIdentity', {{varName}}Result.txid!));
+      }
+    } else {
+      print('CreateIdentity FAILED: ${ {{~varName}}Result.error}');
+    }
