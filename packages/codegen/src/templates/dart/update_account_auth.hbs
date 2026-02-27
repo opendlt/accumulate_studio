@@ -1,0 +1,27 @@
+    // =========================================================
+    // {{label}} (Action: UpdateAccountAuth)
+    // =========================================================
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}RawOps = {{updateAuthOps}} as List;
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{updateAuthPrincipal}},
+      body: TxBody.updateAccountAuth(
+        operations: {{varName}}RawOps
+            .map((op) => AccountAuthOperation.fromJson(Map<String, dynamic>.from(op)))
+            .toList(),
+      ),
+      memo: 'Update account auth',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('UpdateAccountAuth SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('UpdateAccountAuth', {{varName}}Result.txid!));
+      }
+    } else {
+      print('UpdateAccountAuth FAILED: ${ {{~varName}}Result.error}');
+    }

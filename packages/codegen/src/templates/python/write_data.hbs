@@ -1,0 +1,14 @@
+        # =========================================================
+        # {{label}} (Action: WriteData)
+        # =========================================================
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if writeDataPrincipalIsRef}}{{writeDataPrincipal}}{{else}}"{{writeDataPrincipal}}"{{/if}},
+            body=TxBody.write_data([{{entriesExpr}}]),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"WriteData SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("WriteData", {{varName}}_result.txid))
+        else:
+            print(f"WriteData FAILED: { {{~varName}}_result.error}")

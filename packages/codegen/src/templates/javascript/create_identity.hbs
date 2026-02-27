@@ -1,0 +1,19 @@
+        // =========================================================
+        // {{label}} (Action: CreateIdentity)
+        // =========================================================
+        const {{varName}}Url = {{#if adiUrlIsRef}}{{adiUrl}}{{else}}"{{adiUrl}}"{{/if}};
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if createIdentityPrincipalIsRef}}{{createIdentityPrincipal}}{{else}}"{{createIdentityPrincipal}}"{{/if}},
+            TxBody.createIdentity(
+                {{varName}}Url,
+                `${ {{~varName}}Url}/book`,
+                {{keyVarName}}PubHash,
+            ),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`CreateIdentity SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["CreateIdentity", {{varName}}Result.txid]);
+        } else {
+            console.log(`CreateIdentity FAILED: ${ {{~varName}}Result.error}`);
+        }

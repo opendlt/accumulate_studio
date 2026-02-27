@@ -1,0 +1,16 @@
+        # =========================================================
+        # {{label}} (Action: UpdateAccountAuth)
+        # =========================================================
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if updateAuthPrincipalIsRef}}{{updateAuthPrincipal}}{{else}}"{{updateAuthPrincipal}}"{{/if}},
+            body=TxBody.update_account_auth(
+                operations={{updateAuthOps}},
+            ),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"UpdateAccountAuth SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("UpdateAccountAuth", {{varName}}_result.txid))
+        else:
+            print(f"UpdateAccountAuth FAILED: { {{~varName}}_result.error}")

@@ -1,0 +1,6 @@
+            // =========================================================
+            // {{label}} (WaitForCredits)
+            // =========================================================
+            Console.WriteLine("Waiting for credits >= {{minCredits}}...");
+            await helper.PollForCreditsAsync({{waitCreditAccount}});
+            Console.WriteLine("Credits reached");

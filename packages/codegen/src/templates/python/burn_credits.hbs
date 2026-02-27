@@ -1,0 +1,16 @@
+        # =========================================================
+        # {{label}} (Action: BurnCredits)
+        # =========================================================
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if burnCreditsPrincipalIsRef}}{{burnCreditsPrincipal}}{{else}}"{{burnCreditsPrincipal}}"{{/if}},
+            body=TxBody.burn_credits(
+                amount={{burnCreditsAmount}},
+            ),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"BurnCredits SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("BurnCredits", {{varName}}_result.txid))
+        else:
+            print(f"BurnCredits FAILED: { {{~varName}}_result.error}")

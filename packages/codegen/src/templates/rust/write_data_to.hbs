@@ -1,0 +1,26 @@
+    // =========================================================
+    // {{label}} (Action: WriteDataTo)
+    // =========================================================
+{{#if useComputedLiteDataUrl}}
+    // Compute lite data account URL (Factom ChainID algorithm)
+    let {{varName}}_ext_id_bytes = hex::decode(&{{liteDataChainNameExpr}}).unwrap();
+    let {{varName}}_id_hash = Sha256::digest(&{{varName}}_ext_id_bytes);
+    let {{varName}}_chain_id = Sha256::digest(&{{varName}}_id_hash);
+    let {{varName}}_lite_data_url = format!("acc://{}", hex::encode({{varName}}_chain_id));
+{{/if}}
+    let {{varName}}_entries: Vec<&str> = vec![{{{entriesExpr}}}];
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if writeDataToPrincipalIsRef}}&{{writeDataToPrincipal}}{{else}}"{{writeDataToPrincipal}}"{{/if}},
+        &TxBody::write_data_to_hex({{#if writeDataToRecipientIsRef}}&{{writeDataToRecipient}}{{else}}"{{writeDataToRecipient}}"{{/if}}, &{{varName}}_entries),
+        Some("Write data to"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("WriteDataTo SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("WriteDataTo", txid.clone()));
+        }
+    } else {
+        println!("WriteDataTo FAILED: {:?}", {{varName}}_result.error);
+    }

@@ -1,0 +1,137 @@
+# Zero to Hero - Complete beginner flow for Accumulate
+# Creates an ADI with token account from scratch
+version: "1.0"
+name: "Zero to Hero: From Nothing to ADI"
+description: >
+  Complete beginner flow that takes you from zero to a fully functional ADI.
+  Generates keys, funds a lite account via faucet, adds credits, creates an ADI,
+  and sets up a token account. Perfect for first-time users.
+
+variables:
+  ADI_NAME:
+    type: string
+    description: "Name for your ADI (e.g., 'my-first-adi')"
+    required: true
+  TOKEN_ACCOUNT_NAME:
+    type: string
+    description: "Name for the token account (default: 'tokens')"
+    default: "tokens"
+
+blocks:
+  # Step 1: Generate cryptographic keys
+  - id: generate_keys
+    type: GenerateKeys
+    config:
+      algorithm: Ed25519
+    outputs:
+      - keypair
+      - publicKey
+      - publicKeyHash
+      - liteIdentity
+      - liteTokenAccount
+
+  # Step 2: Request testnet tokens from faucet
+  - id: faucet
+    type: Faucet
+    depends_on:
+      - generate_keys
+    config:
+      account: "{{generate_keys.liteTokenAccount}}"
+      times: 2
+
+  # Step 3: Wait for ACME tokens to arrive
+  - id: wait_for_balance
+    type: WaitForBalance
+    depends_on:
+      - faucet
+    config:
+      account: "{{generate_keys.liteTokenAccount}}"
+      minBalance: "10.00000000"
+      maxAttempts: 30
+      delayMs: 2000
+
+  # Step 4: Add credits to lite identity for transactions
+  - id: add_credits
+    type: AddCredits
+    depends_on:
+      - wait_for_balance
+    config:
+      recipient: "{{generate_keys.liteIdentity}}"
+      amount: "5.00000000"
+    transaction:
+      type: AddCredits
+      principal: "{{generate_keys.liteTokenAccount}}"
+      body:
+        recipient: "{{generate_keys.liteIdentity}}"
+        amount: 500000000
+
+  # Step 5: Wait for credits to be available
+  - id: wait_for_credits
+    type: WaitForCredits
+    depends_on:
+      - add_credits
+    config:
+      account: "{{generate_keys.liteIdentity}}"
+      minCredits: 1000
+      maxAttempts: 30
+      delayMs: 2000
+
+  # Step 6: Create the ADI
+  - id: create_identity
+    type: CreateIdentity
+    depends_on:
+      - wait_for_credits
+    config:
+      url: "acc://{{ADI_NAME}}.acme"
+      keyBookUrl: "acc://{{ADI_NAME}}.acme/book"
+      publicKeyHash: "{{generate_keys.publicKeyHash}}"
+    transaction:
+      type: CreateIdentity
+      principal: "{{generate_keys.liteIdentity}}"
+      body:
+        url: "acc://{{ADI_NAME}}.acme"
+        keyBookUrl: "acc://{{ADI_NAME}}.acme/book"
+        keyHash: "{{generate_keys.publicKeyHash}}"
+    outputs:
+      - adiUrl
+      - keyBookUrl
+      - keyPageUrl
+
+  # Step 7: Create a token account under the ADI
+  - id: create_token_account
+    type: CreateTokenAccount
+    depends_on:
+      - create_identity
+    config:
+      url: "acc://{{ADI_NAME}}.acme/{{TOKEN_ACCOUNT_NAME}}"
+      tokenUrl: "acc://ACME"
+    transaction:
+      type: CreateTokenAccount
+      principal: "acc://{{ADI_NAME}}.acme"
+      body:
+        url: "acc://{{ADI_NAME}}.acme/{{TOKEN_ACCOUNT_NAME}}"
+        tokenUrl: "acc://ACME"
+    outputs:
+      - tokenAccountUrl
+
+# Verify the flow completed successfully
+assertions:
+  - type: account.exists
+    url: "acc://{{ADI_NAME}}.acme"
+    message: "ADI should exist after creation"
+
+  - type: account.exists
+    url: "acc://{{ADI_NAME}}.acme/book"
+    message: "Key book should exist under ADI"
+
+  - type: account.exists
+    url: "acc://{{ADI_NAME}}.acme/{{TOKEN_ACCOUNT_NAME}}"
+    message: "Token account should exist under ADI"
+
+  - type: receipt.verified
+    sourceStep: create_identity
+    message: "ADI creation transaction should have valid receipt"
+
+  - type: receipt.verified
+    sourceStep: create_token_account
+    message: "Token account creation should have valid receipt"

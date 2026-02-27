@@ -1,0 +1,25 @@
+            // =========================================================
+            // {{label}} (Action: CreateTokenAccount)
+            // =========================================================
+{{#if tokenAccUrlIsRef}}
+            var {{varName}}Url = {{tokenAccUrl}};
+{{else}}
+            var {{varName}}Url = "{{tokenAccUrl}}";
+{{/if}}
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{tokenAccPrincipal}},
+                TxBody.CreateTokenAccount(
+                    {{#if tokenAccUrlIsRef}}{{tokenAccUrl}}{{else}}"{{tokenAccUrl}}"{{/if}},
+                    {{#if tokenUrlIsRef}}{{tokenUrl}}{{else}}"{{tokenUrl}}"{{/if}}
+                )
+            );
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"CreateTokenAccount SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("CreateTokenAccount", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"CreateTokenAccount FAILED: { {{~varName}}Result.Error}");
+            }

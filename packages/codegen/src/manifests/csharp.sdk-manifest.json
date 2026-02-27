@@ -1,0 +1,454 @@
+{
+  "sdk_name": "opendlt-c-sharp-v2v3-sdk",
+  "sdk_version": "0.1.0",
+  "commit": "0000000",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "entrypoints": [
+    {
+      "symbol": "Accumulate",
+      "path": "Acme.Net.Sdk",
+      "kind": "class",
+      "doc": "Main client facade with factory methods for network connection"
+    },
+    {
+      "symbol": "TxBody",
+      "path": "Acme.Net.Sdk.Transactions",
+      "kind": "class",
+      "doc": "Static methods that build transaction body objects"
+    },
+    {
+      "symbol": "SmartSigner",
+      "path": "Acme.Net.Sdk.Signing",
+      "kind": "class",
+      "doc": "Signs, submits, and waits for transaction results"
+    },
+    {
+      "symbol": "AccKeyPairGenerator",
+      "path": "Acme.Net.Sdk.Signing",
+      "kind": "class",
+      "doc": "Ed25519 key pair generation"
+    },
+    {
+      "symbol": "Principal",
+      "path": "Acme.Net.Sdk.Protocol",
+      "kind": "class",
+      "doc": "Lite URL derivation from public keys"
+    },
+    {
+      "symbol": "AccumulateHelper",
+      "path": "Acme.Net.Sdk.Helpers",
+      "kind": "class",
+      "doc": "Polling, oracle, faucet helper utilities"
+    }
+  ],
+  "operations": [
+    {
+      "op": "generate_keys",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "AccKeyPairGenerator.GenerateSignatureKeyPair", "path": "Acme.Net.Sdk.Signing", "signature": "(SignatureType) -> AccKeyPair" },
+        { "symbol": "Principal.ComputeUrl", "path": "Acme.Net.Sdk.Protocol", "signature": "(byte[]) -> Url" },
+        { "symbol": "Principal.ComputeUrl", "path": "Acme.Net.Sdk.Protocol", "signature": "(byte[], Url) -> Url" }
+      ],
+      "inputs": [],
+      "outputs": [
+        { "name": "keypair", "type": "AccKeyPair" },
+        { "name": "liteIdentity", "type": "Url" },
+        { "name": "liteTokenAccount", "type": "Url" },
+        { "name": "publicKeyHash", "type": "string" }
+      ],
+      "requires": [],
+      "examples": ["examples/GenerateKeys.cs"]
+    },
+    {
+      "op": "faucet",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "AccumulateHelper.FaucetAsync", "path": "Acme.Net.Sdk.Helpers", "signature": "(string, int) -> Task" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "string", "required": true, "description": "Lite token account URL to fund" },
+        { "name": "times", "type": "int", "required": false, "description": "Number of faucet calls", "example": 1 }
+      ],
+      "outputs": [],
+      "requires": ["keypair"],
+      "examples": ["examples/Faucet.cs"]
+    },
+    {
+      "op": "wait_for_balance",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "AccumulateHelper.PollForBalanceAsync", "path": "Acme.Net.Sdk.Helpers", "signature": "(string) -> Task<ulong>" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "string", "required": true, "description": "Account URL to poll" },
+        { "name": "minBalance", "type": "string", "required": true, "description": "Minimum balance to wait for" }
+      ],
+      "outputs": [
+        { "name": "balance", "type": "ulong" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/WaitForBalance.cs"]
+    },
+    {
+      "op": "wait_for_credits",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "AccumulateHelper.PollForCreditsAsync", "path": "Acme.Net.Sdk.Helpers", "signature": "(string) -> Task<ulong>" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "string", "required": true, "description": "Key page URL to poll" },
+        { "name": "minCredits", "type": "int", "required": true, "description": "Minimum credit balance to wait for" }
+      ],
+      "outputs": [
+        { "name": "credits", "type": "ulong" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/WaitForCredits.cs"]
+    },
+    {
+      "op": "add_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.AddCredits", "path": "Acme.Net.Sdk.Transactions", "signature": "(string, string, ulong) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "string", "required": true, "description": "Key page URL to credit" },
+        { "name": "amount", "type": "string", "required": true, "description": "ACME amount to spend" },
+        { "name": "oracle", "type": "ulong", "required": true, "description": "Oracle price (fetched at runtime)" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/AddCredits.cs"]
+    },
+    {
+      "op": "create_identity",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.CreateIdentity", "path": "Acme.Net.Sdk.Transactions", "signature": "(string, string, string) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "ADI URL" },
+        { "name": "keyBookUrl", "type": "string", "required": true, "description": "Key book URL" },
+        { "name": "publicKeyHash", "type": "string", "required": true, "description": "SHA256 hash of public key" }
+      ],
+      "outputs": [
+        { "name": "adiUrl", "type": "string" },
+        { "name": "keyBookUrl", "type": "string" },
+        { "name": "keyPageUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/CreateIdentity.cs"]
+    },
+    {
+      "op": "create_key_book",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.CreateKeyBook", "path": "Acme.Net.Sdk.Transactions", "signature": "(string, string) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Key book URL" },
+        { "name": "publicKeyHash", "type": "string", "required": false, "description": "Initial key hash" }
+      ],
+      "outputs": [
+        { "name": "keyBookUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/CreateKeyBook.cs"]
+    },
+    {
+      "op": "create_key_page",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.CreateKeyPage", "path": "Acme.Net.Sdk.Transactions", "signature": "(string, List<string>) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Key page URL" },
+        { "name": "keys", "type": "List<string>", "required": true, "description": "Initial key hashes" }
+      ],
+      "outputs": [
+        { "name": "keyPageUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/CreateKeyPage.cs"]
+    },
+    {
+      "op": "create_token_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.CreateTokenAccount", "path": "Acme.Net.Sdk.Transactions", "signature": "(string, string) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Token account URL" },
+        { "name": "tokenUrl", "type": "string", "required": true, "description": "Token type URL" }
+      ],
+      "outputs": [
+        { "name": "tokenAccountUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/CreateTokenAccount.cs"]
+    },
+    {
+      "op": "create_data_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.CreateDataAccount", "path": "Acme.Net.Sdk.Transactions", "signature": "(string) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Data account URL" }
+      ],
+      "outputs": [
+        { "name": "dataAccountUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/CreateDataAccount.cs"]
+    },
+    {
+      "op": "create_token",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.CreateToken", "path": "Acme.Net.Sdk.Transactions", "signature": "(string, string, int) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Token URL" },
+        { "name": "symbol", "type": "string", "required": true, "description": "Token symbol" },
+        { "name": "precision", "type": "int", "required": true, "description": "Decimal precision" }
+      ],
+      "outputs": [
+        { "name": "tokenUrl", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/CreateToken.cs"]
+    },
+    {
+      "op": "send_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.SendTokensSingle", "path": "Acme.Net.Sdk.Transactions", "signature": "(string, string) -> object" },
+        { "symbol": "TxBody.SendTokens", "path": "Acme.Net.Sdk.Transactions", "signature": "(List<TxRecipient>) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "recipients", "type": "List<TxRecipient>", "required": true, "description": "List of (url, amount) recipients" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/SendTokens.cs"]
+    },
+    {
+      "op": "issue_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.IssueTokens", "path": "Acme.Net.Sdk.Transactions", "signature": "(string, string) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "string", "required": true, "description": "Recipient token account" },
+        { "name": "amount", "type": "string", "required": true, "description": "Amount to issue" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/IssueTokens.cs"]
+    },
+    {
+      "op": "burn_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.BurnTokens", "path": "Acme.Net.Sdk.Transactions", "signature": "(string) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "amount", "type": "string", "required": true, "description": "Amount to burn" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/BurnTokens.cs"]
+    },
+    {
+      "op": "write_data",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.WriteData", "path": "Acme.Net.Sdk.Transactions", "signature": "(List<string>) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "entries", "type": "List<string>", "required": true, "description": "Hex-encoded data entries" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" },
+        { "name": "entryHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/WriteData.cs"]
+    },
+    {
+      "op": "query_account",
+      "category": "query",
+      "symbols": [
+        { "symbol": "Accumulate.V3.QueryAccountAsync", "path": "Acme.Net.Sdk", "signature": "(string) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "string", "required": true, "description": "Account URL to query" }
+      ],
+      "outputs": [
+        { "name": "account", "type": "object" }
+      ],
+      "requires": [],
+      "examples": ["examples/QueryAccount.cs"]
+    },
+    {
+      "op": "update_key_page",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.UpdateKeyPage", "path": "Acme.Net.Sdk.Transactions", "signature": "(List<object>) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "operations", "type": "List<object>", "required": true, "description": "Key page operations (add, remove, setThreshold)" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/UpdateKeyPage.cs"]
+    },
+    {
+      "op": "update_key",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.UpdateKey", "path": "Acme.Net.Sdk.Transactions", "signature": "(string) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "newKey", "type": "string", "required": true, "description": "New public key hash" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/UpdateKey.cs"]
+    },
+    {
+      "op": "create_lite_token_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "Principal.ComputeUrl", "path": "Acme.Net.Sdk.Protocol", "signature": "(byte[], Url) -> Url" }
+      ],
+      "inputs": [],
+      "outputs": [
+        { "name": "liteTokenAccountUrl", "type": "Url" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/CreateLiteTokenAccount.cs"]
+    },
+    {
+      "op": "transfer_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.TransferCredits", "path": "Acme.Net.Sdk.Transactions", "signature": "(string, int) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "string", "required": true, "description": "Destination key page" },
+        { "name": "amount", "type": "int", "required": true, "description": "Credits to transfer" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/TransferCredits.cs"]
+    },
+    {
+      "op": "burn_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.BurnCredits", "path": "Acme.Net.Sdk.Transactions", "signature": "(int) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "amount", "type": "int", "required": true, "description": "Credits to burn" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/BurnCredits.cs"]
+    },
+    {
+      "op": "write_data_to",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.WriteDataTo", "path": "Acme.Net.Sdk.Transactions", "signature": "(string, List<string>) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "string", "required": true, "description": "Target data account" },
+        { "name": "entries", "type": "List<string>", "required": true, "description": "Hex-encoded data entries" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/WriteDataTo.cs"]
+    },
+    {
+      "op": "lock_account",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.LockAccount", "path": "Acme.Net.Sdk.Transactions", "signature": "(int) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "height", "type": "int", "required": true, "description": "Block height to lock until" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/LockAccount.cs"]
+    },
+    {
+      "op": "update_account_auth",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.UpdateAccountAuth", "path": "Acme.Net.Sdk.Transactions", "signature": "(List<object>) -> object" },
+        { "symbol": "SmartSigner.SignSubmitAndWaitAsync", "path": "Acme.Net.Sdk.Signing", "signature": "(string, object) -> Task<object>" }
+      ],
+      "inputs": [
+        { "name": "operations", "type": "List<object>", "required": true, "description": "Auth operations (enable, disable, add, remove)" }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "string" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/UpdateAccountAuth.cs"]
+    },
+    {
+      "op": "comment",
+      "category": "utility",
+      "symbols": [],
+      "inputs": [
+        { "name": "text", "type": "string", "required": true, "description": "Comment text" }
+      ],
+      "outputs": [],
+      "requires": [],
+      "examples": []
+    }
+  ],
+  "notes": "C# SDK uses PascalCase for methods and camelCase for local variables. TxBody methods are static. SmartSigner handles signing, submission and waiting. Uses async/await pattern."
+}

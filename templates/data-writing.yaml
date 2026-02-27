@@ -1,0 +1,85 @@
+# Data Writing - Store data on the blockchain
+# Creates a data account and writes data entries
+version: "1.0"
+name: "Data Storage"
+description: >
+  Demonstrates Accumulate's data storage capabilities. Creates a data
+  account under an ADI and writes arbitrary data entries to it. Shows
+  how to store and verify data on the blockchain.
+
+variables:
+  ADI_URL:
+    type: url
+    description: "Your ADI URL (e.g., 'acc://my-adi.acme')"
+    required: true
+  DATA_ACCOUNT_NAME:
+    type: string
+    description: "Name for the data account"
+    default: "data"
+  DATA_CONTENT:
+    type: string
+    description: "Data to store (will be hex-encoded)"
+    default: "Hello, Accumulate!"
+
+blocks:
+  # Step 1: Create data account under ADI
+  - id: create_data_account
+    type: CreateDataAccount
+    config:
+      url: "{{ADI_URL}}/{{DATA_ACCOUNT_NAME}}"
+    transaction:
+      type: CreateDataAccount
+      principal: "{{ADI_URL}}"
+      body:
+        url: "{{ADI_URL}}/{{DATA_ACCOUNT_NAME}}"
+    outputs:
+      - dataAccountUrl
+
+  # Step 2: Write data to the account
+  - id: write_data
+    type: WriteData
+    depends_on:
+      - create_data_account
+    config:
+      entries:
+        - "{{DATA_CONTENT}}"
+      scratch: false
+      writeToState: false
+    transaction:
+      type: WriteData
+      principal: "{{ADI_URL}}/{{DATA_ACCOUNT_NAME}}"
+      body:
+        entry:
+          data:
+            - "{{DATA_CONTENT}}"
+    outputs:
+      - txHash
+      - entryHash
+
+  # Step 3: Query the data account to verify
+  - id: query_account
+    type: QueryAccount
+    depends_on:
+      - write_data
+    config:
+      url: "{{ADI_URL}}/{{DATA_ACCOUNT_NAME}}"
+
+# Verify data was written
+assertions:
+  - type: account.exists
+    url: "{{ADI_URL}}/{{DATA_ACCOUNT_NAME}}"
+    message: "Data account should exist"
+
+  - type: chain.entry_count_delta_min
+    url: "{{ADI_URL}}/{{DATA_ACCOUNT_NAME}}"
+    chain: "main"
+    minDelta: 1
+    message: "Main chain should have at least one new entry"
+
+  - type: receipt.verified
+    sourceStep: create_data_account
+    message: "Data account creation receipt should be valid"
+
+  - type: receipt.verified
+    sourceStep: write_data
+    message: "Write data receipt should be valid"

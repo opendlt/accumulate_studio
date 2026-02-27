@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../../../opendlt-c-sharp-v2v3-sdk/src/Acme.Net.Sdk/Acme.Net.Sdk.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="C:\Accumulate_Stuff\on-boarding-platform\accumulate-studio\packages\codegen\tests\csharp-harness\bin-gen\lite_account_setup.cs" />
+  </ItemGroup>
+</Project>

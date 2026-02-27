@@ -1,0 +1,15 @@
+        # =========================================================
+        # {{label}} (Action: CreateDataAccount)
+        # =========================================================
+        {{varName}}_url = {{#if dataAccUrlIsRef}}{{dataAccUrl}}{{else}}"{{dataAccUrl}}"{{/if}}
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if dataAccPrincipalIsRef}}{{dataAccPrincipal}}{{else}}"{{dataAccPrincipal}}"{{/if}},
+            body=TxBody.create_data_account(url={{varName}}_url),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"CreateDataAccount SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("CreateDataAccount", {{varName}}_result.txid))
+        else:
+            print(f"CreateDataAccount FAILED: { {{~varName}}_result.error}")

@@ -1,0 +1,20 @@
+            // =========================================================
+            // {{label}} (Action: CreateKeyBook)
+            // =========================================================
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{keyBookPrincipal}},
+                TxBody.CreateKeyBook(
+                    {{#if keyBookUrlIsRef}}{{keyBookUrl}}{{else}}"{{keyBookUrl}}"{{/if}},
+                    {{keyBookKeyHash}}
+                )
+            );
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"CreateKeyBook SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("CreateKeyBook", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"CreateKeyBook FAILED: { {{~varName}}Result.Error}");
+            }

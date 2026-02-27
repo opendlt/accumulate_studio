@@ -1,0 +1,10 @@
+        # =========================================================
+        # {{label}} (Action: GenerateKeys)
+        # =========================================================
+        {{varName}}_kp = Ed25519KeyPair.generate()
+        {{varName}}_lid = {{varName}}_kp.derive_lite_identity_url()
+        {{varName}}_lta = {{varName}}_kp.derive_lite_token_account_url("ACME")
+        {{varName}}_pub_hash = hashlib.sha256({{varName}}_kp.public_key_bytes()).hexdigest()
+        print(f"Generated keypair:")
+        print(f"  Lite Identity: { {{~varName}}_lid}")
+        print(f"  Lite Token Account: { {{~varName}}_lta}")

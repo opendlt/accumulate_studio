@@ -1,0 +1,18 @@
+    // =========================================================
+    // {{label}} (Action: WaitForCredits)
+    // =========================================================
+    println!("Waiting for credits...");
+    let {{varName}}_scope = {{waitCreditAccount}}.to_string();
+    let {{varName}}_min_cred: u64 = {{minCredits}};
+    for {{varName}}_i in 0..30u32 {
+        let {{varName}}_params = json!({{lb}} "scope": {{varName}}_scope, "query": {{lb}} "queryType": "default" {{rb}} {{rb}});
+        if let Ok({{varName}}_acct) = client.v3_client.call_v3::<Value>("query", {{varName}}_params).await {
+            if let Some(cred) = {{varName}}_acct.get("account").and_then(|a| a.get("creditBalance")).and_then(|c| c.as_u64()) {
+                if cred >= {{varName}}_min_cred { break; }
+            }
+        } else {
+            println!("  Account not found yet... (attempt {}/30)", {{varName}}_i + 1);
+        }
+        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+    }
+    println!("Credits reached");

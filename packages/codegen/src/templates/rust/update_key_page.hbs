@@ -1,0 +1,18 @@
+    // =========================================================
+    // {{label}} (Action: UpdateKeyPage)
+    // =========================================================
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if updateKeyPagePrincipalIsRef}}&{{updateKeyPagePrincipal}}{{else}}"{{updateKeyPagePrincipal}}"{{/if}},
+        &TxBody::update_key_page(&json!({{{updateKeyPageOps}}})),
+        Some("Update key page"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("UpdateKeyPage SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("UpdateKeyPage", txid.clone()));
+        }
+    } else {
+        println!("UpdateKeyPage FAILED: {:?}", {{varName}}_result.error);
+    }

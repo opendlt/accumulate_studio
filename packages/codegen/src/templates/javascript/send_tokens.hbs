@@ -1,0 +1,28 @@
+        // =========================================================
+        // {{label}} (Action: SendTokens)
+        // =========================================================
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+{{#if singleRecipient}}
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if sendTokensPrincipalIsRef}}{{sendTokensPrincipal}}{{else}}"{{sendTokensPrincipal}}"{{/if}},
+            TxBody.sendTokensSingle(
+                {{#if firstRecipientUrlIsRef}}{{firstRecipientUrl}}{{else}}"{{firstRecipientUrl}}"{{/if}},
+                {{#if firstRecipientAmountIsRef}}{{firstRecipientAmount}}{{else}}"{{firstRecipientAmount}}"{{/if}},
+            ),
+        );
+{{else}}
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if sendTokensPrincipalIsRef}}{{sendTokensPrincipal}}{{else}}"{{sendTokensPrincipal}}"{{/if}},
+            TxBody.sendTokensMulti([
+{{#each recipients}}
+                { url: "{{this.url}}", amount: "{{this.amount}}" },
+{{/each}}
+            ]),
+        );
+{{/if}}
+        if ({{varName}}Result.success) {
+            console.log(`SendTokens SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["SendTokens", {{varName}}Result.txid]);
+        } else {
+            console.log(`SendTokens FAILED: ${ {{~varName}}Result.error}`);
+        }

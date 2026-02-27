@@ -1,0 +1,25 @@
+    // =========================================================
+    // {{label}} (Action: IssueTokens)
+    // =========================================================
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{issueTokensPrincipal}},
+      body: TxBody.issueTokensSingle(
+        toUrl: {{issueRecipient}},
+        amount: {{#if issueAmountIsRef}}{{issueAmount}}{{else}}'{{issueAmount}}'{{/if}},
+      ),
+      memo: 'Issue tokens',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('IssueTokens SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('IssueTokens', {{varName}}Result.txid!));
+      }
+    } else {
+      print('IssueTokens FAILED: ${ {{~varName}}Result.error}');
+    }

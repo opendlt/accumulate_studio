@@ -1,0 +1,6 @@
+            // =========================================================
+            // {{label}} (WaitForBalance)
+            // =========================================================
+            Console.WriteLine("Waiting for balance >= {{minBalance}}...");
+            await helper.PollForBalanceAsync({{waitAccount}});
+            Console.WriteLine("Balance reached");

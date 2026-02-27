@@ -1,0 +1,25 @@
+        // =========================================================
+        // {{label}} (Action: WriteDataTo)
+        // =========================================================
+{{#if useComputedLiteDataUrl}}
+        // Compute lite data account URL (lite data accounts need 32-byte chain IDs)
+        const { createHash } = await import("node:crypto");
+        const {{varName}}ChainName = {{liteDataChainNameExpr}};
+        const {{varName}}IdHash = createHash("sha256").update(Buffer.from({{varName}}ChainName, "hex")).digest();
+        const {{varName}}ChainId = createHash("sha256").update({{varName}}IdHash).digest();
+        const {{varName}}LiteDataUrl = `acc://${Buffer.from({{varName}}ChainId).toString("hex")}`;
+{{/if}}
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if writeDataToPrincipalIsRef}}{{writeDataToPrincipal}}{{else}}"{{writeDataToPrincipal}}"{{/if}},
+            TxBody.writeDataTo(
+                {{#if writeDataToRecipientIsRef}}{{writeDataToRecipient}}{{else}}"{{writeDataToRecipient}}"{{/if}},
+                [{{entriesExpr}}],
+            ),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`WriteDataTo SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["WriteDataTo", {{varName}}Result.txid]);
+        } else {
+            console.log(`WriteDataTo FAILED: ${ {{~varName}}Result.error}`);
+        }

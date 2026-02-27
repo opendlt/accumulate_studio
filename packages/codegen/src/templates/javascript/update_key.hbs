@@ -1,0 +1,14 @@
+        // =========================================================
+        // {{label}} (Action: UpdateKey)
+        // =========================================================
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if updateKeyPrincipalIsRef}}{{updateKeyPrincipal}}{{else}}"{{updateKeyPrincipal}}"{{/if}},
+            TxBody.updateKey({{#if updateKeyNewKeyIsRef}}{{updateKeyNewKey}}{{else}}"{{updateKeyNewKey}}"{{/if}}),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`UpdateKey SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["UpdateKey", {{varName}}Result.txid]);
+        } else {
+            console.log(`UpdateKey FAILED: ${ {{~varName}}Result.error}`);
+        }

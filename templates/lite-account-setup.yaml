@@ -1,0 +1,55 @@
+# Lite Account Setup - Simplest possible flow
+# Creates a lite identity with ACME tokens
+version: "1.0"
+name: "Lite Account Setup"
+description: >
+  The simplest Accumulate flow. Generates a keypair which automatically
+  creates a lite identity and lite token account, then funds it via the
+  testnet faucet. Great for understanding the basics.
+
+variables: {}
+
+blocks:
+  # Step 1: Generate a new Ed25519 keypair
+  # This automatically derives a lite identity and lite token account
+  - id: generate_keys
+    type: GenerateKeys
+    config:
+      algorithm: Ed25519
+    outputs:
+      - keypair
+      - publicKey
+      - publicKeyHash
+      - liteIdentity
+      - liteTokenAccount
+
+  # Step 2: Request free testnet tokens
+  - id: faucet
+    type: Faucet
+    depends_on:
+      - generate_keys
+    config:
+      account: "{{generate_keys.liteTokenAccount}}"
+      times: 1
+
+  # Step 3: Wait for tokens to arrive (confirms lite account is active)
+  - id: wait_for_balance
+    type: WaitForBalance
+    depends_on:
+      - faucet
+    config:
+      account: "{{generate_keys.liteTokenAccount}}"
+      minBalance: "5.00000000"
+      maxAttempts: 30
+      delayMs: 2000
+
+# Verify the lite account is set up
+assertions:
+  - type: account.exists
+    url: "{{generate_keys.liteTokenAccount}}"
+    message: "Lite token account should exist after faucet"
+
+  - type: balance.delta
+    account: "{{generate_keys.liteTokenAccount}}"
+    delta: "5.00000000"
+    message: "Balance should increase by at least 5 ACME"

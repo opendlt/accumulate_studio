@@ -1,0 +1,12 @@
+    // =========================================================
+    // {{label}} (QueryAccount)
+    // =========================================================
+    try {
+      final {{varName}}Result = await client.v3.rawCall('query', {
+        'scope': {{#if queryUrlIsRef}}{{queryUrl}}{{else}}'{{queryUrl}}'{{/if}},
+        'query': {'queryType': 'default'},
+      });
+      print('Account state: ${ {{~varName}}Result}');
+    } catch (e) {
+      print('Query failed: $e');
+    }

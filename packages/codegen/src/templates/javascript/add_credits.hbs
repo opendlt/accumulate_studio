@@ -1,0 +1,19 @@
+        // =========================================================
+        // {{label}} (Action: AddCredits)
+        // =========================================================
+        const {{varName}}Oracle = await client.getOraclePrice();
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{addCreditsPrincipal}},
+            TxBody.addCredits(
+                {{addCreditsRecipient}},
+                "{{creditAmount}}",
+                {{varName}}Oracle,
+            ),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`AddCredits SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["AddCredits", {{varName}}Result.txid]);
+        } else {
+            console.log(`AddCredits FAILED: ${ {{~varName}}Result.error}`);
+        }

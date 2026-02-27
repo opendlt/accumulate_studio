@@ -1,0 +1,14 @@
+
+            Console.WriteLine("\n========== Transaction Summary ==========");
+            foreach (var (label, txid) in txIds)
+            {
+                Console.WriteLine($"  {label}: {txid}");
+            }
+            Console.WriteLine("Flow completed successfully!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Flow failed: {ex.Message}");
+        }
+    }
+}

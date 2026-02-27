@@ -1,0 +1,433 @@
+{
+  "sdk_name": "opendlt-rust-v2v3-sdk",
+  "sdk_version": "0.1.0",
+  "commit": "0000000",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "entrypoints": [
+    {
+      "symbol": "AccumulateClient",
+      "path": "accumulate_client",
+      "kind": "class",
+      "doc": "Main client with async factory methods for network connection"
+    },
+    {
+      "symbol": "TxBody",
+      "path": "accumulate_client",
+      "kind": "class",
+      "doc": "Static methods that build transaction body structs"
+    },
+    {
+      "symbol": "SmartSigner",
+      "path": "accumulate_client",
+      "kind": "class",
+      "doc": "Signs, submits, and waits for transaction results"
+    },
+    {
+      "symbol": "Ed25519Signer",
+      "path": "accumulate_client::crypto::ed25519",
+      "kind": "class",
+      "doc": "Ed25519 key pair generation"
+    },
+    {
+      "symbol": "AccOptions",
+      "path": "accumulate_client",
+      "kind": "class",
+      "doc": "Connection options"
+    }
+  ],
+  "operations": [
+    {
+      "op": "generate_keys",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "Ed25519Signer::generate", "path": "accumulate_client::crypto::ed25519", "signature": "() -> Ed25519Signer" },
+        { "symbol": "derive_lite_identity_url", "path": "accumulate_client::crypto::ed25519", "signature": "(pub_key: &[u8]) -> String" },
+        { "symbol": "derive_lite_token_account_url", "path": "accumulate_client::crypto::ed25519", "signature": "(pub_key: &[u8]) -> String" }
+      ],
+      "inputs": [],
+      "outputs": [
+        { "name": "signer", "type": "Ed25519Signer" },
+        { "name": "liteIdentity", "type": "String" },
+        { "name": "liteTokenAccount", "type": "String" },
+        { "name": "publicKey", "type": "Vec<u8>" }
+      ],
+      "requires": [],
+      "examples": ["examples/generate_keys.rs"]
+    },
+    {
+      "op": "faucet",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "AccumulateClient::faucet", "path": "accumulate_client", "signature": "(&self, account: &str) -> Result<()>" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "&str", "required": true, "description": "Account URL to fund" },
+        { "name": "times", "type": "u32", "required": false, "description": "Number of faucet calls" }
+      ],
+      "outputs": [],
+      "requires": ["keypair"],
+      "examples": ["examples/faucet.rs"]
+    },
+    {
+      "op": "wait_for_balance",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "AccumulateClient::query", "path": "accumulate_client", "signature": "(&self, url: &str) -> Result<Value>" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "&str", "required": true },
+        { "name": "minBalance", "type": "&str", "required": true }
+      ],
+      "outputs": [
+        { "name": "balance", "type": "u64" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/wait_for_balance.rs"]
+    },
+    {
+      "op": "wait_for_credits",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "AccumulateClient::query", "path": "accumulate_client", "signature": "(&self, url: &str) -> Result<Value>" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "&str", "required": true },
+        { "name": "minCredits", "type": "u64", "required": true }
+      ],
+      "outputs": [
+        { "name": "credits", "type": "u64" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/wait_for_credits.rs"]
+    },
+    {
+      "op": "add_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody::add_credits", "path": "accumulate_client", "signature": "(recipient: &str, amount: &str, oracle: u64) -> TxBody" },
+        { "symbol": "SmartSigner::sign_submit_and_wait", "path": "accumulate_client", "signature": "(&mut self, principal: &str, body: &TxBody, memo: Option<&str>, timeout: u64) -> Result<Value>" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "&str", "required": true },
+        { "name": "amount", "type": "&str", "required": true },
+        { "name": "oracle", "type": "u64", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/add_credits.rs"]
+    },
+    {
+      "op": "create_identity",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody::create_identity", "path": "accumulate_client", "signature": "(url: &str, key_book_url: &str, pub_key: &[u8]) -> TxBody" },
+        { "symbol": "SmartSigner::sign_submit_and_wait", "path": "accumulate_client", "signature": "(&mut self, principal: &str, body: &TxBody, memo: Option<&str>, timeout: u64) -> Result<Value>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "&str", "required": true },
+        { "name": "keyBookUrl", "type": "&str", "required": true },
+        { "name": "publicKey", "type": "&[u8]", "required": true }
+      ],
+      "outputs": [
+        { "name": "adiUrl", "type": "String" },
+        { "name": "keyBookUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_identity.rs"]
+    },
+    {
+      "op": "create_key_book",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody::create_key_book", "path": "accumulate_client", "signature": "(url: &str, pub_key_hash: &str) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "&str", "required": true },
+        { "name": "publicKeyHash", "type": "&str", "required": false }
+      ],
+      "outputs": [
+        { "name": "keyBookUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_key_book.rs"]
+    },
+    {
+      "op": "create_key_page",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody::create_key_page", "path": "accumulate_client", "signature": "(url: &str, keys: &[&str]) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "&str", "required": true },
+        { "name": "keys", "type": "Vec<String>", "required": true }
+      ],
+      "outputs": [
+        { "name": "keyPageUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_key_page.rs"]
+    },
+    {
+      "op": "create_token_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody::create_token_account", "path": "accumulate_client", "signature": "(url: &str, token_url: &str) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "&str", "required": true },
+        { "name": "tokenUrl", "type": "&str", "required": true }
+      ],
+      "outputs": [
+        { "name": "tokenAccountUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_token_account.rs"]
+    },
+    {
+      "op": "create_data_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody::create_data_account", "path": "accumulate_client", "signature": "(url: &str) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "&str", "required": true }
+      ],
+      "outputs": [
+        { "name": "dataAccountUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_data_account.rs"]
+    },
+    {
+      "op": "create_token",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody::create_token", "path": "accumulate_client", "signature": "(url: &str, symbol: &str, precision: u8, supply_limit: Option<&str>) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "&str", "required": true },
+        { "name": "symbol", "type": "&str", "required": true },
+        { "name": "precision", "type": "u8", "required": true },
+        { "name": "supplyLimit", "type": "Option<&str>", "required": false }
+      ],
+      "outputs": [
+        { "name": "tokenUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_token.rs"]
+    },
+    {
+      "op": "send_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody::send_tokens_single", "path": "accumulate_client", "signature": "(to_url: &str, amount: &str) -> TxBody" },
+        { "symbol": "TxBody::send_tokens_multi", "path": "accumulate_client", "signature": "(recipients: &[(&str, &str)]) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "recipients", "type": "Vec<(String, String)>", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/send_tokens.rs"]
+    },
+    {
+      "op": "issue_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody::issue_tokens", "path": "accumulate_client", "signature": "(recipient: &str, amount: &str) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "&str", "required": true },
+        { "name": "amount", "type": "&str", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/issue_tokens.rs"]
+    },
+    {
+      "op": "burn_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody::burn_tokens", "path": "accumulate_client", "signature": "(amount: &str) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "amount", "type": "&str", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/burn_tokens.rs"]
+    },
+    {
+      "op": "write_data",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody::write_data", "path": "accumulate_client", "signature": "(entries: &[Vec<u8>]) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "entries", "type": "Vec<Vec<u8>>", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/write_data.rs"]
+    },
+    {
+      "op": "query_account",
+      "category": "query",
+      "symbols": [
+        { "symbol": "AccumulateClient::query", "path": "accumulate_client", "signature": "(&self, url: &str) -> Result<Value>" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "&str", "required": true }
+      ],
+      "outputs": [
+        { "name": "account", "type": "Value" }
+      ],
+      "requires": [],
+      "examples": ["examples/query_account.rs"]
+    },
+    {
+      "op": "update_key_page",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody::update_key_page_add_key", "path": "accumulate_client", "signature": "(key: &str) -> TxBody" },
+        { "symbol": "TxBody::update_key_page_remove_key", "path": "accumulate_client", "signature": "(key: &str) -> TxBody" },
+        { "symbol": "TxBody::update_key_page_set_threshold", "path": "accumulate_client", "signature": "(threshold: u64) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "operations", "type": "Vec<KeyPageOp>", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_key_page.rs"]
+    },
+    {
+      "op": "update_key",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody::update_key", "path": "accumulate_client", "signature": "(new_key: &str) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "newKey", "type": "&str", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_key.rs"]
+    },
+    {
+      "op": "create_lite_token_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "derive_lite_token_account_url", "path": "accumulate_client::crypto::ed25519", "signature": "(pub_key: &[u8]) -> String" }
+      ],
+      "inputs": [],
+      "outputs": [
+        { "name": "liteTokenAccountUrl", "type": "String" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/create_lite_token_account.rs"]
+    },
+    {
+      "op": "transfer_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody::transfer_credits", "path": "accumulate_client", "signature": "(recipient: &str, amount: u64) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "&str", "required": true },
+        { "name": "amount", "type": "u64", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/transfer_credits.rs"]
+    },
+    {
+      "op": "burn_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody::burn_credits", "path": "accumulate_client", "signature": "(amount: u64) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "amount", "type": "u64", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/burn_credits.rs"]
+    },
+    {
+      "op": "write_data_to",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody::write_data_to", "path": "accumulate_client", "signature": "(recipient: &str, entries: &[Vec<u8>]) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "&str", "required": true },
+        { "name": "entries", "type": "Vec<Vec<u8>>", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/write_data_to.rs"]
+    },
+    {
+      "op": "lock_account",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody::lock_account", "path": "accumulate_client", "signature": "(height: u64) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "height", "type": "u64", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/lock_account.rs"]
+    },
+    {
+      "op": "update_account_auth",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody::update_account_auth", "path": "accumulate_client", "signature": "(operations: &[AuthOp]) -> TxBody" }
+      ],
+      "inputs": [
+        { "name": "operations", "type": "Vec<AuthOp>", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_account_auth.rs"]
+    },
+    {
+      "op": "comment",
+      "category": "utility",
+      "symbols": [],
+      "inputs": [
+        { "name": "text", "type": "&str", "required": true }
+      ],
+      "outputs": [],
+      "requires": [],
+      "examples": []
+    }
+  ],
+  "notes": "Rust SDK uses async/await with tokio. TxBody methods return owned TxBody structs. SmartSigner requires mutable borrow."
+}

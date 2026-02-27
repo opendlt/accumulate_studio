@@ -1,0 +1,24 @@
+        # =========================================================
+        # {{label}} (Action: CreateKeyPage)
+        # =========================================================
+        {{varName}}_signer = SmartSigner(client=client.v3, keypair={{keyVarName}}_kp, signer_url=str({{keyVarName}}_lta))
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal="{{keyPagePrincipal}}",
+            body=TxBody.create_key_page(
+                keys=[
+{{#if keyPageDefaultKey}}
+                    {"keyHash": {{keyPageDefaultKey}} },
+{{else}}
+{{#each keyPageKeys}}
+                    {"keyHash": "{{this}}"},
+{{/each}}
+{{/if}}
+                ],
+            ),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"CreateKeyPage SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("CreateKeyPage", {{varName}}_result.txid))
+        else:
+            print(f"CreateKeyPage FAILED: { {{~varName}}_result.error}")

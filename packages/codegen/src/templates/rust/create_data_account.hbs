@@ -1,0 +1,19 @@
+    // =========================================================
+    // {{label}} (Action: CreateDataAccount)
+    // =========================================================
+    let {{varName}}_url = {{#if dataAccUrlIsRef}}{{dataAccUrl}}{{else}}"{{dataAccUrl}}".to_string(){{/if}};
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if dataAccPrincipalIsRef}}&{{dataAccPrincipal}}{{else}}"{{dataAccPrincipal}}"{{/if}},
+        &TxBody::create_data_account(&{{varName}}_url),
+        Some("Create data account"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("CreateDataAccount SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("CreateDataAccount", txid.clone()));
+        }
+    } else {
+        println!("CreateDataAccount FAILED: {:?}", {{varName}}_result.error);
+    }

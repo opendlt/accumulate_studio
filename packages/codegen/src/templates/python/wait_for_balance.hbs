@@ -1,0 +1,9 @@
+        # =========================================================
+        # {{label}} (Action: WaitForBalance)
+        # =========================================================
+        print("Waiting for balance >= {{minBalance}}...")
+        _balance = poll_for_balance(client, {{waitAccount}}, min_balance={{minBalance}})
+        if _balance == 0:
+            print("ERROR: Balance did not reach minimum. Stopping.")
+            return
+        print(f"Balance confirmed: {_balance}")

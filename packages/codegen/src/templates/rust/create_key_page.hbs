@@ -1,0 +1,34 @@
+    // =========================================================
+    // {{label}} (Action: CreateKeyPage)
+    // =========================================================
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+{{#if keyPageDefaultKey}}
+    let {{varName}}_key_0 = hex::decode({{keyPageDefaultKey}}).unwrap_or_default();
+{{else}}
+{{#each keyPageKeys}}
+    let {{../varName}}_key_{{@index}} = hex::decode("{{this}}").unwrap_or_default();
+{{/each}}
+{{/if}}
+    let {{varName}}_key_refs: Vec<&[u8]> = vec![
+{{#if keyPageDefaultKey}}
+        &{{varName}}_key_0,
+{{else}}
+{{#each keyPageKeys}}
+        &{{../varName}}_key_{{@index}},
+{{/each}}
+{{/if}}
+    ];
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if keyPagePrincipalIsRef}}&{{keyPagePrincipal}}{{else}}"{{keyPagePrincipal}}"{{/if}},
+        &TxBody::create_key_page(&{{varName}}_key_refs),
+        Some("Create key page"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("CreateKeyPage SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("CreateKeyPage", txid.clone()));
+        }
+    } else {
+        println!("CreateKeyPage FAILED: {:?}", {{varName}}_result.error);
+    }

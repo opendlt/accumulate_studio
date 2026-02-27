@@ -1,0 +1,14 @@
+        // =========================================================
+        // {{label}} (Action: BurnTokens)
+        // =========================================================
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if burnTokensPrincipalIsRef}}{{burnTokensPrincipal}}{{else}}"{{burnTokensPrincipal}}"{{/if}},
+            TxBody.burnTokens("{{burnAmount}}"),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`BurnTokens SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["BurnTokens", {{varName}}Result.txid]);
+        } else {
+            console.log(`BurnTokens FAILED: ${ {{~varName}}Result.error}`);
+        }

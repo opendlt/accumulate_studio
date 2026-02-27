@@ -1,0 +1,19 @@
+    // =========================================================
+    // {{label}} (Action: CreateTokenAccount)
+    // =========================================================
+    let {{varName}}_url = {{#if tokenAccUrlIsRef}}{{tokenAccUrl}}{{else}}"{{tokenAccUrl}}".to_string(){{/if}};
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if tokenAccPrincipalIsRef}}&{{tokenAccPrincipal}}{{else}}"{{tokenAccPrincipal}}"{{/if}},
+        &TxBody::create_token_account(&{{varName}}_url, {{#if tokenUrlIsRef}}&{{tokenUrl}}{{else}}"{{tokenUrl}}"{{/if}}),
+        Some("Create token account"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("CreateTokenAccount SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("CreateTokenAccount", txid.clone()));
+        }
+    } else {
+        println!("CreateTokenAccount FAILED: {:?}", {{varName}}_result.error);
+    }

@@ -1,0 +1,123 @@
+# Custom Token - Create and issue your own token
+# Creates a token issuer, issues tokens, and distributes them
+version: "1.0"
+name: "Custom Token Issuance"
+description: >
+  Advanced flow for creating your own custom token on Accumulate. Creates
+  a token issuer account, issues tokens, and sends them to a recipient.
+  Demonstrates the full token lifecycle.
+
+variables:
+  ADI_URL:
+    type: url
+    description: "Your ADI URL (e.g., 'acc://my-adi.acme')"
+    required: true
+  TOKEN_SYMBOL:
+    type: string
+    description: "Token symbol (e.g., 'MYT')"
+    required: true
+  TOKEN_PRECISION:
+    type: int
+    description: "Decimal precision (0-18)"
+    default: 8
+  SUPPLY_LIMIT:
+    type: decimal
+    description: "Maximum supply (empty for unlimited)"
+    required: false
+  INITIAL_ISSUE_AMOUNT:
+    type: decimal
+    description: "Initial tokens to issue"
+    default: "1000000.00000000"
+  RECIPIENT_URL:
+    type: url
+    description: "Recipient token account URL"
+    required: true
+
+blocks:
+  # Step 1: Create the token issuer account
+  - id: create_token
+    type: CreateToken
+    config:
+      url: "{{ADI_URL}}/{{TOKEN_SYMBOL}}"
+      symbol: "{{TOKEN_SYMBOL}}"
+      precision: "{{TOKEN_PRECISION}}"
+      supplyLimit: "{{SUPPLY_LIMIT}}"
+      properties:
+        hasLockingRule: false
+    transaction:
+      type: CreateToken
+      principal: "{{ADI_URL}}"
+      body:
+        url: "{{ADI_URL}}/{{TOKEN_SYMBOL}}"
+        symbol: "{{TOKEN_SYMBOL}}"
+        precision: "{{TOKEN_PRECISION}}"
+        supplyLimit: "{{SUPPLY_LIMIT}}"
+    outputs:
+      - tokenUrl
+
+  # Step 2: Issue initial supply of tokens
+  - id: issue_tokens
+    type: IssueTokens
+    depends_on:
+      - create_token
+    config:
+      recipient: "{{RECIPIENT_URL}}"
+      amount: "{{INITIAL_ISSUE_AMOUNT}}"
+    transaction:
+      type: IssueTokens
+      principal: "{{ADI_URL}}/{{TOKEN_SYMBOL}}"
+      body:
+        recipient: "{{RECIPIENT_URL}}"
+        amount: "{{INITIAL_ISSUE_AMOUNT}}"
+    outputs:
+      - txHash
+
+  # Step 3: Verify issuance with a query
+  - id: query_token
+    type: QueryAccount
+    depends_on:
+      - issue_tokens
+    config:
+      url: "{{ADI_URL}}/{{TOKEN_SYMBOL}}"
+
+  # Step 4: Demonstrate sending custom tokens
+  - id: send_tokens
+    type: SendTokens
+    depends_on:
+      - issue_tokens
+    config:
+      recipients:
+        - url: "{{RECIPIENT_URL}}"
+          amount: "100.00000000"
+    transaction:
+      type: SendTokens
+      principal: "{{RECIPIENT_URL}}"
+      body:
+        to:
+          - url: "{{RECIPIENT_URL}}"
+            amount: 10000000000
+    outputs:
+      - txHash
+
+# Verify custom token creation and issuance
+assertions:
+  - type: account.exists
+    url: "{{ADI_URL}}/{{TOKEN_SYMBOL}}"
+    message: "Token issuer account should exist"
+
+  - type: balance.equals
+    account: "{{RECIPIENT_URL}}"
+    equals: "{{INITIAL_ISSUE_AMOUNT}}"
+    message: "Recipient should have received initial issuance"
+
+  - type: receipt.verified
+    sourceStep: create_token
+    message: "Token creation receipt should be valid"
+
+  - type: receipt.verified
+    sourceStep: issue_tokens
+    message: "Token issuance receipt should be valid"
+
+  - type: synthetic.delivered
+    sourceStep: issue_tokens
+    message: "Token issuance synthetic transaction should be delivered"

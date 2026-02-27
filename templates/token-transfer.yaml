@@ -1,0 +1,108 @@
+# Token Transfer - Send ACME between accounts
+# Creates sender and receiver token accounts, then transfers tokens
+version: "1.0"
+name: "Token Transfer"
+description: >
+  Demonstrates how to send ACME tokens between accounts. Creates a sender
+  token account and a receiver token account under an ADI, then performs
+  a token transfer. Requires an existing ADI with credits.
+
+variables:
+  ADI_URL:
+    type: url
+    description: "Your ADI URL (e.g., 'acc://my-adi.acme')"
+    required: true
+  SENDER_ACCOUNT_NAME:
+    type: string
+    description: "Name for sender token account"
+    default: "sender"
+  RECEIVER_ACCOUNT_NAME:
+    type: string
+    description: "Name for receiver token account"
+    default: "receiver"
+  TRANSFER_AMOUNT:
+    type: decimal
+    description: "Amount of ACME to transfer"
+    default: "1.00000000"
+
+blocks:
+  # Step 1: Create sender token account
+  - id: create_sender_account
+    type: CreateTokenAccount
+    config:
+      url: "{{ADI_URL}}/{{SENDER_ACCOUNT_NAME}}"
+      tokenUrl: "acc://ACME"
+    transaction:
+      type: CreateTokenAccount
+      principal: "{{ADI_URL}}"
+      body:
+        url: "{{ADI_URL}}/{{SENDER_ACCOUNT_NAME}}"
+        tokenUrl: "acc://ACME"
+    outputs:
+      - tokenAccountUrl
+
+  # Step 2: Create receiver token account
+  - id: create_receiver_account
+    type: CreateTokenAccount
+    config:
+      url: "{{ADI_URL}}/{{RECEIVER_ACCOUNT_NAME}}"
+      tokenUrl: "acc://ACME"
+    transaction:
+      type: CreateTokenAccount
+      principal: "{{ADI_URL}}"
+      body:
+        url: "{{ADI_URL}}/{{RECEIVER_ACCOUNT_NAME}}"
+        tokenUrl: "acc://ACME"
+    outputs:
+      - tokenAccountUrl
+
+  # Step 3: Query sender account to verify it exists
+  - id: query_sender
+    type: QueryAccount
+    depends_on:
+      - create_sender_account
+    config:
+      url: "{{ADI_URL}}/{{SENDER_ACCOUNT_NAME}}"
+
+  # Step 4: Send tokens from sender to receiver
+  - id: send_tokens
+    type: SendTokens
+    depends_on:
+      - query_sender
+      - create_receiver_account
+    config:
+      recipients:
+        - url: "{{ADI_URL}}/{{RECEIVER_ACCOUNT_NAME}}"
+          amount: "{{TRANSFER_AMOUNT}}"
+    transaction:
+      type: SendTokens
+      principal: "{{ADI_URL}}/{{SENDER_ACCOUNT_NAME}}"
+      body:
+        to:
+          - url: "{{ADI_URL}}/{{RECEIVER_ACCOUNT_NAME}}"
+            amount: "{{TRANSFER_AMOUNT}}"
+    outputs:
+      - txHash
+
+# Verify token transfer completed
+assertions:
+  - type: account.exists
+    url: "{{ADI_URL}}/{{SENDER_ACCOUNT_NAME}}"
+    message: "Sender token account should exist"
+
+  - type: account.exists
+    url: "{{ADI_URL}}/{{RECEIVER_ACCOUNT_NAME}}"
+    message: "Receiver token account should exist"
+
+  - type: balance.delta
+    account: "{{ADI_URL}}/{{RECEIVER_ACCOUNT_NAME}}"
+    delta: "{{TRANSFER_AMOUNT}}"
+    message: "Receiver should have received the transfer amount"
+
+  - type: receipt.verified
+    sourceStep: send_tokens
+    message: "Token transfer receipt should be valid"
+
+  - type: synthetic.delivered
+    sourceStep: send_tokens
+    message: "Synthetic deposit transaction should be delivered"

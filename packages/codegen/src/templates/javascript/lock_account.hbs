@@ -1,0 +1,14 @@
+        // =========================================================
+        // {{label}} (Action: LockAccount)
+        // =========================================================
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if lockAccountPrincipalIsRef}}{{lockAccountPrincipal}}{{else}}"{{lockAccountPrincipal}}"{{/if}},
+            TxBody.lockAccount({{lockHeight}}),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`LockAccount SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["LockAccount", {{varName}}Result.txid]);
+        } else {
+            console.log(`LockAccount FAILED: ${ {{~varName}}Result.error}`);
+        }

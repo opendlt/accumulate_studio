@@ -1,0 +1,17 @@
+        # =========================================================
+        # {{label}} (Action: IssueTokens)
+        # =========================================================
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if issueTokensPrincipalIsRef}}{{issueTokensPrincipal}}{{else}}"{{issueTokensPrincipal}}"{{/if}},
+            body=TxBody.issue_tokens_single(
+                to_url={{#if issueRecipientIsRef}}{{issueRecipient}}{{else}}"{{issueRecipient}}"{{/if}},
+                amount={{#if issueAmountIsRef}}{{issueAmount}}{{else}}"{{issueAmount}}"{{/if}},
+            ),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"IssueTokens SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("IssueTokens", {{varName}}_result.txid))
+        else:
+            print(f"IssueTokens FAILED: { {{~varName}}_result.error}")

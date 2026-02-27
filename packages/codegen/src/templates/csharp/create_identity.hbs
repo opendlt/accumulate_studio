@@ -1,0 +1,26 @@
+            // =========================================================
+            // {{label}} (Action: CreateIdentity)
+            // =========================================================
+{{#if adiUrlIsRef}}
+            var {{varName}}Url = {{adiUrl}};
+{{else}}
+            var {{varName}}Url = "{{adiUrl}}";
+{{/if}}
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{createIdentityPrincipal}},
+                TxBody.CreateIdentity(
+                    {{varName}}Url,
+                    $"{ {{~varName}}Url}/book",
+                    {{keyVarName}}PubHash
+                )
+            );
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"CreateIdentity SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("CreateIdentity", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"CreateIdentity FAILED: { {{~varName}}Result.Error}");
+            }

@@ -1,0 +1,10 @@
+
+    print('\n========== Transaction Summary ==========');
+    for (final entry in txIds) {
+      print('  ${entry.key}: ${entry.value}');
+    }
+    print('Flow completed successfully!');
+  } finally {
+    client.close();
+  }
+}

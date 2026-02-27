@@ -1,0 +1,122 @@
+{
+  "example": "example_06",
+  "file": "example_06_custom_tokens.py",
+  "templateMapping": "custom-token",
+  "call_count": 32,
+  "calls": [
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "network-status"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    }
+  ]
+}

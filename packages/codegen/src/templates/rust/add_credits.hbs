@@ -1,0 +1,24 @@
+    // =========================================================
+    // {{label}} (Action: AddCredits)
+    // =========================================================
+    let {{varName}}_oracle: Value = client.v3_client.call_v3("network-status", json!({{lb}}{{rb}})).await
+        .unwrap_or_else(|_| json!({{lb}}{{rb}}));
+    let {{varName}}_price = {{varName}}_oracle.get("oracle")
+        .and_then(|o| o.get("price"))
+        .and_then(|p| p.as_u64())
+        .unwrap_or(50000000);
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        &{{addCreditsPrincipal}},
+        &TxBody::add_credits(&{{creditRecipient}}, "{{creditAmount}}", {{varName}}_price),
+        Some("Add credits"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("AddCredits SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("AddCredits", txid.clone()));
+        }
+    } else {
+        println!("AddCredits FAILED: {:?}", {{varName}}_result.error);
+    }

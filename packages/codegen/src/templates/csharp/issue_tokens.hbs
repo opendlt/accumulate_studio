@@ -1,0 +1,20 @@
+            // =========================================================
+            // {{label}} (Action: IssueTokens)
+            // =========================================================
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{issueTokensPrincipal}},
+                TxBody.IssueTokens(
+                    {{#if issueRecipientIsRef}}{{issueRecipient}}{{else}}"{{issueRecipient}}"{{/if}},
+                    {{#if issueAmountIsRef}}{{issueAmount}}{{else}}"{{issueAmount}}"{{/if}}
+                )
+            );
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"IssueTokens SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("IssueTokens", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"IssueTokens FAILED: { {{~varName}}Result.Error}");
+            }

@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://accumulate.network/schemas/agent-pack.schema.json",
+  "title": "Accumulate Agent Pack Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "agent_pack_version",
+    "sdk",
+    "networks_supported",
+    "capabilities"
+  ],
+  "properties": {
+    "agent_pack_version": {
+      "type": "string",
+      "description": "Semantic version of the Agent Pack specification.",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z-\\.]+)?(?:\\+[0-9A-Za-z-\\.]+)?$"
+    },
+    "sdk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "language", "repo_root"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "SDK identifier, e.g. opendlt-python-v2v3-sdk"
+        },
+        "language": {
+          "type": "string",
+          "enum": ["python", "javascript", "typescript", "rust", "dart", "csharp"],
+          "description": "Primary implementation language for this SDK."
+        },
+        "repo_root": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Repo root path (usually '.') used for relative file pointers."
+        },
+        "version": {
+          "type": "string",
+          "description": "SDK release version."
+        },
+        "commit": {
+          "type": "string",
+          "description": "Commit SHA associated with this pack build."
+        },
+        "entry_point": {
+          "type": "string",
+          "description": "Main entry point class/module."
+        },
+        "api_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["v2", "v3"]
+          },
+          "description": "Supported API versions."
+        }
+      }
+    },
+    "networks_supported": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["mainnet", "testnet", "devnet", "local", "kermit"]
+      },
+      "description": "Networks the examples/prompts are known to work against."
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["flows", "sdk_map", "prompts", "mcp"],
+      "properties": {
+        "flows": { "type": "boolean" },
+        "sdk_map": { "type": "boolean" },
+        "prompts": { "type": "boolean" },
+        "mcp": { "type": "boolean" },
+        "transaction_types": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Supported transaction types."
+        },
+        "signature_types": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Supported signature types."
+        },
+        "features": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Supported features like faucet, streaming, etc."
+        }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Explicit file locations relative to repo_root.",
+      "properties": {
+        "agents_md": { "type": "string", "default": "agent-pack/AGENTS.md" },
+        "safety_md": { "type": "string", "default": "agent-pack/SAFETY.md" },
+        "sdk_map": { "type": "string", "default": "agent-pack/sdk.map.json" },
+        "prompts_index": { "type": "string", "default": "agent-pack/prompts/index.json" },
+        "mcp_server": { "type": "string" }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "constraints_file": { "type": "string" },
+        "max_transaction_value": { "type": "string" },
+        "allowed_networks": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "require_confirmation_above": { "type": "string" }
+      }
+    }
+  }
+}

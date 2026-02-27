@@ -1,0 +1,18 @@
+    // =========================================================
+    // {{label}} (Action: LockAccount)
+    // =========================================================
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if lockAccountPrincipalIsRef}}&{{lockAccountPrincipal}}{{else}}"{{lockAccountPrincipal}}"{{/if}},
+        &TxBody::lock_account({{lockHeight}}),
+        Some("Lock account"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("LockAccount SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("LockAccount", txid.clone()));
+        }
+    } else {
+        println!("LockAccount FAILED: {:?}", {{varName}}_result.error);
+    }

@@ -1,0 +1,123 @@
+{
+  "example": "example_10",
+  "file": "example_10_update_key_page_threshold.py",
+  "templateMapping": "multi-sig-setup",
+  "call_count": 32,
+  "calls": [
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "network-status"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "network-status"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    }
+  ]
+}

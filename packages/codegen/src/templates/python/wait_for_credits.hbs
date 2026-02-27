@@ -1,0 +1,9 @@
+        # =========================================================
+        # {{label}} (Action: WaitForCredits)
+        # =========================================================
+        print("Waiting for credits >= {{minCredits}}...")
+        _credits = poll_for_credits(client, {{waitCreditAccount}}, min_credits={{minCredits}})
+        if _credits == 0:
+            print("ERROR: Credits did not reach minimum. Stopping.")
+            return
+        print(f"Credits confirmed: {_credits}")

@@ -1,0 +1,17 @@
+    // =========================================================
+    // {{label}} (WaitForBalance)
+    // =========================================================
+    print('Waiting for balance >= {{minBalance}}...');
+    final {{varName}}MinBal = BigInt.parse('{{minBalance}}'.replaceAll('.', ''));
+    for (var i = 0; i < 30; i++) {
+      try {
+        final result = await client.v3.rawCall('query', {
+          'scope': {{waitAccount}},
+          'query': {'queryType': 'default'},
+        });
+        final balance = result['account']?['balance'];
+        if (balance != null && BigInt.parse(balance.toString()) >= {{varName}}MinBal) break;
+      } catch (_) {}
+      await Future.delayed(Duration(seconds: 2));
+    }
+    print('Balance reached');

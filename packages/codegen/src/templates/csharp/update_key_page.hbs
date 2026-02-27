@@ -1,0 +1,24 @@
+            // =========================================================
+            // {{label}} (Action: UpdateKeyPage)
+            // =========================================================
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+{{#if updateKeyPageOpsCode}}
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{updateKeyPagePrincipal}},
+                TxBody.UpdateKeyPage({{{updateKeyPageOpsCode}}})
+            );
+{{else}}
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{updateKeyPagePrincipal}},
+                TxBody.UpdateKeyPage(JsonSerializer.Deserialize<List<Dictionary<string, object?>>>("""{{updateKeyPageOps}}""")!)
+            );
+{{/if}}
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"UpdateKeyPage SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("UpdateKeyPage", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"UpdateKeyPage FAILED: { {{~varName}}Result.Error}");
+            }

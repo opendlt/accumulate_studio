@@ -1,0 +1,12 @@
+    // =========================================================
+    // {{label}} (Action: GenerateKeys)
+    // =========================================================
+    let {{varName}}_signer = AccumulateClient::generate_keypair();
+    let {{varName}}_pub_key = {{varName}}_signer.verifying_key().to_bytes();
+    let {{varName}}_pub_hash = sha256_hash(&{{varName}}_pub_key);
+    let {{varName}}_lid = derive_lite_identity_url(&{{varName}}_pub_key);
+    let {{varName}}_lta = derive_lite_token_account_url(&{{varName}}_pub_key);
+    println!("Generated keypair:");
+    println!("  Lite Identity: {}", {{varName}}_lid);
+    println!("  Lite Token Account: {}", {{varName}}_lta);
+    println!("  Public Key Hash: {}", &{{varName}}_pub_hash[..32]);

@@ -1,0 +1,18 @@
+        // =========================================================
+        // {{label}} (Action: CreateKeyBook)
+        // =========================================================
+        const {{varName}}Url = {{#if keyBookUrlIsRef}}{{keyBookUrl}}{{else}}"{{keyBookUrl}}"{{/if}};
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if keyBookPrincipalIsRef}}{{keyBookPrincipal}}{{else}}"{{keyBookPrincipal}}"{{/if}},
+            TxBody.createKeyBook(
+                {{#if keyBookUrlIsRef}}{{keyBookUrl}}{{else}}"{{keyBookUrl}}"{{/if}},
+                {{keyBookKeyHash}},
+            ),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`CreateKeyBook SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["CreateKeyBook", {{varName}}Result.txid]);
+        } else {
+            console.log(`CreateKeyBook FAILED: ${ {{~varName}}Result.error}`);
+        }

@@ -1,0 +1,435 @@
+{
+  "sdk_name": "opendlt-dart-v2v3-sdk",
+  "sdk_version": "0.1.0",
+  "commit": "0000000",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "entrypoints": [
+    {
+      "symbol": "Accumulate",
+      "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+      "kind": "class",
+      "doc": "Main client with factory methods for network connection"
+    },
+    {
+      "symbol": "TxBody",
+      "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+      "kind": "class",
+      "doc": "Static methods that build transaction body objects"
+    },
+    {
+      "symbol": "SmartSigner",
+      "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+      "kind": "class",
+      "doc": "Signs, submits, and waits for transaction results"
+    },
+    {
+      "symbol": "Ed25519KeyPair",
+      "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+      "kind": "class",
+      "doc": "Ed25519 key pair generation and derivation"
+    },
+    {
+      "symbol": "UnifiedKeyPair",
+      "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+      "kind": "class",
+      "doc": "Wrapper for different key pair types"
+    },
+    {
+      "symbol": "NetworkEndpoint",
+      "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+      "kind": "class",
+      "doc": "Network endpoint enumeration"
+    }
+  ],
+  "operations": [
+    {
+      "op": "generate_keys",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "Ed25519KeyPair.generate", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Future<Ed25519KeyPair> generate()" },
+        { "symbol": "Ed25519KeyPair.deriveLiteIdentityUrl", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "Future<String> deriveLiteIdentityUrl()" },
+        { "symbol": "Ed25519KeyPair.deriveLiteTokenAccountUrl", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "Future<String> deriveLiteTokenAccountUrl()" }
+      ],
+      "inputs": [],
+      "outputs": [
+        { "name": "keypair", "type": "Ed25519KeyPair" },
+        { "name": "liteIdentity", "type": "String" },
+        { "name": "liteTokenAccount", "type": "String" }
+      ],
+      "requires": [],
+      "examples": ["examples/generate_keys.dart"]
+    },
+    {
+      "op": "faucet",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "Accumulate.faucet", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "Future<void> faucet(String account)" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "String", "required": true },
+        { "name": "times", "type": "int", "required": false }
+      ],
+      "outputs": [],
+      "requires": ["keypair"],
+      "examples": ["examples/faucet.dart"]
+    },
+    {
+      "op": "wait_for_balance",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "Accumulate.v3.query", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "Future<Map<String, dynamic>> query(String url)" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "String", "required": true },
+        { "name": "minBalance", "type": "String", "required": true }
+      ],
+      "outputs": [
+        { "name": "balance", "type": "BigInt" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/wait_for_balance.dart"]
+    },
+    {
+      "op": "wait_for_credits",
+      "category": "utility",
+      "symbols": [
+        { "symbol": "Accumulate.v3.query", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "Future<Map<String, dynamic>> query(String url)" }
+      ],
+      "inputs": [
+        { "name": "account", "type": "String", "required": true },
+        { "name": "minCredits", "type": "int", "required": true }
+      ],
+      "outputs": [
+        { "name": "credits", "type": "int" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/wait_for_credits.dart"]
+    },
+    {
+      "op": "add_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.addCredits", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> addCredits({required String recipient, required String amount, required dynamic oracle})" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "Future<dynamic> signSubmitAndWait({required String principal, required Map<String, dynamic> body})" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "String", "required": true },
+        { "name": "amount", "type": "String", "required": true },
+        { "name": "oracle", "type": "dynamic", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/add_credits.dart"]
+    },
+    {
+      "op": "create_identity",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.createIdentity", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> createIdentity({required String url, required String keyBookUrl})" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "Future<dynamic> signSubmitAndWait({required String principal, required Map<String, dynamic> body})" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "String", "required": true },
+        { "name": "keyBookUrl", "type": "String", "required": true }
+      ],
+      "outputs": [
+        { "name": "adiUrl", "type": "String" },
+        { "name": "keyBookUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_identity.dart"]
+    },
+    {
+      "op": "create_key_book",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.createKeyBook", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> createKeyBook({required String url, String? publicKeyHash})" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "String", "required": true },
+        { "name": "publicKeyHash", "type": "String", "required": false }
+      ],
+      "outputs": [
+        { "name": "keyBookUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_key_book.dart"]
+    },
+    {
+      "op": "create_key_page",
+      "category": "identity",
+      "symbols": [
+        { "symbol": "TxBody.createKeyPage", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> createKeyPage({required String url, required List<String> keys})" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "String", "required": true },
+        { "name": "keys", "type": "List<String>", "required": true }
+      ],
+      "outputs": [
+        { "name": "keyPageUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_key_page.dart"]
+    },
+    {
+      "op": "create_token_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.createTokenAccount", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> createTokenAccount({required String url, required String tokenUrl})" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "String", "required": true },
+        { "name": "tokenUrl", "type": "String", "required": true }
+      ],
+      "outputs": [
+        { "name": "tokenAccountUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_token_account.dart"]
+    },
+    {
+      "op": "create_data_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.createDataAccount", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> createDataAccount({required String url})" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "String", "required": true }
+      ],
+      "outputs": [
+        { "name": "dataAccountUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_data_account.dart"]
+    },
+    {
+      "op": "create_token",
+      "category": "account",
+      "symbols": [
+        { "symbol": "TxBody.createToken", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> createToken({required String url, required String symbol, required int precision, String? supplyLimit})" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "String", "required": true },
+        { "name": "symbol", "type": "String", "required": true },
+        { "name": "precision", "type": "int", "required": true },
+        { "name": "supplyLimit", "type": "String", "required": false }
+      ],
+      "outputs": [
+        { "name": "tokenUrl", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/create_token.dart"]
+    },
+    {
+      "op": "send_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.sendTokensSingle", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> sendTokensSingle({required String toUrl, required String amount})" },
+        { "symbol": "TxBody.sendTokens", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> sendTokens({required List<TokenRecipient> recipients})" }
+      ],
+      "inputs": [
+        { "name": "recipients", "type": "List<TokenRecipient>", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/send_tokens.dart"]
+    },
+    {
+      "op": "issue_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.issueTokens", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> issueTokens({required String recipient, required String amount})" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "String", "required": true },
+        { "name": "amount", "type": "String", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/issue_tokens.dart"]
+    },
+    {
+      "op": "burn_tokens",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.burnTokens", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> burnTokens({required String amount})" }
+      ],
+      "inputs": [
+        { "name": "amount", "type": "String", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/burn_tokens.dart"]
+    },
+    {
+      "op": "write_data",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.writeData", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> writeData({required List<String> entriesHex})" }
+      ],
+      "inputs": [
+        { "name": "entries", "type": "List<String>", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/write_data.dart"]
+    },
+    {
+      "op": "query_account",
+      "category": "query",
+      "symbols": [
+        { "symbol": "Accumulate.v3.query", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "Future<Map<String, dynamic>> query(String url)" }
+      ],
+      "inputs": [
+        { "name": "url", "type": "String", "required": true }
+      ],
+      "outputs": [
+        { "name": "account", "type": "Map<String, dynamic>" }
+      ],
+      "requires": [],
+      "examples": ["examples/query_account.dart"]
+    },
+    {
+      "op": "update_key_page",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.updateKeyPage", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> updateKeyPage({required List<Map<String, dynamic>> operations})" }
+      ],
+      "inputs": [
+        { "name": "operations", "type": "List<Map<String, dynamic>>", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_key_page.dart"]
+    },
+    {
+      "op": "update_key",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.updateKey", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> updateKey({required String newKey})" }
+      ],
+      "inputs": [
+        { "name": "newKey", "type": "String", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_key.dart"]
+    },
+    {
+      "op": "create_lite_token_account",
+      "category": "account",
+      "symbols": [
+        { "symbol": "Ed25519KeyPair.deriveLiteTokenAccountUrl", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "Future<String> deriveLiteTokenAccountUrl()" }
+      ],
+      "inputs": [],
+      "outputs": [
+        { "name": "liteTokenAccountUrl", "type": "String" }
+      ],
+      "requires": ["keypair"],
+      "examples": ["examples/create_lite_token_account.dart"]
+    },
+    {
+      "op": "transfer_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.transferCredits", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> transferCredits({required String recipient, required int amount})" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "String", "required": true },
+        { "name": "amount", "type": "int", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/transfer_credits.dart"]
+    },
+    {
+      "op": "burn_credits",
+      "category": "credits",
+      "symbols": [
+        { "symbol": "TxBody.burnCredits", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> burnCredits({required int amount})" }
+      ],
+      "inputs": [
+        { "name": "amount", "type": "int", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/burn_credits.dart"]
+    },
+    {
+      "op": "write_data_to",
+      "category": "transaction",
+      "symbols": [
+        { "symbol": "TxBody.writeDataTo", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> writeDataTo({required String recipient, required List<String> entriesHex})" }
+      ],
+      "inputs": [
+        { "name": "recipient", "type": "String", "required": true },
+        { "name": "entries", "type": "List<String>", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/write_data_to.dart"]
+    },
+    {
+      "op": "lock_account",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.lockAccount", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> lockAccount({required int height})" }
+      ],
+      "inputs": [
+        { "name": "height", "type": "int", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/lock_account.dart"]
+    },
+    {
+      "op": "update_account_auth",
+      "category": "authority",
+      "symbols": [
+        { "symbol": "TxBody.updateAccountAuth", "path": "package:opendlt_accumulate/opendlt_accumulate.dart", "signature": "static Map<String, dynamic> updateAccountAuth({required List<Map<String, dynamic>> operations})" }
+      ],
+      "inputs": [
+        { "name": "operations", "type": "List<Map<String, dynamic>>", "required": true }
+      ],
+      "outputs": [
+        { "name": "txHash", "type": "String" }
+      ],
+      "requires": ["keypair", "credits"],
+      "examples": ["examples/update_account_auth.dart"]
+    },
+    {
+      "op": "comment",
+      "category": "utility",
+      "symbols": [],
+      "inputs": [
+        { "name": "text", "type": "String", "required": true }
+      ],
+      "outputs": [],
+      "requires": [],
+      "examples": []
+    }
+  ],
+  "notes": "Dart SDK uses async/await with Futures. TxBody methods are static. SmartSigner wraps a UnifiedKeyPair. Uses camelCase naming."
+}

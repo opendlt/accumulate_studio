@@ -1,0 +1,27 @@
+    // =========================================================
+    // {{label}} (Action: CreateToken)
+    // =========================================================
+    final {{varName}}Url = {{#if tokenIssuerUrlIsRef}}{{tokenIssuerUrl}}{{else}}'{{tokenIssuerUrl}}'{{/if}};
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{createTokenPrincipal}},
+      body: TxBody.createToken(
+        url: {{varName}}Url,
+        symbol: {{#if tokenSymbolIsRef}}{{tokenSymbol}}{{else}}'{{tokenSymbol}}'{{/if}},
+        precision: {{tokenPrecision}},
+      ),
+      memo: 'Create token',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('CreateToken SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('CreateToken', {{varName}}Result.txid!));
+      }
+    } else {
+      print('CreateToken FAILED: ${ {{~varName}}Result.error}');
+    }

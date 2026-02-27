@@ -1,0 +1,31 @@
+        # =========================================================
+        # {{label}} (Action: SendTokens)
+        # =========================================================
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+{{#if singleRecipient}}
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if sendTokensPrincipalIsRef}}{{sendTokensPrincipal}}{{else}}"{{sendTokensPrincipal}}"{{/if}},
+            body=TxBody.send_tokens_single(
+                to_url={{#if firstRecipientUrlIsRef}}{{firstRecipientUrl}}{{else}}"{{firstRecipientUrl}}"{{/if}},
+                amount={{#if firstRecipientAmountIsRef}}{{firstRecipientAmount}}{{else}}"{{firstRecipientAmount}}"{{/if}},
+            ),
+            max_attempts=30,
+        )
+{{else}}
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if sendTokensPrincipalIsRef}}{{sendTokensPrincipal}}{{else}}"{{sendTokensPrincipal}}"{{/if}},
+            body=TxBody.send_tokens(
+                recipients=[
+{{#each recipients}}
+                    {"url": "{{this.url}}", "amount": "{{this.amount}}"},
+{{/each}}
+                ],
+            ),
+            max_attempts=30,
+        )
+{{/if}}
+        if {{varName}}_result.success:
+            print(f"SendTokens SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("SendTokens", {{varName}}_result.txid))
+        else:
+            print(f"SendTokens FAILED: { {{~varName}}_result.error}")

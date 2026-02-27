@@ -1,0 +1,16 @@
+        # =========================================================
+        # {{label}} (Action: LockAccount)
+        # =========================================================
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if lockAccountPrincipalIsRef}}{{lockAccountPrincipal}}{{else}}"{{lockAccountPrincipal}}"{{/if}},
+            body=TxBody.lock_account(
+                height={{lockHeight}},
+            ),
+            max_attempts=30,
+        )
+        if {{varName}}_result.success:
+            print(f"LockAccount SUCCESS - TxID: { {{~varName}}_result.txid}")
+            tx_ids.append(("LockAccount", {{varName}}_result.txid))
+        else:
+            print(f"LockAccount FAILED: { {{~varName}}_result.error}")

@@ -1,0 +1,12 @@
+            // =========================================================
+            // {{label}} (GenerateKeys)
+            // =========================================================
+            var {{varName}}Kp = AccKeyPairGenerator.GenerateSignatureKeyPair(SignatureType.ED25519);
+            var {{varName}}Lid = Principal.ComputeUrl({{varName}}Kp.GetPublicKey());
+            var {{varName}}Lta = Principal.ComputeUrl({{varName}}Kp.GetPublicKey(), new Url("acc://ACME"));
+            var {{varName}}PubKey = {{varName}}Kp.GetPublicKey();
+            var {{varName}}PubHash = Convert.ToHexString(SHA256.HashData({{varName}}PubKey)).ToLowerInvariant();
+            Console.WriteLine("Generated keypair:");
+            Console.WriteLine($"  Lite Identity: { {{~varName}}Lid}");
+            Console.WriteLine($"  Lite Token Account: { {{~varName}}Lta}");
+            Console.WriteLine($"  Public Key Hash: { {{~varName}}PubHash}");

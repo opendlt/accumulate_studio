@@ -1,0 +1,14 @@
+        // =========================================================
+        // {{label}} (Action: UpdateAccountAuth)
+        // =========================================================
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+            {{#if updateAuthPrincipalIsRef}}{{updateAuthPrincipal}}{{else}}"{{updateAuthPrincipal}}"{{/if}},
+            TxBody.updateAccountAuth({{updateAuthOps}}),
+        );
+        if ({{varName}}Result.success) {
+            console.log(`UpdateAccountAuth SUCCESS - TxID: ${ {{~varName}}Result.txid}`);
+            if ({{varName}}Result.txid) txIds.push(["UpdateAccountAuth", {{varName}}Result.txid]);
+        } else {
+            console.log(`UpdateAccountAuth FAILED: ${ {{~varName}}Result.error}`);
+        }

@@ -1,0 +1,24 @@
+    // =========================================================
+    // {{label}} (Action: BurnCredits)
+    // =========================================================
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{burnCreditsPrincipal}},
+      body: TxBody.burnCredits(
+        amount: {{burnCreditsAmount}},
+      ),
+      memo: 'Burn credits',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('BurnCredits SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('BurnCredits', {{varName}}Result.txid!));
+      }
+    } else {
+      print('BurnCredits FAILED: ${ {{~varName}}Result.error}');
+    }

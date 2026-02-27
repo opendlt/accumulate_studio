@@ -1,0 +1,24 @@
+    // =========================================================
+    // {{label}} (Action: BurnTokens)
+    // =========================================================
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{burnTokensPrincipal}},
+      body: TxBody.burnTokens(
+        amount: '{{burnAmount}}',
+      ),
+      memo: 'Burn tokens',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('BurnTokens SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('BurnTokens', {{varName}}Result.txid!));
+      }
+    } else {
+      print('BurnTokens FAILED: ${ {{~varName}}Result.error}');
+    }

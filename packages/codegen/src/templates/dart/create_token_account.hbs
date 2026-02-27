@@ -1,0 +1,26 @@
+    // =========================================================
+    // {{label}} (Action: CreateTokenAccount)
+    // =========================================================
+    final {{varName}}Url = {{#if tokenAccUrlIsRef}}{{tokenAccUrl}}{{else}}'{{tokenAccUrl}}'{{/if}};
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{tokenAccPrincipal}},
+      body: TxBody.createTokenAccount(
+        url: {{varName}}Url,
+        tokenUrl: {{#if tokenUrlIsRef}}{{tokenUrl}}{{else}}'{{tokenUrl}}'{{/if}},
+      ),
+      memo: 'Create token account',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('CreateTokenAccount SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('CreateTokenAccount', {{varName}}Result.txid!));
+      }
+    } else {
+      print('CreateTokenAccount FAILED: ${ {{~varName}}Result.error}');
+    }

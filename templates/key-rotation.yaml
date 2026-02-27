@@ -1,0 +1,70 @@
+# Key Rotation - Replace keys for security
+# Generates new keys and updates existing key page
+version: "1.0"
+name: "Key Rotation"
+description: >
+  Security best practice for rotating keys. Generates a new keypair and
+  updates the key page to use the new key, replacing the old one. Important
+  for maintaining security over time.
+
+variables:
+  KEY_PAGE_URL:
+    type: url
+    description: "Key page URL to update (e.g., 'acc://my-adi.acme/book/1')"
+    required: true
+  OLD_PUBLIC_KEY_HASH:
+    type: string
+    description: "Hash of the key being replaced"
+    required: true
+
+blocks:
+  # Step 1: Generate new keypair for rotation
+  - id: generate_new_keys
+    type: GenerateKeys
+    config:
+      algorithm: Ed25519
+    outputs:
+      - keypair
+      - publicKey
+      - publicKeyHash
+      - liteIdentity
+      - liteTokenAccount
+
+  # Step 2: Update the key on the key page
+  # This replaces the old key with the new one
+  - id: update_key
+    type: UpdateKey
+    depends_on:
+      - generate_new_keys
+    config:
+      newKey: "{{generate_new_keys.publicKeyHash}}"
+    transaction:
+      type: UpdateKey
+      principal: "{{KEY_PAGE_URL}}"
+      body:
+        newKeyHash: "{{generate_new_keys.publicKeyHash}}"
+    outputs:
+      - txHash
+
+  # Step 3: Query the key page to verify update
+  - id: verify_key_page
+    type: QueryAccount
+    depends_on:
+      - update_key
+    config:
+      url: "{{KEY_PAGE_URL}}"
+
+# Verify key rotation completed
+assertions:
+  - type: account.exists
+    url: "{{KEY_PAGE_URL}}"
+    message: "Key page should still exist after rotation"
+
+  - type: receipt.verified
+    sourceStep: update_key
+    message: "Key update receipt should be valid"
+
+  - type: tx.status.equals
+    sourceStep: update_key
+    status: "delivered"
+    message: "Key update transaction should be delivered"

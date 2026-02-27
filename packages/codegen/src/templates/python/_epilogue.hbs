@@ -1,0 +1,16 @@
+
+        # =========================================================
+        # Summary
+        # =========================================================
+        print("\n=== TRANSACTION IDs FOR VERIFICATION ===\n")
+        for tx_name, txid in tx_ids:
+            print(f"  {tx_name}: {txid}")
+        print(f"\nTotal transactions: {len(tx_ids)}")
+        print("Flow completed successfully!")
+
+    finally:
+        client.close()
+
+
+if __name__ == "__main__":
+    main()

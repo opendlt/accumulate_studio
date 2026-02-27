@@ -1,0 +1,6 @@
+        // =========================================================
+        // {{label}} (WaitForBalance)
+        // =========================================================
+        console.log("Waiting for balance >= {{minBalance}}...");
+        await pollForBalance(client, {{waitAccount}}, {{minBalance}});
+        console.log("Balance reached");

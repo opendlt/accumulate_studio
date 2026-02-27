@@ -1,0 +1,24 @@
+            // =========================================================
+            // {{label}} (Action: UpdateAccountAuth)
+            // =========================================================
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{updateAuthPrincipal}},
+{{#if updateAuthOpsInline}}
+                TxBody.UpdateAccountAuth(new List<Dictionary<string, object?>>
+                {
+                    new Dictionary<string, object?> { ["type"] = "{{updateAuthOpType}}", ["authority"] = {{updateAuthOpAuthority}} }
+                })
+{{else}}
+                TxBody.UpdateAccountAuth(JsonSerializer.Deserialize<List<Dictionary<string, object?>>>("""{{updateAuthOps}}""")!)
+{{/if}}
+            );
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"UpdateAccountAuth SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("UpdateAccountAuth", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"UpdateAccountAuth FAILED: { {{~varName}}Result.Error}");
+            }

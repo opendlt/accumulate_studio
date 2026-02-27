@@ -1,0 +1,11 @@
+
+    // =========================================================
+    // Transaction Summary
+    // =========================================================
+    println!("\n========== Transaction Summary ==========");
+    for (label, txid) in &tx_ids {
+        println!("  {}: {}", label, txid);
+    }
+    println!("Flow completed successfully!");
+    Ok(())
+}

@@ -1,0 +1,24 @@
+    // =========================================================
+    // {{label}} (Action: UpdateKey)
+    // =========================================================
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{updateKeyPrincipal}},
+      body: TxBody.updateKey(
+        newKeyHash: {{#if updateKeyNewKeyIsRef}}{{updateKeyNewKey}}{{else}}'{{updateKeyNewKey}}'{{/if}},
+      ),
+      memo: 'Update key',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('UpdateKey SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('UpdateKey', {{varName}}Result.txid!));
+      }
+    } else {
+      print('UpdateKey FAILED: ${ {{~varName}}Result.error}');
+    }

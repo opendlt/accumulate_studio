@@ -1,0 +1,32 @@
+            // =========================================================
+            // {{label}} (Action: SendTokens)
+            // =========================================================
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+{{#if singleRecipient}}
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{sendTokensPrincipal}},
+                TxBody.SendTokensSingle(
+                    {{#if firstRecipientUrlIsRef}}{{firstRecipientUrl}}{{else}}"{{firstRecipientUrl}}"{{/if}},
+                    {{#if firstRecipientAmountIsRef}}{{firstRecipientAmount}}{{else}}"{{firstRecipientAmount}}"{{/if}}
+                )
+            );
+{{else}}
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{sendTokensPrincipal}},
+                TxBody.SendTokens(new List<TxRecipient>
+                {
+{{#each recipients}}
+                    new TxRecipient("{{this.url}}", "{{this.amount}}"),
+{{/each}}
+                })
+            );
+{{/if}}
+            if ({{varName}}Result.Success)
+            {
+                Console.WriteLine($"SendTokens SUCCESS - TxID: { {{~varName}}Result.TxId}");
+                if ({{varName}}Result.TxId != null) txIds.Add(("SendTokens", {{varName}}Result.TxId));
+            }
+            else
+            {
+                Console.WriteLine($"SendTokens FAILED: { {{~varName}}Result.Error}");
+            }

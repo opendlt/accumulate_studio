@@ -1,0 +1,18 @@
+    // =========================================================
+    // {{label}} (Action: IssueTokens)
+    // =========================================================
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if issueTokensPrincipalIsRef}}&{{issueTokensPrincipal}}{{else}}"{{issueTokensPrincipal}}"{{/if}},
+        &TxBody::issue_tokens_single({{#if issueRecipientIsRef}}&{{issueRecipient}}{{else}}"{{issueRecipient}}"{{/if}}, {{#if issueAmountIsRef}}&{{issueAmount}}{{else}}"{{issueAmount}}"{{/if}}),
+        Some("Issue tokens"),
+        30,
+    ).await;
+    if {{varName}}_result.success {
+        println!("IssueTokens SUCCESS - TxID: {:?}", {{varName}}_result.txid);
+        if let Some(ref txid) = {{varName}}_result.txid {
+            tx_ids.push(("IssueTokens", txid.clone()));
+        }
+    } else {
+        println!("IssueTokens FAILED: {:?}", {{varName}}_result.error);
+    }

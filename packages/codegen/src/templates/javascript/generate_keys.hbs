@@ -1,0 +1,11 @@
+        // =========================================================
+        // {{label}} (GenerateKeys)
+        // =========================================================
+        const {{varName}}Kp = Ed25519KeyPair.generate();
+        const {{varName}}Lid = {{varName}}Kp.deriveLiteIdentityUrl();
+        const {{varName}}Lta = {{varName}}Kp.deriveLiteTokenAccountUrl();
+        const {{varName}}PubHash = {{varName}}Kp.publicKeyHashHex();
+        console.log("Generated keypair:");
+        console.log(`  Lite Identity: ${ {{~varName}}Lid}`);
+        console.log(`  Lite Token Account: ${ {{~varName}}Lta}`);
+        console.log(`  Public Key Hash: ${ {{~varName}}PubHash}`);

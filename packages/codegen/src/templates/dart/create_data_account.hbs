@@ -1,0 +1,23 @@
+    // =========================================================
+    // {{label}} (Action: CreateDataAccount)
+    // =========================================================
+    final {{varName}}Url = {{#if dataAccUrlIsRef}}{{dataAccUrl}}{{else}}'{{dataAccUrl}}'{{/if}};
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{dataAccPrincipal}},
+      body: TxBody.createDataAccount(url: {{varName}}Url),
+      memo: 'Create data account',
+      maxAttempts: 30,
+    );
+    if ({{varName}}Result.success) {
+      print('CreateDataAccount SUCCESS - TxID: ${ {{~varName}}Result.txid}');
+      if ({{varName}}Result.txid != null) {
+        txIds.add(MapEntry('CreateDataAccount', {{varName}}Result.txid!));
+      }
+    } else {
+      print('CreateDataAccount FAILED: ${ {{~varName}}Result.error}');
+    }

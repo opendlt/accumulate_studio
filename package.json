@@ -1,0 +1,52 @@
+{
+  "name": "accumulate-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Accumulate Protocol Developer Onboarding Platform - Transformational Developer Onboarding Experience",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "templates"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/studio",
+    "dev:mcp": "npm run dev --workspace=apps/mcp-server",
+    "build": "npm run build --workspaces",
+    "build:studio": "npm run build --workspace=apps/studio",
+    "build:mcp": "npm run build --workspace=apps/mcp-server",
+    "build:types": "npm run build --workspace=packages/types",
+    "build:verification": "npm run build --workspace=packages/verification",
+    "build:codegen": "npm run build --workspace=packages/codegen",
+    "build:agent-pack": "npm run build --workspace=packages/agent-pack",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "clean": "rimraf **/dist **/node_modules/.cache",
+    "dev:proxy": "cd apps/sdk-proxy && python -m uvicorn app.main:app --reload --port 8000",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:proxy\"",
+    "install:proxy": "cd apps/sdk-proxy && pip install -e .",
+    "validate:manifests": "npx tsx scripts/check-manifest-drift.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "accumulate",
+    "blockchain",
+    "developer-tools",
+    "onboarding",
+    "visual-builder",
+    "code-generation",
+    "mcp"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/accumulate/accumulate-studio"
+  },
+  "license": "MIT"
+}

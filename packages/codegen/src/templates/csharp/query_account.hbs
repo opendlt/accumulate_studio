@@ -1,0 +1,5 @@
+            // =========================================================
+            // {{label}} (QueryAccount)
+            // =========================================================
+            var {{varName}}Result = await client.V3.QueryAccountAsync({{#if queryUrlIsRef}}{{queryUrl}}{{else}}"{{queryUrl}}"{{/if}});
+            Console.WriteLine($"Account state: {JsonSerializer.Serialize( {{~varName}}Result, new JsonSerializerOptions { WriteIndented = true })}");
