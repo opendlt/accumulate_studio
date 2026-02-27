@@ -1,0 +1,15 @@
+node_modules
+**/dist
+.vite
+.git
+.claude
+.vscode
+packages/codegen/tests/rust-harness/target
+packages/codegen/tests/csharp-harness/bin
+packages/codegen/tests/csharp-harness/obj
+packages/codegen/tests/dart-harness/.dart_tool
+packages/codegen/tests/__snapshots__
+packages/codegen/tests/action-palette-output
+packages/codegen/tests/snapshots
+__pycache__
+*.log
