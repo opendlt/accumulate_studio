@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generate C# template files using Vite's SSR to resolve ?raw imports
+ * Generate JavaScript template files using Vite's SSR to resolve ?raw imports
  */
 import { createServer } from 'vite';
 import path from 'path';
@@ -8,11 +8,11 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outputDir = 'C:/Accumulate_Stuff/on-boarding-platform/temp-download-templates-C_sharp';
+const outputDir = 'C:/Accumulate_Stuff/on-boarding-platform/temp-download-templates-javascript';
 
 async function main() {
   const vite = await createServer({
-    root: path.join(__dirname, 'apps/studio'),
+    root: path.join(__dirname, '..', 'apps/studio'),
     server: { middlewareMode: true },
     appType: 'custom',
     logLevel: 'warn',
@@ -38,9 +38,9 @@ async function main() {
       console.log(`\nGenerating: ${name}`);
 
       try {
-        const code = codeGen.generateCode(flow, 'csharp', 'sdk');
+        const code = codeGen.generateCode(flow, 'javascript', 'sdk');
         const suffix = i === 0 ? '' : ` (${i})`;
-        const filename = `accumulate_flow${suffix}.cs`;
+        const filename = `accumulate_flow${suffix}.js`;
         writeFileSync(path.join(outputDir, filename), code, 'utf-8');
         console.log(`  -> ${filename} (${code.length} bytes)`);
       } catch (err) {

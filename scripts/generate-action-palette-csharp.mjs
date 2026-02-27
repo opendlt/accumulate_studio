@@ -116,7 +116,7 @@ function buildActionPaletteFlow(name, targetType, recipe) {
 
 async function main() {
   const vite = await createServer({
-    root: path.join(__dirname, 'apps/studio'),
+    root: path.join(__dirname, '..', 'apps/studio'),
     server: { middlewareMode: true },
     appType: 'custom',
     logLevel: 'warn',

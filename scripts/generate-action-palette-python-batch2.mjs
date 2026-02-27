@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 /**
- * Generate Action Palette Python template files
- * These are single-action flows with auto-inserted prerequisite chains.
- * Categories: Identity (3), Accounts (4), Tokens (3) = 10 total
- * CreateKeyPage crashes the studio, so we skip it = 9 templates
+ * Generate Action Palette Python template files - Batch 2
+ * Credits (3), Data (2), Key Management (3), Authority (1), Utilities (2)
+ * TransferCredits crashes the studio, so we skip it = 10 templates
  */
 import { createServer } from 'vite';
 import path from 'path';
@@ -14,63 +13,67 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outputDir = 'C:/Accumulate_Stuff/on-boarding-platform/temp-download-Action-Palette-templates-python';
 
 const ACTION_PALETTE_BLOCKS = [
-  // ── Identity (3, minus CreateKeyPage which crashes) ──
+  // ── Credits (3, minus TransferCredits which crashes) ──
   {
-    name: 'Create Identity',
-    blockType: 'CreateIdentity',
+    name: 'Add Credits',
+    blockType: 'AddCredits',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance'],
+  },
+  {
+    name: 'Burn Credits',
+    blockType: 'BurnCredits',
     recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits'],
   },
+  // ── Data (2) ──
   {
-    name: 'Create Key Book',
-    blockType: 'CreateKeyBook',
+    name: 'Write Data',
+    blockType: 'WriteData',
     recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
-      'CreateIdentity', 'AddCredits', 'WaitForCredits'],
-  },
-  // CreateKeyPage skipped - crashes the studio app
-  // ── Accounts (4) ──
-  {
-    name: 'Create Token Account',
-    blockType: 'CreateTokenAccount',
-    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
-      'CreateIdentity', 'AddCredits', 'WaitForCredits'],
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'CreateDataAccount'],
   },
   {
-    name: 'Create Data Account',
-    blockType: 'CreateDataAccount',
-    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
-      'CreateIdentity', 'AddCredits', 'WaitForCredits'],
-  },
-  {
-    name: 'Create Token Issuer',
-    blockType: 'CreateToken',
-    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
-      'CreateIdentity', 'AddCredits', 'WaitForCredits'],
-  },
-  {
-    name: 'Create Lite Token Account',
-    blockType: 'CreateLiteTokenAccount',
-    recipe: ['GenerateKeys'],
-  },
-  // ── Tokens (3) ──
-  {
-    name: 'Send Tokens',
-    blockType: 'SendTokens',
+    name: 'Write Data To',
+    blockType: 'WriteDataTo',
     recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
       'GenerateKeys'],
   },
+  // ── Key Management (3) ──
   {
-    name: 'Issue Tokens',
-    blockType: 'IssueTokens',
+    name: 'Update Key Page',
+    blockType: 'UpdateKeyPage',
     recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
-      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'CreateToken',
-      'CreateTokenAccount'],
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'GenerateKeys'],
   },
   {
-    name: 'Burn Tokens',
-    blockType: 'BurnTokens',
+    name: 'Update Key',
+    blockType: 'UpdateKey',
     recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
-      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'CreateToken',
-      'CreateTokenAccount', 'IssueTokens'],
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'GenerateKeys'],
+  },
+  {
+    name: 'Lock Account',
+    blockType: 'LockAccount',
+    // Only LiteTokenAccounts are lockable in the Accumulate protocol
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits'],
+  },
+  // ── Authority (1) ──
+  {
+    name: 'Update Account Auth',
+    blockType: 'UpdateAccountAuth',
+    // Target the ADI identity directly (sub-accounts inherit authorities)
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
+      'CreateIdentity', 'AddCredits', 'WaitForCredits'],
+  },
+  // ── Utilities (2) ──
+  {
+    name: 'Faucet',
+    blockType: 'Faucet',
+    recipe: ['GenerateKeys'],
+  },
+  {
+    name: 'Query Account',
+    blockType: 'QueryAccount',
+    recipe: ['GenerateKeys', 'Faucet', 'WaitForBalance'],
   },
 ];
 
@@ -129,7 +132,7 @@ function buildFlow(name, blockType, recipe) {
 
 async function main() {
   const vite = await createServer({
-    root: path.join(__dirname, 'apps/studio'),
+    root: path.join(__dirname, '..', 'apps/studio'),
     server: { middlewareMode: true },
     appType: 'custom',
     logLevel: 'warn',
@@ -138,7 +141,7 @@ async function main() {
   try {
     const codeGen = await vite.ssrLoadModule('/src/services/code-generator/index.ts');
 
-    console.log(`Generating ${ACTION_PALETTE_BLOCKS.length} Action Palette templates (Python)`);
+    console.log(`Generating ${ACTION_PALETTE_BLOCKS.length} Action Palette templates (Python Batch 2)`);
     mkdirSync(outputDir, { recursive: true });
 
     for (let i = 0; i < ACTION_PALETTE_BLOCKS.length; i++) {
