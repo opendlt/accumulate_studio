@@ -2,25 +2,36 @@
 
 import hashlib
 import logging
+import os
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Request
 
 from accumulate_client.convenience import SmartSigner, TxBody
 
+from ..auth import auth_header, require_signing
 from ..models import (
     CreateDataAccountRequest,
     WriteDataRequest,
     WriteDataToRequest,
     TxResponse,
 )
+from ..rate_limit import RATE_LIMIT_SIGN, limiter
 
 router = APIRouter()
 logger = logging.getLogger("data-routes")
+_DEBUG_LOG = os.getenv("PROXY_DEBUG_LOGGING", "false").strip().lower() in ("1", "true", "yes", "on")
 
 
 @router.post("/create-data-account", response_model=TxResponse)
-async def create_data_account(req: CreateDataAccountRequest):
+@limiter.limit(RATE_LIMIT_SIGN)
+async def create_data_account(
+    request: Request,
+    req: CreateDataAccountRequest,
+    authorization: str | None = Depends(auth_header),
+):
     from ..main import store, client
+
+    require_signing(req.session_id, authorization)
 
     if client is None:
         return TxResponse(success=False, error="Client not initialized")
@@ -54,8 +65,15 @@ async def create_data_account(req: CreateDataAccountRequest):
 
 
 @router.post("/write-data", response_model=TxResponse)
-async def write_data(req: WriteDataRequest):
+@limiter.limit(RATE_LIMIT_SIGN)
+async def write_data(
+    request: Request,
+    req: WriteDataRequest,
+    authorization: str | None = Depends(auth_header),
+):
     from ..main import store, client
+
+    require_signing(req.session_id, authorization)
 
     if client is None:
         return TxResponse(success=False, error="Client not initialized")
@@ -116,7 +134,12 @@ def _compute_lite_data_account_url(data_hex_list: list[str]) -> str:
 
 
 @router.post("/write-data-to", response_model=TxResponse)
-async def write_data_to(req: WriteDataToRequest):
+@limiter.limit(RATE_LIMIT_SIGN)
+async def write_data_to(
+    request: Request,
+    req: WriteDataToRequest,
+    authorization: str | None = Depends(auth_header),
+):
     """Write data to a lite data account.
 
     If ``recipient`` is not supplied the proxy auto-computes the lite data
@@ -125,6 +148,8 @@ async def write_data_to(req: WriteDataToRequest):
     external ID (data[1]) when the caller only sends plain content strings.
     """
     from ..main import store, client
+
+    require_signing(req.session_id, authorization)
 
     if client is None:
         return TxResponse(success=False, error="Client not initialized")
@@ -159,11 +184,12 @@ async def write_data_to(req: WriteDataToRequest):
         if not recipient:
             recipient = _compute_lite_data_account_url(hex_entries)
 
-        logger.warning(
-            "write-data-to: recipient=%s principal=%s signer=%s "
-            "data_items=%d",
-            recipient, principal, signer_url, len(hex_entries),
-        )
+        if _DEBUG_LOG:
+            logger.debug(
+                "write-data-to: recipient=%s principal=%s signer=%s "
+                "data_items=%d",
+                recipient, principal, signer_url, len(hex_entries),
+            )
 
         # --- Build writeDataTo body --------------------------------------
         body = {

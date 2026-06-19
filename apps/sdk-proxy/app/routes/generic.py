@@ -2,16 +2,31 @@
 
 import hashlib
 import logging
+import os
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from accumulate_client.tx.builders import get_builder_for
 from accumulate_client.convenience import SmartSigner
 
+from ..auth import auth_header, require_signing
 from ..models import SignAndSubmitRequest, TxResponse
+from ..rate_limit import RATE_LIMIT_SIGN, limiter
 
 router = APIRouter()
 logger = logging.getLogger("generic-route")
+_DEBUG_LOG = os.getenv("PROXY_DEBUG_LOGGING", "false").strip().lower() in ("1", "true", "yes", "on")
+
+# Transaction types the proxy is permitted to build and sign. Anything else is
+# rejected (422) before any signing work happens.
+ALLOWED_TX_TYPES = {
+    "CreateIdentity", "CreateKeyBook", "CreateKeyPage",
+    "CreateTokenAccount", "CreateDataAccount", "CreateToken",
+    "SendTokens", "IssueTokens", "BurnTokens",
+    "AddCredits", "TransferCredits", "BurnCredits",
+    "WriteData", "WriteDataTo",
+    "UpdateKeyPage", "UpdateKey", "LockAccount", "UpdateAccountAuth",
+}
 
 
 def _normalise_body(body: dict) -> None:
@@ -83,8 +98,17 @@ def _to_camel(name: str) -> str:
 
 
 @router.post("/sign-and-submit", response_model=TxResponse)
-async def sign_and_submit(req: SignAndSubmitRequest):
+@limiter.limit(RATE_LIMIT_SIGN)
+async def sign_and_submit(
+    request: Request,
+    req: SignAndSubmitRequest,
+    authorization: str | None = Depends(auth_header),
+):
     from ..main import store, client
+
+    require_signing(req.session_id, authorization)
+    if req.tx_type not in ALLOWED_TX_TYPES:
+        raise HTTPException(status_code=422, detail=f"Unsupported tx_type '{req.tx_type}'")
 
     if client is None:
         return TxResponse(success=False, error="Client not initialized")
@@ -142,12 +166,13 @@ async def sign_and_submit(req: SignAndSubmitRequest):
                     body["newKeyHash"] = hashlib.sha256(
                         bytes.fromhex(new_key_hex)
                     ).hexdigest()
-                logger.warning(
-                    "sign-and-submit updateKey: newKey=%s newKeyHash=%s body_keys=%s",
-                    body.get("newKey", "?")[:16],
-                    body.get("newKeyHash", "MISSING"),
-                    list(body.keys()),
-                )
+                if _DEBUG_LOG:
+                    logger.debug(
+                        "sign-and-submit updateKey: newKey=%s newKeyHash=%s body_keys=%s",
+                        body.get("newKey", "?")[:16],
+                        body.get("newKeyHash", "MISSING"),
+                        list(body.keys()),
+                    )
 
             if body.get("type") == "updateKeyPage":
                 # Normalise frontend operations → SDK encoder format.
@@ -192,10 +217,11 @@ async def sign_and_submit(req: SignAndSubmitRequest):
                         normalised.append(op)
                 body["operation"] = normalised
 
-                logger.warning(
-                    "sign-and-submit updateKeyPage: %d operations",
-                    len(normalised),
-                )
+                if _DEBUG_LOG:
+                    logger.debug(
+                        "sign-and-submit updateKeyPage: %d operations",
+                        len(normalised),
+                    )
 
             if body.get("type") == "writeDataTo":
                 # Build proper data entry if only flat entries/strings were supplied
@@ -220,11 +246,12 @@ async def sign_and_submit(req: SignAndSubmitRequest):
                         body["entry"]["data"]
                     )
 
-                logger.warning(
-                    "sign-and-submit writeDataTo: recipient=%s entry_data_count=%d",
-                    body.get("recipient", "?"),
-                    len(body.get("entry", {}).get("data", [])),
-                )
+                if _DEBUG_LOG:
+                    logger.debug(
+                        "sign-and-submit writeDataTo: recipient=%s entry_data_count=%d",
+                        body.get("recipient", "?"),
+                        len(body.get("entry", {}).get("data", [])),
+                    )
 
         lta = str(kp.derive_lite_token_account_url("ACME"))
         signer_url = req.signer_url or req.principal or lta
@@ -234,26 +261,28 @@ async def sign_and_submit(req: SignAndSubmitRequest):
         algo = getattr(kp, 'algorithm', 'ed25519')
         sig_type = getattr(kp, '_acc_sig_type', 2)
 
-        logger.warning(
-            "sign-and-submit: tx_type=%s principal=%s signer_url=%s "
-            "algo=%s sig_type=%d pub_key=%s pub_key_hash=%s "
-            "body_keys=%s body_type=%s",
-            req.tx_type, req.principal, signer_url,
-            algo, sig_type,
-            pub_bytes.hex(),
-            pub_key_hash,
-            [k.get("keyHash", "?") for k in body.get("keys", [])] if isinstance(body, dict) else "N/A",
-            body.get("type") if isinstance(body, dict) else "N/A",
-        )
+        if _DEBUG_LOG:
+            logger.debug(
+                "sign-and-submit: tx_type=%s principal=%s signer_url=%s "
+                "algo=%s sig_type=%d pub_key=%s pub_key_hash=%s "
+                "body_keys=%s body_type=%s",
+                req.tx_type, req.principal, signer_url,
+                algo, sig_type,
+                pub_bytes.hex(),
+                pub_key_hash,
+                [k.get("keyHash", "?") for k in body.get("keys", [])] if isinstance(body, dict) else "N/A",
+                body.get("type") if isinstance(body, dict) else "N/A",
+            )
 
         signer = SmartSigner(client=client.v3, keypair=kp, signer_url=signer_url)
 
-        # Log signer version fetched from the network
-        signer_version = signer.get_signer_version()
-        logger.warning(
-            "sign-and-submit: signer_version=%d for signer_url=%s",
-            signer_version, signer_url,
-        )
+        if _DEBUG_LOG:
+            # Signer version fetched from the network
+            signer_version = signer.get_signer_version()
+            logger.debug(
+                "sign-and-submit: signer_version=%d for signer_url=%s",
+                signer_version, signer_url,
+            )
 
         if req.wait:
             result = signer.sign_submit_and_wait(

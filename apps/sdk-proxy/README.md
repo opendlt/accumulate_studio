@@ -45,16 +45,63 @@ npm run dev:proxy
 | `/api/query-directory` | POST | List ADI directory entries |
 | `/api/sign-and-submit` | POST | Generic: any tx type |
 | `/api/wait-for-tx` | POST | Poll for tx delivery |
+| `/api/logout` | POST | Evict a session's signing key |
+
+## Security model
+
+This proxy mints and holds raw signing keys, so every signing route is gated:
+
+- **Per-session bearer token.** `/api/generate-keys` returns a `token` bound to the
+  `session_id`. Every signing/faucet route requires `Authorization: Bearer <token>` and
+  rejects a mismatch with **401**. The studio wires this automatically.
+- **Session lifecycle.** Keys live in an instance-scoped store, are evicted after
+  `SESSION_TTL_SECONDS` of inactivity, are capped at `MAX_SESSIONS` (**429** beyond), and
+  are removed promptly via `/api/logout` when a run ends.
+- **CORS lockdown.** `ALLOWED_ORIGINS` (comma-separated) restricts browser origins. The
+  studio calls the proxy same-origin via the Vercel rewrite, so production is unaffected by
+  a strict list. Defaults to localhost dev origins when unset.
+- **Mainnet guard.** The app refuses to start on `mainnet` unless `ALLOW_MAINNET=true`, and
+  signing routes return **403** on mainnet regardless.
+- **Rate limiting.** Per-IP limits (`RATE_LIMIT_*`) throttle key generation, faucet, and
+  signing; `faucet.times` is capped at 5.
+- **tx_type allowlist.** `/api/sign-and-submit` rejects unknown transaction types with **422**.
+- **Log hygiene.** Public-key material is logged only at DEBUG behind `PROXY_DEBUG_LOGGING=true`.
 
 ## Configuration
 
-Set the `ACCUMULATE_NETWORK` environment variable to select the network:
+| Env var | Default | Purpose |
+|---------|---------|---------|
+| `ACCUMULATE_NETWORK` | `testnet` | `mainnet`/`testnet`/`devnet`/`kermit`/`local` |
+| `ALLOW_MAINNET` | `false` | Must be `true` to run/sign on mainnet |
+| `ALLOWED_ORIGINS` | dev origins | Comma-separated CORS allowlist |
+| `SESSION_TTL_SECONDS` | `1800` | Idle eviction window for session keys |
+| `MAX_SESSIONS` | `500` | Hard cap on concurrent sessions |
+| `PROXY_DEBUG_LOGGING` | `false` | Enable verbose key/body DEBUG logs |
+| `PROXY_LOG_LEVEL` | `INFO` | Root log level |
+| `RATE_LIMIT_ENABLED` | `true` | Toggle rate limiting |
+| `RATE_LIMIT_DEFAULT` / `_GENERATE` / `_FAUCET` / `_SIGN` | `120` / `20` / `10` / `60` per minute | Per-route limits |
+| `PROXY_DOMAIN` | `116-202-214-38.sslip.io` | Caddy TLS hostname (compose) |
 
-- `mainnet` - Production
-- `testnet` - Public test network (default)
-- `devnet` - Development network
-- `kermit` - Kermit test network
-- `local` - Local development node (localhost:26660)
+> Single-process only: the session store is in-memory. Run uvicorn with **one worker**
+> until a shared store (e.g. Redis) is added.
+
+## Production deployment (TLS)
+
+`docker-compose.yml` runs the proxy behind **Caddy**, which obtains a Let's Encrypt
+certificate automatically. `PROXY_DOMAIN` defaults to an [sslip.io](https://sslip.io) name
+that resolves to the host IP, so **no domain purchase is required**; override it if you own
+a DNS name pointed at the host.
+
+```bash
+cd apps/sdk-proxy
+docker compose up -d --build      # brings up sdk-proxy (internal) + Caddy on :80/:443
+curl https://116-202-214-38.sslip.io/api/health
+```
+
+The studio's `vercel.json` rewrites `/api/*` to `https://116-202-214-38.sslip.io`. **Deploy
+order matters:** redeploy this proxy server (so Caddy is serving :443 with a valid cert)
+*before or together with* the frontend deploy, or the studio's API calls will fail until the
+server is up. The host must allow inbound :80 and :443.
 
 ## Architecture
 
@@ -66,4 +113,8 @@ SDK Proxy (FastAPI + Python SDK)
 Accumulate Network
 ```
 
-Session-based keypair management stores Ed25519 keypairs in memory keyed by browser session ID. This is for development only.
+Session-based keypair management stores keypairs in memory keyed by session ID, each
+protected by a bearer token, evicted on TTL/logout, and capped by `MAX_SESSIONS`. See the
+**Security model** section above. Keys are never persisted to disk; this remains a
+testnet-oriented design (it signs on the user's behalf) — client-side signing is the
+intended long-term replacement.

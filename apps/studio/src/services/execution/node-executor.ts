@@ -147,11 +147,19 @@ export class NodeExecutor {
       lite_identity: string;
       lite_token_account: string;
       public_key_hash: string;
+      token?: string;
     }>('/api/generate-keys', {
       session_id: this.sessionId,
       algorithm: (config.algorithm || 'Ed25519').toLowerCase(),
       store_as_signer: !hasExistingKeypair,
     });
+
+    // Only the primary key generation (store_as_signer) mints a session token.
+    // Secondary key generations (e.g. for rotation) return no token and must
+    // keep signing with the original session's token.
+    if (result.token) {
+      this.api.setSessionToken(result.token);
+    }
 
     const keypairData: KeyPair = {
       publicKey: result.public_key,

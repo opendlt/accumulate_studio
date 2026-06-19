@@ -127,6 +127,11 @@ export class ExecutionEngine {
         });
       }
       throw error;
+    } finally {
+      // Evict the session's signing key from the proxy as soon as the run ends
+      // (completed or failed). Pause does not settle executionPromise, so this
+      // does not fire mid-pause.
+      await this.logoutSession();
     }
   }
 
@@ -264,6 +269,9 @@ export class ExecutionEngine {
     if (this.context) {
       this.context.abortController.abort();
     }
+
+    // Best-effort: evict the session key before we tear down the context.
+    void this.logoutSession();
 
     // Resume if paused so the execution can exit
     if (this.pausePromise) {
@@ -608,6 +616,20 @@ export class ExecutionEngine {
       } catch (err) {
         log('debug', `Account query failed: ${err instanceof Error ? err.message : String(err)}`);
       }
+    }
+  }
+
+  /**
+   * Best-effort logout: tell the proxy to evict this session's signing key.
+   * Safe to call multiple times; no-ops once the context has been cleaned up.
+   */
+  private async logoutSession(): Promise<void> {
+    if (!this.context) return;
+    const { api, sessionId } = this.context;
+    try {
+      await api.callProxy('/api/logout', { session_id: sessionId });
+    } catch {
+      /* best-effort — the proxy evicts on TTL even if this fails */
     }
   }
 

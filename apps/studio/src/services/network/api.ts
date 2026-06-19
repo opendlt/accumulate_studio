@@ -53,6 +53,7 @@ export interface SubmitResponse {
 
 export class AccumulateAPI {
   private config: NetworkConfig;
+  private sessionToken: string | null = null;
 
   constructor(config: NetworkConfig) {
     this.config = config;
@@ -70,12 +71,30 @@ export class AccumulateAPI {
   }
 
   /**
+   * Set the per-session bearer token returned by /api/generate-keys. It is
+   * sent on every subsequent proxy call so the proxy can authenticate the
+   * session that minted the signing key.
+   */
+  setSessionToken(token: string | null): void {
+    this.sessionToken = token;
+  }
+
+  /** Headers for proxy calls, including the bearer token when present. */
+  private authHeaders(): Record<string, string> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (this.sessionToken) {
+      headers['Authorization'] = `Bearer ${this.sessionToken}`;
+    }
+    return headers;
+  }
+
+  /**
    * Call the SDK proxy service
    */
   async callProxy<T = unknown>(path: string, body: Record<string, unknown>): Promise<T> {
     const response = await fetch(`${this.proxyEndpoint}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.authHeaders(),
       body: JSON.stringify(body),
     });
     if (!response.ok) {
@@ -91,7 +110,7 @@ export class AccumulateAPI {
   async callProxyGet<T = unknown>(path: string): Promise<T> {
     const response = await fetch(`${this.proxyEndpoint}${path}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.authHeaders(),
     });
     if (!response.ok) {
       throw new Error(`Proxy error: ${response.status}`);

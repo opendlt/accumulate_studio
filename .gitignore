@@ -52,6 +52,10 @@ __pycache__/
 .Python
 .venv/
 venv/
+.pytest_cache/
+
+# ── Vercel CLI ──
+.vercel/
 
 # ── Temp / generated downloads ──
 temp-download-*/

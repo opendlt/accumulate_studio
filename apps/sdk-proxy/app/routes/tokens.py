@@ -1,17 +1,26 @@
 """Token operation routes (SendTokens, CreateTokenAccount)."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Request
 
 from accumulate_client.convenience import SmartSigner, TxBody
 
+from ..auth import auth_header, require_signing
 from ..models import SendTokensRequest, CreateTokenAccountRequest, TxResponse
+from ..rate_limit import RATE_LIMIT_SIGN, limiter
 
 router = APIRouter()
 
 
 @router.post("/send-tokens", response_model=TxResponse)
-async def send_tokens(req: SendTokensRequest):
+@limiter.limit(RATE_LIMIT_SIGN)
+async def send_tokens(
+    request: Request,
+    req: SendTokensRequest,
+    authorization: str | None = Depends(auth_header),
+):
     from ..main import store, client
+
+    require_signing(req.session_id, authorization)
 
     if client is None:
         return TxResponse(success=False, error="Client not initialized")
@@ -54,8 +63,15 @@ async def send_tokens(req: SendTokensRequest):
 
 
 @router.post("/create-token-account", response_model=TxResponse)
-async def create_token_account(req: CreateTokenAccountRequest):
+@limiter.limit(RATE_LIMIT_SIGN)
+async def create_token_account(
+    request: Request,
+    req: CreateTokenAccountRequest,
+    authorization: str | None = Depends(auth_header),
+):
     from ..main import store, client
+
+    require_signing(req.session_id, authorization)
 
     if client is None:
         return TxResponse(success=False, error="Client not initialized")

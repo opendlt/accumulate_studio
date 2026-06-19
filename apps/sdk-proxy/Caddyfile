@@ -1,0 +1,20 @@
+# TLS-terminating reverse proxy for the SDK proxy.
+#
+# PROXY_DOMAIN defaults to an sslip.io name that resolves to the proxy host's
+# public IP (116.202.214.38), so Caddy can obtain a real Let's Encrypt
+# certificate WITHOUT owning a custom domain. Override PROXY_DOMAIN if you have
+# your own DNS name pointed at the host.
+{$PROXY_DOMAIN:116-202-214-38.sslip.io} {
+	encode gzip
+
+	# Forward to the sdk-proxy container on the internal compose network.
+	# Caddy appends the connecting peer to X-Forwarded-For by default, so the
+	# original client set by the Vercel rewrite stays leftmost. The proxy keys
+	# rate limits on that leftmost entry (correct per-user limiting in prod).
+	reverse_proxy sdk-proxy:8000
+
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000"
+	}
+}

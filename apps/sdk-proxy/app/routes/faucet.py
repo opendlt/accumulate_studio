@@ -2,16 +2,25 @@
 
 import time
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Request
 
+from ..auth import auth_header, require_signing
 from ..models import FaucetRequest, TxResponse
+from ..rate_limit import RATE_LIMIT_FAUCET, limiter
 
 router = APIRouter()
 
 
 @router.post("/faucet", response_model=TxResponse)
-async def request_faucet(req: FaucetRequest):
+@limiter.limit(RATE_LIMIT_FAUCET)
+async def request_faucet(
+    request: Request,
+    req: FaucetRequest,
+    authorization: str | None = Depends(auth_header),
+):
     from ..main import client
+
+    require_signing(req.session_id, authorization)
 
     if client is None:
         return TxResponse(success=False, error="Client not initialized")

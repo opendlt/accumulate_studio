@@ -1,18 +1,27 @@
 """Add Credits routes."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Request
 
 from accumulate_client.convenience import SmartSigner, TxBody
 from accumulate_client.v3.options import NetworkStatusOptions
 
+from ..auth import auth_header, require_signing
 from ..models import AddCreditsRequest, TxResponse
+from ..rate_limit import RATE_LIMIT_SIGN, limiter
 
 router = APIRouter()
 
 
 @router.post("/add-credits", response_model=TxResponse)
-async def add_credits(req: AddCreditsRequest):
+@limiter.limit(RATE_LIMIT_SIGN)
+async def add_credits(
+    request: Request,
+    req: AddCreditsRequest,
+    authorization: str | None = Depends(auth_header),
+):
     from ..main import store, client
+
+    require_signing(req.session_id, authorization)
 
     if client is None:
         return TxResponse(success=False, error="Client not initialized")

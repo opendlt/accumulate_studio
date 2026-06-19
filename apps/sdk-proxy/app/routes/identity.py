@@ -1,17 +1,30 @@
 """Create Identity routes."""
 
-from fastapi import APIRouter
+import os
+
+from fastapi import APIRouter, Depends, Request
 
 from accumulate_client.convenience import SmartSigner, TxBody
 
+from ..auth import auth_header, require_signing
 from ..models import CreateIdentityRequest, TxResponse
+from ..rate_limit import RATE_LIMIT_SIGN, limiter
 
 router = APIRouter()
 
+_DEBUG_LOG = os.getenv("PROXY_DEBUG_LOGGING", "false").strip().lower() in ("1", "true", "yes", "on")
+
 
 @router.post("/create-identity", response_model=TxResponse)
-async def create_identity(req: CreateIdentityRequest):
+@limiter.limit(RATE_LIMIT_SIGN)
+async def create_identity(
+    request: Request,
+    req: CreateIdentityRequest,
+    authorization: str | None = Depends(auth_header),
+):
     from ..main import store, client
+
+    require_signing(req.session_id, authorization)
 
     if client is None:
         return TxResponse(success=False, error="Client not initialized")
@@ -35,14 +48,15 @@ async def create_identity(req: CreateIdentityRequest):
         pub_key_hash = hashlib.sha256(kp.public_key_bytes()).hexdigest()
 
         logger = logging.getLogger("create-identity")
-        logger.warning(
-            "create-identity: url=%s key_book_url=%s pub_key=%s "
-            "pub_key_hash=%s principal=%s signer_url=%s",
-            req.url, key_book_url,
-            kp.public_key_bytes().hex(),
-            pub_key_hash,
-            principal, signer_url,
-        )
+        if _DEBUG_LOG:
+            logger.debug(
+                "create-identity: url=%s key_book_url=%s pub_key=%s "
+                "pub_key_hash=%s principal=%s signer_url=%s",
+                req.url, key_book_url,
+                kp.public_key_bytes().hex(),
+                pub_key_hash,
+                principal, signer_url,
+            )
 
         result = signer.sign_submit_and_wait(
             principal=principal,

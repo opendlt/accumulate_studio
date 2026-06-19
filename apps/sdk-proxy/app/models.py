@@ -1,6 +1,6 @@
 """Pydantic request/response models for the SDK proxy API."""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 # ---------------------------------------------------------------------------
@@ -35,6 +35,7 @@ class GenerateKeysResponse(BaseModel):
     lite_identity: str
     lite_token_account: str
     public_key_hash: str
+    token: str | None = None       # bearer token bound to this session
 
 
 # ---------------------------------------------------------------------------
@@ -43,7 +44,7 @@ class GenerateKeysResponse(BaseModel):
 
 class FaucetRequest(SessionRequest):
     account: str
-    times: int = 1
+    times: int = Field(default=1, ge=1, le=5)   # MAX_FAUCET_TIMES
 
 
 # ---------------------------------------------------------------------------

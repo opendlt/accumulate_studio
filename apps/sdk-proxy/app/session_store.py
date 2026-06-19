@@ -1,6 +1,12 @@
-"""In-memory keypair session storage (development only)."""
+"""In-memory keypair session storage (development / single-instance only)."""
 
 from __future__ import annotations
+
+import os
+import secrets
+import threading
+import time
+from dataclasses import dataclass
 
 
 class AlgoKeypair:
@@ -59,23 +65,88 @@ class AlgoKeypair:
         return self._lite_token_account
 
 
-class SessionStore:
-    """In-memory keypair storage keyed by session_id (browser tab).
+class SessionCapExceeded(Exception):
+    """Raised when MAX_SESSIONS is reached."""
 
-    This is for development use only. Production deployments should use
-    encrypted browser storage or a secrets vault.
+
+@dataclass
+class _SessionEntry:
+    keypair: AlgoKeypair
+    token: str
+    created_at: float
+    last_seen: float
+
+
+class SessionStore:
+    """Instance-scoped keypair storage keyed by session_id.
+
+    Each session holds a freshly minted bearer token that the caller must
+    present on every signing request. State is per-instance (NOT a class
+    attribute), is evicted after ``SESSION_TTL_SECONDS`` of inactivity, and is
+    bounded by ``MAX_SESSIONS``. Single-process only — a multi-worker deploy
+    needs a shared store (e.g. Redis); run uvicorn with one worker until then.
     """
 
-    _sessions: dict[str, AlgoKeypair] = {}
+    def __init__(self) -> None:
+        self._sessions: dict[str, _SessionEntry] = {}
+        self._lock = threading.Lock()
+        self._ttl = int(os.getenv("SESSION_TTL_SECONDS", "1800"))   # 30 min idle
+        self._max = int(os.getenv("MAX_SESSIONS", "500"))
 
-    def store(self, session_id: str, keypair: AlgoKeypair) -> None:
-        self._sessions[session_id] = keypair
+    # -- internal ------------------------------------------------------------
+
+    def _evict_expired(self, now: float) -> None:
+        dead = [sid for sid, e in self._sessions.items() if now - e.last_seen > self._ttl]
+        for sid in dead:
+            self._sessions.pop(sid, None)
+
+    # -- public API ----------------------------------------------------------
+
+    def create(self, session_id: str, keypair: AlgoKeypair) -> str:
+        """Store a keypair and return a freshly minted bearer token.
+
+        Re-creating an existing session rotates its token and resets its TTL.
+        """
+        now = time.time()
+        token = secrets.token_urlsafe(32)
+        with self._lock:
+            self._evict_expired(now)
+            if session_id not in self._sessions and len(self._sessions) >= self._max:
+                raise SessionCapExceeded()
+            self._sessions[session_id] = _SessionEntry(
+                keypair=keypair, token=token, created_at=now, last_seen=now,
+            )
+        return token
 
     def get(self, session_id: str) -> AlgoKeypair | None:
-        return self._sessions.get(session_id)
+        now = time.time()
+        with self._lock:
+            self._evict_expired(now)
+            entry = self._sessions.get(session_id)
+            if entry is None:
+                return None
+            entry.last_seen = now
+            return entry.keypair
+
+    def verify_token(self, session_id: str, token: str) -> bool:
+        """Constant-time check that ``token`` belongs to ``session_id``."""
+        with self._lock:
+            entry = self._sessions.get(session_id)
+            if entry is None:
+                return False
+            ok = secrets.compare_digest(entry.token, token)
+            if ok:
+                entry.last_seen = time.time()
+            return ok
 
     def remove(self, session_id: str) -> None:
-        self._sessions.pop(session_id, None)
+        with self._lock:
+            self._sessions.pop(session_id, None)
 
     def has(self, session_id: str) -> bool:
-        return session_id in self._sessions
+        with self._lock:
+            return session_id in self._sessions
+
+    def count(self) -> int:
+        with self._lock:
+            return len(self._sessions)

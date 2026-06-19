@@ -1,20 +1,32 @@
 """FastAPI application for the Accumulate Studio SDK Proxy."""
 
+import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from accumulate_client import Accumulate
 from accumulate_client.v3.options import NetworkStatusOptions
 
-from .config import get_network_endpoint, get_network_name
+from .config import (
+    allowed_origins,
+    assert_network_allowed,
+    get_network_endpoint,
+    get_network_name,
+)
+from .rate_limit import limiter
 from .session_store import SessionStore
 from .body_padding import apply_body_padding_patch
 from .routes import keys, faucet, credits, identity, tokens, data, query, generic
 
 # Patch the SDK's binary encoder to avoid Go's 64-byte body rejection.
 apply_body_padding_patch()
+
+logging.basicConfig(level=os.getenv("PROXY_LOG_LEVEL", "INFO").upper())
 
 # ---------------------------------------------------------------------------
 # Shared state
@@ -31,6 +43,7 @@ client: Accumulate | None = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global client
+    assert_network_allowed()                 # fail fast on mainnet / unknown network
     client = Accumulate(get_network_endpoint())
     yield
     if client is not None:
@@ -48,11 +61,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=allowed_origins(),
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Mount route modules
@@ -75,7 +92,7 @@ async def health():
     network = get_network_name()
     try:
         if client is not None:
-            ns = client.v3.network_status(NetworkStatusOptions(partition="directory"))
+            client.v3.network_status(NetworkStatusOptions(partition="directory"))
             return {"status": "ok", "network": network, "connected": True}
     except Exception as e:
         return {"status": "degraded", "network": network, "connected": False, "error": str(e)}

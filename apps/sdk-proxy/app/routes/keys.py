@@ -2,12 +2,14 @@
 
 import hashlib
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from accumulate_client.crypto.ed25519 import Ed25519KeyPair
 
-from ..models import GenerateKeysRequest, GenerateKeysResponse
-from ..session_store import AlgoKeypair
+from ..auth import auth_header
+from ..models import GenerateKeysRequest, GenerateKeysResponse, SessionRequest
+from ..rate_limit import RATE_LIMIT_GENERATE, limiter
+from ..session_store import AlgoKeypair, SessionCapExceeded
 
 router = APIRouter()
 
@@ -117,12 +119,12 @@ _VALID_ALGORITHMS = set(_ALGORITHMS.keys())
 # ---------------------------------------------------------------------------
 
 @router.post("/generate-keys", response_model=GenerateKeysResponse)
-async def generate_keys(req: GenerateKeysRequest):
+@limiter.limit(RATE_LIMIT_GENERATE)
+async def generate_keys(request: Request, req: GenerateKeysRequest):
     from ..main import store
 
     algo = req.algorithm.lower()
     if algo not in _VALID_ALGORITHMS:
-        from fastapi import HTTPException
         raise HTTPException(
             status_code=400,
             detail=f"Unsupported algorithm '{req.algorithm}'. Valid: {sorted(_VALID_ALGORITHMS)}",
@@ -140,8 +142,15 @@ async def generate_keys(req: GenerateKeysRequest):
         lite_token_account=lta,
     )
 
+    token = None
     if req.store_as_signer:
-        store.store(req.session_id, wrapper)
+        try:
+            token = store.create(req.session_id, wrapper)
+        except SessionCapExceeded:
+            raise HTTPException(
+                status_code=429,
+                detail="Server session limit reached; try again later",
+            )
 
     return GenerateKeysResponse(
         algorithm=algo,
@@ -149,4 +158,18 @@ async def generate_keys(req: GenerateKeysRequest):
         lite_identity=lid,
         lite_token_account=lta,
         public_key_hash=pub_key_hash_hex,
+        token=token,
     )
+
+
+@router.post("/logout")
+async def logout(req: SessionRequest, authorization: str | None = Depends(auth_header)):
+    """Evict a session's keypair. Best-effort: only removes on a token match,
+    but never 401s (logout must always succeed for the caller)."""
+    from ..main import store
+
+    if authorization and authorization.lower().startswith("bearer "):
+        token = authorization.split(" ", 1)[1].strip()
+        if store.verify_token(req.session_id, token):
+            store.remove(req.session_id)
+    return {"ok": True}
