@@ -271,11 +271,18 @@ const SyntheticMessageCard: React.FC<SyntheticMessageCardProps> = ({ message, in
                   Pending settlement
                 </span>
               </>
-            ) : (
+            ) : message.status === 'failed' ? (
               <>
                 <XCircle className="w-4 h-4 text-red-500" />
                 <span className="text-sm text-red-600 dark:text-red-400">
                   Settlement failed
+                </span>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  Status unknown — not yet confirmed
                 </span>
               </>
             )}

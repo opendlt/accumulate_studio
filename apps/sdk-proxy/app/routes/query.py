@@ -4,11 +4,25 @@ import time
 
 from fastapi import APIRouter
 
-from accumulate_client.v3.options import RangeOptions
+from accumulate_client.v3.options import RangeOptions, ChainQuery, ReceiptOptions
 
-from ..models import QueryRequest, QueryTxRequest, QueryDirectoryRequest, WaitForTxRequest
+from ..models import (
+    QueryRequest,
+    QueryTxRequest,
+    QueryReceiptRequest,
+    QueryDirectoryRequest,
+    WaitForTxRequest,
+)
 
 router = APIRouter()
+
+
+def _bare_hash(txid: str) -> str:
+    """Extract the 32-byte hex hash from a txid (acc://<hash>@<account> or <hash>)."""
+    h = txid.strip()
+    if h.startswith("acc://"):
+        h = h[len("acc://"):]
+    return h.split("@", 1)[0]
 
 
 def _normalize_query_result(result: dict) -> dict:
@@ -53,6 +67,33 @@ async def query_tx(req: QueryTxRequest):
     try:
         result = client.v3.query(req.tx_hash)
         return {"success": True, "data": _normalize_query_result(result)}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@router.post("/query-receipt")
+async def query_receipt(req: QueryReceiptRequest):
+    """Return the Merkle inclusion receipt for a transaction.
+
+    In Accumulate V3 the proof lives on the principal account's chain, not on the
+    transaction message. We query the chain entry for the tx hash and ask for the
+    receipt (forAny anchors). The response carries `receipt = {start, end, anchor,
+    entries:[{hash, right?}]}`, which the client recomputes and verifies.
+    """
+    from ..main import client
+
+    if client is None:
+        return {"success": False, "error": "Client not initialized"}
+
+    try:
+        entry = _bare_hash(req.tx_hash)
+        q = ChainQuery(
+            name=req.chain,
+            entry=entry,
+            include_receipt=ReceiptOptions(for_any=True),
+        )
+        result = client.v3.query(req.account, query=q)
+        return {"success": True, "data": result}
     except Exception as e:
         return {"success": False, "error": str(e)}
 

@@ -318,7 +318,8 @@ export function applyDiff(state: JsonObject, diff: StateDiffEntry[]): JsonObject
     if (entry.type === 'removed') {
       deletePath(state, parts);
     } else {
-      setPath(state, parts, entry.after);
+      // entry.after is the JSON value that was diffed; safe to treat as JsonValue.
+      setPath(state, parts, entry.after as JsonValue);
     }
   }
   return state;

@@ -117,6 +117,14 @@ export interface TransactionReceipt {
     anchor: string;
   };
   verified: boolean;
+  /**
+   * Set by the engine after recomputing the SHA-256 Merkle root from the proof
+   * and comparing it to the anchor:
+   *  - 'verified'       root recomputed and matches the anchor
+   *  - 'pending-anchor' delivered but not yet anchored (no proof/anchor yet)
+   *  - 'failed'         a proof/anchor is present but the root did not match
+   */
+  verificationState?: 'verified' | 'pending-anchor' | 'failed';
 }
 
 // =============================================================================

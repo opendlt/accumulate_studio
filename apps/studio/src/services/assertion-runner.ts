@@ -254,11 +254,19 @@ async function evaluateAssertion(
         }
         const rcptNodeState = executionState.nodeStates[rcptResolvedId];
         const receipt = rcptNodeState.receipt as Record<string, unknown> | undefined;
-        const verified = receipt?.verified === true;
+        const vs = (receipt?.verificationState as string | undefined)
+          ?? (receipt?.verified === true ? 'verified' : 'failed');
+        if (vs === 'pending-anchor') {
+          // Delivered but not yet anchored — no Merkle proof to verify yet.
+          return { assertion, status: 'skip', message: 'Receipt not yet anchored — Merkle proof unavailable' };
+        }
+        const verified = vs === 'verified' && receipt?.verified === true;
         return {
           assertion,
           status: verified ? 'pass' : 'fail',
-          message: verified ? 'Receipt verified' : 'Receipt not verified',
+          message: verified
+            ? 'Receipt verified: recomputed Merkle root matches anchor'
+            : 'Receipt verification failed: Merkle root did not match anchor',
         };
       }
 
@@ -276,13 +284,33 @@ async function evaluateAssertion(
         if (!synthetics || synthetics.length === 0) {
           return { assertion, status: 'fail', message: 'No synthetic transactions found' };
         }
-        const allDelivered = synthetics.every((s) => s.status === 'delivered');
+        const failed = synthetics.filter((s) => s.status === 'failed');
+        const pending = synthetics.filter(
+          (s) => s.status === 'pending' || s.status === 'unknown' || s.status == null
+        );
+        const delivered = synthetics.filter(
+          (s) => s.status === 'delivered' || s.status === 'confirmed'
+        );
+        if (failed.length > 0) {
+          return {
+            assertion,
+            status: 'fail',
+            message: `${failed.length}/${synthetics.length} synthetic transaction(s) failed`,
+          };
+        }
+        if (pending.length > 0) {
+          // Honest: not yet confirmed. 'skip' so a slow anchor doesn't false-fail,
+          // but it is NOT a pass.
+          return {
+            assertion,
+            status: 'skip',
+            message: `${pending.length}/${synthetics.length} synthetic transaction(s) still pending — not yet confirmed delivered`,
+          };
+        }
         return {
           assertion,
-          status: allDelivered ? 'pass' : 'fail',
-          message: allDelivered
-            ? `All ${synthetics.length} synthetic transactions delivered`
-            : `Some synthetic transactions not delivered`,
+          status: 'pass',
+          message: `All ${delivered.length} synthetic transaction(s) confirmed delivered`,
         };
       }
 

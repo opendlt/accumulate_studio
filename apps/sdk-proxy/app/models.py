@@ -127,6 +127,13 @@ class QueryTxRequest(BaseModel):
     tx_hash: str
 
 
+class QueryReceiptRequest(BaseModel):
+    """Fetch a transaction's Merkle inclusion receipt from an account's chain."""
+    account: str
+    tx_hash: str
+    chain: str = "main"
+
+
 class QueryDirectoryRequest(BaseModel):
     url: str
     start: int = 0

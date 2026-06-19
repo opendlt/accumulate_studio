@@ -242,13 +242,13 @@ describe('Assertion Runner', () => {
       expect(results[0].status).toBe('pass');
     });
 
-    it('fails when receipt not verified', async () => {
+    it('fails when receipt verification failed (proof did not match anchor)', async () => {
       const execution = makeExecution({
         nodeStates: {
           'node-1': {
             nodeId: 'node-1',
             status: 'success',
-            receipt: { txHash: 'abc', verified: false },
+            receipt: { txHash: 'abc', verified: false, verificationState: 'failed' },
           },
         },
       });
@@ -259,6 +259,41 @@ describe('Assertion Runner', () => {
 
       const results = await runAssertions(assertions, execution);
       expect(results[0].status).toBe('fail');
+    });
+
+    it('passes only when verificationState is verified AND verified flag is true', async () => {
+      const execution = makeExecution({
+        nodeStates: {
+          'node-1': {
+            nodeId: 'node-1',
+            status: 'success',
+            receipt: { txHash: 'abc', verified: true, verificationState: 'verified' },
+          },
+        },
+      });
+      const results = await runAssertions(
+        [{ type: 'receipt.verified', sourceStep: 'node-1' }],
+        execution
+      );
+      expect(results[0].status).toBe('pass');
+    });
+
+    it('skips (not pass/fail) when receipt is delivered but not yet anchored', async () => {
+      const execution = makeExecution({
+        nodeStates: {
+          'node-1': {
+            nodeId: 'node-1',
+            status: 'success',
+            receipt: { txHash: 'abc', verified: false, verificationState: 'pending-anchor' },
+          },
+        },
+      });
+      const results = await runAssertions(
+        [{ type: 'receipt.verified', sourceStep: 'node-1' }],
+        execution
+      );
+      expect(results[0].status).toBe('skip');
+      expect(results[0].message).toMatch(/not yet anchored/i);
     });
   });
 
@@ -287,7 +322,30 @@ describe('Assertion Runner', () => {
       expect(results[0].status).toBe('pass');
     });
 
-    it('fails when some synthetics not delivered', async () => {
+    it('fails when a synthetic failed', async () => {
+      const execution = makeExecution({
+        nodeStates: {
+          'node-1': {
+            nodeId: 'node-1',
+            status: 'success',
+            outputs: {
+              synthetics: [
+                { type: 'deposit', status: 'delivered' },
+                { type: 'deposit', status: 'failed' },
+              ],
+            },
+          },
+        },
+      });
+
+      const results = await runAssertions(
+        [{ type: 'synthetic.delivered', sourceStep: 'node-1' }],
+        execution
+      );
+      expect(results[0].status).toBe('fail');
+    });
+
+    it('skips (not pass/fail) when a synthetic is still pending', async () => {
       const execution = makeExecution({
         nodeStates: {
           'node-1': {
@@ -303,12 +361,29 @@ describe('Assertion Runner', () => {
         },
       });
 
-      const assertions: FlowAssertion[] = [
-        { type: 'synthetic.delivered', sourceStep: 'node-1' },
-      ];
+      const results = await runAssertions(
+        [{ type: 'synthetic.delivered', sourceStep: 'node-1' }],
+        execution
+      );
+      expect(results[0].status).toBe('skip');
+    });
 
-      const results = await runAssertions(assertions, execution);
-      expect(results[0].status).toBe('fail');
+    it('skips when a synthetic status is unknown (query failed)', async () => {
+      const execution = makeExecution({
+        nodeStates: {
+          'node-1': {
+            nodeId: 'node-1',
+            status: 'success',
+            outputs: { synthetics: [{ type: 'deposit', status: 'unknown' }] },
+          },
+        },
+      });
+
+      const results = await runAssertions(
+        [{ type: 'synthetic.delivered', sourceStep: 'node-1' }],
+        execution
+      );
+      expect(results[0].status).toBe('skip');
     });
 
     it('fails when no synthetics found', async () => {

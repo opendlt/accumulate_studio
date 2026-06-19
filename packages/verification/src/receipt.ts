@@ -86,14 +86,16 @@ export function parseReceipt(data: unknown): TransactionReceipt {
     }
   }
 
-  // Parse anchor chain info
+  // Parse anchor chain info. The anchor (Merkle root) is the field that makes a
+  // receipt verifiable; start/end are positional metadata and may be empty.
+  // Keep the anchorChain whenever an anchor is present.
   let anchorChain: TransactionReceipt['anchorChain'];
   if (raw.anchorChain && typeof raw.anchorChain === 'object') {
     const ac = raw.anchorChain;
-    if (ac.start && ac.end && ac.anchor) {
+    if (ac.anchor) {
       anchorChain = {
-        start: String(ac.start),
-        end: String(ac.end),
+        start: String(ac.start ?? ''),
+        end: String(ac.end ?? ''),
         anchor: String(ac.anchor),
       };
     }
@@ -145,11 +147,13 @@ export function verifyReceipt(receipt: TransactionReceipt): ReceiptVerificationR
     };
   }
 
-  // Verify the Merkle proof if we have an anchor
+  // Without an anchor (Merkle root) there is nothing to verify the proof
+  // against. This is the delivered-but-not-yet-anchored case — it is NOT valid.
+  // Reporting it as valid would be a "verified" claim with no cryptography.
   if (!receipt.anchorChain?.anchor) {
-    // No anchor to verify against, but proof structure is valid
     return {
-      valid: true,
+      valid: false,
+      error: 'Receipt is not yet anchored — no Merkle root to verify against',
       details: {
         proofValid: true,
         anchorValid: false,

@@ -3,6 +3,7 @@ import {
   Shield,
   ShieldCheck,
   ShieldX,
+  Clock,
   ChevronDown,
   ChevronRight,
   Hash,
@@ -131,11 +132,16 @@ const ReceiptCard: React.FC<ReceiptCardProps> = ({ receipt, nodeId }) => {
           <ChevronRight className="w-4 h-4 text-gray-400" />
         )}
 
-        {receipt.verified ? (
-          <ShieldCheck className="w-5 h-5 text-green-500" />
-        ) : (
-          <ShieldX className="w-5 h-5 text-red-500" />
-        )}
+        {(() => {
+          // Hard rule: never green when there is no proof.
+          const vs = receipt.verificationState
+            ?? (receipt.verified && receipt.proof.length > 0
+              ? 'verified'
+              : receipt.proof.length === 0 ? 'pending-anchor' : 'failed');
+          if (vs === 'verified') return <ShieldCheck className="w-5 h-5 text-green-500" />;
+          if (vs === 'pending-anchor') return <Clock className="w-5 h-5 text-amber-500" />;
+          return <ShieldX className="w-5 h-5 text-red-500" />;
+        })()}
 
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -146,16 +152,22 @@ const ReceiptCard: React.FC<ReceiptCardProps> = ({ receipt, nodeId }) => {
           </p>
         </div>
 
-        <span
-          className={cn(
-            'px-2 py-1 rounded text-xs font-medium',
-            receipt.verified
-              ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
-              : 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
-          )}
-        >
-          {receipt.verified ? 'Verified' : 'Unverified'}
-        </span>
+        {(() => {
+          const vs = receipt.verificationState
+            ?? (receipt.verified && receipt.proof.length > 0
+              ? 'verified'
+              : receipt.proof.length === 0 ? 'pending-anchor' : 'failed');
+          const label = vs === 'verified' ? 'Verified (Merkle root matches anchor)'
+            : vs === 'pending-anchor' ? 'Awaiting anchor' : 'Verification failed';
+          const cls = vs === 'verified'
+            ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
+            : vs === 'pending-anchor'
+            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
+            : 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300';
+          return (
+            <span className={cn('px-2 py-1 rounded text-xs font-medium', cls)}>{label}</span>
+          );
+        })()}
       </div>
 
       {/* Content */}
@@ -286,11 +298,15 @@ export const ReceiptVerifier: React.FC<ReceiptVerifierProps> = ({ executionState
     return result;
   }, [executionState]);
 
-  // Summary stats
+  // Summary stats (tri-state — only a recomputed+matched proof counts as verified)
   const stats = useMemo(() => {
-    const verified = receipts.filter((r) => r.receipt.verified).length;
-    const unverified = receipts.filter((r) => !r.receipt.verified).length;
-    return { verified, unverified, total: receipts.length };
+    const stateOf = (r: TransactionReceipt) =>
+      r.verificationState
+      ?? (r.verified && r.proof.length > 0 ? 'verified' : r.proof.length === 0 ? 'pending-anchor' : 'failed');
+    const verified = receipts.filter((r) => stateOf(r.receipt) === 'verified').length;
+    const awaiting = receipts.filter((r) => stateOf(r.receipt) === 'pending-anchor').length;
+    const failed = receipts.filter((r) => stateOf(r.receipt) === 'failed').length;
+    return { verified, awaiting, failed, total: receipts.length };
   }, [receipts]);
 
   if (!executionState) {
@@ -339,10 +355,16 @@ export const ReceiptVerifier: React.FC<ReceiptVerifierProps> = ({ executionState
               {stats.verified} verified
             </span>
           )}
-          {stats.unverified > 0 && (
+          {stats.awaiting > 0 && (
+            <span className="flex items-center gap-1 text-sm text-amber-600 dark:text-amber-400">
+              <Clock className="w-4 h-4" />
+              {stats.awaiting} awaiting anchor
+            </span>
+          )}
+          {stats.failed > 0 && (
             <span className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
               <ShieldX className="w-4 h-4" />
-              {stats.unverified} unverified
+              {stats.failed} failed
             </span>
           )}
         </div>

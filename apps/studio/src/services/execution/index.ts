@@ -7,8 +7,10 @@ import type {
   FlowNode,
   NodeExecutionState,
   AccountStateDiff,
+  SyntheticMessageType,
 } from '@accumulate-studio/types';
 import { topologicalSort } from '@accumulate-studio/types';
+import { parseReceipt, verifyReceipt } from '@accumulate-studio/verification';
 import { useFlowStore } from '../../store/flow-store';
 import { networkService, AccumulateAPI } from '../network';
 import { NodeExecutor, type NodeOutputs } from './node-executor';
@@ -26,6 +28,32 @@ export interface ExecutionContext {
   api: AccumulateAPI;
   abortController: AbortController;
   sessionId: string;
+}
+
+// =============================================================================
+// Helpers
+// =============================================================================
+
+/**
+ * Parse a transaction status (V2 object form or V3 string form) into a concrete
+ * synthetic status. Never fabricates 'delivered' — unknown shapes degrade to
+ * 'unknown' (a non-green, honest state).
+ */
+export function parseSyntheticStatus(raw: unknown): 'pending' | 'delivered' | 'failed' | 'unknown' {
+  if (typeof raw === 'string') {
+    const l = raw.toLowerCase();
+    if (l === 'delivered' || l === 'confirmed') return 'delivered';
+    if (l === 'failed' || l === 'error') return 'failed';
+    if (l === 'pending') return 'pending';
+    return 'unknown';
+  }
+  if (raw && typeof raw === 'object') {
+    const o = raw as Record<string, unknown>;
+    if (o.failed) return 'failed';
+    if (o.delivered || o.code === 'delivered' || o.code === 'ok') return 'delivered';
+    if (o.pending) return 'pending';
+  }
+  return 'unknown';
 }
 
 // =============================================================================
@@ -505,65 +533,183 @@ export class ExecutionEngine {
         log('info', `Produced (${producedList.length}): ${JSON.stringify(producedList).slice(0, 300)}`);
 
         if (producedList.length > 0) {
-          // Infer synthetic type from parent transaction type
-          // V2: type at top level; V3: nested under message.transaction.body.type
           const msg = txData.message as Record<string, unknown> | undefined;
-          const txType = (txData.type as string)
-            || (msg?.transaction as Record<string, unknown>)?.body
-              && ((msg?.transaction as Record<string, unknown>)?.body as Record<string, unknown>)?.type as string
-            || (msg?.type as string)
-            || '';
-          const syntheticType = txType === 'sendTokens' ? 'SyntheticDepositTokens'
-            : txType === 'addCredits' ? 'SyntheticDepositCredits'
-            : txType === 'createIdentity' ? 'SyntheticCreateIdentity'
-            : txType === 'writeData' ? 'SyntheticWriteData'
-            : 'SyntheticDepositTokens';
+          const txn = msg?.transaction as Record<string, unknown> | undefined;
+          const body = txn?.body as Record<string, unknown> | undefined;
+          const header = txn?.header as Record<string, unknown> | undefined;
 
-          // V2 has origin at top level; V3 nests it under message.transaction.header.principal
-          const origin = (txData.origin as string)
-            || (msg?.transaction as Record<string, unknown>)?.header
-              && ((msg?.transaction as Record<string, unknown>)?.header as Record<string, unknown>)?.principal as string
-            || '';
+          // Parent tx type (V2 top-level OR V3 nested) — parenthesized, no precedence bug.
+          const parentTxType =
+            (txData.type as string | undefined)
+            ?? (body?.type as string | undefined)
+            ?? (msg?.type as string | undefined)
+            ?? '';
 
-          const mapped = producedList.map((txid: string) => {
+          const parentOrigin =
+            (txData.origin as string | undefined)
+            ?? (header?.principal as string | undefined)
+            ?? '';
+
+          // Fallback type label derived from the PARENT — used only when the
+          // synthetic's own body type is not (yet) returned by the query.
+          const fallbackType: SyntheticMessageType =
+            parentTxType === 'sendTokens' ? 'SyntheticDepositTokens'
+            : parentTxType === 'addCredits' ? 'SyntheticDepositCredits'
+            : parentTxType === 'createIdentity' ? 'SyntheticCreateIdentity'
+            : parentTxType === 'writeData' ? 'SyntheticWriteData'
+            : 'SyntheticSequenced';
+
+          const KNOWN_SYNTHETIC: SyntheticMessageType[] = [
+            'SyntheticCreateIdentity', 'SyntheticWriteData', 'SyntheticDepositTokens',
+            'SyntheticDepositCredits', 'SyntheticBurnTokens', 'SyntheticMirror',
+            'SyntheticSequenced', 'SyntheticAnchor',
+          ];
+
+          // Query each produced synthetic for its REAL status/type/destination.
+          const mapped = await Promise.all(producedList.map(async (txid: string) => {
             const hashMatch = txid.match(/acc:\/\/([a-f0-9]+)@/);
             const destMatch = txid.match(/@(.+)/);
-            return {
-              type: syntheticType,
-              hash: hashMatch?.[1] || txid,
-              txid,
-              source: origin,
-              destination: destMatch ? `acc://${destMatch[1]}` : '',
-              status: 'delivered' as const,
-            };
-          });
+            const hash = hashMatch?.[1] || txid;
+
+            // Last-resort fallbacks (string scraping) — overridden by the query below.
+            let type: SyntheticMessageType = fallbackType;
+            let source = parentOrigin;
+            let destination = destMatch ? `acc://${destMatch[1]}` : '';
+            let status: 'pending' | 'delivered' | 'failed' | 'unknown' = 'unknown';
+
+            try {
+              const synRes = await api.callProxy<{
+                success: boolean;
+                data?: Record<string, unknown>;
+                error?: string;
+              }>('/api/query-tx', { tx_hash: txid });
+
+              if (synRes.success && synRes.data) {
+                const sd = synRes.data;
+                const sMsg = sd.message as Record<string, unknown> | undefined;
+                const sTxn = sMsg?.transaction as Record<string, unknown> | undefined;
+                const sBody = sTxn?.body as Record<string, unknown> | undefined;
+                const sHeader = sTxn?.header as Record<string, unknown> | undefined;
+
+                // Real synthetic body type, if the network returns it.
+                const sType =
+                  (sd.type as string | undefined)
+                  ?? (sBody?.type as string | undefined)
+                  ?? (sMsg?.type as string | undefined);
+                if (sType) {
+                  const norm = sType.charAt(0).toUpperCase() + sType.slice(1);
+                  if (KNOWN_SYNTHETIC.includes(norm as SyntheticMessageType)) {
+                    type = norm as SyntheticMessageType;
+                  }
+                }
+
+                // Real source/destination from the synthetic's header.
+                const sPrincipal = sHeader?.principal as string | undefined;
+                if (sPrincipal) destination = sPrincipal;
+                const sSource = (sBody?.source as string | undefined) ?? (sd.origin as string | undefined);
+                if (sSource) source = sSource;
+
+                // Real status — never hardcoded.
+                status = parseSyntheticStatus(sd.status);
+              }
+            } catch (e) {
+              log('debug', `Synthetic query failed for ${txid}: ${e instanceof Error ? e.message : String(e)}`);
+              status = 'unknown';
+            }
+
+            return { type, hash, txid, source, destination, status };
+          }));
+
           mergeOutput('synthetics', mapped);
         }
 
-        // Build receipt from transaction data if available
-        // V2: status is an object; V3: status is an enum string with separate fields
+        // Build receipt with REAL Merkle verification. `verified` is set ONLY by
+        // recomputing the SHA-256 root from the proof and matching the anchor —
+        // never from delivery status.
         const rawStatus = txData.status;
-        const isDelivered = rawStatus === 'delivered'
-          || (typeof rawStatus === 'object' && rawStatus !== null
-            && ((rawStatus as Record<string, unknown>).delivered || (rawStatus as Record<string, unknown>).code === 'delivered'));
         const statusObj = typeof rawStatus === 'object' && rawStatus !== null
           ? rawStatus as Record<string, unknown>
           : null;
+
         if (rawStatus) {
+          // The Merkle proof lives on the principal account's chain (V3), fetched
+          // via /api/query-receipt (chain entry + receipt), not on the tx message.
+          const receiptAccount =
+            (inputs.principal as string | undefined)
+            || (inputs.liteTokenAccount as string | undefined)
+            || (inputs.liteTokenAccountUrl as string | undefined);
+
+          let proofEntries: { hash: string; right: boolean }[] = [];
+          let anchor: string | undefined;
+          let leaf = txHash;
+
+          if (receiptAccount) {
+            try {
+              const rcptRes = await api.callProxy<{
+                success: boolean;
+                data?: Record<string, unknown>;
+                error?: string;
+              }>('/api/query-receipt', { account: receiptAccount, tx_hash: txHash });
+
+              const rcpt = rcptRes.success
+                ? (rcptRes.data?.receipt as Record<string, unknown> | undefined)
+                : undefined;
+              if (rcpt) {
+                const rawEntries = (rcpt.entries as unknown[] | undefined) ?? [];
+                proofEntries = rawEntries
+                  .map((e) => {
+                    const o = e as Record<string, unknown>;
+                    return { hash: String(o.hash ?? ''), right: o.right === true };
+                  })
+                  .filter((e) => e.hash.length > 0);
+                anchor = rcpt.anchor as string | undefined;
+                leaf = (rcpt.start as string | undefined) || txHash;
+              }
+            } catch (e) {
+              log('debug', `Receipt query failed: ${e instanceof Error ? e.message : String(e)}`);
+            }
+          }
+
+          let verified = false;
+          let verificationState: 'verified' | 'pending-anchor' | 'failed' = 'pending-anchor';
+          if (proofEntries.length > 0 && anchor) {
+            try {
+              const parsed = parseReceipt({
+                txHash: leaf,
+                localBlock: (statusObj?.blockHeight ?? txData.blockHeight ?? txData.received ?? 0) as number,
+                localTimestamp: (statusObj?.timestamp ?? txData.timestamp ?? new Date().toISOString()) as string,
+                majorBlock: statusObj?.majorBlock as number | undefined,
+                majorTimestamp: statusObj?.majorTimestamp as string | undefined,
+                proof: proofEntries,
+                anchorChain: { start: '', end: '', anchor },
+              });
+              const result = verifyReceipt(parsed);
+              verified = result.valid;
+              verificationState = result.valid ? 'verified' : 'failed';
+              log(verified ? 'info' : 'warn',
+                `Receipt verification: ${verified ? 'VERIFIED (Merkle root matches anchor)' : `FAILED (${result.error ?? 'root mismatch'})`}`);
+            } catch (e) {
+              verificationState = 'failed';
+              log('warn', `Receipt verification threw: ${e instanceof Error ? e.message : String(e)}`);
+            }
+          } else {
+            log('debug', 'Receipt has no proof/anchor yet — awaiting major-block anchoring');
+          }
+
           const receipt: Record<string, unknown> = {
             txHash,
             localBlock: statusObj?.blockHeight || txData.blockHeight || txData.received,
             localTimestamp: statusObj?.timestamp || txData.timestamp || txData.lastBlockTime || new Date().toISOString(),
-            proof: statusObj?.proof || [],
-            verified: isDelivered,
+            proof: proofEntries,
+            anchorChain: anchor ? { start: leaf, end: leaf, anchor } : undefined,
+            verified,
+            verificationState,
           };
           if (statusObj?.majorBlock) {
             receipt.majorBlock = statusObj.majorBlock;
             receipt.majorTimestamp = statusObj.majorTimestamp;
           }
-          useFlowStore.getState().updateNodeExecution(nodeId, {
-            receipt,
-          });
+          useFlowStore.getState().updateNodeExecution(nodeId, { receipt });
         }
       } else {
         log('debug', `Tx query: ${txResult.error || 'no data returned'}`);

@@ -9,6 +9,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@accumulate-studio/types': path.resolve(__dirname, '../../packages/types/src'),
       '@accumulate-studio/codegen': path.resolve(__dirname, '../../packages/codegen/src'),
+      '@accumulate-studio/verification': path.resolve(__dirname, '../../packages/verification/src'),
     },
   },
   server: {
