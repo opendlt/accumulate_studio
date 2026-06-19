@@ -10,14 +10,16 @@
 
 export {
   generateBundle,
-  generateBundleZip,
-  generateBundleAsZip,
   type Bundle,
   type BundleOptions,
   type BundleManifest,
   type BundleFile,
   type FileManifestEntry,
 } from './bundle-generator';
+
+// Node-only zip helpers are exported from a separate entry so they are not
+// pulled into browser bundles. Import from '@accumulate-studio/codegen/node'
+// (or the file directly) in Node/server contexts only.
 
 // =============================================================================
 // Flow Serializer

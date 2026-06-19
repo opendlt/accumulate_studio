@@ -6,30 +6,27 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ExportModal } from '../modals/ExportModal';
 
-// Mock stores
-vi.mock('../../store', () => ({
-  useFlowStore: vi.fn((selector: (s: any) => any) => {
-    const state = {
-      flow: {
-        name: 'My Flow',
-        nodes: [],
-        connections: [],
-        variables: [],
-        assertions: [],
-        version: '1.0',
-        metadata: {},
-      },
-    };
-    return selector(state);
-  }),
-  useUIStore: vi.fn((selector: (s: any) => any) => {
-    const state = { selectedNetwork: 'kermit' };
-    return selector(state);
-  }),
-}));
+// Mock stores. The flow object is created ONCE in the factory closure so the
+// selector returns a stable reference across renders (as the real zustand store
+// does) — otherwise the preview effect, which depends on `flow`, would re-run
+// every render and loop.
+vi.mock('../../store', () => {
+  const flow = {
+    name: 'My Flow',
+    nodes: [],
+    connections: [],
+    variables: [],
+    assertions: [],
+    version: '1.0',
+    metadata: {},
+  };
+  return {
+    useFlowStore: vi.fn((selector: (s: any) => any) => selector({ flow })),
+    useUIStore: vi.fn((selector: (s: any) => any) => selector({ selectedNetwork: 'kermit' })),
+  };
+});
 
 vi.mock('@accumulate-studio/types', () => ({
-  SDK_LANGUAGES: ['python', 'rust', 'dart', 'javascript', 'typescript', 'csharp'],
   SDK_DISPLAY_NAMES: {
     python: 'Python',
     rust: 'Rust',
@@ -38,22 +35,6 @@ vi.mock('@accumulate-studio/types', () => ({
     typescript: 'TypeScript',
     csharp: 'C#',
   },
-  SDK_FILE_EXTENSIONS: {
-    python: '.py',
-    rust: '.rs',
-    dart: '.dart',
-    javascript: '.js',
-    typescript: '.ts',
-    csharp: '.cs',
-  },
-  SDK_PROJECT_FILES: {
-    python: 'requirements.txt',
-    rust: 'Cargo.toml',
-    dart: 'pubspec.yaml',
-    javascript: 'package.json',
-    typescript: 'package.json',
-    csharp: 'project.csproj',
-  },
   NETWORKS: {
     kermit: { id: 'kermit', name: 'Kermit (TestNet)', description: 'Test network' },
     mainnet: { id: 'mainnet', name: 'MainNet', description: 'Production' },
@@ -61,6 +42,24 @@ vi.mock('@accumulate-studio/types', () => ({
     devnet: { id: 'devnet', name: 'DevNet', description: 'Dev' },
     local: { id: 'local', name: 'Local DevNet', description: 'Local' },
   },
+}));
+
+// Mock the real bundle generator so the preview/export are deterministic.
+vi.mock('@accumulate-studio/codegen', () => ({
+  generateBundle: vi.fn(async () => ({
+    manifest: {},
+    files: [
+      { path: 'bundle.manifest.json', content: '{}', type: 'manifest' },
+      { path: 'flow.yaml', content: 'x', type: 'flow' },
+      { path: 'README.md', content: '# x', type: 'readme' },
+      { path: 'generated/python/main.py', content: 'print(1)', type: 'code', language: 'python' },
+    ],
+  })),
+}));
+
+vi.mock('../../services/export/bundle-to-zip', () => ({
+  bundleToZipBytes: vi.fn(() => new Uint8Array([1, 2, 3])),
+  downloadBytes: vi.fn(),
 }));
 
 describe('ExportModal', () => {
@@ -139,20 +138,38 @@ describe('ExportModal', () => {
 
   it('renders Include agent files checkbox unchecked by default', () => {
     render(<ExportModal isOpen={true} onClose={vi.fn()} />);
-    expect(screen.getByText('Include agent files (prompts & context)')).toBeDefined();
-    const checkbox = screen.getByText('Include agent files (prompts & context)')
+    expect(screen.getByText('Include agent files (task, acceptance, MCP config)')).toBeDefined();
+    const checkbox = screen.getByText('Include agent files (task, acceptance, MCP config)')
       .closest('label')
       ?.querySelector('input[type="checkbox"]') as HTMLInputElement;
     expect(checkbox.checked).toBe(false);
   });
 
-  it('renders bundle preview section with file tree', () => {
+  it('renders bundle preview built from the real generator output', async () => {
     render(<ExportModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByText('Bundle Preview')).toBeDefined();
-    // The flow name "My Flow" becomes "my_flow_bundle"
-    expect(screen.getByText('my_flow_bundle')).toBeDefined();
-    expect(screen.getByText('flow.yaml')).toBeDefined();
-    expect(screen.getByText('README.md')).toBeDefined();
+    // Preview is async (debounced generateBundle dry-run); wait for real paths.
+    expect(await screen.findByText('flow.yaml')).toBeDefined();
+    expect(await screen.findByText('README.md')).toBeDefined();
+    expect(await screen.findByText('generated')).toBeDefined();
+    expect(await screen.findByText('main.py')).toBeDefined();
+  });
+
+  it('exports a real zip on click', async () => {
+    const { generateBundle } = await import('@accumulate-studio/codegen');
+    const { bundleToZipBytes, downloadBytes } = await import('../../services/export/bundle-to-zip');
+    render(<ExportModal isOpen={true} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByText('Export Bundle'));
+    // Allow the async handler to run.
+    await screen.findByText('Export Flow Bundle');
+    await vi.waitFor(() => {
+      expect(generateBundle).toHaveBeenCalled();
+      expect(bundleToZipBytes).toHaveBeenCalled();
+      expect(downloadBytes).toHaveBeenCalledWith(
+        expect.any(Uint8Array),
+        'my_flow_bundle.zip',
+      );
+    });
   });
 
   it('calls onClose when Cancel button is clicked', () => {

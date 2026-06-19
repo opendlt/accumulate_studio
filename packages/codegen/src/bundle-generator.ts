@@ -4,13 +4,11 @@
 
 import type {
   Flow,
-  FlowAssertion,
-  GeneratedFile,
   SDKLanguage,
   NetworkId,
 } from '@accumulate-studio/types';
 import { serializeFlowToYaml } from './flow-serializer';
-import { generateProject, PROJECT_GENERATORS } from './project-scaffolds';
+import { PROJECT_GENERATORS } from './project-scaffolds';
 import { generateAssertions, type GeneratedAssertions } from './assertions-generator';
 import {
   generateAgentTask,
@@ -154,6 +152,15 @@ export async function generateBundle(
     if (generator) {
       const projectFiles = generator(flow);
       for (const file of projectFiles) {
+        // Guard: the unified engine must never emit stub markers. If a block
+        // type is unhandled it would surface here as a TODO/not_implemented in
+        // the main source — fail loudly instead of shipping broken code.
+        if (file.isEntryPoint && /TODO: Implement|not_implemented/.test(file.content)) {
+          throw new Error(
+            `Bundle generation produced a stub in generated/${language}/${file.path}. ` +
+            `A block type is unhandled by the manifest engine.`
+          );
+        }
         files.push({
           path: `generated/${language}/${file.path}`,
           content: file.content,
@@ -438,62 +445,11 @@ function toSnakeCase(str: string): string {
 // =============================================================================
 // ZIP Archive Generation
 // =============================================================================
-
-/**
- * Generate a ZIP archive from a bundle
- * Note: This requires the archiver package and should be used in Node.js environment
- */
-export async function generateBundleZip(bundle: Bundle): Promise<Buffer> {
-  // Dynamic import for archiver (only available in Node.js)
-  const archiver = await import('archiver');
-  const { Readable, Writable } = await import('stream');
-
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-
-    // Create a writable stream to collect chunks
-    const writableStream = new Writable({
-      write(chunk, encoding, callback) {
-        chunks.push(Buffer.from(chunk));
-        callback();
-      },
-    });
-
-    // Create archive
-    const archive = archiver.default('zip', {
-      zlib: { level: 9 },
-    });
-
-    // Handle events
-    archive.on('error', reject);
-    writableStream.on('finish', () => {
-      resolve(Buffer.concat(chunks));
-    });
-
-    // Pipe archive to writable stream
-    archive.pipe(writableStream);
-
-    // Add files to archive
-    for (const file of bundle.files) {
-      archive.append(file.content, { name: file.path });
-    }
-
-    // Finalize
-    archive.finalize();
-  });
-}
-
-/**
- * Generate bundle and return as ZIP buffer
- */
-export async function generateBundleAsZip(
-  flow: Flow,
-  options: Partial<BundleOptions> = {}
-): Promise<{ bundle: Bundle; zipBuffer: Buffer }> {
-  const bundle = await generateBundle(flow, options);
-  const zipBuffer = await generateBundleZip(bundle);
-  return { bundle, zipBuffer };
-}
+//
+// The Node-only zip helpers (`generateBundleZip`, `generateBundleAsZip`) live in
+// `bundle-generator.node.ts` so the browser bundle never pulls in
+// `archiver`/`stream`/`Buffer`. Browser callers zip with fflate via
+// `apps/studio/src/services/export/bundle-to-zip.ts`.
 
 // =============================================================================
 // Exports

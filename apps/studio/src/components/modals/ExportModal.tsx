@@ -1,17 +1,16 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Download, FileArchive, Check, Folder, File, ChevronRight } from 'lucide-react';
 import { cn, Button } from '../ui';
 import { useFlowStore, useUIStore } from '../../store';
 import {
-  SDK_LANGUAGES,
   SDK_DISPLAY_NAMES,
-  SDK_FILE_EXTENSIONS,
-  SDK_PROJECT_FILES,
   type SDKLanguage,
   type NetworkId,
   NETWORKS,
 } from '@accumulate-studio/types';
+import { generateBundle, type Bundle, type BundleOptions } from '@accumulate-studio/codegen';
+import { bundleToZipBytes, downloadBytes } from '../../services/export/bundle-to-zip';
 
 // =============================================================================
 // Types
@@ -46,6 +45,41 @@ const NETWORK_OPTIONS: { id: NetworkId; name: string }[] = [
   { id: 'mainnet', name: 'MainNet' },
   { id: 'local', name: 'Local DevNet' },
 ];
+
+// =============================================================================
+// Helpers
+// =============================================================================
+
+/** Map the modal's ExportOptions onto the bundle generator's options. */
+function toBundleOptions(o: ExportOptions): Partial<BundleOptions> {
+  return {
+    languages: o.languages,
+    includeAssertions: o.includeAssertions,
+    includeAgentFiles: o.includeAgentFiles,
+    network: o.network,
+    includeFlowJson: true,
+  };
+}
+
+/** Build a nested folder/file tree from flat bundle paths (e.g. "generated/python/main.py"). */
+function buildTreeFromPaths(paths: string[]): BundleFile[] {
+  const root: BundleFile = { path: '', type: 'folder', children: [] };
+  for (const full of paths) {
+    const parts = full.split('/');
+    let cursor = root;
+    parts.forEach((part, i) => {
+      const isFile = i === parts.length - 1;
+      cursor.children ??= [];
+      let next = cursor.children.find((c) => c.path === part);
+      if (!next) {
+        next = { path: part, type: isFile ? 'file' : 'folder', children: isFile ? undefined : [] };
+        cursor.children.push(next);
+      }
+      cursor = next;
+    });
+  }
+  return root.children ?? [];
+}
 
 // =============================================================================
 // Helper Components
@@ -139,6 +173,8 @@ const FileTreeItem: React.FC<FileTreeItemProps> = ({ item, depth = 0 }) => {
 // Main Component
 // =============================================================================
 
+type ExportPhase = 'idle' | 'generating' | 'zipping' | 'done';
+
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => {
   const flow = useFlowStore((state) => state.flow);
   const selectedNetwork = useUIStore((state) => state.selectedNetwork);
@@ -151,6 +187,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   });
 
   const [isExporting, setIsExporting] = useState(false);
+  const [exportPhase, setExportPhase] = useState<ExportPhase>('idle');
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [previewTree, setPreviewTree] = useState<BundleFile[]>([]);
 
   // Toggle language selection
   const toggleLanguage = (language: SDKLanguage) => {
@@ -162,99 +201,56 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     }));
   };
 
-  // Generate bundle structure preview
-  const bundleStructure = useMemo((): BundleFile[] => {
-    const flowName = flow.name.toLowerCase().replace(/\s+/g, '_');
-    const structure: BundleFile[] = [
-      {
-        path: `${flowName}_bundle`,
-        type: 'folder',
-        children: [
-          { path: 'flow.yaml', type: 'file' },
-          { path: 'README.md', type: 'file' },
-        ],
-      },
-    ];
-
-    const bundleFolder = structure[0];
-    if (!bundleFolder.children) return structure;
-
-    // Add language folders
-    for (const lang of options.languages) {
-      const langFolder: BundleFile = {
-        path: lang,
-        type: 'folder',
-        children: [
-          { path: `main${SDK_FILE_EXTENSIONS[lang]}`, type: 'file' },
-          { path: SDK_PROJECT_FILES[lang], type: 'file' },
-        ],
-      };
-      bundleFolder.children.push(langFolder);
-    }
-
-    // Add assertions if included
-    if (options.includeAssertions && flow.assertions && flow.assertions.length > 0) {
-      bundleFolder.children.push({
-        path: 'assertions',
-        type: 'folder',
-        children: [
-          { path: 'assertions.yaml', type: 'file' },
-          { path: 'verify.py', type: 'file' },
-        ],
-      });
-    }
-
-    // Add agent files if included
-    if (options.includeAgentFiles) {
-      bundleFolder.children.push({
-        path: 'agent',
-        type: 'folder',
-        children: [
-          { path: 'prompt.md', type: 'file' },
-          { path: 'context.json', type: 'file' },
-        ],
-      });
-    }
-
-    return structure;
-  }, [flow, options]);
-
-  // Handle export
-  const handleExport = async () => {
-    if (options.languages.length === 0) {
+  // Live preview: dry-run the SAME generator the download uses so the tree shown
+  // equals what gets zipped. Debounced to avoid regenerating on rapid toggles.
+  useEffect(() => {
+    if (!isOpen || options.languages.length === 0) {
+      setPreviewTree([]);
       return;
     }
+    let cancelled = false;
+    const handle = setTimeout(() => {
+      generateBundle(flow, toBundleOptions(options))
+        .then((bundle) => {
+          if (!cancelled) setPreviewTree(buildTreeFromPaths(bundle.files.map((f) => f.path)));
+        })
+        .catch(() => {
+          if (!cancelled) setPreviewTree([]);
+        });
+    }, 150);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [isOpen, flow, options]);
+
+  // Handle export — generate the real bundle, zip it in-browser, download a .zip.
+  const handleExport = async () => {
+    if (options.languages.length === 0) return;
 
     setIsExporting(true);
-
+    setExportError(null);
     try {
-      // In a real implementation, this would call a service to generate the bundle
-      // For now, we'll simulate the export
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Phase 1: generate the real multi-file bundle (unified manifest engine).
+      setExportPhase('generating');
+      const bundle: Bundle = await generateBundle(flow, toBundleOptions(options));
 
-      // Create a simple zip file structure (placeholder)
-      const flowName = flow.name.toLowerCase().replace(/\s+/g, '_');
-      const content = JSON.stringify({
-        flow,
-        options,
-        exportedAt: new Date().toISOString(),
-      }, null, 2);
+      // Phase 2: zip in-browser with fflate (no Buffer / Node deps).
+      setExportPhase('zipping');
+      const zipBytes = bundleToZipBytes(bundle);
 
-      const blob = new Blob([content], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${flowName}_bundle.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Phase 3: download a real .zip.
+      const flowName = flow.name.toLowerCase().replace(/\s+/g, '_') || 'flow';
+      downloadBytes(zipBytes, `${flowName}_bundle.zip`);
 
+      setExportPhase('done');
       onClose();
     } catch (error) {
       console.error('Export failed:', error);
+      setExportError(error instanceof Error ? error.message : 'Export failed unexpectedly.');
     } finally {
       setIsExporting(false);
+      setExportPhase('idle');
     }
   };
 
@@ -396,7 +392,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
                       )}
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Include agent files (prompts & context)
+                      Include agent files (task, acceptance, MCP config)
                     </span>
                   </label>
                 </div>
@@ -408,11 +404,21 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
                   Bundle Preview
                 </h3>
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 max-h-48 overflow-y-auto">
-                  {bundleStructure.map((item, index) => (
-                    <FileTreeItem key={index} item={item} />
-                  ))}
+                  {previewTree.length === 0 ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Select at least one language to preview the bundle.
+                    </p>
+                  ) : (
+                    previewTree.map((item, index) => (
+                      <FileTreeItem key={index} item={item} />
+                    ))
+                  )}
                 </div>
               </div>
+
+              {exportError && (
+                <p className="text-sm text-red-500">{exportError}</p>
+              )}
             </div>
           </div>
 
@@ -434,7 +440,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
                   {isExporting ? (
                     <>
                       <div className="w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Exporting...
+                      {exportPhase === 'generating'
+                        ? 'Generating…'
+                        : exportPhase === 'zipping'
+                        ? 'Zipping…'
+                        : 'Exporting…'}
                     </>
                   ) : (
                     <>
