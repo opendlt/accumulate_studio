@@ -87,21 +87,40 @@ This proxy mints and holds raw signing keys, so every signing route is gated:
 
 ## Production deployment (TLS)
 
-`docker-compose.yml` runs the proxy behind **Caddy**, which obtains a Let's Encrypt
-certificate automatically. `PROXY_DOMAIN` defaults to an [sslip.io](https://sslip.io) name
-that resolves to the host IP, so **no domain purchase is required**; override it if you own
-a DNS name pointed at the host.
+The studio's `vercel.json` rewrites `/api/*` to `https://116-202-214-38.sslip.io`, so the
+proxy must be reachable over HTTPS at that name. `PROXY_DOMAIN` /
+[sslip.io](https://sslip.io) resolves to the host's public IP, so **no domain purchase is
+required**; replace it if you own a DNS name pointed at the host.
+
+The proxy container always listens on `127.0.0.1:8000` only — TLS is terminated by a
+reverse proxy in front of it. Pick the one that matches your host:
+
+### Option A — existing nginx (shared host)
+
+When nginx already terminates TLS for other sites on the host:
 
 ```bash
 cd apps/sdk-proxy
-docker compose up -d --build      # brings up sdk-proxy (internal) + Caddy on :80/:443
+docker compose up -d --build          # rebuilds the proxy on 127.0.0.1:8000
+
+cp deploy/nginx-sdk-proxy.conf.example /etc/nginx/sites-available/116-202-214-38.sslip.io
+ln -s /etc/nginx/sites-available/116-202-214-38.sslip.io /etc/nginx/sites-enabled/
+certbot --nginx -d 116-202-214-38.sslip.io     # provisions the cert + 443 server block
+nginx -t && systemctl reload nginx
 curl https://116-202-214-38.sslip.io/api/health
 ```
 
-The studio's `vercel.json` rewrites `/api/*` to `https://116-202-214-38.sslip.io`. **Deploy
-order matters:** redeploy this proxy server (so Caddy is serving :443 with a valid cert)
-*before or together with* the frontend deploy, or the studio's API calls will fail until the
-server is up. The host must allow inbound :80 and :443.
+### Option B — Caddy (dedicated host, ports 80/443 free)
+
+```bash
+cd apps/sdk-proxy
+docker compose -f docker-compose.caddy.yml up -d --build   # proxy (internal) + Caddy on :80/:443
+curl https://116-202-214-38.sslip.io/api/health
+```
+
+**Deploy order matters either way:** the proxy + TLS must be live *before or together with*
+the frontend deploy, or the studio's API calls fail until the server is up. The host must
+allow inbound :80 and :443.
 
 ## Architecture
 

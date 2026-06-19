@@ -3,17 +3,21 @@ services:
     build: .
     container_name: accumulate-sdk-proxy
     restart: unless-stopped
-    # Internal only — no host port mapping. Caddy terminates TLS and is the
-    # sole way in. Do NOT add a `ports:` mapping here; that re-exposes the
-    # unauthenticated-over-plaintext surface this design removes.
-    expose:
-      - "8000"
+    # Bind to localhost only. The proxy is reached exclusively through the host's
+    # TLS-terminating reverse proxy (nginx — see deploy/nginx-sdk-proxy.conf.example),
+    # never directly from the public internet. (Previously 0.0.0.0:8000, which
+    # exposed the unauthenticated-over-plaintext surface publicly.)
+    #
+    # On a dedicated host with no existing reverse proxy, use
+    # docker-compose.caddy.yml instead, which runs Caddy for automatic TLS.
+    ports:
+      - "127.0.0.1:8000:8000"
     environment:
       - ACCUMULATE_NETWORK=testnet
       - ALLOW_MAINNET=false
-      # Lock CORS to your studio origin(s) in production (comma-separated).
-      # The studio itself calls the proxy same-origin via the Vercel rewrite,
-      # so leaving this empty does not break production.
+      # Lock CORS to your studio origin(s) in production (comma-separated). The
+      # studio calls the proxy same-origin via the Vercel rewrite, so leaving
+      # this empty does not break production.
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-}
       - SESSION_TTL_SECONDS=1800
       - MAX_SESSIONS=500
@@ -25,24 +29,3 @@ services:
       - RATE_LIMIT_GENERATE=20/minute
       - RATE_LIMIT_FAUCET=10/minute
       - RATE_LIMIT_SIGN=60/minute
-
-  caddy:
-    image: caddy:2
-    container_name: accumulate-caddy
-    restart: unless-stopped
-    depends_on:
-      - sdk-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      # Defaults to an sslip.io name resolving to the host IP (no domain needed).
-      - PROXY_DOMAIN=${PROXY_DOMAIN:-116-202-214-38.sslip.io}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-
-volumes:
-  caddy_data:
-  caddy_config:
