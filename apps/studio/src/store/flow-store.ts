@@ -10,7 +10,7 @@ import type {
   NodeExecutionState,
   ExecutionLog,
 } from '@accumulate-studio/types';
-import { createEmptyFlow, generateNodeId, generateConnectionId } from '@accumulate-studio/types';
+import { createEmptyFlow, generateNodeId, generateConnectionId, validateFlow } from '@accumulate-studio/types';
 import type { BlockType, BlockConfig } from '@accumulate-studio/types';
 import { analyzeFlow, computePrerequisitePositions } from '../services/prerequisite-engine';
 import type {
@@ -18,6 +18,54 @@ import type {
   NodeValidationResult,
   NodeValidationSeverity,
 } from '../services/prerequisite-engine';
+
+// =============================================================================
+// Persist sanitization
+// =============================================================================
+
+/**
+ * Structurally validate a rehydrated flow. Returns a safe Flow: the input when
+ * it is well-formed, otherwise a fresh empty flow. Never throws. Reused by the
+ * persist migrate + onRehydrateStorage hooks (and, later, share-link import) so
+ * a malformed/legacy/corrupt payload yields an empty canvas, not a white screen.
+ */
+export function sanitizeFlow(input: unknown): Flow {
+  const fallback = () => createEmptyFlow('Untitled Flow');
+  try {
+    if (!input || typeof input !== 'object') return fallback();
+    const f = input as Partial<Flow>;
+
+    // Required top-level shape
+    if (typeof f.name !== 'string') return fallback();
+    if (!Array.isArray(f.nodes)) return fallback();
+    if (!Array.isArray(f.connections)) return fallback();
+
+    // Coerce optional-but-iterated collections to safe defaults
+    const safe: Flow = {
+      version: '1.0',
+      name: f.name,
+      description: typeof f.description === 'string' ? f.description : undefined,
+      variables: Array.isArray(f.variables) ? f.variables : [],
+      nodes: f.nodes as Flow['nodes'],
+      connections: f.connections as Flow['connections'],
+      assertions: Array.isArray(f.assertions) ? f.assertions : [],
+      metadata: (f.metadata && typeof f.metadata === 'object'
+        ? f.metadata
+        : { createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }) as Flow['metadata'],
+    };
+
+    // Deep structural check (duplicate ids, dangling connections, cycles)
+    const result = validateFlow(safe);
+    if (!result.valid) {
+      console.warn('[flow-store] discarding invalid persisted flow:', result.errors);
+      return fallback();
+    }
+    return safe;
+  } catch (err) {
+    console.warn('[flow-store] failed to sanitize persisted flow:', err);
+    return fallback();
+  }
+}
 
 // =============================================================================
 // Store State Types
@@ -661,9 +709,32 @@ export const useFlowStore = create<FlowState & FlowActions>()(
     })),
     {
       name: 'accumulate-studio-flow',
+      version: 1,
+      // History (past/future) is intentionally NOT persisted: it can be large,
+      // is session-scoped, and persisting it risks rehydrating undo states that
+      // reference a flow shape that no longer matches. Only `flow` is stored.
       partialize: (state) => ({
         flow: state.flow,
       }),
+      // Runs only when the stored version differs from 1 (legacy/v0 or future
+      // downgrades). The schema is unchanged so far, so migration is purely
+      // defensive sanitization. Future schema changes add `if (version < N)`.
+      migrate: (persisted: unknown): { flow: Flow } => {
+        const state = (persisted ?? {}) as { flow?: unknown };
+        return { flow: sanitizeFlow(state.flow) };
+      },
+      // Final guard on EVERY load: even a current-version payload is validated,
+      // so a corrupt flow yields an empty canvas instead of crashing the app.
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.warn('[flow-store] rehydrate error, starting empty:', error);
+          if (state) state.flow = createEmptyFlow('Untitled Flow');
+          return;
+        }
+        if (state) {
+          state.flow = sanitizeFlow(state.flow);
+        }
+      },
     }
   )
 );
