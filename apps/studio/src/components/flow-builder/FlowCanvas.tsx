@@ -17,7 +17,7 @@ import {
   Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { LayoutGrid } from 'lucide-react';
+import { LayoutGrid, Sparkles, MousePointerClick } from 'lucide-react';
 import { BlockNode } from './BlockNode';
 import { useFlowStore, useUIStore } from '../../store';
 import { BLOCK_CATALOG, type BlockType } from '@accumulate-studio/types';
@@ -458,7 +458,7 @@ export const FlowCanvas: React.FC = () => {
   return (
     <div
       ref={reactFlowWrapper}
-      className="flex-1 h-full bg-gray-100 dark:bg-gray-950"
+      className="relative flex-1 h-full bg-gray-100 dark:bg-gray-950"
     >
       <ReactFlow
         nodes={nodes}
@@ -521,6 +521,48 @@ export const FlowCanvas: React.FC = () => {
           maskColor="rgba(0, 0, 0, 0.1)"
         />
       </ReactFlow>
+
+      {/* Empty-state overlay — only when the flow has no nodes */}
+      {flow.nodes.length === 0 && !isDragging && (
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-4">
+          <div
+            className={cn(
+              'pointer-events-auto max-w-md w-full text-center',
+              'rounded-2xl border-2 border-dashed',
+              'border-gray-300 dark:border-gray-700',
+              'bg-white/70 dark:bg-gray-900/60 backdrop-blur-sm',
+              'shadow-sm px-8 py-10'
+            )}
+          >
+            <div className="mx-auto mb-4 w-12 h-12 rounded-xl flex items-center justify-center bg-accumulate-100 dark:bg-accumulate-900/30">
+              <MousePointerClick className="w-6 h-6 text-accumulate-600 dark:text-accumulate-400" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1.5">
+              Start building your flow
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+              Drag a block from the left, or load a Golden Path template to learn
+              the basics.
+            </p>
+            <button
+              onClick={() => openModal('template-select')}
+              className={cn(
+                'inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg',
+                'bg-gradient-to-r from-accumulate-600 to-accumulate-500',
+                'text-white font-medium text-sm',
+                'hover:from-accumulate-700 hover:to-accumulate-600',
+                'transition-all duration-150'
+              )}
+            >
+              <Sparkles className="w-4 h-4" />
+              Browse Templates
+            </button>
+            <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
+              or drag a block from the Action Palette on the left
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Drop zone indicator */}
       {isDragging && draggedBlockType && (
