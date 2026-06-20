@@ -15,9 +15,10 @@ services:
     environment:
       - ACCUMULATE_NETWORK=testnet
       # Networks the proxy may serve per request (X-Accumulate-Network). The
-      # deploy network above is always included. Keep the UI's selectable
-      # networks and this list in sync so submissions and reads share a chain.
-      - ALLOWED_NETWORKS=testnet
+      # deploy network above is always included. Must cover every network the UI
+      # can select, so submissions and reads share a chain. The studio defaults
+      # to kermit; include it (and testnet) here.
+      - ALLOWED_NETWORKS=testnet,kermit
       - ALLOW_MAINNET=false
       # Lock CORS to your studio origin(s) in production (comma-separated). The
       # studio calls the proxy same-origin via the Vercel rewrite, so leaving
