@@ -4,6 +4,7 @@ import { X, Save, Info } from 'lucide-react';
 import { cn, Button } from '../ui';
 import { useFlowStore, useUIStore } from '../../store';
 import { BLOCK_CATALOG, type BlockType, type BlockConfig } from '@accumulate-studio/types';
+import { getMissingRequiredFields, isAutoResolved } from '../../services/config-validation';
 
 // =============================================================================
 // Types
@@ -41,9 +42,28 @@ interface FieldProps {
   value: unknown;
   onChange: (value: unknown) => void;
   required: boolean;
+  error?: boolean;
 }
 
-const TextField: React.FC<FieldProps> = ({ name, property, value, onChange, required }) => (
+/** Shared border classes: red when in error, default otherwise. */
+function fieldBorder(error?: boolean): string {
+  return error
+    ? 'border-red-500 dark:border-red-500'
+    : 'border-gray-300 dark:border-gray-600';
+}
+
+/** Renders the "required" inline error OR the description help text. */
+const FieldFootnote: React.FC<{ error?: boolean; description?: string }> = ({ error, description }) => {
+  if (error) {
+    return <p className="text-xs text-red-500">This field is required.</p>;
+  }
+  if (description) {
+    return <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>;
+  }
+  return null;
+};
+
+const TextField: React.FC<FieldProps> = ({ name, property, value, onChange, required, error }) => (
   <div className="space-y-1.5">
     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
       {formatLabel(name)}
@@ -57,19 +77,17 @@ const TextField: React.FC<FieldProps> = ({ name, property, value, onChange, requ
       className={cn(
         'w-full px-3 py-2 rounded-md border transition-colors',
         'bg-white dark:bg-gray-800',
-        'border-gray-300 dark:border-gray-600',
         'text-gray-900 dark:text-gray-100',
         'placeholder-gray-400 dark:placeholder-gray-500',
-        'focus:outline-none focus:ring-2 focus:ring-accumulate-500 focus:border-transparent'
+        'focus:outline-none focus:ring-2 focus:ring-accumulate-500 focus:border-transparent',
+        fieldBorder(error)
       )}
     />
-    {property.description && (
-      <p className="text-xs text-gray-500 dark:text-gray-400">{property.description}</p>
-    )}
+    <FieldFootnote error={error} description={property.description} />
   </div>
 );
 
-const NumberField: React.FC<FieldProps> = ({ name, property, value, onChange, required }) => (
+const NumberField: React.FC<FieldProps> = ({ name, property, value, onChange, required, error }) => (
   <div className="space-y-1.5">
     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
       {formatLabel(name)}
@@ -83,19 +101,17 @@ const NumberField: React.FC<FieldProps> = ({ name, property, value, onChange, re
       className={cn(
         'w-full px-3 py-2 rounded-md border transition-colors',
         'bg-white dark:bg-gray-800',
-        'border-gray-300 dark:border-gray-600',
         'text-gray-900 dark:text-gray-100',
         'placeholder-gray-400 dark:placeholder-gray-500',
-        'focus:outline-none focus:ring-2 focus:ring-accumulate-500 focus:border-transparent'
+        'focus:outline-none focus:ring-2 focus:ring-accumulate-500 focus:border-transparent',
+        fieldBorder(error)
       )}
     />
-    {property.description && (
-      <p className="text-xs text-gray-500 dark:text-gray-400">{property.description}</p>
-    )}
+    <FieldFootnote error={error} description={property.description} />
   </div>
 );
 
-const UrlField: React.FC<FieldProps> = ({ name, property, value, onChange, required }) => (
+const UrlField: React.FC<FieldProps> = ({ name, property, value, onChange, required, error }) => (
   <div className="space-y-1.5">
     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
       {formatLabel(name)}
@@ -109,19 +125,17 @@ const UrlField: React.FC<FieldProps> = ({ name, property, value, onChange, requi
       className={cn(
         'w-full px-3 py-2 rounded-md border transition-colors font-mono text-sm',
         'bg-white dark:bg-gray-800',
-        'border-gray-300 dark:border-gray-600',
         'text-gray-900 dark:text-gray-100',
         'placeholder-gray-400 dark:placeholder-gray-500',
-        'focus:outline-none focus:ring-2 focus:ring-accumulate-500 focus:border-transparent'
+        'focus:outline-none focus:ring-2 focus:ring-accumulate-500 focus:border-transparent',
+        fieldBorder(error)
       )}
     />
-    {property.description && (
-      <p className="text-xs text-gray-500 dark:text-gray-400">{property.description}</p>
-    )}
+    <FieldFootnote error={error} description={property.description} />
   </div>
 );
 
-const TextareaField: React.FC<FieldProps> = ({ name, property, value, onChange, required }) => (
+const TextareaField: React.FC<FieldProps> = ({ name, property, value, onChange, required, error }) => (
   <div className="space-y-1.5">
     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
       {formatLabel(name)}
@@ -135,19 +149,17 @@ const TextareaField: React.FC<FieldProps> = ({ name, property, value, onChange, 
       className={cn(
         'w-full px-3 py-2 rounded-md border transition-colors resize-none',
         'bg-white dark:bg-gray-800',
-        'border-gray-300 dark:border-gray-600',
         'text-gray-900 dark:text-gray-100',
         'placeholder-gray-400 dark:placeholder-gray-500',
-        'focus:outline-none focus:ring-2 focus:ring-accumulate-500 focus:border-transparent'
+        'focus:outline-none focus:ring-2 focus:ring-accumulate-500 focus:border-transparent',
+        fieldBorder(error)
       )}
     />
-    {property.description && (
-      <p className="text-xs text-gray-500 dark:text-gray-400">{property.description}</p>
-    )}
+    <FieldFootnote error={error} description={property.description} />
   </div>
 );
 
-const SelectField: React.FC<FieldProps> = ({ name, property, value, onChange, required }) => (
+const SelectField: React.FC<FieldProps> = ({ name, property, value, onChange, required, error }) => (
   <div className="space-y-1.5">
     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
       {formatLabel(name)}
@@ -159,9 +171,9 @@ const SelectField: React.FC<FieldProps> = ({ name, property, value, onChange, re
       className={cn(
         'w-full px-3 py-2 rounded-md border transition-colors',
         'bg-white dark:bg-gray-800',
-        'border-gray-300 dark:border-gray-600',
         'text-gray-900 dark:text-gray-100',
-        'focus:outline-none focus:ring-2 focus:ring-accumulate-500 focus:border-transparent'
+        'focus:outline-none focus:ring-2 focus:ring-accumulate-500 focus:border-transparent',
+        fieldBorder(error)
       )}
     >
       <option value="">Select...</option>
@@ -171,13 +183,11 @@ const SelectField: React.FC<FieldProps> = ({ name, property, value, onChange, re
         </option>
       ))}
     </select>
-    {property.description && (
-      <p className="text-xs text-gray-500 dark:text-gray-400">{property.description}</p>
-    )}
+    <FieldFootnote error={error} description={property.description} />
   </div>
 );
 
-const ArrayField: React.FC<FieldProps> = ({ name, property, value, onChange, required }) => {
+const ArrayField: React.FC<FieldProps> = ({ name, property, value, onChange, required, error }) => {
   const arrayValue = Array.isArray(value) ? value : [];
 
   const addItem = () => {
@@ -232,14 +242,12 @@ const ArrayField: React.FC<FieldProps> = ({ name, property, value, onChange, req
       >
         + Add item
       </button>
-      {property.description && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">{property.description}</p>
-      )}
+      <FieldFootnote error={error} description={property.description} />
     </div>
   );
 };
 
-const ObjectArrayField: React.FC<FieldProps> = ({ name, property, value, onChange, required }) => {
+const ObjectArrayField: React.FC<FieldProps> = ({ name, property, value, onChange, required, error }) => {
   const arrayValue = Array.isArray(value) ? value as Record<string, unknown>[] : [];
   const itemProps = property.items?.properties ?? {};
   const fieldNames = Object.keys(itemProps);
@@ -362,9 +370,7 @@ const ObjectArrayField: React.FC<FieldProps> = ({ name, property, value, onChang
       >
         + Add item
       </button>
-      {property.description && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">{property.description}</p>
-      )}
+      <FieldFootnote error={error} description={property.description} />
     </div>
   );
 };
@@ -404,9 +410,7 @@ function formatLabel(name: string): string {
 }
 
 function hasAutoResolvedFields(properties: Record<string, SchemaProperty>): boolean {
-  return Object.values(properties).some(
-    (p) => p.description?.includes('auto-resolved') || p.description?.includes('auto-fetched')
-  );
+  return Object.values(properties).some((p) => isAutoResolved(p.description));
 }
 
 function getFieldComponent(property: SchemaProperty): React.FC<FieldProps> {
@@ -459,31 +463,46 @@ export const BlockConfigModal: React.FC<BlockConfigModalProps> = ({ isOpen, onCl
   const nodes = useFlowStore((state) => state.flow.nodes);
 
   const [config, setConfig] = useState<Record<string, unknown>>({});
+  const [errors, setErrors] = useState<string[]>([]);
 
   // Get node and block definition
   const node = modalData ? nodes.find((n) => n.id === modalData.nodeId) : null;
   const blockDef = modalData ? BLOCK_CATALOG[modalData.blockType] : null;
 
-  // Initialize config when modal opens
+  // Initialize config + clear errors when the modal opens for a node. Depends on
+  // STABLE primitives (nodeId, isOpen) — not the `node` object, whose identity
+  // can change every render in some store implementations, which would re-run
+  // this effect on every render and wipe validation errors (or loop forever).
   useEffect(() => {
     if (node && isOpen) {
       setConfig((node.config as Record<string, unknown>) ?? {});
+      setErrors([]);
     }
-  }, [node, isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalData?.nodeId, isOpen]);
 
-  // Handle field change
+  // Handle field change — clears that field's error as the user types
   const handleFieldChange = useCallback((fieldName: string, value: unknown) => {
     setConfig((prev) => ({
       ...prev,
       [fieldName]: value,
     }));
+    setErrors((prev) => prev.filter((f) => f !== fieldName));
   }, []);
 
-  // Handle save
+  // Handle save — blocks the save and surfaces inline errors when a required
+  // field is empty (and not auto-resolved).
   const handleSave = () => {
-    if (modalData?.nodeId) {
-      updateNodeConfig(modalData.nodeId, config as BlockConfig);
+    if (!modalData) return;
+    const missing = getMissingRequiredFields(
+      modalData.blockType,
+      config as Record<string, unknown>
+    );
+    if (missing.length > 0) {
+      setErrors(missing);
+      return; // do NOT save or close
     }
+    updateNodeConfig(modalData.nodeId, config as BlockConfig);
     onClose();
   };
 
@@ -581,6 +600,7 @@ export const BlockConfigModal: React.FC<BlockConfigModalProps> = ({ isOpen, onCl
                     value={config[fieldName]}
                     onChange={(value) => handleFieldChange(fieldName, value)}
                     required={isRequired}
+                    error={errors.includes(fieldName)}
                   />
                 );
               })}
@@ -594,6 +614,11 @@ export const BlockConfigModal: React.FC<BlockConfigModalProps> = ({ isOpen, onCl
 
           {/* Footer */}
           <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            {errors.length > 0 && (
+              <p className="mb-3 text-sm text-red-600 dark:text-red-400">
+                Fix {errors.length} required field{errors.length !== 1 ? 's' : ''} before saving.
+              </p>
+            )}
             <div className="flex items-center justify-end gap-3">
               <Button variant="secondary" onClick={onClose}>
                 Cancel

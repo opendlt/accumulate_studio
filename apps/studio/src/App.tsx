@@ -21,6 +21,7 @@ import { networkService } from './services/network';
 import { runAssertions, type AssertionResult } from './services/assertion-runner';
 import { downloadFlowAsJson } from './utils/save-flow';
 import { isTypingTarget } from './utils/keyboard';
+import { countNodesWithMissingFields } from './services/config-validation';
 
 // =============================================================================
 // Constants
@@ -215,13 +216,23 @@ const AppInner: React.FC = () => {
   }, [flow]);
 
   // Single entry point for "user pressed Execute" (Header button + Cmd/Ctrl+Enter).
-  // Guards against starting a second run, then opens the confirm modal which owns
-  // the actual executeFlow call (credit-cost + mainnet warning). Invariant: the
-  // engine sets store status 'running' first thing, so `isExecuting` is reliable.
+  // Guards against starting a second run, blocks when required fields are missing,
+  // then opens the confirm modal which owns the actual executeFlow call (credit-cost
+  // + mainnet warning). Invariant: the engine sets store status 'running' first
+  // thing, so `isExecuting` is reliable.
   const handleHeaderExecute = useCallback(() => {
     if (isExecuting || flow.nodes.length === 0) return;
+    const missing = countNodesWithMissingFields(flow);
+    if (missing > 0) {
+      addToast({
+        type: 'warning',
+        title: 'Cannot run yet',
+        description: `Fix ${missing} block${missing !== 1 ? 's' : ''} with missing required fields.`,
+      });
+      return;
+    }
     openModal('execute-confirm');
-  }, [isExecuting, flow.nodes.length, openModal]);
+  }, [isExecuting, flow, openModal, addToast]);
 
   const handleStopExecution = useCallback(() => {
     executionEngine.stopExecution();

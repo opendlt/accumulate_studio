@@ -220,4 +220,50 @@ describe('BlockConfigModal', () => {
       )
     ).toBeNull();
   });
+
+  // -----------------------------------------------------------------------
+  // Required-field validation (P1-4)
+  // -----------------------------------------------------------------------
+  it('does not save when a required field is empty', () => {
+    mockNodeConfig = {}; // url (required) missing
+    render(<BlockConfigModal isOpen={true} onClose={mockOnClose} />);
+    fireEvent.click(screen.getByText('Save Configuration'));
+    expect(mockUpdateNodeConfig).not.toHaveBeenCalled();
+    expect(mockOnClose).not.toHaveBeenCalled();
+    // Footer summary appears
+    expect(screen.getByText(/Fix 1 required field/i)).toBeDefined();
+    // Inline per-field error appears
+    expect(screen.getByText('This field is required.')).toBeDefined();
+  });
+
+  it('saves when the required field is filled', () => {
+    mockNodeConfig = { url: 'acc://test.acme' };
+    render(<BlockConfigModal isOpen={true} onClose={mockOnClose} />);
+    fireEvent.click(screen.getByText('Save Configuration'));
+    expect(mockUpdateNodeConfig).toHaveBeenCalledWith(
+      'node-1',
+      expect.objectContaining({ url: 'acc://test.acme' })
+    );
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears a field error as the user types', () => {
+    mockNodeConfig = {};
+    render(<BlockConfigModal isOpen={true} onClose={mockOnClose} />);
+    fireEvent.click(screen.getByText('Save Configuration'));
+    expect(screen.getByText('This field is required.')).toBeDefined();
+    // Type into the url field (UrlField — type="url")
+    const urlInput = document.querySelector('input[type="url"]') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: 'acc://now.acme' } });
+    expect(screen.queryByText('This field is required.')).toBeNull();
+  });
+
+  it('does not count an auto-resolved required field as missing', () => {
+    // Make publicKeyHash required AND auto-resolved → should not block save.
+    mockModalData = { nodeId: 'node-1', blockType: 'CreateIdentity' };
+    mockNodeConfig = { url: 'acc://ok.acme' }; // publicKeyHash blank but auto-resolved
+    render(<BlockConfigModal isOpen={true} onClose={mockOnClose} />);
+    fireEvent.click(screen.getByText('Save Configuration'));
+    expect(mockUpdateNodeConfig).toHaveBeenCalledTimes(1);
+  });
 });

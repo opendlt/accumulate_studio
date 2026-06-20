@@ -35,6 +35,7 @@ import {
 import { cn } from '../ui';
 import { BLOCK_CATALOG, type BlockType } from '@accumulate-studio/types';
 import { useFlowStore, selectNodeExecutionState, selectNodeValidation } from '../../store';
+import { getMissingRequiredFields } from '../../services/config-validation';
 
 // Icon mapping
 const BLOCK_ICONS: Record<string, LucideIcon> = {
@@ -74,6 +75,12 @@ export const BlockNode: React.FC<NodeProps> = memo(({ id, data, selected }) => {
   const executionState = useFlowStore(selectNodeExecutionState(id));
   const validationResult = useFlowStore(selectNodeValidation(id));
   const removeNode = useFlowStore((state) => state.removeNode);
+
+  // Required config fields left empty (and not auto-resolved).
+  const missingRequired = getMissingRequiredFields(
+    nodeData.type,
+    nodeData.config as Record<string, unknown>
+  );
 
   // Handle delete button click
   const handleDelete = (e: React.MouseEvent) => {
@@ -170,7 +177,20 @@ export const BlockNode: React.FC<NodeProps> = memo(({ id, data, selected }) => {
           </div>
         </div>
         <StatusIcon />
-        {/* Validation badge */}
+        {/* Config completeness badge — missing required fields */}
+        {!executionState && missingRequired.length > 0 && (
+          <div className="group/req relative flex-shrink-0">
+            <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+              {missingRequired.length} missing
+            </span>
+            <div className="hidden group-hover/req:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50">
+              <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
+                Missing: {missingRequired.join(', ')}
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Validation badge (prerequisites) */}
         {validationResult && !executionState && (
           <ValidationBadge validationResult={validationResult} />
         )}

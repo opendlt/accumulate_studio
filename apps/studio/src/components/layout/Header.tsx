@@ -22,6 +22,7 @@ import { selectCanUndo, selectCanRedo, selectFlowValidationSeverity, selectTotal
 import { NETWORKS, validateFlow, type NetworkId, type Flow } from '@accumulate-studio/types';
 import { NetworkStatusIndicator } from './NetworkStatusIndicator';
 import { downloadFlowAsJson } from '../../utils/save-flow';
+import { countNodesWithMissingFields } from '../../services/config-validation';
 
 // =============================================================================
 // Logo Component
@@ -347,6 +348,8 @@ export const Header: React.FC<HeaderProps> = ({
   const canRedo = useFlowStore(selectCanRedo);
   const validationSeverity = useFlowStore(selectFlowValidationSeverity);
   const totalCreditCost = useFlowStore(selectTotalCreditCost);
+  // Config-completeness: count of nodes with empty required fields.
+  const missingFieldCount = countNodesWithMissingFields(flow);
 
   const theme = useUIStore((state) => state.theme);
   const setTheme = useUIStore((state) => state.setTheme);
@@ -579,22 +582,31 @@ export const Header: React.FC<HeaderProps> = ({
           Export
         </Button>
 
-        {/* Validation indicator */}
+        {/* Validation indicator — red if prerequisites error OR config incomplete */}
         {flow.nodes.length > 0 && (
           <div className="relative group">
             <div
               className={cn(
                 'w-2.5 h-2.5 rounded-full',
-                validationSeverity === 'valid' && 'bg-green-500',
-                validationSeverity === 'warning' && 'bg-yellow-500',
-                validationSeverity === 'error' && 'bg-red-500'
+                missingFieldCount > 0
+                  ? 'bg-red-500'
+                  : validationSeverity === 'valid'
+                    ? 'bg-green-500'
+                    : validationSeverity === 'warning'
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
               )}
             />
             <div className="hidden group-hover:block absolute top-full right-0 mt-2 z-50">
               <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-                {validationSeverity === 'valid' && 'All prerequisites met'}
-                {validationSeverity === 'warning' && 'Some warnings in flow'}
-                {validationSeverity === 'error' && 'Missing prerequisites'}
+                {missingFieldCount > 0 && (
+                  <div className="text-red-300">
+                    Fix {missingFieldCount} block{missingFieldCount !== 1 ? 's' : ''} with missing fields
+                  </div>
+                )}
+                {missingFieldCount === 0 && validationSeverity === 'valid' && 'All prerequisites met'}
+                {missingFieldCount === 0 && validationSeverity === 'warning' && 'Some warnings in flow'}
+                {missingFieldCount === 0 && validationSeverity === 'error' && 'Missing prerequisites'}
                 {totalCreditCost > 0 && (
                   <span className="text-gray-300"> &middot; ~{totalCreditCost.toLocaleString()} credits</span>
                 )}

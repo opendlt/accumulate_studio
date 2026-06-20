@@ -96,6 +96,8 @@ vi.mock('@accumulate-studio/types', () => ({
     },
   },
   validateFlow: vi.fn(() => ({ valid: true, errors: [] })),
+  // Header transitively imports config-validation, which reads BLOCK_CATALOG.
+  BLOCK_CATALOG: {},
 }));
 
 vi.mock('../layout/NetworkStatusIndicator', () => ({
