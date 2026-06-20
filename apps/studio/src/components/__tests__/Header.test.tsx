@@ -266,7 +266,7 @@ describe('Header', () => {
   // -----------------------------------------------------------------------
   it('disables the Save Flow button when there are no nodes', () => {
     render(<Header />);
-    const saveBtn = screen.getByTitle('Save Flow (JSON)');
+    const saveBtn = screen.getByTitle('Save Flow (JSON) — Ctrl+S');
     expect(saveBtn.hasAttribute('disabled')).toBe(true);
   });
 

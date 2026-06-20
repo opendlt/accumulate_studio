@@ -21,6 +21,7 @@ import { useFlowStore, useUIStore } from '../../store';
 import { selectCanUndo, selectCanRedo, selectFlowValidationSeverity, selectTotalCreditCost } from '../../store/flow-store';
 import { NETWORKS, validateFlow, type NetworkId, type Flow } from '@accumulate-studio/types';
 import { NetworkStatusIndicator } from './NetworkStatusIndicator';
+import { downloadFlowAsJson } from '../../utils/save-flow';
 
 // =============================================================================
 // Logo Component
@@ -412,16 +413,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const handleSaveFlow = useCallback(() => {
-    const content = JSON.stringify(flow, null, 2);
-    const blob = new Blob([content], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${flow.name.toLowerCase().replace(/\s+/g, '_')}.flow.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadFlowAsJson(flow);
   }, [flow]);
 
   const handleExport = () => {
@@ -555,7 +547,7 @@ export const Header: React.FC<HeaderProps> = ({
               ? 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
               : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
           )}
-          title="Save Flow (JSON)"
+          title="Save Flow (JSON) — Ctrl+S"
         >
           <Save className="w-4 h-4" />
         </button>
@@ -616,6 +608,7 @@ export const Header: React.FC<HeaderProps> = ({
           size="sm"
           onClick={handleExecute}
           disabled={isExecuting || flow.nodes.length === 0}
+          title="Execute (Ctrl+Enter)"
           className={cn(
             'relative',
             isExecuting && 'animate-pulse'

@@ -6,6 +6,7 @@ import { TemplateSelectModal } from './TemplateSelectModal';
 import { ExecuteConfirmModal } from './ExecuteConfirmModal';
 import { PrerequisiteAssistantModal } from './PrerequisiteAssistantModal';
 import { WelcomeModal } from './WelcomeModal';
+import { ShortcutsModal } from './ShortcutsModal';
 import { executionEngine } from '../../services/execution';
 
 // =============================================================================
@@ -19,6 +20,7 @@ export const MODAL_IDS = {
   EXECUTE_CONFIRM: 'execute-confirm',
   PREREQUISITE_ASSISTANT: 'prerequisite-assistant',
   WELCOME: 'welcome',
+  SHORTCUTS: 'shortcuts',
 } as const;
 
 export type ModalId = (typeof MODAL_IDS)[keyof typeof MODAL_IDS];
@@ -82,6 +84,12 @@ export const ModalContainer: React.FC = () => {
       {/* Welcome Onboarding Modal */}
       <WelcomeModal
         isOpen={activeModal === MODAL_IDS.WELCOME}
+        onClose={handleClose}
+      />
+
+      {/* Keyboard Shortcuts Cheatsheet */}
+      <ShortcutsModal
+        isOpen={activeModal === MODAL_IDS.SHORTCUTS}
         onClose={handleClose}
       />
     </>

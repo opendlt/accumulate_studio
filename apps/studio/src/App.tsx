@@ -19,6 +19,8 @@ import { useUIStore, useFlowStore } from './store';
 import { executionEngine } from './services/execution';
 import { networkService } from './services/network';
 import { runAssertions, type AssertionResult } from './services/assertion-runner';
+import { downloadFlowAsJson } from './utils/save-flow';
+import { isTypingTarget } from './utils/keyboard';
 
 // =============================================================================
 // Constants
@@ -127,6 +129,15 @@ const AppInner: React.FC = () => {
   // Flow store state
   const flow = useFlowStore((state) => state.flow);
   const execution = useFlowStore((state) => state.execution);
+
+  // Editing actions for keyboard shortcuts
+  const undo = useFlowStore((state) => state.undo);
+  const redo = useFlowStore((state) => state.redo);
+  const removeNodes = useFlowStore((state) => state.removeNodes);
+  const selectedNodeIds = useFlowStore((state) => state.selectedNodeIds);
+  const activeModal = useUIStore((state) => state.activeModal);
+  // Single source of truth for "is a run in progress" (interim until P1-3).
+  const isExecuting = execution?.status === 'running';
 
   // Assertion state
   const [assertionResults, setAssertionResults] = useState<AssertionResult[] | null>(null);
@@ -267,29 +278,81 @@ const AppInner: React.FC = () => {
     setExecutionHeight((prev) => Math.min(MAX_EXECUTION_HEIGHT, Math.max(MIN_EXECUTION_HEIGHT, prev - delta)));
   }, []);
 
-  // Keyboard shortcuts
+  // ---- Keyboard shortcuts ----
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl/Cmd + B: Toggle palette
-      if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
-        e.preventDefault();
-        togglePalette();
+      const mod = e.ctrlKey || e.metaKey;
+
+      // Panel toggles work even while a modal is open, but NOT while typing.
+      if (mod && !isTypingTarget(e.target)) {
+        if (e.key === 'b') { e.preventDefault(); togglePalette(); return; }
+        if (e.key === 'j') { e.preventDefault(); toggleCodePanel(); return; }
+        if (e.key === '`') { e.preventDefault(); toggleExecutionPanel(); return; }
       }
-      // Ctrl/Cmd + J: Toggle code panel
-      if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
+
+      // Everything below is suppressed while typing OR while any modal is open.
+      if (isTypingTarget(e.target) || activeModal !== null) return;
+
+      // Undo
+      if (mod && !e.shiftKey && e.key.toLowerCase() === 'z') {
         e.preventDefault();
-        toggleCodePanel();
+        undo();
+        return;
       }
-      // Ctrl/Cmd + `: Toggle execution panel
-      if ((e.ctrlKey || e.metaKey) && e.key === '`') {
+      // Redo (Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y)
+      if (mod && ((e.shiftKey && e.key.toLowerCase() === 'z') || e.key.toLowerCase() === 'y')) {
         e.preventDefault();
-        toggleExecutionPanel();
+        redo();
+        return;
+      }
+
+      // Delete selected node(s)
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeIds.length > 0) {
+        e.preventDefault();
+        removeNodes(selectedNodeIds);
+        return;
+      }
+
+      // Save flow to JSON (suppress the browser "save page" dialog)
+      if (mod && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        downloadFlowAsJson(flow);
+        return;
+      }
+
+      // Execute flow — opens the same confirmation the Execute button does
+      // (credit cost + mainnet warning), respecting isExecuting and node count.
+      if (mod && e.key === 'Enter') {
+        e.preventDefault();
+        if (!isExecuting && flow.nodes.length > 0) {
+          openModal('execute-confirm');
+        }
+        return;
+      }
+
+      // Open the shortcuts cheatsheet
+      if (e.key === '?') {
+        e.preventDefault();
+        openModal('shortcuts');
+        return;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [togglePalette, toggleCodePanel, toggleExecutionPanel]);
+  }, [
+    activeModal,
+    togglePalette,
+    toggleCodePanel,
+    toggleExecutionPanel,
+    undo,
+    redo,
+    removeNodes,
+    selectedNodeIds,
+    flow,
+    isExecuting,
+    openModal,
+  ]);
 
   return (
     <ReactFlowProvider>

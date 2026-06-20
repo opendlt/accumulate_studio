@@ -480,6 +480,7 @@ export const FlowCanvas: React.FC = () => {
         connectionLineStyle={{ strokeWidth: 2, stroke: '#6366f1' }}
         className={isDragging ? 'cursor-copy' : ''}
         proOptions={{ hideAttribution: true }}
+        deleteKeyCode={null}
       >
         <Background
           variant={BackgroundVariant.Dots}
