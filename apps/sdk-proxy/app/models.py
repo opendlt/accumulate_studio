@@ -151,6 +151,7 @@ class SignAndSubmitRequest(SessionRequest):
     fields: dict
     memo: str | None = None
     wait: bool = True
+    wait_timeout_ms: int = 90_000      # server-side cap on the blocking wait
 
 
 # ---------------------------------------------------------------------------

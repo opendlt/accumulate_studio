@@ -1,5 +1,6 @@
 """Generic sign-and-submit route for any transaction type."""
 
+import concurrent.futures
 import hashlib
 import logging
 import os
@@ -16,6 +17,14 @@ from ..rate_limit import RATE_LIMIT_SIGN, limiter
 
 router = APIRouter()
 logger = logging.getLogger("generic-route")
+
+# Shared pool for bounding the blocking sign-and-wait. A timed-out wait leaves
+# its thread running until the SDK call finishes (Python threads aren't
+# cancellable), occupying a slot — bounded so they can't accumulate unbounded.
+_WAIT_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
+    max_workers=int(os.getenv("WAIT_MAX_WORKERS", "8")),
+    thread_name_prefix="sign-wait",
+)
 _DEBUG_LOG = os.getenv("PROXY_DEBUG_LOGGING", "false").strip().lower() in ("1", "true", "yes", "on")
 
 # Transaction types the proxy is permitted to build and sign. Anything else is
@@ -286,11 +295,29 @@ async def sign_and_submit(
             )
 
         if req.wait:
-            result = signer.sign_submit_and_wait(
-                principal=req.principal,
-                body=body,
-                memo=req.memo,
-            )
+            # Bound the blocking wait so a stuck SDK call can't hang the request
+            # handler forever. On timeout we return immediately (without waiting
+            # on the orphaned thread); the tx may still settle, so the client can
+            # poll its status.
+            def _do_wait():
+                return signer.sign_submit_and_wait(
+                    principal=req.principal,
+                    body=body,
+                    memo=req.memo,
+                )
+
+            future = _WAIT_EXECUTOR.submit(_do_wait)
+            try:
+                result = future.result(timeout=req.wait_timeout_ms / 1000)
+            except concurrent.futures.TimeoutError:
+                return TxResponse(
+                    success=False,
+                    status="timeout",
+                    error=(
+                        f"Server wait timed out after {req.wait_timeout_ms}ms; "
+                        "transaction may still settle. Query its status to confirm."
+                    ),
+                )
             return TxResponse(
                 success=result.success,
                 tx_hash=getattr(result, "txid", None),

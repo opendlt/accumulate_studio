@@ -94,6 +94,9 @@ export class ExecutionEngine {
       abortController: new AbortController(),
       sessionId,
     };
+    // Link in-flight fetches to the execution's abort controller so the Stop
+    // button (which calls abortController.abort()) cancels requests in flight.
+    api.setAbortSignal(this.context.abortController.signal);
 
     // Initialize flow variables with defaults
     for (const variable of flow.variables) {
@@ -538,7 +541,7 @@ export class ExecutionEngine {
 
     // 1) Query transaction details via proxy (same network as submission)
     try {
-      const txResult = await api.callProxy<{
+      const txResult = await api.callProxyRead<{
         success: boolean;
         data?: Record<string, unknown>;
         error?: string;
@@ -621,7 +624,7 @@ export class ExecutionEngine {
             let status: 'pending' | 'delivered' | 'failed' | 'unknown' = 'unknown';
 
             try {
-              const synRes = await api.callProxy<{
+              const synRes = await api.callProxyRead<{
                 success: boolean;
                 data?: Record<string, unknown>;
                 error?: string;
@@ -688,7 +691,7 @@ export class ExecutionEngine {
 
           if (receiptAccount) {
             try {
-              const rcptRes = await api.callProxy<{
+              const rcptRes = await api.callProxyRead<{
                 success: boolean;
                 data?: Record<string, unknown>;
                 error?: string;
@@ -765,7 +768,7 @@ export class ExecutionEngine {
     const principal = (inputs.principal as string) || (inputs.liteTokenAccount as string);
     if (principal) {
       try {
-        const queryResult = await api.callProxy<{
+        const queryResult = await api.callProxyRead<{
           success: boolean;
           data?: Record<string, unknown>;
           error?: string;

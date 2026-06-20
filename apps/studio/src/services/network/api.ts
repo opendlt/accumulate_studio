@@ -8,6 +8,7 @@ import type {
   TransactionReceipt,
   TransactionStatus,
 } from '@accumulate-studio/types';
+import { fetchWithTimeout } from './fetch-with-timeout';
 
 // =============================================================================
 // API Types
@@ -54,9 +55,20 @@ export interface SubmitResponse {
 export class AccumulateAPI {
   private config: NetworkConfig;
   private sessionToken: string | null = null;
+  private abortSignal?: AbortSignal;
+  // Read timeout (queries). Writes get a longer one to cover the server-side wait.
+  private requestTimeoutMs = Number(
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_REQUEST_TIMEOUT_MS) || 60_000,
+  );
+  private writeTimeoutMs = this.requestTimeoutMs + 30_000;
 
   constructor(config: NetworkConfig) {
     this.config = config;
+  }
+
+  /** Link this API's fetches to an abort signal (e.g. the execution controller). */
+  setAbortSignal(signal: AbortSignal): void {
+    this.abortSignal = signal;
   }
 
   /**
@@ -93,14 +105,16 @@ export class AccumulateAPI {
   }
 
   /**
-   * Call the SDK proxy service
+   * Call the SDK proxy service (POST). Used for writes/signing — a longer
+   * timeout (to cover the server-side wait) and NO retries (never replay a
+   * signing/submit request).
    */
   async callProxy<T = unknown>(path: string, body: Record<string, unknown>): Promise<T> {
-    const response = await fetch(`${this.proxyEndpoint}${path}`, {
-      method: 'POST',
-      headers: this.authHeaders(),
-      body: JSON.stringify(body),
-    });
+    const response = await fetchWithTimeout(
+      `${this.proxyEndpoint}${path}`,
+      { method: 'POST', headers: this.authHeaders(), body: JSON.stringify(body) },
+      { signal: this.abortSignal, timeoutMs: this.writeTimeoutMs, retries: 0 },
+    );
     if (!response.ok) {
       const text = await response.text().catch(() => '');
       throw new Error(`Proxy error ${response.status}: ${text}`);
@@ -109,13 +123,31 @@ export class AccumulateAPI {
   }
 
   /**
-   * Call the SDK proxy service with GET
+   * Call the SDK proxy service (POST) for an IDEMPOTENT read (queries). Same
+   * shape as callProxy but with the read timeout and bounded retries/backoff.
+   */
+  async callProxyRead<T = unknown>(path: string, body: Record<string, unknown>): Promise<T> {
+    const response = await fetchWithTimeout(
+      `${this.proxyEndpoint}${path}`,
+      { method: 'POST', headers: this.authHeaders(), body: JSON.stringify(body) },
+      { signal: this.abortSignal, timeoutMs: this.requestTimeoutMs, retries: 2, backoffMs: 500 },
+    );
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      throw new Error(`Proxy error ${response.status}: ${text}`);
+    }
+    return response.json();
+  }
+
+  /**
+   * Call the SDK proxy service with GET (read — retries allowed).
    */
   async callProxyGet<T = unknown>(path: string): Promise<T> {
-    const response = await fetch(`${this.proxyEndpoint}${path}`, {
-      method: 'GET',
-      headers: this.authHeaders(),
-    });
+    const response = await fetchWithTimeout(
+      `${this.proxyEndpoint}${path}`,
+      { method: 'GET', headers: this.authHeaders() },
+      { signal: this.abortSignal, timeoutMs: this.requestTimeoutMs, retries: 2, backoffMs: 500 },
+    );
     if (!response.ok) {
       throw new Error(`Proxy error: ${response.status}`);
     }
@@ -475,18 +507,15 @@ export class AccumulateAPI {
     result?: Record<string, unknown>;
     error?: { code: number; message: string; data?: unknown };
   }> {
-    const response = await fetch(this.config.v2Endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetchWithTimeout(
+      this.config.v2Endpoint,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }),
       },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: Date.now(),
-        method,
-        params,
-      }),
-    });
+      { signal: this.abortSignal, timeoutMs: this.requestTimeoutMs, retries: 2 },
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP error: ${response.status}`);

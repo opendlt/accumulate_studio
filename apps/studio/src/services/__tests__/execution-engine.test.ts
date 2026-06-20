@@ -29,7 +29,10 @@ vi.mock('../network', () => ({
   },
   AccumulateAPI: vi.fn().mockImplementation(() => ({
     callProxy: vi.fn().mockResolvedValue({ success: true }),
+    callProxyRead: vi.fn().mockResolvedValue({ success: true }),
     callProxyGet: vi.fn().mockResolvedValue({}),
+    setAbortSignal: vi.fn(),
+    setSessionToken: vi.fn(),
   })),
 }));
 

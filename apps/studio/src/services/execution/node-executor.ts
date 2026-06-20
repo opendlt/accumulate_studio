@@ -26,6 +26,7 @@ import type {
   UpdateAccountAuthConfig,
 } from '@accumulate-studio/types';
 import { AccumulateAPI } from '../network/api';
+import { abortableDelay } from '../network/fetch-with-timeout';
 import type { ExecutionContext } from './index';
 
 // =============================================================================
@@ -619,7 +620,7 @@ export class NodeExecutor {
   async executeQuery(config: QueryAccountConfig, inputs: NodeOutputs): Promise<NodeOutputs> {
     const url = this.resolveValue(config.url, inputs);
 
-    const result = await this.api.callProxy<{
+    const result = await this.api.callProxyRead<{
       success: boolean;
       data?: Record<string, unknown>;
       error?: string;
@@ -673,7 +674,7 @@ export class NodeExecutor {
         throw new Error('Execution aborted');
       }
 
-      const result = await this.api.callProxy<{
+      const result = await this.api.callProxyRead<{
         success: boolean;
         data?: Record<string, unknown>;
         error?: string;
@@ -699,7 +700,7 @@ export class NodeExecutor {
         }
       }
 
-      await this.delay(delayMs);
+      await this.delay(delayMs, context.abortController.signal);
     }
 
     throw new Error(`Balance not reached after ${maxAttempts} attempts`);
@@ -744,7 +745,7 @@ export class NodeExecutor {
         throw new Error('Execution aborted');
       }
 
-      const result = await this.api.callProxy<{
+      const result = await this.api.callProxyRead<{
         success: boolean;
         data?: Record<string, unknown>;
         error?: string;
@@ -769,7 +770,7 @@ export class NodeExecutor {
         }
       }
 
-      await this.delay(delayMs);
+      await this.delay(delayMs, context.abortController.signal);
     }
 
     throw new Error(`Credit balance not reached after ${maxAttempts} attempts`);
@@ -1314,8 +1315,9 @@ export class NodeExecutor {
   /**
    * Delay helper
    */
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  private delay(ms: number, signal?: AbortSignal): Promise<void> {
+    // Abortable: a Stop during an inter-poll sleep returns immediately.
+    return abortableDelay(ms, signal);
   }
 
   /**
