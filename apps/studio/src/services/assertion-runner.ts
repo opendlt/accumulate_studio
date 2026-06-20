@@ -3,7 +3,7 @@
  */
 
 import type { FlowAssertion, FlowExecutionState, FlowNode } from '@accumulate-studio/types';
-import { networkService } from './network';
+import { AccumulateAPI } from './network/api';
 
 // =============================================================================
 // Types
@@ -151,6 +151,7 @@ function resolveAssertionFields(
 async function evaluateAssertion(
   assertion: FlowAssertion,
   executionState: FlowExecutionState,
+  api: AccumulateAPI,
   flowNodes?: FlowNode[],
 ): Promise<AssertionResult> {
   try {
@@ -159,7 +160,7 @@ async function evaluateAssertion(
         if (!assertion.account || !assertion.equals) {
           return { assertion, status: 'skip', message: 'Missing account or equals field' };
         }
-        const balance = await queryAccountBalance(assertion.account);
+        const balance = await queryAccountBalance(api, assertion.account);
         if (balance === null) {
           return { assertion, status: 'error', message: `Could not query balance for ${assertion.account}` };
         }
@@ -182,7 +183,7 @@ async function evaluateAssertion(
         // Without a pre-execution snapshot we fall back to checking that the
         // current balance is at least the expected delta (i.e. the account
         // received at least that much).
-        const currentBalance = await queryAccountBalance(assertion.account);
+        const currentBalance = await queryAccountBalance(api, assertion.account);
         if (currentBalance === null) {
           return { assertion, status: 'error', message: `Could not query balance for ${assertion.account}` };
         }
@@ -203,7 +204,7 @@ async function evaluateAssertion(
         if (!assertion.url) {
           return { assertion, status: 'skip', message: 'Missing url field' };
         }
-        const exists = await queryAccountExists(assertion.url);
+        const exists = await queryAccountExists(api, assertion.url);
         return {
           assertion,
           status: exists ? 'pass' : 'fail',
@@ -215,7 +216,7 @@ async function evaluateAssertion(
         if (!assertion.url) {
           return { assertion, status: 'skip', message: 'Missing url field' };
         }
-        const exists = await queryAccountExists(assertion.url);
+        const exists = await queryAccountExists(api, assertion.url);
         return {
           assertion,
           status: !exists ? 'pass' : 'fail',
@@ -341,13 +342,14 @@ async function evaluateAssertion(
 export async function runAssertions(
   assertions: FlowAssertion[],
   executionState: FlowExecutionState,
+  api: AccumulateAPI,
   flowNodes?: FlowNode[],
 ): Promise<AssertionResult[]> {
   const results: AssertionResult[] = [];
 
   for (const assertion of assertions) {
     const resolved = resolveAssertionFields(assertion, executionState, flowNodes);
-    const result = await evaluateAssertion(resolved, executionState, flowNodes);
+    const result = await evaluateAssertion(resolved, executionState, api, flowNodes);
     results.push(result);
   }
 
@@ -358,23 +360,28 @@ export async function runAssertions(
 // Network Helpers
 // =============================================================================
 
-async function queryAccountBalance(account: string): Promise<string | null> {
+async function queryAccountBalance(api: AccumulateAPI, account: string): Promise<string | null> {
   try {
-    const response = await networkService.fetchApi('v2', 'query', { url: account });
-    if (response.error) return null;
-    const r = response.result;
-    // Balance may be at top level (V2 flat) or nested under data (V3 format)
-    const balance = r?.balance ?? r?.data?.balance ?? r?.creditBalance ?? r?.data?.creditBalance;
+    // Read through the proxy (same network as submission) — not a direct V2 call,
+    // so reads and writes are guaranteed to be on the same chain.
+    const res = await api.callProxy<{ success: boolean; data?: Record<string, unknown> }>(
+      '/api/query',
+      { url: account }
+    );
+    if (!res.success || !res.data) return null;
+    const d = res.data;
+    const inner = d.data && typeof d.data === 'object' ? (d.data as Record<string, unknown>) : {};
+    const balance = d.balance ?? inner.balance ?? d.creditBalance ?? inner.creditBalance;
     return balance !== undefined ? String(balance) : null;
   } catch {
     return null;
   }
 }
 
-async function queryAccountExists(url: string): Promise<boolean> {
+async function queryAccountExists(api: AccumulateAPI, url: string): Promise<boolean> {
   try {
-    const response = await networkService.fetchApi('v2', 'query', { url });
-    return !response.error;
+    const res = await api.callProxy<{ success: boolean }>('/api/query', { url });
+    return res.success === true;
   } catch {
     return false;
   }

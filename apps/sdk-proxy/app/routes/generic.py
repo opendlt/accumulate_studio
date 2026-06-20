@@ -10,6 +10,7 @@ from accumulate_client.tx.builders import get_builder_for
 from accumulate_client.convenience import SmartSigner
 
 from ..auth import auth_header, require_signing
+from ..net import request_network
 from ..models import SignAndSubmitRequest, TxResponse
 from ..rate_limit import RATE_LIMIT_SIGN, limiter
 
@@ -103,15 +104,15 @@ async def sign_and_submit(
     request: Request,
     req: SignAndSubmitRequest,
     authorization: str | None = Depends(auth_header),
+    net: str = Depends(request_network),
 ):
-    from ..main import store, client
+    from ..main import store, get_client
 
     require_signing(req.session_id, authorization)
     if req.tx_type not in ALLOWED_TX_TYPES:
         raise HTTPException(status_code=422, detail=f"Unsupported tx_type '{req.tx_type}'")
 
-    if client is None:
-        return TxResponse(success=False, error="Client not initialized")
+    client = get_client(net)
 
     kp = store.get(req.session_id)
     if not kp:

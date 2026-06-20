@@ -6,15 +6,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { runAssertions } from '../assertion-runner';
 import type { FlowAssertion, FlowExecutionState } from '@accumulate-studio/types';
 
-// Mock network service
-vi.mock('../network', () => ({
-  networkService: {
-    fetchApi: vi.fn(),
-  },
-}));
-
-import { networkService } from '../network';
-const mockFetchApi = vi.mocked(networkService.fetchApi);
+// Assertions now read through the proxy via an AccumulateAPI instance.
+// We pass a minimal fake with a mocked callProxy.
+const mockCallProxy = vi.fn();
+const mockApi = { callProxy: mockCallProxy } as unknown as import('../network/api').AccumulateAPI;
 
 function makeExecution(overrides?: Partial<FlowExecutionState>): FlowExecutionState {
   return {
@@ -36,43 +31,43 @@ describe('Assertion Runner', () => {
 
   describe('balance.gte', () => {
     it('passes when balance >= expected', async () => {
-      mockFetchApi.mockResolvedValue({
-        result: { balance: '1000000' },
+      mockCallProxy.mockResolvedValue({
+        success: true,
+        data: { balance: '1000000' },
       });
 
       const assertions: FlowAssertion[] = [
         { type: 'balance.gte', account: 'acc://lite-account/ACME', equals: '500000' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results).toHaveLength(1);
       expect(results[0].status).toBe('pass');
       expect(results[0].actual).toBe('1000000');
     });
 
     it('fails when balance < expected', async () => {
-      mockFetchApi.mockResolvedValue({
-        result: { balance: '100' },
+      mockCallProxy.mockResolvedValue({
+        success: true,
+        data: { balance: '100' },
       });
 
       const assertions: FlowAssertion[] = [
         { type: 'balance.gte', account: 'acc://lite-account/ACME', equals: '500000' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('fail');
     });
 
     it('returns error when query fails', async () => {
-      mockFetchApi.mockResolvedValue({
-        error: { code: -1, message: 'not found' },
-      });
+      mockCallProxy.mockResolvedValue({ success: false });
 
       const assertions: FlowAssertion[] = [
         { type: 'balance.gte', account: 'acc://lite-account/ACME', equals: '500000' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('error');
     });
 
@@ -81,7 +76,7 @@ describe('Assertion Runner', () => {
         { type: 'balance.gte' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('skip');
     });
   });
@@ -92,7 +87,7 @@ describe('Assertion Runner', () => {
         { type: 'balance.delta', account: 'acc://test/ACME', delta: '100' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('error');
     });
 
@@ -101,35 +96,34 @@ describe('Assertion Runner', () => {
         { type: 'balance.delta' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('skip');
     });
   });
 
   describe('account.exists', () => {
     it('passes when account exists', async () => {
-      mockFetchApi.mockResolvedValue({
-        result: { type: 'liteTokenAccount', url: 'acc://test' },
+      mockCallProxy.mockResolvedValue({
+        success: true,
+        data: { type: 'liteTokenAccount', url: 'acc://test' },
       });
 
       const assertions: FlowAssertion[] = [
         { type: 'account.exists', url: 'acc://test' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('pass');
     });
 
     it('fails when account does not exist', async () => {
-      mockFetchApi.mockResolvedValue({
-        error: { code: -1, message: 'not found' },
-      });
+      mockCallProxy.mockResolvedValue({ success: false });
 
       const assertions: FlowAssertion[] = [
         { type: 'account.exists', url: 'acc://missing' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('fail');
     });
 
@@ -138,35 +132,34 @@ describe('Assertion Runner', () => {
         { type: 'account.exists' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('skip');
     });
   });
 
   describe('account.not_exists', () => {
     it('passes when account does not exist', async () => {
-      mockFetchApi.mockResolvedValue({
-        error: { code: -1, message: 'not found' },
-      });
+      mockCallProxy.mockResolvedValue({ success: false });
 
       const assertions: FlowAssertion[] = [
         { type: 'account.not_exists', url: 'acc://missing' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('pass');
     });
 
     it('fails when account exists', async () => {
-      mockFetchApi.mockResolvedValue({
-        result: { type: 'liteTokenAccount' },
+      mockCallProxy.mockResolvedValue({
+        success: true,
+        data: { type: 'liteTokenAccount' },
       });
 
       const assertions: FlowAssertion[] = [
         { type: 'account.not_exists', url: 'acc://test' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('fail');
     });
   });
@@ -183,7 +176,7 @@ describe('Assertion Runner', () => {
         { type: 'tx.status.equals', sourceStep: 'node-1', status: 'success' },
       ];
 
-      const results = await runAssertions(assertions, execution);
+      const results = await runAssertions(assertions, execution, mockApi);
       expect(results[0].status).toBe('pass');
     });
 
@@ -198,7 +191,7 @@ describe('Assertion Runner', () => {
         { type: 'tx.status.equals', sourceStep: 'node-1', status: 'success' },
       ];
 
-      const results = await runAssertions(assertions, execution);
+      const results = await runAssertions(assertions, execution, mockApi);
       expect(results[0].status).toBe('fail');
       expect(results[0].actual).toBe('error');
     });
@@ -208,7 +201,7 @@ describe('Assertion Runner', () => {
         { type: 'tx.status.equals', sourceStep: 'missing', status: 'success' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('skip');
     });
 
@@ -217,7 +210,7 @@ describe('Assertion Runner', () => {
         { type: 'tx.status.equals' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('skip');
     });
   });
@@ -238,7 +231,7 @@ describe('Assertion Runner', () => {
         { type: 'receipt.verified', sourceStep: 'node-1' },
       ];
 
-      const results = await runAssertions(assertions, execution);
+      const results = await runAssertions(assertions, execution, mockApi);
       expect(results[0].status).toBe('pass');
     });
 
@@ -257,7 +250,7 @@ describe('Assertion Runner', () => {
         { type: 'receipt.verified', sourceStep: 'node-1' },
       ];
 
-      const results = await runAssertions(assertions, execution);
+      const results = await runAssertions(assertions, execution, mockApi);
       expect(results[0].status).toBe('fail');
     });
 
@@ -273,7 +266,8 @@ describe('Assertion Runner', () => {
       });
       const results = await runAssertions(
         [{ type: 'receipt.verified', sourceStep: 'node-1' }],
-        execution
+        execution,
+        mockApi
       );
       expect(results[0].status).toBe('pass');
     });
@@ -290,7 +284,8 @@ describe('Assertion Runner', () => {
       });
       const results = await runAssertions(
         [{ type: 'receipt.verified', sourceStep: 'node-1' }],
-        execution
+        execution,
+        mockApi
       );
       expect(results[0].status).toBe('skip');
       expect(results[0].message).toMatch(/not yet anchored/i);
@@ -318,7 +313,7 @@ describe('Assertion Runner', () => {
         { type: 'synthetic.delivered', sourceStep: 'node-1' },
       ];
 
-      const results = await runAssertions(assertions, execution);
+      const results = await runAssertions(assertions, execution, mockApi);
       expect(results[0].status).toBe('pass');
     });
 
@@ -340,7 +335,8 @@ describe('Assertion Runner', () => {
 
       const results = await runAssertions(
         [{ type: 'synthetic.delivered', sourceStep: 'node-1' }],
-        execution
+        execution,
+        mockApi
       );
       expect(results[0].status).toBe('fail');
     });
@@ -363,7 +359,8 @@ describe('Assertion Runner', () => {
 
       const results = await runAssertions(
         [{ type: 'synthetic.delivered', sourceStep: 'node-1' }],
-        execution
+        execution,
+        mockApi
       );
       expect(results[0].status).toBe('skip');
     });
@@ -381,7 +378,8 @@ describe('Assertion Runner', () => {
 
       const results = await runAssertions(
         [{ type: 'synthetic.delivered', sourceStep: 'node-1' }],
-        execution
+        execution,
+        mockApi
       );
       expect(results[0].status).toBe('skip');
     });
@@ -401,7 +399,7 @@ describe('Assertion Runner', () => {
         { type: 'synthetic.delivered', sourceStep: 'node-1' },
       ];
 
-      const results = await runAssertions(assertions, execution);
+      const results = await runAssertions(assertions, execution, mockApi);
       expect(results[0].status).toBe('fail');
     });
   });
@@ -412,7 +410,7 @@ describe('Assertion Runner', () => {
         { type: 'chain.entry_count_delta_min', account: 'acc://test', chain: 'main', minDelta: 1 },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('skip');
     });
   });
@@ -423,15 +421,16 @@ describe('Assertion Runner', () => {
         { type: 'unknown.type' as FlowAssertion['type'] },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('skip');
     });
   });
 
   describe('multiple assertions', () => {
     it('evaluates all assertions in order', async () => {
-      mockFetchApi.mockResolvedValue({
-        result: { balance: '1000000' },
+      mockCallProxy.mockResolvedValue({
+        success: true,
+        data: { balance: '1000000' },
       });
 
       const execution = makeExecution({
@@ -446,7 +445,7 @@ describe('Assertion Runner', () => {
         { type: 'tx.status.equals', sourceStep: 'node-1', status: 'error' },
       ];
 
-      const results = await runAssertions(assertions, execution);
+      const results = await runAssertions(assertions, execution, mockApi);
       expect(results).toHaveLength(3);
       expect(results[0].status).toBe('pass');
       expect(results[1].status).toBe('pass');
@@ -456,8 +455,9 @@ describe('Assertion Runner', () => {
 
   describe('template resolution', () => {
     it('resolves {{nodeId.outputKey}} in assertion fields', async () => {
-      mockFetchApi.mockResolvedValue({
-        result: { type: 'liteTokenAccount', url: 'acc://real-account/ACME' },
+      mockCallProxy.mockResolvedValue({
+        success: true,
+        data: { type: 'liteTokenAccount', url: 'acc://real-account/ACME' },
       });
 
       const execution = makeExecution({
@@ -474,35 +474,35 @@ describe('Assertion Runner', () => {
         { type: 'account.exists', url: '{{generate_keys.liteTokenAccount}}' },
       ];
 
-      const results = await runAssertions(assertions, execution);
+      const results = await runAssertions(assertions, execution, mockApi);
       expect(results[0].status).toBe('pass');
       // Verify the resolved URL was used in the query
-      expect(mockFetchApi).toHaveBeenCalledWith('v2', 'query', { url: 'acc://real-account/ACME' });
+      expect(mockCallProxy).toHaveBeenCalledWith('/api/query', { url: 'acc://real-account/ACME' });
     });
 
     it('leaves unresolvable templates as-is', async () => {
-      mockFetchApi.mockRejectedValue(new Error('Invalid URL'));
+      mockCallProxy.mockRejectedValue(new Error('Invalid URL'));
 
       const assertions: FlowAssertion[] = [
         { type: 'account.exists', url: '{{nonexistent.output}}' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       // The unresolved template URL causes the query to fail
       expect(results[0].status).toBe('fail');
-      expect(mockFetchApi).toHaveBeenCalledWith('v2', 'query', { url: '{{nonexistent.output}}' });
+      expect(mockCallProxy).toHaveBeenCalledWith('/api/query', { url: '{{nonexistent.output}}' });
     });
   });
 
   describe('error handling', () => {
     it('catches thrown errors during evaluation', async () => {
-      mockFetchApi.mockRejectedValue(new Error('Network error'));
+      mockCallProxy.mockRejectedValue(new Error('Network error'));
 
       const assertions: FlowAssertion[] = [
         { type: 'balance.gte', account: 'acc://test/ACME', equals: '100' },
       ];
 
-      const results = await runAssertions(assertions, makeExecution());
+      const results = await runAssertions(assertions, makeExecution(), mockApi);
       expect(results[0].status).toBe('error');
       expect(results[0].message).toContain('query balance');
     });
@@ -526,7 +526,7 @@ describe('Assertion Runner', () => {
         { type: 'tx.status.equals', sourceStep: 'create_identity', status: 'success' },
       ];
 
-      const results = await runAssertions(assertions, execution, flowNodes);
+      const results = await runAssertions(assertions, execution, mockApi, flowNodes);
       expect(results[0].status).toBe('pass');
     });
 
@@ -541,13 +541,14 @@ describe('Assertion Runner', () => {
         { type: 'tx.status.equals', sourceStep: 'add_credits', status: 'success' },
       ];
 
-      const results = await runAssertions(assertions, execution, flowNodes);
+      const results = await runAssertions(assertions, execution, mockApi, flowNodes);
       expect(results[0].status).toBe('pass');
     });
 
     it('resolves template variables via type-matched node', async () => {
-      mockFetchApi.mockResolvedValue({
-        result: { type: 'liteTokenAccount', url: 'acc://real/ACME' },
+      mockCallProxy.mockResolvedValue({
+        success: true,
+        data: { type: 'liteTokenAccount', url: 'acc://real/ACME' },
       });
 
       const execution = makeExecution({
@@ -564,9 +565,9 @@ describe('Assertion Runner', () => {
         { type: 'account.exists', url: '{{generate_keys.liteTokenAccount}}' },
       ];
 
-      const results = await runAssertions(assertions, execution, flowNodes);
+      const results = await runAssertions(assertions, execution, mockApi, flowNodes);
       expect(results[0].status).toBe('pass');
-      expect(mockFetchApi).toHaveBeenCalledWith('v2', 'query', { url: 'acc://real/ACME' });
+      expect(mockCallProxy).toHaveBeenCalledWith('/api/query', { url: 'acc://real/ACME' });
     });
 
     it('skips assertions for nodes absent from the flow', async () => {
@@ -581,7 +582,7 @@ describe('Assertion Runner', () => {
         { type: 'tx.status.equals', sourceStep: 'set_threshold', status: 'success' },
       ];
 
-      const results = await runAssertions(assertions, execution, flowNodes);
+      const results = await runAssertions(assertions, execution, mockApi, flowNodes);
       expect(results[0].status).toBe('skip');
       expect(results[0].message).toContain('not found in flow');
       expect(results[1].status).toBe('skip');
@@ -600,7 +601,7 @@ describe('Assertion Runner', () => {
         { type: 'tx.status.equals', sourceStep: 'create_identity', status: 'success' },
       ];
 
-      const results = await runAssertions(assertions, execution, flowNodes);
+      const results = await runAssertions(assertions, execution, mockApi, flowNodes);
       // Should use exact match (status: success), not type match (status: error)
       expect(results[0].status).toBe('pass');
     });

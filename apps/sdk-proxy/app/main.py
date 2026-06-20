@@ -13,8 +13,10 @@ from accumulate_client import Accumulate
 from accumulate_client.v3.options import NetworkStatusOptions
 
 from .config import (
+    allowed_networks,
     allowed_origins,
     assert_network_allowed,
+    endpoint_for,
     get_network_endpoint,
     get_network_name,
 )
@@ -33,7 +35,25 @@ logging.basicConfig(level=os.getenv("PROXY_LOG_LEVEL", "INFO").upper())
 # ---------------------------------------------------------------------------
 
 store = SessionStore()
+
+# One Accumulate client per network, created on demand. The deploy-time network
+# is also reachable via the `client` alias for health/oracle. Bounded by the
+# small fixed NETWORK_ENDPOINTS set.
+_clients: dict[str, Accumulate] = {}
 client: Accumulate | None = None
+
+
+def get_client(network: str | None) -> Accumulate:
+    """Return (and cache) an Accumulate client for the requested network.
+
+    Falls back to the deploy-time network when none is given. The caller must
+    have validated ``network`` against ``allowed_networks()`` (the
+    ``request_network`` dependency does this).
+    """
+    net = network or get_network_name()
+    if net not in _clients:
+        _clients[net] = Accumulate(endpoint_for(net))
+    return _clients[net]
 
 
 # ---------------------------------------------------------------------------
@@ -44,10 +64,11 @@ client: Accumulate | None = None
 async def lifespan(app: FastAPI):
     global client
     assert_network_allowed()                 # fail fast on mainnet / unknown network
-    client = Accumulate(get_network_endpoint())
+    client = get_client(None)                # deploy-network client (also cached)
     yield
-    if client is not None:
-        client.close()
+    for c in _clients.values():
+        c.close()
+    client = None
 
 
 # ---------------------------------------------------------------------------
@@ -69,7 +90,7 @@ app.add_middleware(
     allow_origins=allowed_origins(),
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["Content-Type", "Authorization", "X-Accumulate-Network"],
 )
 
 # Mount route modules
@@ -90,13 +111,14 @@ app.include_router(generic.router, prefix="/api")
 @app.get("/api/health")
 async def health():
     network = get_network_name()
+    allowed = sorted(allowed_networks())
     try:
         if client is not None:
             client.v3.network_status(NetworkStatusOptions(partition="directory"))
-            return {"status": "ok", "network": network, "connected": True}
+            return {"status": "ok", "network": network, "allowed": allowed, "connected": True}
     except Exception as e:
-        return {"status": "degraded", "network": network, "connected": False, "error": str(e)}
-    return {"status": "ok", "network": network, "connected": False}
+        return {"status": "degraded", "network": network, "allowed": allowed, "connected": False, "error": str(e)}
+    return {"status": "ok", "network": network, "allowed": allowed, "connected": False}
 
 
 @app.get("/api/oracle")

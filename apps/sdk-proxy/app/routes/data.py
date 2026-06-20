@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Request
 from accumulate_client.convenience import SmartSigner, TxBody
 
 from ..auth import auth_header, require_signing
+from ..net import request_network
 from ..models import (
     CreateDataAccountRequest,
     WriteDataRequest,
@@ -28,13 +29,12 @@ async def create_data_account(
     request: Request,
     req: CreateDataAccountRequest,
     authorization: str | None = Depends(auth_header),
+    net: str = Depends(request_network),
 ):
-    from ..main import store, client
+    from ..main import store, get_client
 
     require_signing(req.session_id, authorization)
-
-    if client is None:
-        return TxResponse(success=False, error="Client not initialized")
+    client = get_client(net)
 
     kp = store.get(req.session_id)
     if not kp:
@@ -70,13 +70,12 @@ async def write_data(
     request: Request,
     req: WriteDataRequest,
     authorization: str | None = Depends(auth_header),
+    net: str = Depends(request_network),
 ):
-    from ..main import store, client
+    from ..main import store, get_client
 
     require_signing(req.session_id, authorization)
-
-    if client is None:
-        return TxResponse(success=False, error="Client not initialized")
+    client = get_client(net)
 
     kp = store.get(req.session_id)
     if not kp:
@@ -139,6 +138,7 @@ async def write_data_to(
     request: Request,
     req: WriteDataToRequest,
     authorization: str | None = Depends(auth_header),
+    net: str = Depends(request_network),
 ):
     """Write data to a lite data account.
 
@@ -147,12 +147,10 @@ async def write_data_to(
     account the session keypair's public-key hash is injected as an
     external ID (data[1]) when the caller only sends plain content strings.
     """
-    from ..main import store, client
+    from ..main import store, get_client
 
     require_signing(req.session_id, authorization)
-
-    if client is None:
-        return TxResponse(success=False, error="Client not initialized")
+    client = get_client(net)
 
     kp = store.get(req.session_id)
     if not kp:

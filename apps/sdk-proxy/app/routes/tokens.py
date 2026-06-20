@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Request
 from accumulate_client.convenience import SmartSigner, TxBody
 
 from ..auth import auth_header, require_signing
+from ..net import request_network
 from ..models import SendTokensRequest, CreateTokenAccountRequest, TxResponse
 from ..rate_limit import RATE_LIMIT_SIGN, limiter
 
@@ -17,13 +18,12 @@ async def send_tokens(
     request: Request,
     req: SendTokensRequest,
     authorization: str | None = Depends(auth_header),
+    net: str = Depends(request_network),
 ):
-    from ..main import store, client
+    from ..main import store, get_client
 
     require_signing(req.session_id, authorization)
-
-    if client is None:
-        return TxResponse(success=False, error="Client not initialized")
+    client = get_client(net)
 
     kp = store.get(req.session_id)
     if not kp:
@@ -68,13 +68,12 @@ async def create_token_account(
     request: Request,
     req: CreateTokenAccountRequest,
     authorization: str | None = Depends(auth_header),
+    net: str = Depends(request_network),
 ):
-    from ..main import store, client
+    from ..main import store, get_client
 
     require_signing(req.session_id, authorization)
-
-    if client is None:
-        return TxResponse(success=False, error="Client not initialized")
+    client = get_client(net)
 
     kp = store.get(req.session_id)
     if not kp:

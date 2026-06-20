@@ -10,6 +10,9 @@ services:
       - "8000"
     environment:
       - ACCUMULATE_NETWORK=testnet
+      # Networks the proxy may serve per request (X-Accumulate-Network). Keep in
+      # sync with the UI's selectable networks. The deploy network is implicit.
+      - ALLOWED_NETWORKS=testnet
       - ALLOW_MAINNET=false
       # Lock CORS to your studio origin(s) in production (comma-separated).
       # The studio itself calls the proxy same-origin via the Vercel rewrite,

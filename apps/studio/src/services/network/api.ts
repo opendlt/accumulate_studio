@@ -79,11 +79,15 @@ export class AccumulateAPI {
     this.sessionToken = token;
   }
 
-  /** Headers for proxy calls, including the bearer token when present. */
+  /** Headers for proxy calls: content type, bearer token, and selected network. */
   private authHeaders(): Record<string, string> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (this.sessionToken) {
       headers['Authorization'] = `Bearer ${this.sessionToken}`;
+    }
+    // Tell the proxy which chain to use, so submissions and reads share it.
+    if (this.config.id) {
+      headers['X-Accumulate-Network'] = this.config.id;
     }
     return headers;
   }

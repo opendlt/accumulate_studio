@@ -165,7 +165,7 @@ const AppInner: React.FC = () => {
         // Run assertions if the flow has any
         if (flow.assertions && flow.assertions.length > 0 && execution) {
           setAssertionsRunning(true);
-          runAssertions(flow.assertions, execution, flow.nodes)
+          runAssertions(flow.assertions, execution, executionEngine.getApi(), flow.nodes)
             .then((results) => {
               setAssertionResults(results);
               const failCount = results.filter((r) => r.status === 'fail').length;

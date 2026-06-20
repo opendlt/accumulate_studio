@@ -2,10 +2,11 @@
 
 import time
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from accumulate_client.v3.options import RangeOptions, ChainQuery, ReceiptOptions
 
+from ..net import request_network
 from ..models import (
     QueryRequest,
     QueryTxRequest,
@@ -44,12 +45,10 @@ def _normalize_query_result(result: dict) -> dict:
 
 
 @router.post("/query")
-async def query_account(req: QueryRequest):
-    from ..main import client
+async def query_account(req: QueryRequest, net: str = Depends(request_network)):
+    from ..main import get_client
 
-    if client is None:
-        return {"success": False, "error": "Client not initialized"}
-
+    client = get_client(net)
     try:
         result = client.v3.query(req.url)
         return {"success": True, "data": _normalize_query_result(result)}
@@ -58,12 +57,10 @@ async def query_account(req: QueryRequest):
 
 
 @router.post("/query-tx")
-async def query_tx(req: QueryTxRequest):
-    from ..main import client
+async def query_tx(req: QueryTxRequest, net: str = Depends(request_network)):
+    from ..main import get_client
 
-    if client is None:
-        return {"success": False, "error": "Client not initialized"}
-
+    client = get_client(net)
     try:
         result = client.v3.query(req.tx_hash)
         return {"success": True, "data": _normalize_query_result(result)}
@@ -72,7 +69,7 @@ async def query_tx(req: QueryTxRequest):
 
 
 @router.post("/query-receipt")
-async def query_receipt(req: QueryReceiptRequest):
+async def query_receipt(req: QueryReceiptRequest, net: str = Depends(request_network)):
     """Return the Merkle inclusion receipt for a transaction.
 
     In Accumulate V3 the proof lives on the principal account's chain, not on the
@@ -80,11 +77,9 @@ async def query_receipt(req: QueryReceiptRequest):
     receipt (forAny anchors). The response carries `receipt = {start, end, anchor,
     entries:[{hash, right?}]}`, which the client recomputes and verifies.
     """
-    from ..main import client
+    from ..main import get_client
 
-    if client is None:
-        return {"success": False, "error": "Client not initialized"}
-
+    client = get_client(net)
     try:
         entry = _bare_hash(req.tx_hash)
         q = ChainQuery(
@@ -99,12 +94,10 @@ async def query_receipt(req: QueryReceiptRequest):
 
 
 @router.post("/query-directory")
-async def query_directory(req: QueryDirectoryRequest):
-    from ..main import client
+async def query_directory(req: QueryDirectoryRequest, net: str = Depends(request_network)):
+    from ..main import get_client
 
-    if client is None:
-        return {"success": False, "error": "Client not initialized"}
-
+    client = get_client(net)
     try:
         range_opts = RangeOptions(start=req.start, count=req.count) if req.count else None
         result = client.v3.query_directory(req.url, range_options=range_opts)
@@ -114,12 +107,10 @@ async def query_directory(req: QueryDirectoryRequest):
 
 
 @router.post("/wait-for-tx")
-async def wait_for_tx(req: WaitForTxRequest):
-    from ..main import client
+async def wait_for_tx(req: WaitForTxRequest, net: str = Depends(request_network)):
+    from ..main import get_client
 
-    if client is None:
-        return {"success": False, "error": "Client not initialized"}
-
+    client = get_client(net)
     try:
         for attempt in range(req.max_attempts):
             result = client.v3.query(req.tx_hash)

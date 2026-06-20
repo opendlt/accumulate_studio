@@ -5,6 +5,7 @@ import time
 from fastapi import APIRouter, Depends, Request
 
 from ..auth import auth_header, require_signing
+from ..net import request_network
 from ..models import FaucetRequest, TxResponse
 from ..rate_limit import RATE_LIMIT_FAUCET, limiter
 
@@ -17,13 +18,12 @@ async def request_faucet(
     request: Request,
     req: FaucetRequest,
     authorization: str | None = Depends(auth_header),
+    net: str = Depends(request_network),
 ):
-    from ..main import client
+    from ..main import get_client
 
     require_signing(req.session_id, authorization)
-
-    if client is None:
-        return TxResponse(success=False, error="Client not initialized")
+    client = get_client(net)
 
     last_result = None
     for i in range(req.times):

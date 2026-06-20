@@ -7,6 +7,7 @@ rate-limit decorators (which read limits at import time) pick up test values.
 import os
 
 os.environ.setdefault("ACCUMULATE_NETWORK", "testnet")
+os.environ.setdefault("ALLOWED_NETWORKS", "testnet,kermit")
 os.environ.setdefault("ALLOWED_ORIGINS", "http://localhost:3000")
 os.environ.setdefault("RATE_LIMIT_ENABLED", "true")
 os.environ.setdefault("RATE_LIMIT_DEFAULT", "1000/minute")
@@ -45,16 +46,20 @@ class FakeAccumulate:
 
 @pytest.fixture
 def api():
-    """A TestClient with a fresh in-memory session store and a fake SDK client.
+    """A TestClient with a fresh in-memory session store and fake SDK clients.
 
-    Constructed without the lifespan context manager so the real Accumulate
-    client is never created; we inject the fake directly.
+    Constructed without the lifespan context manager so no real Accumulate
+    client is created. Routes resolve their client via ``get_client(net)``, which
+    reads the ``_clients`` cache — we pre-seed that cache (per allowed network)
+    with fakes so a real network client is never built.
     """
     import app.main as main_mod
     from app.session_store import SessionStore
 
     main_mod.store = SessionStore()      # isolate session state per test
-    main_mod.client = FakeAccumulate()
+    fake = FakeAccumulate()
+    main_mod.client = fake               # health/oracle alias
+    main_mod._clients = {"testnet": fake, "kermit": FakeAccumulate()}
     return TestClient(main_mod.app)
 
 

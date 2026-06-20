@@ -6,6 +6,7 @@ from accumulate_client.convenience import SmartSigner, TxBody
 from accumulate_client.v3.options import NetworkStatusOptions
 
 from ..auth import auth_header, require_signing
+from ..net import request_network
 from ..models import AddCreditsRequest, TxResponse
 from ..rate_limit import RATE_LIMIT_SIGN, limiter
 
@@ -18,13 +19,12 @@ async def add_credits(
     request: Request,
     req: AddCreditsRequest,
     authorization: str | None = Depends(auth_header),
+    net: str = Depends(request_network),
 ):
-    from ..main import store, client
+    from ..main import store, get_client
 
     require_signing(req.session_id, authorization)
-
-    if client is None:
-        return TxResponse(success=False, error="Client not initialized")
+    client = get_client(net)
 
     kp = store.get(req.session_id)
     if not kp:

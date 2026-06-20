@@ -60,6 +60,25 @@ def get_network_endpoint() -> str:
     return NETWORK_ENDPOINTS.get(network, NETWORK_ENDPOINTS["testnet"])
 
 
+def endpoint_for(network: str) -> str:
+    """Endpoint for a specific (already-validated) network name."""
+    return NETWORK_ENDPOINTS[network]
+
+
+def allowed_networks() -> set[str]:
+    """Networks this proxy is permitted to serve.
+
+    ALLOWED_NETWORKS is a comma-separated list; the deploy-time network is always
+    included. Mainnet is never silently allowed unless ALLOW_MAINNET is set.
+    """
+    raw = os.getenv("ALLOWED_NETWORKS", "")
+    names = {n.strip() for n in raw.split(",") if n.strip()}
+    names.add(get_network_name())
+    if "mainnet" in names and not allow_mainnet():
+        names.discard("mainnet")
+    return {n for n in names if n in NETWORK_ENDPOINTS}
+
+
 def allowed_origins() -> list[str]:
     """Browser origins allowed by CORS.
 

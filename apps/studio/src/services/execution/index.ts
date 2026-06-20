@@ -107,6 +107,36 @@ export class ExecutionEngine {
 
     // Update store
     const store = useFlowStore.getState();
+
+    // Consistency gate: the proxy must be able to serve the UI-selected network,
+    // otherwise submissions and verification would target different chains.
+    try {
+      const health = await api.callProxyGet<{ network?: string; allowed?: string[] }>('/api/health');
+      const allowed = health.allowed ?? (health.network ? [health.network] : []);
+      if (networkConfig.id && allowed.length > 0 && !allowed.includes(networkConfig.id)) {
+        this.status = 'idle';
+        store.addExecutionLog({
+          level: 'error',
+          message:
+            `Network mismatch: UI is on "${networkConfig.id}" but the proxy only serves ` +
+            `[${allowed.join(', ')}]. Submissions and verification would target different ` +
+            `chains. Aborting — switch networks or reconfigure the proxy (ALLOWED_NETWORKS).`,
+        });
+        throw new Error(`Network mismatch (UI=${networkConfig.id}, proxy serves ${allowed.join(', ')})`);
+      }
+    } catch (err) {
+      // If this is our own mismatch abort, rethrow. Otherwise the health endpoint
+      // was unreachable — warn but let execution proceed (the proxy still gates
+      // each request via the network allowlist).
+      if (err instanceof Error && err.message.startsWith('Network mismatch')) {
+        throw err;
+      }
+      store.addExecutionLog({
+        level: 'warn',
+        message: `Proxy health check failed: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+
     store.startExecution();
     store.addExecutionLog({
       level: 'info',
@@ -324,6 +354,19 @@ export class ExecutionEngine {
    */
   getStatus(): ExecutionStatus {
     return this.status;
+  }
+
+  /**
+   * Get an AccumulateAPI bound to the same network as the last/active run, for
+   * post-execution reads (assertions). Reuses the run's context API when present
+   * so reads go through the proxy on the same chain that performed submission;
+   * falls back to a fresh API on the currently-selected network.
+   */
+  getApi(): AccumulateAPI {
+    if (this.context?.api) return this.context.api;
+    const cfg = networkService.getNetworkConfig();
+    if (!cfg) throw new Error('Not connected to any network');
+    return new AccumulateAPI(cfg);
   }
 
   /**
