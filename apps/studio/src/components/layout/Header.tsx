@@ -404,6 +404,7 @@ export const Header: React.FC<HeaderProps> = ({
   }, [flow.nodes.length, loadFlow]);
 
   const handleExecute = () => {
+    if (isExecuting) return; // never trigger anything while a run is in flight
     if (onExecute) {
       onExecute();
     } else {

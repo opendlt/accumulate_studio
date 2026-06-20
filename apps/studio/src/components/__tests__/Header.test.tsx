@@ -399,4 +399,42 @@ describe('Header', () => {
     fireEvent.click(screen.getByText('Execute'));
     expect(mockOpenModal).toHaveBeenCalledWith('execute-confirm');
   });
+
+  // -----------------------------------------------------------------------
+  // 28. Execution state — single source of truth (P1-3)
+  // -----------------------------------------------------------------------
+  describe('execution state', () => {
+    beforeEach(() => {
+      flowStoreState = {
+        flow: { name: 'Flow', nodes: [{ id: 'n1' }], connections: [], version: '1.0' },
+      };
+    });
+
+    it('shows "Executing..." and disables the button when isExecuting', () => {
+      render(<Header isExecuting onExecute={vi.fn()} />);
+      const btn = screen.getByText('Executing...').closest('button')!;
+      expect(btn).toBeDefined();
+      expect(btn.disabled).toBe(true);
+    });
+
+    it('shows "Execute" and is enabled when idle (with nodes)', () => {
+      render(<Header isExecuting={false} onExecute={vi.fn()} />);
+      const btn = screen.getByText('Execute').closest('button')!;
+      expect(btn.disabled).toBe(false);
+    });
+
+    it('does not call onExecute while executing', () => {
+      const onExecute = vi.fn();
+      render(<Header isExecuting onExecute={onExecute} />);
+      fireEvent.click(screen.getByText('Executing...').closest('button')!);
+      expect(onExecute).not.toHaveBeenCalled();
+    });
+
+    it('calls onExecute when idle', () => {
+      const onExecute = vi.fn();
+      render(<Header isExecuting={false} onExecute={onExecute} />);
+      fireEvent.click(screen.getByText('Execute').closest('button')!);
+      expect(onExecute).toHaveBeenCalledTimes(1);
+    });
+  });
 });

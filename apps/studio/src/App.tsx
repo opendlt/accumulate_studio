@@ -214,6 +214,15 @@ const AppInner: React.FC = () => {
     }
   }, [flow]);
 
+  // Single entry point for "user pressed Execute" (Header button + Cmd/Ctrl+Enter).
+  // Guards against starting a second run, then opens the confirm modal which owns
+  // the actual executeFlow call (credit-cost + mainnet warning). Invariant: the
+  // engine sets store status 'running' first thing, so `isExecuting` is reliable.
+  const handleHeaderExecute = useCallback(() => {
+    if (isExecuting || flow.nodes.length === 0) return;
+    openModal('execute-confirm');
+  }, [isExecuting, flow.nodes.length, openModal]);
+
   const handleStopExecution = useCallback(() => {
     executionEngine.stopExecution();
   }, []);
@@ -320,13 +329,10 @@ const AppInner: React.FC = () => {
         return;
       }
 
-      // Execute flow — opens the same confirmation the Execute button does
-      // (credit cost + mainnet warning), respecting isExecuting and node count.
+      // Execute flow — uses the exact same path as the Header Execute button.
       if (mod && e.key === 'Enter') {
         e.preventDefault();
-        if (!isExecuting && flow.nodes.length > 0) {
-          openModal('execute-confirm');
-        }
+        handleHeaderExecute();
         return;
       }
 
@@ -350,7 +356,7 @@ const AppInner: React.FC = () => {
     removeNodes,
     selectedNodeIds,
     flow,
-    isExecuting,
+    handleHeaderExecute,
     openModal,
   ]);
 
@@ -358,7 +364,11 @@ const AppInner: React.FC = () => {
     <ReactFlowProvider>
       <div className="h-screen w-screen flex flex-col overflow-hidden bg-gray-100 dark:bg-gray-950">
         {/* Header */}
-        <Header onTogglePalette={togglePalette} />
+        <Header
+          onTogglePalette={togglePalette}
+          onExecute={handleHeaderExecute}
+          isExecuting={isExecuting}
+        />
 
         {/* Main content area */}
         <div className="flex-1 flex min-h-0">
