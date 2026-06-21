@@ -5,6 +5,7 @@ import { X, Clock, Star, ChevronRight, Layout, Coins, Database, Zap, GitBranch }
 import { cn, Button } from '../ui';
 import { useFlowStore } from '../../store';
 import { GOLDEN_PATH_TEMPLATES } from '../../data/flow-templates';
+import { TemplateThumbnail } from './TemplateThumbnail';
 import type { FlowTemplate } from '@accumulate-studio/types';
 
 // =============================================================================
@@ -77,11 +78,16 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, onSelect, selecte
         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
     )}
   >
-    {/* Thumbnail placeholder */}
-    <div className="aspect-video bg-gray-100 dark:bg-gray-700 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
-      <div className="text-gray-400 dark:text-gray-500">
-        <CategoryIcon category={getTemplateCategory(template)} className="w-12 h-12" />
-      </div>
+    {/* Mini-graph thumbnail of the actual flow */}
+    <div className="aspect-video min-h-[88px] bg-gray-50 dark:bg-gray-900 rounded-lg mb-3 overflow-hidden relative">
+      {template.flow.nodes.length > 0 ? (
+        <TemplateThumbnail flow={template.flow} />
+      ) : (
+        // Fallback for an (unexpected) empty template
+        <div className="absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-500">
+          <CategoryIcon category={getTemplateCategory(template)} className="w-12 h-12" />
+        </div>
+      )}
     </div>
 
     {/* Content */}

@@ -157,6 +157,26 @@ describe('TemplateSelectModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('renders a mini-graph thumbnail per card (not a single placeholder icon)', () => {
+    render(<TemplateSelectModal isOpen={true} onClose={vi.fn()} />);
+    // Radix Dialog portals to document.body, so query the document.
+    const thumbnails = document.querySelectorAll('.react-flow');
+    const cards = document.querySelectorAll('.grid > button');
+    expect(cards.length).toBeGreaterThan(0);
+    expect(thumbnails.length).toBe(cards.length);
+  });
+
+  it('thumbnail does not swallow the card click (selection still toggles)', () => {
+    render(<TemplateSelectModal isOpen={true} onClose={vi.fn()} />);
+    // Click the thumbnail region of the first card; onSelect should still fire.
+    const firstCard = document.querySelector('.grid > button') as HTMLElement;
+    const thumb = firstCard.querySelector('.react-flow') as HTMLElement;
+    fireEvent.click(thumb);
+    // Selection enables the Load Template button.
+    const loadButton = screen.getByText('Load Template');
+    expect(loadButton.closest('button')?.disabled).toBe(false);
+  });
+
   it('shows difficulty badges', () => {
     render(<TemplateSelectModal isOpen={true} onClose={vi.fn()} />);
     // Should show at least beginner and intermediate badges
