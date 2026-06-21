@@ -15,6 +15,9 @@ apps/studio/src/**/*.js
 apps/studio/src/**/*.js.map
 apps/studio/src/**/*.d.ts
 apps/studio/src/**/*.d.ts.map
+# …but vite-env.d.ts is a hand-written ambient declaration (import.meta.env types),
+# not build output — it MUST be committed or the Vercel build's tsc fails (TS2339).
+!apps/studio/src/vite-env.d.ts
 
 # ── Vite ──
 .vite/
