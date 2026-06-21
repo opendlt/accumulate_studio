@@ -1,20 +1,20 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
-import checker from 'vite-plugin-checker';
 import path from 'path';
 
-export default defineConfig(({ command }) => ({
-  plugins: [
-    react(),
-    // Inline type errors during `vite dev` ONLY (command === 'serve'). The checker is
-    // deliberately absent from `vite build`: its tsc worker fails to exit and hangs
-    // CI/Vercel after "✓ built". Build-time type safety comes from the explicit
-    // `tsc --noEmit` in the package's "build" script instead.
-    ...(command === 'serve'
-      ? [checker({ typescript: { tsconfigPath: './tsconfig.json' } })]
-      : []),
-  ],
-  resolve: {
+// `vite-plugin-checker` is loaded ONLY for `vite dev` (command === 'serve'), via a
+// dynamic import. We must NOT import it for `vite build`: its worker initialization
+// keeps the Node process alive after "✓ built", hanging CI/Vercel forever. Build-time
+// type safety comes from the explicit `tsc --noEmit` in the package's "build" script.
+export default defineConfig(async ({ command }) => {
+  const plugins: PluginOption[] = [react()];
+  if (command === 'serve') {
+    const checker = (await import('vite-plugin-checker')).default;
+    plugins.push(checker({ typescript: { tsconfigPath: './tsconfig.json' } }));
+  }
+  return {
+    plugins,
+    resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@accumulate-studio/types': path.resolve(__dirname, '../../packages/types/src'),
@@ -36,4 +36,5 @@ export default defineConfig(({ command }) => ({
     outDir: 'dist',
     sourcemap: true,
   },
-}));
+  };
+});
