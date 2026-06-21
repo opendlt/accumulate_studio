@@ -17,6 +17,17 @@ vi.mock('../ui', async (importActual) => {
   return { ...actual, useToast: () => ({ addToast: mockAddToast }) };
 });
 
+// Stable references so the debounced-regeneration effect (keyed on `flow`)
+// does not see a new object on every render.
+const stableFlow = {
+  nodes: [{ id: '1', type: 'GenerateKeys' }],
+  connections: [],
+  variables: [],
+  assertions: [],
+  name: 'Test',
+  version: '1.0',
+};
+
 // Mock stores
 vi.mock('../../store', () => ({
   useUIStore: vi.fn((selector: (s: any) => any) => {
@@ -31,7 +42,8 @@ vi.mock('../../store', () => ({
   }),
   useFlowStore: vi.fn((selector: (s: any) => any) => {
     const state = {
-      flow: { nodes: [{ id: '1', type: 'GenerateKeys' }], connections: [], variables: [], assertions: [], name: 'Test', version: '1.0' },
+      flow: stableFlow,
+      validationResult: null,
     };
     return selector(state);
   }),
@@ -53,6 +65,7 @@ vi.mock('lucide-react', () => ({
   Download: (props: any) => <svg data-testid="icon-download" {...props} />,
   Terminal: (props: any) => <svg data-testid="icon-terminal" {...props} />,
   Code2: (props: any) => <svg data-testid="icon-code2" {...props} />,
+  AlertCircle: (props: any) => <svg data-testid="icon-alert" {...props} />,
 }));
 
 describe('CodePanel', () => {
