@@ -16,6 +16,7 @@ import {
   FilePlus,
   Trash2,
   HelpCircle,
+  Share2,
 } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { cn, Button, ConfirmDialog, useToast } from '../ui';
@@ -25,6 +26,7 @@ import { NETWORKS, validateFlow, type NetworkId, type Flow } from '@accumulate-s
 import { NetworkStatusIndicator } from './NetworkStatusIndicator';
 import { downloadFlowAsJson } from '../../utils/save-flow';
 import { countNodesWithMissingFields } from '../../services/config-validation';
+import { buildShareUrl } from '../../lib/share-link';
 
 // =============================================================================
 // Logo Component
@@ -495,6 +497,34 @@ export const Header: React.FC<HeaderProps> = ({
     addToast({ type: 'success', title: 'Flow saved', description: filename });
   }, [flow, addToast]);
 
+  const handleShare = useCallback(async () => {
+    const res = buildShareUrl(flow);
+    if (!res.ok || !res.url) {
+      addToast({
+        type: 'error',
+        title: 'Cannot create link',
+        description:
+          res.error === 'too-large'
+            ? 'This flow is too large to share via URL. Use Export instead.'
+            : 'Failed to encode the flow.',
+      });
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(res.url);
+      addToast({
+        type: 'success',
+        title: 'Share link copied',
+        description:
+          'Anyone with this link can open this flow. It contains the flow (incl. any account URLs) but never private keys.',
+        duration: 7000,
+      });
+    } catch {
+      // Clipboard blocked (insecure context / permissions) — fall back to prompt.
+      window.prompt('Copy this share link:', res.url);
+    }
+  }, [flow, addToast]);
+
   const handleExport = () => {
     if (onExport) {
       onExport();
@@ -651,6 +681,21 @@ export const Header: React.FC<HeaderProps> = ({
           title="Save Flow (JSON) — Ctrl+S"
         >
           <Save className="w-4 h-4" />
+        </button>
+
+        {/* Share flow (copy permalink) */}
+        <button
+          onClick={handleShare}
+          disabled={flow.nodes.length === 0}
+          className={cn(
+            'hidden sm:flex p-2 rounded-lg transition-colors',
+            flow.nodes.length > 0
+              ? 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+              : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+          )}
+          title="Share Flow (copy link)"
+        >
+          <Share2 className="w-4 h-4" />
         </button>
 
         {/* Import flow */}

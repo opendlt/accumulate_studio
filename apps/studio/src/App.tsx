@@ -23,6 +23,11 @@ import { runAssertions, type AssertionResult } from './services/assertion-runner
 import { downloadFlowAsJson } from './utils/save-flow';
 import { isTypingTarget } from './utils/keyboard';
 import { countNodesWithMissingFields } from './services/config-validation';
+import {
+  readPayloadFromLocation,
+  decodeFlowFromPayload,
+  clearPayloadFromLocation,
+} from './lib/share-link';
 
 // =============================================================================
 // Constants
@@ -172,6 +177,56 @@ const AppInner: React.FC = () => {
     }
   }, [hasCompletedOnboarding, hasCompletedTour, activeModalForTour, startTour]);
 
+  // Shared flow permalinks: if the URL carries a #flow= (or ?flow=) payload, decode
+  // it through sanitizeFlow (untrusted input) and load it once after rehydration.
+  const sharedLinkHandled = useRef(false);
+  useEffect(() => {
+    if (sharedLinkHandled.current) return;
+    sharedLinkHandled.current = true;
+
+    const payload = readPayloadFromLocation();
+    if (!payload) return; // no share link
+
+    const incoming = decodeFlowFromPayload(payload);
+    // Undecodable or oversized → decode returns null.
+    if (!incoming) {
+      addToast({
+        type: 'error',
+        title: 'Could not open link',
+        description: 'The shared flow link is invalid or too large.',
+      });
+      clearPayloadFromLocation();
+      return;
+    }
+    // Decoded but sanitizeFlow rejected the graph (empty fallback) while the
+    // payload was non-trivial → the link was malformed/tampered.
+    if (incoming.nodes.length === 0 && payload.length > 32) {
+      addToast({
+        type: 'warning',
+        title: 'Shared flow was invalid',
+        description: 'The link decoded but failed validation; starting empty.',
+      });
+      clearPayloadFromLocation();
+      return;
+    }
+
+    const current = useFlowStore.getState().flow;
+    const replace =
+      current.nodes.length === 0 ||
+      window.confirm('Open the shared flow? This replaces your current canvas.');
+    if (replace) {
+      loadFlow(incoming);
+      addToast({
+        type: 'success',
+        title: 'Shared flow loaded',
+        description: `"${incoming.name}" opened from link.`,
+      });
+    }
+    clearPayloadFromLocation();
+    // Run once on mount; read the store imperatively to avoid re-running on flow changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // UI Store state
   const showPalette = useUIStore((state) => state.showPalette);
   const showCodePanel = useUIStore((state) => state.showCodePanel);
@@ -190,6 +245,7 @@ const AppInner: React.FC = () => {
   // Flow store state
   const flow = useFlowStore((state) => state.flow);
   const execution = useFlowStore((state) => state.execution);
+  const loadFlow = useFlowStore((state) => state.loadFlow);
 
   // Editing actions for keyboard shortcuts
   const undo = useFlowStore((state) => state.undo);
