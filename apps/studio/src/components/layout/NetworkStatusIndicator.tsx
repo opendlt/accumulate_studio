@@ -59,8 +59,12 @@ export const NetworkStatusIndicator: React.FC = () => {
     <div className="relative">
       <button
         onClick={() => setExpanded(!expanded)}
+        aria-haspopup="dialog"
+        aria-expanded={expanded}
+        aria-label={status.connected ? `Network status: connected to ${networkName}` : `Network status: disconnected from ${networkName}`}
         className={cn(
           'flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-accumulate-500',
           status.connected
             ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
             : 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
@@ -88,7 +92,7 @@ export const NetworkStatusIndicator: React.FC = () => {
             onClick={() => setExpanded(false)}
           />
           {/* Dropdown panel */}
-          <div className="absolute top-full right-0 mt-1 z-50 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3">
+          <div role="dialog" aria-label="Network status" className="absolute top-full right-0 mt-1 z-50 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-gray-500" />

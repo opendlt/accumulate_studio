@@ -37,7 +37,11 @@ export const ActionPalette: React.FC = () => {
     : null;
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
+    <div
+      role="region"
+      aria-label="Action palette"
+      className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800"
+    >
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-800">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
@@ -78,7 +82,7 @@ export const ActionPalette: React.FC = () => {
       </div>
 
       {/* Block list */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div role="list" aria-label="Blocks" className="flex-1 overflow-y-auto p-4">
         {filteredBlocks ? (
           // Search results
           <div className="space-y-2">
@@ -154,6 +158,9 @@ export const ActionPalette: React.FC = () => {
       <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-800">
         <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
           Click to append or drag onto an edge to insert
+        </p>
+        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500 text-center">
+          Keyboard: focus a block and press Enter to add it — no mouse required
         </p>
       </div>
     </div>

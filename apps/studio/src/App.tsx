@@ -39,10 +39,27 @@ const MAX_EXECUTION_HEIGHT = 500;
 interface ResizeHandleProps {
   direction: 'horizontal' | 'vertical';
   onResize: (delta: number) => void;
+  /** Current size (px) for ARIA + keyboard clamping. */
+  value: number;
+  min: number;
+  max: number;
+  /** Accessible name, e.g. "Resize palette". */
+  label: string;
   className?: string;
 }
 
-const ResizeHandle: React.FC<ResizeHandleProps> = ({ direction, onResize, className }) => {
+// Pixels moved per arrow-key press.
+const KEYBOARD_STEP = 16;
+
+export const ResizeHandle: React.FC<ResizeHandleProps> = ({
+  direction,
+  onResize,
+  value,
+  min,
+  max,
+  label,
+  className,
+}) => {
   const [isDragging, setIsDragging] = useState(false);
   const startPosRef = useRef(0);
 
@@ -71,21 +88,53 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({ direction, onResize, classN
     [direction, onResize]
   );
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      // Forward the same signed delta the mouse path uses; each call-site already
+      // encodes whether +delta grows or shrinks its panel.
+      let delta = 0;
+      if (direction === 'horizontal') {
+        if (e.key === 'ArrowLeft') delta = -KEYBOARD_STEP;
+        else if (e.key === 'ArrowRight') delta = KEYBOARD_STEP;
+      } else {
+        if (e.key === 'ArrowUp') delta = -KEYBOARD_STEP;
+        else if (e.key === 'ArrowDown') delta = KEYBOARD_STEP;
+      }
+      if (e.key === 'Home') delta = min - value;
+      else if (e.key === 'End') delta = max - value;
+
+      if (delta !== 0) {
+        e.preventDefault();
+        onResize(delta);
+      }
+    },
+    [direction, onResize, min, max, value]
+  );
+
   return (
     <div
+      role="separator"
+      aria-orientation={direction === 'horizontal' ? 'vertical' : 'horizontal'}
+      aria-label={label}
+      aria-valuenow={Math.round(value)}
+      aria-valuemin={min}
+      aria-valuemax={max}
+      tabIndex={0}
+      onMouseDown={handleMouseDown}
+      onKeyDown={handleKeyDown}
       className={cn(
         'flex items-center justify-center transition-colors group',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-accumulate-500',
         direction === 'horizontal'
           ? 'w-1 cursor-col-resize hover:bg-accumulate-500/20'
           : 'h-1 cursor-row-resize hover:bg-accumulate-500/20',
         isDragging && 'bg-accumulate-500/30',
         className
       )}
-      onMouseDown={handleMouseDown}
     >
       <div
         className={cn(
-          'transition-opacity opacity-0 group-hover:opacity-100',
+          'transition-opacity opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100',
           direction === 'horizontal' ? 'rotate-90' : '',
           isDragging && 'opacity-100'
         )}
@@ -392,7 +441,14 @@ const AppInner: React.FC = () => {
               >
                 <ActionPalette />
               </div>
-              <ResizeHandle direction="horizontal" onResize={handlePaletteResize} />
+              <ResizeHandle
+                direction="horizontal"
+                onResize={handlePaletteResize}
+                value={paletteWidth}
+                min={MIN_PANEL_WIDTH}
+                max={MAX_PANEL_WIDTH}
+                label="Resize palette"
+              />
             </>
           )}
 
@@ -483,7 +539,14 @@ const AppInner: React.FC = () => {
             {/* Execution Panel */}
             {showExecutionPanel && (
               <>
-                <ResizeHandle direction="vertical" onResize={handleExecutionResize} />
+                <ResizeHandle
+                  direction="vertical"
+                  onResize={handleExecutionResize}
+                  value={executionHeight}
+                  min={MIN_EXECUTION_HEIGHT}
+                  max={MAX_EXECUTION_HEIGHT}
+                  label="Resize execution panel"
+                />
                 <div
                   className="flex-shrink-0 overflow-hidden"
                   style={{ height: executionHeight }}
@@ -519,7 +582,14 @@ const AppInner: React.FC = () => {
           {/* Right panel: Code Panel */}
           {showCodePanel && (
             <>
-              <ResizeHandle direction="horizontal" onResize={handleCodePanelResize} />
+              <ResizeHandle
+                direction="horizontal"
+                onResize={handleCodePanelResize}
+                value={codePanelWidth}
+                min={MIN_PANEL_WIDTH}
+                max={MAX_PANEL_WIDTH}
+                label="Resize code panel"
+              />
               <div
                 className="flex-shrink-0 overflow-hidden"
                 style={{ width: codePanelWidth }}

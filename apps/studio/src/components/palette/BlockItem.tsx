@@ -157,14 +157,24 @@ export const BlockItem: React.FC<BlockItemProps> = ({ block }) => {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label={`Add block: ${block.name}. ${block.description}`}
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg cursor-grab active:cursor-grabbing',
         'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
         'hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-accumulate-500',
         'transition-all duration-150'
       )}
     >

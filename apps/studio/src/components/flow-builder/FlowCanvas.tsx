@@ -458,6 +458,8 @@ export const FlowCanvas: React.FC = () => {
   return (
     <div
       ref={reactFlowWrapper}
+      role="application"
+      aria-label="Flow canvas — drag blocks here to build your flow"
       className="relative flex-1 h-full bg-gray-100 dark:bg-gray-950"
     >
       <ReactFlow

@@ -16,6 +16,7 @@ import {
   FilePlus,
   Trash2,
 } from 'lucide-react';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { cn, Button, ConfirmDialog, useToast } from '../ui';
 import { useFlowStore, useUIStore } from '../../store';
 import { selectCanUndo, selectCanRedo, selectFlowValidationSeverity, selectTotalCreditCost } from '../../store/flow-store';
@@ -59,81 +60,64 @@ interface NetworkSelectorProps {
   onChange: (network: NetworkId) => void;
 }
 
-const NetworkSelector: React.FC<NetworkSelectorProps> = ({ value, onChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
+export const NetworkSelector: React.FC<NetworkSelectorProps> = ({ value, onChange }) => {
+  const [open, setOpen] = useState(false);
   const selectedNetwork = NETWORKS[value];
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // Only show active networks (testnet/devnet are defunct)
   const activeNetworkIds: NetworkId[] = ['mainnet', 'kermit', 'local'];
   const networkOptions = activeNetworkIds.map((id) => NETWORKS[id]);
 
-  return (
-    <div ref={dropdownRef} className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          'flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium',
-          'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
-          'hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors',
-          'text-gray-900 dark:text-gray-100'
-        )}
-      >
-        <span
-          className={cn(
-            'w-2 h-2 rounded-full',
-            value === 'mainnet' && 'bg-green-500',
-            value === 'kermit' && 'bg-purple-500',
-            value === 'local' && 'bg-gray-500'
-          )}
-        />
-        {selectedNetwork.name}
-        <ChevronDown className={cn('w-4 h-4 transition-transform', isOpen && 'rotate-180')} />
-      </button>
+  const dotClass = (id: NetworkId) =>
+    cn(
+      'w-2 h-2 rounded-full flex-shrink-0',
+      id === 'mainnet' && 'bg-green-500',
+      id === 'kermit' && 'bg-purple-500',
+      id === 'local' && 'bg-gray-500'
+    );
 
-      {isOpen && (
-        <div
+  return (
+    <DropdownMenu.Root open={open} onOpenChange={setOpen}>
+      <DropdownMenu.Trigger asChild>
+        <button
+          aria-label={`Network: ${selectedNetwork.name}`}
           className={cn(
-            'absolute top-full right-0 mt-1 w-56 py-1',
+            'flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium',
+            'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
+            'hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors',
+            'text-gray-900 dark:text-gray-100',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-accumulate-500'
+          )}
+        >
+          <span className={dotClass(value)} />
+          {selectedNetwork.name}
+          <ChevronDown className={cn('w-4 h-4 transition-transform', open && 'rotate-180')} />
+        </button>
+      </DropdownMenu.Trigger>
+
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          sideOffset={4}
+          className={cn(
+            'w-56 py-1 z-50',
             'bg-white dark:bg-gray-800 rounded-lg shadow-lg',
             'border border-gray-200 dark:border-gray-700',
-            'z-50'
+            'data-[state=open]:animate-in data-[state=closed]:animate-out',
+            'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0'
           )}
         >
           {networkOptions.map((network) => (
-            <button
+            <DropdownMenu.Item
               key={network.id}
-              onClick={() => {
-                onChange(network.id);
-                setIsOpen(false);
-              }}
+              onSelect={() => onChange(network.id)}
               className={cn(
-                'w-full flex items-center gap-3 px-4 py-2 text-left',
-                'hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
+                'w-full flex items-center gap-3 px-4 py-2 text-left outline-none cursor-pointer',
+                'data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-gray-700',
                 value === network.id && 'bg-gray-50 dark:bg-gray-700/50'
               )}
             >
-              <span
-                className={cn(
-                  'w-2 h-2 rounded-full flex-shrink-0',
-                  network.id === 'mainnet' && 'bg-green-500',
-                  network.id === 'kermit' && 'bg-purple-500',
-                  network.id === 'local' && 'bg-gray-500'
-                )}
-              />
+              <span className={dotClass(network.id)} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -152,11 +136,11 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ value, onChange }) =>
               {value === network.id && (
                 <Check className="w-4 h-4 text-accumulate-500 flex-shrink-0" />
               )}
-            </button>
+            </DropdownMenu.Item>
           ))}
-        </div>
-      )}
-    </div>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 };
 
@@ -169,22 +153,7 @@ interface ThemeToggleProps {
   onChange: (theme: 'light' | 'dark' | 'system') => void;
 }
 
-const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, onChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, onChange }) => {
   const themes = [
     { id: 'light' as const, label: 'Light', icon: Sun },
     { id: 'dark' as const, label: 'Dark', icon: Moon },
@@ -195,53 +164,53 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, onChange }) => {
   const ThemeIcon = currentTheme.icon;
 
   return (
-    <div ref={dropdownRef} className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          'p-2 rounded-lg',
-          'text-gray-600 dark:text-gray-400',
-          'hover:bg-gray-100 dark:hover:bg-gray-800',
-          'transition-colors'
-        )}
-        title="Theme"
-      >
-        <ThemeIcon className="w-5 h-5" />
-      </button>
-
-      {isOpen && (
-        <div
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          aria-label={`Theme: ${currentTheme.label}`}
           className={cn(
-            'absolute top-full right-0 mt-1 w-36 py-1',
+            'p-2 rounded-lg text-gray-600 dark:text-gray-400',
+            'hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-accumulate-500'
+          )}
+        >
+          <ThemeIcon className="w-5 h-5" />
+        </button>
+      </DropdownMenu.Trigger>
+
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          sideOffset={4}
+          className={cn(
+            'w-36 py-1 z-50',
             'bg-white dark:bg-gray-800 rounded-lg shadow-lg',
             'border border-gray-200 dark:border-gray-700',
-            'z-50'
+            'data-[state=open]:animate-in data-[state=closed]:animate-out',
+            'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0'
           )}
         >
           {themes.map((t) => {
             const Icon = t.icon;
             return (
-              <button
+              <DropdownMenu.Item
                 key={t.id}
-                onClick={() => {
-                  onChange(t.id);
-                  setIsOpen(false);
-                }}
+                onSelect={() => onChange(t.id)}
                 className={cn(
-                  'w-full flex items-center gap-3 px-4 py-2 text-left',
-                  'hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
+                  'w-full flex items-center gap-3 px-4 py-2 text-left outline-none cursor-pointer',
+                  'data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-gray-700',
                   theme === t.id && 'bg-gray-50 dark:bg-gray-700/50'
                 )}
               >
                 <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <span className="text-sm text-gray-900 dark:text-gray-100">{t.label}</span>
                 {theme === t.id && <Check className="w-4 h-4 text-accumulate-500 ml-auto" />}
-              </button>
+              </DropdownMenu.Item>
             );
           })}
-        </div>
-      )}
-    </div>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 };
 

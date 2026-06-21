@@ -95,4 +95,27 @@ describe('BlockItem click-to-append', () => {
     fireEvent.click(screen.getByText('Add Credits'));
     expect(mockAddNode).toHaveBeenCalledTimes(1);
   });
+
+  // P2-4 — keyboard operability + ARIA
+  it('is an accessible, focusable button with a descriptive name', () => {
+    render(<BlockItem block={block} />);
+    const item = screen.getByRole('button', { name: /Add block: Add Credits/i });
+    expect(item.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('places the block when Enter is pressed on the focused item', () => {
+    attachmentResult = { score: 0, attachToNodeId: null, remainingRecipe: [] };
+    recipeResult = [];
+    render(<BlockItem block={block} />);
+    fireEvent.keyDown(screen.getByRole('button', { name: /Add block: Add Credits/i }), { key: 'Enter' });
+    expect(mockAddNode).toHaveBeenCalledTimes(1);
+  });
+
+  it('places the block when Space is pressed', () => {
+    attachmentResult = { score: 0, attachToNodeId: null, remainingRecipe: [] };
+    recipeResult = [];
+    render(<BlockItem block={block} />);
+    fireEvent.keyDown(screen.getByRole('button', { name: /Add block: Add Credits/i }), { key: ' ' });
+    expect(mockAddNode).toHaveBeenCalledTimes(1);
+  });
 });
