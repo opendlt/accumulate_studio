@@ -442,11 +442,13 @@ function validateAssertion(
       }
 
       case 'balance.delta': {
-        // Would need before/after state comparison
+        // Requires before/after state comparison, which is not available here.
+        // Do NOT report a pass for an assertion that was never actually checked.
         return {
           assertion,
-          passed: true, // Placeholder
-          actual: 'validation not implemented',
+          passed: false,
+          actual: undefined,
+          error: 'balance.delta validation requires before/after state comparison (not available in this context)',
         };
       }
 

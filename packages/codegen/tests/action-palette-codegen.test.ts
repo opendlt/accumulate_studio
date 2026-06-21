@@ -268,6 +268,16 @@ function detectIssues(code: string, language: SDKLanguage, blockType: BlockType)
         line: i + 1,
       });
     }
+
+    // Fallback / unimplemented stubs — the unified engine must never emit these.
+    // (A template that fails to compile routes to `# TODO: Implement {{blockType}}`.)
+    if (/TODO:\s*Implement/.test(line) || /not_implemented/.test(line)) {
+      issues.push({
+        severity: 'error',
+        message: `Unimplemented stub in generated code: ${line.trim()}`,
+        line: i + 1,
+      });
+    }
   }
 
   // Language-specific checks
@@ -387,4 +397,24 @@ describe('Action Palette Code Generation', () => {
       }
     });
   }
+});
+
+// P2-1 Bug 2 — detectIssues must flag fallback/unimplemented stubs as errors.
+describe('detectIssues — fallback stub detection', () => {
+  it('flags "# TODO: Implement Foo" as a severity-error issue', () => {
+    const issues = detectIssues('        # TODO: Implement Foo\n        pass\n', 'python', 'Faucet');
+    const errors = issues.filter((i) => i.severity === 'error');
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors.some((e) => /Unimplemented stub/.test(e.message))).toBe(true);
+  });
+
+  it('flags "not_implemented" as a severity-error issue', () => {
+    const issues = detectIssues('let x = not_implemented();', 'rust', 'Faucet');
+    expect(issues.some((i) => i.severity === 'error' && /Unimplemented stub/.test(i.message))).toBe(true);
+  });
+
+  it('does not flag legitimate code without stubs', () => {
+    const issues = detectIssues('        result = client.faucet(url)\n', 'python', 'Faucet');
+    expect(issues.filter((i) => i.severity === 'error').length).toBe(0);
+  });
 });

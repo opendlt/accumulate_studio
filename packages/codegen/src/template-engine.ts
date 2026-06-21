@@ -59,6 +59,8 @@ export interface TemplateEngine {
   renderEpilogue(context: TemplateContext): string;
   renderNode(opId: string, context: TemplateContext): string;
   renderFallback(blockType: string): string;
+  /** Templates that failed to compile (best-effort compile keeps one bad template from killing the engine). */
+  compileErrors: Array<{ template: string; error: string }>;
 }
 
 export function createTemplateEngine(
@@ -116,18 +118,23 @@ export function createTemplateEngine(
     return options.inverse(this);
   });
 
-  // Compile templates
+  // Compile templates (best-effort, but record failures so they are not silently swallowed)
   const compiled = new Map<string, Handlebars.TemplateDelegate>();
+  const compileErrors: Array<{ template: string; error: string }> = [];
 
   for (const [name, source] of Object.entries(templates)) {
     try {
+      // hbs.compile() is lazy (it parses on first execution), so a syntax error would
+      // otherwise only surface at render time. Parse eagerly here to catch it up front.
+      hbs.parse(source);
       compiled.set(name, hbs.compile(source, { noEscape: true }));
-    } catch (_e) {
-      // Skip templates that fail to compile
+    } catch (e) {
+      compileErrors.push({ template: name, error: e instanceof Error ? e.message : String(e) });
     }
   }
 
   return {
+    compileErrors,
     renderPreamble(context: TemplateContext): string {
       const tmpl = compiled.get('_preamble');
       if (!tmpl) return '';

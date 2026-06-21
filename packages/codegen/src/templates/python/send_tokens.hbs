@@ -16,8 +16,8 @@
             principal={{#if sendTokensPrincipalIsRef}}{{sendTokensPrincipal}}{{else}}"{{sendTokensPrincipal}}"{{/if}},
             body=TxBody.send_tokens(
                 recipients=[
-{{#each recipients}}
-                    {"url": "{{this.url}}", "amount": "{{this.amount}}"},
+{{#each recipientsAnnotated}}
+                    {"url": {{#if this.urlIsRef}}{{this.url}}{{else}}"{{this.url}}"{{/if}}, "amount": {{#if this.amountIsRef}}{{this.amount}}{{else}}"{{this.amount}}"{{/if}} },
 {{/each}}
                 ],
             ),

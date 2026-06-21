@@ -14,8 +14,8 @@
         const {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
             {{#if sendTokensPrincipalIsRef}}{{sendTokensPrincipal}}{{else}}"{{sendTokensPrincipal}}"{{/if}},
             TxBody.sendTokensMulti([
-{{#each recipients}}
-                { url: "{{this.url}}", amount: "{{this.amount}}" },
+{{#each recipientsAnnotated}}
+                { url: {{#if this.urlIsRef}}{{this.url}}{{else}}"{{this.url}}"{{/if}}, amount: {{#if this.amountIsRef}}{{this.amount}}{{else}}"{{this.amount}}"{{/if}} },
 {{/each}}
             ]),
         );

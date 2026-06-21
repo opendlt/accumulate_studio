@@ -21,8 +21,8 @@
       principal: {{sendTokensPrincipal}},
       body: TxBody.sendTokens(
         to: [
-{{#each recipients}}
-          TokenRecipient(url: '{{this.url}}', amount: '{{this.amount}}'),
+{{#each recipientsAnnotated}}
+          TokenRecipient(url: {{#if this.urlIsRef}}{{this.url}}{{else}}'{{this.url}}'{{/if}}, amount: {{#if this.amountIsRef}}{{this.amount}}{{else}}'{{this.amount}}'{{/if}}),
 {{/each}}
         ],
       ),

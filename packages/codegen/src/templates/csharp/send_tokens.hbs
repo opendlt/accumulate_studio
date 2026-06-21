@@ -15,8 +15,8 @@
                 {{sendTokensPrincipal}},
                 TxBody.SendTokens(new List<TxRecipient>
                 {
-{{#each recipients}}
-                    new TxRecipient("{{this.url}}", "{{this.amount}}"),
+{{#each recipientsAnnotated}}
+                    new TxRecipient({{#if this.urlIsRef}}{{this.url}}{{else}}"{{this.url}}"{{/if}}, {{#if this.amountIsRef}}{{this.amount}}{{else}}"{{this.amount}}"{{/if}}),
 {{/each}}
                 })
             );

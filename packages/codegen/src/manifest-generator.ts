@@ -24,6 +24,18 @@ import { loadBundledTemplates } from './template-loader';
 
 export type CodeMode = 'sdk' | 'cli';
 
+/**
+ * A resolved config value tagged with whether it is a code expression (a variable
+ * reference / interpolation) or a literal string. Templates consult `kind` to decide
+ * quoting instead of re-guessing the value's shape with `isVarRef`. Introduced for the
+ * SendTokens recipient path; other block types still fall back to `isVarRef` (see P2-1 Bug 4).
+ */
+export interface ResolvedValue {
+  kind: 'ref' | 'literal';
+  /** For 'ref': a language-native expression (emitted unquoted). For 'literal': the raw string (quoted). */
+  expr: string;
+}
+
 export interface TemplateContext {
   // Per-node
   varName: string;
@@ -91,6 +103,20 @@ export function generateCodeFromManifest(
   const sortedNodes = topologicalSort(flow);
   const templates = loadBundledTemplates(language);
   const engine = createTemplateEngine(language, templates);
+
+  // Fail loud if a template REQUIRED for a node in this flow failed to compile, rather than
+  // silently routing it to the `# TODO: Implement` fallback (which tests cannot tell from real output).
+  if (engine.compileErrors.length > 0) {
+    const needed = new Set(sortedNodes.map((n) => blockTypeToOp(n.type as BlockType)));
+    const relevant = engine.compileErrors.filter((e) => needed.has(e.template));
+    if (relevant.length > 0) {
+      throw new Error(
+        `Template compile failure(s) for ${language}: ` +
+        relevant.map((e) => `${e.template}: ${e.error}`).join('; '),
+      );
+    }
+  }
+
   const network = flow.network ?? 'kermit';
 
   // Analyze node types to set feature flags
@@ -447,7 +473,7 @@ function resolveRef(value: string, language: SDKLanguage, varNameMap: Map<string
   const suffixMap = getSuffixMap(language);
 
   // Check if the entire string is exactly one dotted reference (no surrounding text)
-  const fullRefMatch = value.match(/^\{\{(\w+)\.(\w+)\}\}$/);
+  const fullRefMatch = value.match(/^\{\{([\w-]+)\.(\w+)\}\}$/);
   if (fullRefMatch) {
     const [, blockId, outputName] = fullRefMatch;
     const blockVarName = blockIdToVarName(blockId);
@@ -478,7 +504,7 @@ function resolveRef(value: string, language: SDKLanguage, varNameMap: Map<string
   }
 
   // Check if string contains any resolvable references
-  const hasDottedRefs = /\{\{\w+\.\w+\}\}/.test(value);
+  const hasDottedRefs = /\{\{[\w-]+\.\w+\}\}/.test(value);
   const hasFlowVars = /\{\{[A-Z][A-Z0-9_]*\}\}/.test(value);
   if (!hasDottedRefs && !hasFlowVars) return value;
 
@@ -487,7 +513,7 @@ function resolveRef(value: string, language: SDKLanguage, varNameMap: Map<string
 
   // Resolve dotted references {{blockId.outputName}}
   resolved = resolved.replace(
-    /\{\{(\w+)\.(\w+)\}\}/g,
+    /\{\{([\w-]+)\.(\w+)\}\}/g,
     (_match, blockId: string, outputName: string) => {
       const blockVarName = blockIdToVarName(blockId);
       const suffix = suffixMap[outputName];
@@ -635,6 +661,9 @@ function computeNodeVars(
     if (isJs) return val.startsWith('`') || /^[a-z_]\w*$/i.test(val);
     return /^[a-z_]\w*$/i.test(val);
   };
+  // Tag a (possibly already-resolved) value as a code expression (ref) or a literal string.
+  // Uses isVarRef as the shape heuristic; carries the kind so templates need not re-guess.
+  const tagResolved = (val: string): ResolvedValue => ({ kind: isVarRef(val) ? 'ref' : 'literal', expr: val });
   // Helper: quote a string literal in the target language
   const quoteLiteral = (s: string) => isDart ? `'${s}'` : `"${s}"`;
 
@@ -854,6 +883,18 @@ function computeNodeVars(
       }
       vars.recipients = recipients;
       vars.singleRecipient = recipients.length <= 1;
+      // Per-recipient ref metadata so the multi-recipient {{#each}} branch quotes each
+      // value correctly (a resolved URL/amount may already be a variable expression).
+      vars.recipientsAnnotated = recipients.map((r) => {
+        const urlVal: ResolvedValue = tagResolved(String(r.url));
+        const amtVal: ResolvedValue = tagResolved(String(r.amount));
+        return {
+          url: urlVal.expr,
+          urlIsRef: urlVal.kind === 'ref',
+          amount: amtVal.expr,
+          amountIsRef: amtVal.kind === 'ref',
+        };
+      });
 
       // Check for multiple GenerateKeys pattern (first=funded sender, last=recipient)
       const lastKvForRecipient = tracker?.lastKeyGenVarName;
@@ -953,7 +994,11 @@ function computeNodeVars(
     }
 
     case 'Comment': {
-      vars.commentText = (config.text as string) || 'Comment';
+      const rawComment = (config.text as string) || 'Comment';
+      // Split into individual lines; the template prefixes each with the comment marker
+      // so multiline comments stay valid (a lone newline would otherwise leak an unprefixed line).
+      vars.commentLines = rawComment.split('\n');
+      vars.commentText = rawComment; // kept for backward compat / single-line use
       break;
     }
 

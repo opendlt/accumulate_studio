@@ -13,8 +13,8 @@
     let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
         {{#if sendTokensPrincipalIsRef}}&{{sendTokensPrincipal}}{{else}}"{{sendTokensPrincipal}}"{{/if}},
         &TxBody::send_tokens_multi(&[
-{{#each recipients}}
-            ("{{this.url}}", "{{this.amount}}"),
+{{#each recipientsAnnotated}}
+            ({{#if this.urlIsRef}}&{{this.url}}{{else}}"{{this.url}}"{{/if}}, {{#if this.amountIsRef}}&{{this.amount}}{{else}}"{{this.amount}}"{{/if}}),
 {{/each}}
         ]),
         Some("Send tokens"),
