@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import Editor from '@monaco-editor/react';
 import * as Tabs from '@radix-ui/react-tabs';
 import { Copy, Download, Terminal, Code2 } from 'lucide-react';
-import { cn, Button } from '../ui';
+import { cn, Button, useToast } from '../ui';
 import { useUIStore, useFlowStore } from '../../store';
 import {
   SDK_LANGUAGES,
@@ -26,20 +26,33 @@ export const CodePanel: React.FC = () => {
   const setSelectedLanguage = useUIStore((state) => state.setSelectedLanguage);
   const codeMode = useUIStore((state) => state.codeMode);
   const setCodeMode = useUIStore((state) => state.setCodeMode);
+  const theme = useUIStore((state) => state.theme);
   const flow = useFlowStore((state) => state.flow);
+  const { addToast } = useToast();
 
   // Generate code for current flow and language
   const generatedCode = useMemo(() => {
     return generateCode(flow, selectedLanguage, codeMode);
   }, [flow, selectedLanguage, codeMode]);
 
+  // Resolve 'system' against the OS preference; mirrors App.tsx applyTheme().
+  const monacoTheme = useMemo(() => {
+    const isDark =
+      theme === 'dark' ||
+      (theme === 'system' &&
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches);
+    return isDark ? 'vs-dark' : 'light';
+  }, [theme]);
+
   // Copy to clipboard
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(generatedCode);
-      // Could add a toast notification here
+      addToast({ type: 'success', title: 'Copied to clipboard' });
     } catch (err) {
       console.error('Failed to copy:', err);
+      addToast({ type: 'error', title: 'Copy failed', description: 'Clipboard access was blocked.' });
     }
   };
 
@@ -63,6 +76,7 @@ export const CodePanel: React.FC = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    addToast({ type: 'success', title: 'Code downloaded', description: a.download });
   };
 
   return (
@@ -143,7 +157,7 @@ export const CodePanel: React.FC = () => {
             height="100%"
             language={MONACO_LANGUAGES[selectedLanguage]}
             value={generatedCode}
-            theme="vs-dark"
+            theme={monacoTheme}
             options={{
               readOnly: true,
               minimap: { enabled: false },

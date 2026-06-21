@@ -26,8 +26,9 @@ import {
 } from 'lucide-react';
 import { cn } from '../ui';
 import type { BlockDefinition, BlockType } from '@accumulate-studio/types';
-import { PREREQUISITE_GRAPH } from '@accumulate-studio/types';
-import { useFlowStore } from '../../store';
+import { BLOCK_CATALOG, PREREQUISITE_GRAPH } from '@accumulate-studio/types';
+import { useFlowStore, useUIStore } from '../../store';
+import { getPrerequisiteRecipe, findBestAttachmentNode } from '../../services/prerequisite-engine';
 
 // Icon mapping
 const BLOCK_ICONS: Record<string, LucideIcon> = {
@@ -64,6 +65,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({ block }) => {
   const addNode = useFlowStore((state) => state.addNode);
   const addConnection = useFlowStore((state) => state.addConnection);
   const flow = useFlowStore((state) => state.flow);
+  const openModal = useUIStore((state) => state.openModal);
   const Icon = BLOCK_ICONS[block.icon] || Coins;
   const prereqRule = PREREQUISITE_GRAPH[block.type as BlockType];
   const requiresCount = prereqRule?.requires.length ?? 0;
@@ -80,46 +82,76 @@ export const BlockItem: React.FC<BlockItemProps> = ({ block }) => {
     setDragging(false);
   };
 
-  // Click-to-add: append block to the end of the flow (skip if we just dragged)
+  // Click-to-add: mirror the drag-drop attachment + prerequisite logic so both
+  // placement paths produce identical flows. (skip if we just dragged)
   const handleClick = () => {
     if (didDrag.current) {
       didDrag.current = false;
       return;
     }
+    const blockType = block.type as BlockType;
     const VERTICAL_GAP = 160;
 
-    // Find tail nodes (no outgoing connections)
-    const nodesWithOutgoing = new Set(flow.connections.map((c) => c.sourceNodeId));
-    const tailNodes = flow.nodes.filter((n) => !nodesWithOutgoing.has(n.id));
+    // ---- Smart attachment to tail nodes (mirrors FlowCanvas onDrop Priority 2) ----
+    const attachment = findBestAttachmentNode(blockType, flow);
 
-    if (tailNodes.length > 0) {
-      // Find the lowest tail node
-      const lowestTail = tailNodes.reduce((lowest, node) =>
-        node.position.y > lowest.position.y ? node : lowest
-      , tailNodes[0]);
-
-      const position = {
-        x: lowestTail.position.x,
-        y: lowestTail.position.y + VERTICAL_GAP,
+    if (attachment.score > 0 && attachment.attachToNodeId) {
+      const attachNode = flow.nodes.find((n) => n.id === attachment.attachToNodeId);
+      const attachPosition = attachNode?.position ?? { x: 0, y: 0 };
+      const targetPosition = {
+        x: attachPosition.x,
+        y: attachPosition.y + (attachment.remainingRecipe.length + 1) * VERTICAL_GAP,
       };
+      const nodeId = addNode(blockType, targetPosition);
 
-      const nodeId = addNode(block.type as BlockType, position);
-      addConnection(lowestTail.id, 'output', nodeId, 'input');
-    } else if (flow.nodes.length > 0) {
-      // All nodes have outgoing — place below the lowest node
-      const lowestNode = flow.nodes.reduce((lowest, node) =>
-        node.position.y > lowest.position.y ? node : lowest
-      , flow.nodes[0]);
+      if (attachment.remainingRecipe.length === 0) {
+        addConnection(attachment.attachToNodeId, 'output', nodeId, 'input');
+        const blockDef = BLOCK_CATALOG[blockType];
+        if (blockDef && Object.keys(blockDef.configSchema.properties || {}).length > 0) {
+          openModal('block-config', { nodeId, blockType });
+        }
+      } else {
+        openModal('prerequisite-assistant', {
+          targetNodeId: nodeId,
+          targetBlockType: blockType,
+          recipe: attachment.remainingRecipe,
+          targetPosition,
+          attachToNodeId: attachment.attachToNodeId,
+          attachmentPosition: attachPosition,
+        });
+      }
+      return;
+    }
 
-      const position = {
-        x: lowestNode.position.x,
-        y: lowestNode.position.y + VERTICAL_GAP,
-      };
+    // ---- No attachment found — fall back (mirrors FlowCanvas onDrop else branch) ----
+    const recipe = getPrerequisiteRecipe(blockType, flow);
 
-      addNode(block.type as BlockType, position);
+    // Append below the lowest existing node (or origin for an empty flow).
+    const basePosition =
+      flow.nodes.length > 0
+        ? flow.nodes.reduce((lowest, n) => (n.position.y > lowest.position.y ? n : lowest), flow.nodes[0]).position
+        : { x: 0, y: 0 };
+    const targetPosition =
+      flow.nodes.length > 0
+        ? { x: basePosition.x, y: basePosition.y + VERTICAL_GAP }
+        : { x: 0, y: 0 };
+
+    const nodeId = addNode(blockType, targetPosition);
+
+    if (recipe.length > 0) {
+      openModal('prerequisite-assistant', {
+        targetNodeId: nodeId,
+        targetBlockType: blockType,
+        recipe,
+        targetPosition,
+        attachToNodeId: null,
+        attachmentPosition: null,
+      });
     } else {
-      // Empty flow — place at origin
-      addNode(block.type as BlockType, { x: 0, y: 0 });
+      const blockDef = BLOCK_CATALOG[blockType];
+      if (blockDef && Object.keys(blockDef.configSchema.properties || {}).length > 0) {
+        openModal('block-config', { nodeId, blockType });
+      }
     }
   };
 

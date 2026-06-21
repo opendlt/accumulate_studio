@@ -17,10 +17,8 @@ describe('UI Store', () => {
       selectedLanguage: 'python',
       codeMode: 'sdk',
       selectedNetwork: 'kermit',
-      executionTab: 'log',
       activeModal: null,
       modalData: null,
-      showTemplateGallery: false,
     });
   });
 
@@ -131,20 +129,6 @@ describe('UI Store', () => {
   // Execution Tab
   // =========================================================================
 
-  describe('execution tab', () => {
-    it('defaults to log', () => {
-      expect(useUIStore.getState().executionTab).toBe('log');
-    });
-
-    it('setExecutionTab changes tab', () => {
-      useUIStore.getState().setExecutionTab('state-diff');
-      expect(useUIStore.getState().executionTab).toBe('state-diff');
-
-      useUIStore.getState().setExecutionTab('receipt');
-      expect(useUIStore.getState().executionTab).toBe('receipt');
-    });
-  });
-
   // =========================================================================
   // Modals
   // =========================================================================
@@ -166,24 +150,6 @@ describe('UI Store', () => {
       useUIStore.getState().closeModal();
       expect(useUIStore.getState().activeModal).toBeNull();
       expect(useUIStore.getState().modalData).toBeNull();
-    });
-  });
-
-  // =========================================================================
-  // Template Gallery
-  // =========================================================================
-
-  describe('template gallery', () => {
-    it('defaults to hidden', () => {
-      expect(useUIStore.getState().showTemplateGallery).toBe(false);
-    });
-
-    it('setShowTemplateGallery toggles visibility', () => {
-      useUIStore.getState().setShowTemplateGallery(true);
-      expect(useUIStore.getState().showTemplateGallery).toBe(true);
-
-      useUIStore.getState().setShowTemplateGallery(false);
-      expect(useUIStore.getState().showTemplateGallery).toBe(false);
     });
   });
 });

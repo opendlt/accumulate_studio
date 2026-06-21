@@ -3,12 +3,19 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CodePanel } from '../code-panel/CodePanel';
 
 // Mock function references declared before vi.mock so they are hoisted correctly
 const mockSetLanguage = vi.fn();
 const mockSetCodeMode = vi.fn();
+const mockAddToast = vi.fn();
+
+// Mock the ui barrel so useToast does not require a ToastProvider in tests
+vi.mock('../ui', async (importActual) => {
+  const actual = await importActual<typeof import('../ui')>();
+  return { ...actual, useToast: () => ({ addToast: mockAddToast }) };
+});
 
 // Mock stores
 vi.mock('../../store', () => ({
@@ -18,6 +25,7 @@ vi.mock('../../store', () => ({
       setSelectedLanguage: mockSetLanguage,
       codeMode: 'sdk',
       setCodeMode: mockSetCodeMode,
+      theme: 'dark',
     };
     return selector(state);
   }),
@@ -129,5 +137,48 @@ describe('CodePanel', () => {
     fireEvent.click(screen.getByTitle('Copy to clipboard'));
 
     expect(writeTextMock).toHaveBeenCalledWith('# Generated code\nprint("hello")');
+  });
+
+  it('shows a success toast when copy succeeds', async () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+      writable: true,
+      configurable: true,
+    });
+
+    render(<CodePanel />);
+    fireEvent.click(screen.getByTitle('Copy to clipboard'));
+
+    await waitFor(() =>
+      expect(mockAddToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
+    );
+  });
+
+  it('shows an error toast when copy fails', async () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockRejectedValue(new Error('blocked')) },
+      writable: true,
+      configurable: true,
+    });
+
+    render(<CodePanel />);
+    fireEvent.click(screen.getByTitle('Copy to clipboard'));
+
+    await waitFor(() =>
+      expect(mockAddToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }))
+    );
+  });
+
+  it('shows a success toast with the filename when downloading', () => {
+    // jsdom: stub URL.createObjectURL / revokeObjectURL used by handleDownload
+    (URL as any).createObjectURL = vi.fn(() => 'blob:mock');
+    (URL as any).revokeObjectURL = vi.fn();
+
+    render(<CodePanel />);
+    fireEvent.click(screen.getByTitle('Download file'));
+
+    expect(mockAddToast).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'success', description: 'accumulate_flow.py' })
+    );
   });
 });

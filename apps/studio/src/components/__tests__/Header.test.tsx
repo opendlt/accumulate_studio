@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Header } from '../layout/Header';
 
 // ---------------------------------------------------------------------------
@@ -19,9 +19,16 @@ const mockRedo = vi.fn();
 const mockSetTheme = vi.fn();
 const mockSetSelectedNetwork = vi.fn();
 const mockOpenModal = vi.fn();
+const mockAddToast = vi.fn();
 
 let flowStoreState: Record<string, any> = {};
 let uiStoreState: Record<string, any> = {};
+
+// Keep the real ConfirmDialog/cn/Button but stub useToast (no ToastProvider in tests).
+vi.mock('../ui', async (importActual) => {
+  const actual = await importActual<typeof import('../ui')>();
+  return { ...actual, useToast: () => ({ addToast: mockAddToast }) };
+});
 
 vi.mock('../../store', () => ({
   useFlowStore: vi.fn((selector: (s: any) => any) => {
@@ -437,6 +444,39 @@ describe('Header', () => {
       render(<Header isExecuting={false} onExecute={onExecute} />);
       fireEvent.click(screen.getByText('Execute').closest('button')!);
       expect(onExecute).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // 29. New Flow with a non-empty canvas opens a styled confirm dialog (P2-3 B)
+  // -----------------------------------------------------------------------
+  describe('confirm dialogs (P2-3)', () => {
+    it('opens a confirm dialog (not window.confirm) for New Flow with nodes present', () => {
+      flowStoreState = {
+        flow: { name: 'Flow', nodes: [{ id: 'n1' }], connections: [], version: '1.0' },
+      };
+      render(<Header />);
+      fireEvent.click(screen.getByTitle('New Flow'));
+
+      // Dialog appears; newFlow is NOT called until the user confirms.
+      expect(screen.getByText('Start a new flow?')).toBeDefined();
+      expect(mockNewFlow).not.toHaveBeenCalled();
+
+      // Confirm → newFlow runs.
+      fireEvent.click(screen.getByText('New Flow'));
+      expect(mockNewFlow).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows an error toast and does not load when importing a file missing version', async () => {
+      render(<Header />);
+      const input = screen.getByLabelText('Import flow file') as HTMLInputElement;
+      const file = new File([JSON.stringify({ nodes: [] })], 'bad.json', { type: 'application/json' });
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() =>
+        expect(mockAddToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }))
+      );
+      expect(mockLoadFlow).not.toHaveBeenCalled();
     });
   });
 });

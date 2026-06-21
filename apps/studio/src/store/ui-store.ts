@@ -31,15 +31,9 @@ interface UIState {
   // Network
   selectedNetwork: NetworkId;
 
-  // Execution panel tab
-  executionTab: 'log' | 'state-diff' | 'receipt' | 'synthetic';
-
   // Modals
   activeModal: string | null;
   modalData: unknown;
-
-  // Template gallery
-  showTemplateGallery: boolean;
 
   // Onboarding
   hasCompletedOnboarding: boolean;
@@ -62,15 +56,9 @@ interface UIActions {
   // Network
   setSelectedNetwork: (network: NetworkId) => void;
 
-  // Execution panel
-  setExecutionTab: (tab: 'log' | 'state-diff' | 'receipt' | 'synthetic') => void;
-
   // Modals
   openModal: (modalId: string, data?: unknown) => void;
   closeModal: () => void;
-
-  // Template gallery
-  setShowTemplateGallery: (show: boolean) => void;
 
   // Onboarding
   completeOnboarding: () => void;
@@ -93,10 +81,8 @@ const initialState: UIState = {
   selectedLanguage: 'python',
   codeMode: 'sdk',
   selectedNetwork: 'kermit',
-  executionTab: 'log',
   activeModal: null,
   modalData: null,
-  showTemplateGallery: false,
   hasCompletedOnboarding: false,
 };
 
@@ -136,15 +122,9 @@ export const useUIStore = create<UIState & UIActions>()(
       // Network
       setSelectedNetwork: (network) => set({ selectedNetwork: network }),
 
-      // Execution panel
-      setExecutionTab: (tab) => set({ executionTab: tab }),
-
       // Modals
       openModal: (modalId, data) => set({ activeModal: modalId, modalData: data }),
       closeModal: () => set({ activeModal: null, modalData: null }),
-
-      // Template gallery
-      setShowTemplateGallery: (show) => set({ showTemplateGallery: show }),
 
       // Onboarding
       completeOnboarding: () => set({ hasCompletedOnboarding: true }),

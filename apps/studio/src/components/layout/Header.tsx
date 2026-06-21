@@ -16,7 +16,7 @@ import {
   FilePlus,
   Trash2,
 } from 'lucide-react';
-import { cn, Button } from '../ui';
+import { cn, Button, ConfirmDialog, useToast } from '../ui';
 import { useFlowStore, useUIStore } from '../../store';
 import { selectCanUndo, selectCanRedo, selectFlowValidationSeverity, selectTotalCreditCost } from '../../store/flow-store';
 import { NETWORKS, validateFlow, type NetworkId, type Flow } from '@accumulate-studio/types';
@@ -356,12 +356,45 @@ export const Header: React.FC<HeaderProps> = ({
   const selectedNetwork = useUIStore((state) => state.selectedNetwork);
   const setSelectedNetwork = useUIStore((state) => state.setSelectedNetwork);
   const openModal = useUIStore((state) => state.openModal);
+  const { addToast } = useToast();
+
+  // Single reusable confirm dialog driven by a pending-action descriptor.
+  const [confirm, setConfirm] = useState<{
+    title: string;
+    description?: string;
+    confirmLabel: string;
+    destructive?: boolean;
+    onConfirm: () => void;
+  } | null>(null);
+
+  const closeConfirm = useCallback(() => setConfirm(null), []);
 
   const importInputRef = useRef<HTMLInputElement>(null);
 
   const handleImportFlow = useCallback(() => {
     importInputRef.current?.click();
   }, []);
+
+  // Final commit step shared by the confirm chain below.
+  const commitImport = useCallback((flowData: Flow) => {
+    loadFlow(flowData);
+    addToast({ type: 'success', title: 'Flow imported', description: flowData.name });
+  }, [loadFlow, addToast]);
+
+  // Step 2: optionally confirm replacing the current flow, then commit.
+  const importWithReplaceCheck = useCallback((flowData: Flow) => {
+    if (flow.nodes.length > 0) {
+      setConfirm({
+        title: 'Replace current flow?',
+        description: 'Importing will discard the flow currently on the canvas.',
+        confirmLabel: 'Replace',
+        destructive: true,
+        onConfirm: () => { closeConfirm(); commitImport(flowData); },
+      });
+    } else {
+      commitImport(flowData);
+    }
+  }, [flow.nodes.length, commitImport, closeConfirm]);
 
   const handleFileSelected = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -378,33 +411,41 @@ export const Header: React.FC<HeaderProps> = ({
 
         // Basic validation
         if (!flowData.version || !flowData.nodes || !Array.isArray(flowData.nodes)) {
-          alert('Invalid flow file: missing required fields (version, nodes).');
+          addToast({
+            type: 'error',
+            title: 'Invalid flow file',
+            description: 'Missing required fields (version, nodes).',
+          });
           return;
         }
 
         const validation = validateFlow(flowData);
         if (!validation.valid) {
-          const proceed = window.confirm(
-            `Flow has validation issues:\n${validation.errors.join('\n')}\n\nLoad anyway?`
-          );
-          if (!proceed) return;
+          // Step 1: surface validation issues, ask to proceed.
+          setConfirm({
+            title: 'Flow has validation issues',
+            description: `${validation.errors.join('\n')}\n\nLoad anyway?`,
+            confirmLabel: 'Load anyway',
+            destructive: true,
+            onConfirm: () => { closeConfirm(); importWithReplaceCheck(flowData); },
+          });
+          return;
         }
 
-        if (flow.nodes.length > 0) {
-          const proceed = window.confirm('Replace current flow with imported flow?');
-          if (!proceed) return;
-        }
-
-        loadFlow(flowData);
+        importWithReplaceCheck(flowData);
       } catch {
-        alert('Failed to parse flow file. Please ensure it is valid JSON.');
+        addToast({
+          type: 'error',
+          title: 'Could not parse flow file',
+          description: 'Please ensure the file is valid JSON.',
+        });
       }
     };
     reader.readAsText(file);
 
     // Reset input so same file can be re-imported
     e.target.value = '';
-  }, [flow.nodes.length, loadFlow]);
+  }, [addToast, importWithReplaceCheck, closeConfirm]);
 
   const handleExecute = () => {
     if (isExecuting) return; // never trigger anything while a run is in flight
@@ -417,8 +458,9 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const handleSaveFlow = useCallback(() => {
-    downloadFlowAsJson(flow);
-  }, [flow]);
+    const filename = downloadFlowAsJson(flow);
+    addToast({ type: 'success', title: 'Flow saved', description: filename });
+  }, [flow, addToast]);
 
   const handleExport = () => {
     if (onExport) {
@@ -468,8 +510,16 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="hidden sm:flex items-center gap-1">
           <button
             onClick={() => {
-              if (flow.nodes.length === 0 || window.confirm('Clear current flow and start new? This cannot be undone.')) {
+              if (flow.nodes.length === 0) {
                 newFlow();
+              } else {
+                setConfirm({
+                  title: 'Start a new flow?',
+                  description: 'This clears the current flow and cannot be undone.',
+                  confirmLabel: 'New Flow',
+                  destructive: true,
+                  onConfirm: () => { closeConfirm(); newFlow(); },
+                });
               }
             }}
             className={cn(
@@ -482,8 +532,14 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             onClick={() => {
-              if (flow.nodes.length > 0 && window.confirm('Remove all blocks from the canvas?')) {
-                clearCanvas();
+              if (flow.nodes.length > 0) {
+                setConfirm({
+                  title: 'Clear the canvas?',
+                  description: 'This removes all blocks from the canvas.',
+                  confirmLabel: 'Clear',
+                  destructive: true,
+                  onConfirm: () => { closeConfirm(); clearCanvas(); },
+                });
               }
             }}
             disabled={flow.nodes.length === 0}
@@ -631,6 +687,18 @@ export const Header: React.FC<HeaderProps> = ({
           {isExecuting ? 'Executing...' : 'Execute'}
         </Button>
       </div>
+
+      {confirm && (
+        <ConfirmDialog
+          open={!!confirm}
+          title={confirm.title}
+          description={confirm.description}
+          confirmLabel={confirm.confirmLabel}
+          destructive={confirm.destructive}
+          onConfirm={confirm.onConfirm}
+          onCancel={closeConfirm}
+        />
+      )}
     </header>
   );
 };
