@@ -2,9 +2,19 @@
  * Header Component Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Header } from '../layout/Header';
+
+// Radix dropdowns need these in happy-dom.
+beforeAll(() => {
+  const proto = Element.prototype as any;
+  proto.hasPointerCapture ??= () => false;
+  proto.releasePointerCapture ??= () => {};
+  proto.setPointerCapture ??= () => {};
+  proto.scrollIntoView ??= () => {};
+});
 
 // ---------------------------------------------------------------------------
 // Mock helpers – extracted so individual tests can override default store state
@@ -20,6 +30,7 @@ const mockSetTheme = vi.fn();
 const mockSetSelectedNetwork = vi.fn();
 const mockOpenModal = vi.fn();
 const mockAddToast = vi.fn();
+const mockStartTour = vi.fn();
 
 let flowStoreState: Record<string, any> = {};
 let uiStoreState: Record<string, any> = {};
@@ -54,6 +65,7 @@ vi.mock('../../store', () => ({
       selectedNetwork: 'kermit',
       setSelectedNetwork: mockSetSelectedNetwork,
       openModal: mockOpenModal,
+      startTour: mockStartTour,
       ...uiStoreState,
     };
     return selector(state);
@@ -465,6 +477,33 @@ describe('Header', () => {
         expect(mockAddToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }))
       );
       expect(mockLoadFlow).not.toHaveBeenCalled();
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // 30. Persistent Help menu (P3-1)
+  // -----------------------------------------------------------------------
+  describe('help menu (P3-1)', () => {
+    it('always renders an accessible Help menu trigger', () => {
+      render(<Header />);
+      const help = screen.getByRole('button', { name: 'Help' });
+      expect(help.getAttribute('aria-haspopup')).toBe('menu');
+    });
+
+    it('"Replay product tour" starts the tour', async () => {
+      const user = userEvent.setup();
+      render(<Header />);
+      await user.click(screen.getByRole('button', { name: 'Help' }));
+      await user.click(await screen.findByText('Replay product tour'));
+      expect(mockStartTour).toHaveBeenCalled();
+    });
+
+    it('"Show welcome screen" reopens the welcome modal', async () => {
+      const user = userEvent.setup();
+      render(<Header />);
+      await user.click(screen.getByRole('button', { name: 'Help' }));
+      await user.click(await screen.findByText('Show welcome screen'));
+      expect(mockOpenModal).toHaveBeenCalledWith('welcome');
     });
   });
 });

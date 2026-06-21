@@ -152,4 +152,29 @@ describe('UI Store', () => {
       expect(useUIStore.getState().modalData).toBeNull();
     });
   });
+
+  describe('product tour (P3-1)', () => {
+    beforeEach(() => {
+      useUIStore.setState({ tourRunning: false, hasCompletedTour: false });
+    });
+
+    it('startTour sets tourRunning without marking it complete', () => {
+      useUIStore.getState().startTour();
+      expect(useUIStore.getState().tourRunning).toBe(true);
+      expect(useUIStore.getState().hasCompletedTour).toBe(false);
+    });
+
+    it('completeTour marks it complete and stops it', () => {
+      useUIStore.getState().startTour();
+      useUIStore.getState().completeTour();
+      expect(useUIStore.getState().hasCompletedTour).toBe(true);
+      expect(useUIStore.getState().tourRunning).toBe(false);
+    });
+
+    it('startTour replays even after completion (Help → Replay)', () => {
+      useUIStore.getState().completeTour();
+      useUIStore.getState().startTour();
+      expect(useUIStore.getState().tourRunning).toBe(true);
+    });
+  });
 });

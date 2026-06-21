@@ -15,6 +15,7 @@ import {
   Menu,
   FilePlus,
   Trash2,
+  HelpCircle,
 } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { cn, Button, ConfirmDialog, useToast } from '../ui';
@@ -215,6 +216,68 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, onChange }) => 
 };
 
 // =============================================================================
+// Help Menu
+// =============================================================================
+
+interface HelpMenuProps {
+  onReplayTour: () => void;
+  onShowWelcome: () => void;
+}
+
+const HelpMenu: React.FC<HelpMenuProps> = ({ onReplayTour, onShowWelcome }) => (
+  <DropdownMenu.Root>
+    <DropdownMenu.Trigger asChild>
+      <button
+        aria-label="Help"
+        title="Help"
+        className={cn(
+          'p-2 rounded-lg text-gray-600 dark:text-gray-400',
+          'hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-accumulate-500'
+        )}
+      >
+        <HelpCircle className="w-5 h-5" />
+      </button>
+    </DropdownMenu.Trigger>
+
+    <DropdownMenu.Portal>
+      <DropdownMenu.Content
+        align="end"
+        sideOffset={4}
+        className={cn(
+          'w-48 py-1 z-50',
+          'bg-white dark:bg-gray-800 rounded-lg shadow-lg',
+          'border border-gray-200 dark:border-gray-700',
+          'data-[state=open]:animate-in data-[state=closed]:animate-out',
+          'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0'
+        )}
+      >
+        <DropdownMenu.Item
+          onSelect={onReplayTour}
+          className={cn(
+            'w-full px-4 py-2 text-left text-sm outline-none cursor-pointer',
+            'text-gray-900 dark:text-gray-100',
+            'data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-gray-700'
+          )}
+        >
+          Replay product tour
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onSelect={onShowWelcome}
+          className={cn(
+            'w-full px-4 py-2 text-left text-sm outline-none cursor-pointer',
+            'text-gray-900 dark:text-gray-100',
+            'data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-gray-700'
+          )}
+        >
+          Show welcome screen
+        </DropdownMenu.Item>
+      </DropdownMenu.Content>
+    </DropdownMenu.Portal>
+  </DropdownMenu.Root>
+);
+
+// =============================================================================
 // Editable Flow Name
 // =============================================================================
 
@@ -325,6 +388,7 @@ export const Header: React.FC<HeaderProps> = ({
   const selectedNetwork = useUIStore((state) => state.selectedNetwork);
   const setSelectedNetwork = useUIStore((state) => state.setSelectedNetwork);
   const openModal = useUIStore((state) => state.openModal);
+  const startTour = useUIStore((state) => state.startTour);
   const { addToast } = useToast();
 
   // Single reusable confirm dialog driven by a pending-action descriptor.
@@ -556,9 +620,17 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-2">
         {/* Network selector + status */}
         <div className="hidden md:flex items-center gap-1">
-          <NetworkSelector value={selectedNetwork} onChange={setSelectedNetwork} />
+          <span data-tour="network-selector">
+            <NetworkSelector value={selectedNetwork} onChange={setSelectedNetwork} />
+          </span>
           <NetworkStatusIndicator />
         </div>
+
+        {/* Help */}
+        <HelpMenu
+          onReplayTour={() => startTour()}
+          onShowWelcome={() => openModal('welcome')}
+        />
 
         {/* Theme toggle */}
         <ThemeToggle theme={theme} onChange={setTheme} />
@@ -642,6 +714,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Execute button */}
         <Button
+          data-tour="execute"
           variant="primary"
           size="sm"
           onClick={handleExecute}

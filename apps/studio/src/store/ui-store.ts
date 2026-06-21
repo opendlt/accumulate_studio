@@ -37,6 +37,10 @@ interface UIState {
 
   // Onboarding
   hasCompletedOnboarding: boolean;
+  /** Whether the spotlight product tour has been completed/skipped (persisted). */
+  hasCompletedTour: boolean;
+  /** Whether the product tour is currently running (transient — NOT persisted). */
+  tourRunning: boolean;
 }
 
 interface UIActions {
@@ -62,6 +66,8 @@ interface UIActions {
 
   // Onboarding
   completeOnboarding: () => void;
+  startTour: () => void;
+  completeTour: () => void;
 }
 
 // =============================================================================
@@ -84,6 +90,8 @@ const initialState: UIState = {
   activeModal: null,
   modalData: null,
   hasCompletedOnboarding: false,
+  hasCompletedTour: false,
+  tourRunning: false,
 };
 
 // =============================================================================
@@ -128,10 +136,12 @@ export const useUIStore = create<UIState & UIActions>()(
 
       // Onboarding
       completeOnboarding: () => set({ hasCompletedOnboarding: true }),
+      startTour: () => set({ tourRunning: true }),
+      completeTour: () => set({ hasCompletedTour: true, tourRunning: false }),
     }),
     {
       name: 'accumulate-studio-ui',
-      version: 2,
+      version: 3,
       migrate: (persisted: unknown, version: number) => {
         const state = persisted as Record<string, unknown>;
         if (version === 0) {
@@ -151,6 +161,10 @@ export const useUIStore = create<UIState & UIActions>()(
           // persisted state should skip onboarding (they're not new)
           state.hasCompletedOnboarding = true;
         }
+        if (version <= 2) {
+          // Existing users have already learned the app — don't auto-run the tour.
+          state.hasCompletedTour = true;
+        }
         return state as unknown as UIState & UIActions;
       },
       partialize: (state) => ({
@@ -163,6 +177,7 @@ export const useUIStore = create<UIState & UIActions>()(
         codeMode: state.codeMode,
         selectedNetwork: state.selectedNetwork,
         hasCompletedOnboarding: state.hasCompletedOnboarding,
+        hasCompletedTour: state.hasCompletedTour,
       }),
     }
   )

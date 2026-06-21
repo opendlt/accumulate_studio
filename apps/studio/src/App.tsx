@@ -15,6 +15,7 @@ import { FlowCanvas } from './components/flow-builder';
 import { CodePanel } from './components/code-panel';
 import { ExecutionPanel } from './components/execution';
 import { ModalContainer } from './components/modals';
+import { ProductTour } from './components/onboarding/ProductTour';
 import { useUIStore, useFlowStore } from './store';
 import { executionEngine } from './services/execution';
 import { networkService } from './services/network';
@@ -153,6 +154,8 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({
 const AppInner: React.FC = () => {
   // Onboarding
   const hasCompletedOnboarding = useUIStore((s) => s.hasCompletedOnboarding);
+  const hasCompletedTour = useUIStore((s) => s.hasCompletedTour);
+  const startTour = useUIStore((s) => s.startTour);
   const openModal = useUIStore((s) => s.openModal);
 
   useEffect(() => {
@@ -160,6 +163,14 @@ const AppInner: React.FC = () => {
       openModal('welcome');
     }
   }, [hasCompletedOnboarding, openModal]);
+
+  // First run: launch the spotlight tour once the Welcome modal has been dismissed.
+  const activeModalForTour = useUIStore((s) => s.activeModal);
+  useEffect(() => {
+    if (hasCompletedOnboarding && !hasCompletedTour && activeModalForTour === null) {
+      startTour();
+    }
+  }, [hasCompletedOnboarding, hasCompletedTour, activeModalForTour, startTour]);
 
   // UI Store state
   const showPalette = useUIStore((state) => state.showPalette);
@@ -436,6 +447,7 @@ const AppInner: React.FC = () => {
           {showPalette && (
             <>
               <div
+                data-tour="palette"
                 className="flex-shrink-0 overflow-hidden"
                 style={{ width: paletteWidth }}
               >
@@ -471,7 +483,7 @@ const AppInner: React.FC = () => {
           {/* Center: Flow Canvas and Execution Panel */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Flow Canvas */}
-            <div className="flex-1 relative min-h-0">
+            <div data-tour="canvas" className="flex-1 relative min-h-0">
               <FlowCanvas />
 
               {/* Panel toggle buttons overlay */}
@@ -591,6 +603,7 @@ const AppInner: React.FC = () => {
                 label="Resize code panel"
               />
               <div
+                data-tour="code-panel"
                 className="flex-shrink-0 overflow-hidden"
                 style={{ width: codePanelWidth }}
               >
@@ -599,6 +612,9 @@ const AppInner: React.FC = () => {
             </>
           )}
         </div>
+
+        {/* First-run product tour */}
+        <ProductTour />
 
         {/* Modal Container */}
         <ModalContainer />
