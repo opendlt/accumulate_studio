@@ -22,7 +22,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@accumulate-studio/types": "*"
+    "@accumulate-studio/types": "*",
+    "@accumulate-studio/verification": "*"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

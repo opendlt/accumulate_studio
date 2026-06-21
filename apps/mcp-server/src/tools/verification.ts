@@ -23,6 +23,7 @@ import {
 } from '../permissions.js';
 
 import { getCurrentNetwork } from './network.js';
+import { computeRoot, verifyProof } from '@accumulate-studio/verification';
 
 // =============================================================================
 // Types
@@ -258,25 +259,28 @@ export async function proofVerifyReceipt(
     let anchorProofValid = false;
     let majorBlockAnchored = false;
 
-    // Step 1: Verify local proof (Merkle path)
+    // Step 1: Verify the local proof (Merkle path) with REAL SHA-256. The root to
+    // compare against is an explicitly-supplied expectedRoot, or the receipt's own anchor.
+    const compareRoot = expectedRoot ?? receipt.anchorChain?.anchor;
     if (receipt.proof && receipt.proof.length > 0) {
       try {
-        const computedRoot = computeMerkleRoot(receipt.txHash, receipt.proof);
-        details.push(`Computed Merkle root: ${computedRoot}`);
+        const computedRoot = computeRoot(receipt.proof, receipt.txHash);
+        details.push(`Computed Merkle root (SHA-256): ${computedRoot}`);
 
-        if (expectedRoot) {
-          localProofValid = computedRoot.toLowerCase() === expectedRoot.toLowerCase();
+        if (compareRoot) {
+          localProofValid = verifyProof(receipt.proof, receipt.txHash, compareRoot);
           details.push(
             localProofValid
-              ? 'Local proof matches expected root'
-              : `Local proof mismatch: expected ${expectedRoot}`
+              ? 'Local proof matches anchor/expected root'
+              : `Local proof MISMATCH: computed ${computedRoot} != ${compareRoot}`
           );
         } else {
-          // Without expected root, we can only verify structure
-          localProofValid = true;
-          details.push('Local proof structure is valid (no expected root to compare)');
+          // Nothing to compare against — INDETERMINATE, not valid.
+          localProofValid = false;
+          details.push('Indeterminate: no anchor or expectedRoot to compare the computed root against');
         }
       } catch (error) {
+        localProofValid = false;
         details.push(
           `Local proof verification failed: ${error instanceof Error ? error.message : String(error)}`
         );
@@ -310,8 +314,8 @@ export async function proofVerifyReceipt(
       details.push('Not yet anchored in a major block');
     }
 
-    // Overall validity
-    const valid = localProofValid && (anchorProofValid || !receipt.anchorChain);
+    // Overall validity: only valid if the recomputed root actually matched something.
+    const valid = localProofValid;
 
     const verificationResult: VerificationResult = {
       valid,
@@ -592,48 +596,6 @@ export const traceSyntheticsTool = {
   },
   handler: traceSynthetics,
 };
-
-// =============================================================================
-// Helper Functions
-// =============================================================================
-
-/**
- * Compute Merkle root from a leaf hash and proof entries
- * This is a simplified implementation - real implementation would use proper SHA-256
- */
-function computeMerkleRoot(leafHash: string, proof: MerkleProofEntry[]): string {
-  let current = leafHash.toLowerCase();
-
-  for (const entry of proof) {
-    const sibling = entry.hash.toLowerCase();
-
-    // Combine hashes based on position
-    if (entry.right) {
-      // Sibling is on the right
-      current = simpleHash(current + sibling);
-    } else {
-      // Sibling is on the left
-      current = simpleHash(sibling + current);
-    }
-  }
-
-  return current;
-}
-
-/**
- * Simple hash function for demonstration
- * In production, this would use proper SHA-256
- */
-function simpleHash(input: string): string {
-  // This is a placeholder - real implementation would use crypto
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    const char = input.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash).toString(16).padStart(64, '0');
-}
 
 // =============================================================================
 // Export all tools

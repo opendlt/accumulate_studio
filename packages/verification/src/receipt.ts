@@ -155,7 +155,7 @@ export function verifyReceipt(receipt: TransactionReceipt): ReceiptVerificationR
       valid: false,
       error: 'Receipt is not yet anchored — no Merkle root to verify against',
       details: {
-        proofValid: true,
+        proofValid: false, // nothing was (could be) proven without an anchor
         anchorValid: false,
       },
     };
