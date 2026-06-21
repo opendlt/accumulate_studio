@@ -3,12 +3,16 @@ import react from '@vitejs/plugin-react';
 import checker from 'vite-plugin-checker';
 import path from 'path';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     react(),
-    // Typecheck in-process (tsc --noEmit). composite:true does NOT emit here, so
-    // no stray .js/.d.ts land in src; the build fails on a type error.
-    checker({ typescript: { tsconfigPath: './tsconfig.json' } }),
+    // Inline type errors during `vite dev` ONLY (command === 'serve'). The checker is
+    // deliberately absent from `vite build`: its tsc worker fails to exit and hangs
+    // CI/Vercel after "✓ built". Build-time type safety comes from the explicit
+    // `tsc --noEmit` in the package's "build" script instead.
+    ...(command === 'serve'
+      ? [checker({ typescript: { tsconfigPath: './tsconfig.json' } })]
+      : []),
   ],
   resolve: {
     alias: {
@@ -32,4 +36,4 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
   },
-});
+}));
