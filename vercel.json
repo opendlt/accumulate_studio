@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd apps/studio && npm run build",
+  "buildCommand": "npm run build:types && npm run build:codegen && npm run build:verification && cd apps/studio && npm run build",
   "outputDirectory": "apps/studio/dist",
   "installCommand": "npm install",
   "framework": "vite",
