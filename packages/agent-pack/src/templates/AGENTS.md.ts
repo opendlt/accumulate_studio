@@ -165,7 +165,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     case 'dart':
       return `\`\`\`dart
-import 'package:accumulate_client/accumulate_client.dart';
+import 'package:opendlt_accumulate/opendlt_accumulate.dart';
 import 'dart:io';
 
 void main() async {
@@ -180,7 +180,7 @@ void main() async {
     case 'javascript':
     case 'typescript':
       return `\`\`\`typescript
-import { Accumulate } from 'accumulate-js';
+import { Accumulate } from 'accumulate.js';
 
 // Connect to testnet
 const acc = Accumulate.testnet();
@@ -194,7 +194,7 @@ const privateKey = process.env.ACC_PRIVATE_KEY;
 
     case 'csharp':
       return `\`\`\`csharp
-using Accumulate.Client;
+using Acme.Net.Sdk;
 
 // Connect to testnet
 var client = AccumulateClient.Testnet();
@@ -234,7 +234,7 @@ use accumulate_client::{
 
     case 'dart':
       return `\`\`\`dart
-import 'package:accumulate_client/accumulate_client.dart';
+import 'package:opendlt_accumulate/opendlt_accumulate.dart';
 // Includes: Accumulate, TxBody, TxSigner, AccumulateHelper
 // and all transaction types
 \`\`\``;
@@ -250,14 +250,14 @@ import {
   CreateIdentity,
   CreateTokenAccount,
   WriteData,
-} from 'accumulate-js';
+} from 'accumulate.js';
 \`\`\``;
 
     case 'csharp':
       return `\`\`\`csharp
-using Accumulate.Client;
-using Accumulate.Client.Helpers;
-using Accumulate.Protocol;
+using Acme.Net.Sdk;
+using Acme.Net.Sdk.Helpers;
+using Acme.Net.Sdk.Protocol;
 \`\`\``;
 
     default:

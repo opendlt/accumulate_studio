@@ -230,7 +230,7 @@ describe('validateSDKMap', () => {
   });
 
   it('validates a generated SDK map without errors', () => {
-    const sdkMap = generateSDKMap('/fake/path', 'python');
+    const sdkMap = generateSDKMap('python');
     const issues = validateSDKMap(sdkMap);
     const errors = issues.filter((i) => i.severity === 'error');
     expect(errors.length).toBe(0);
@@ -301,7 +301,7 @@ describe('generateSDKMap', () => {
 
   for (const language of languages) {
     it(`generates a valid SDK map for ${language}`, () => {
-      const sdkMap = generateSDKMap('/fake/path', language);
+      const sdkMap = generateSDKMap(language);
 
       expect(sdkMap.sdk_name).toBeTruthy();
       expect(sdkMap.sdk_version).toBeTruthy();
@@ -325,7 +325,7 @@ describe('generateSDKMap', () => {
   }
 
   it('respects custom options', () => {
-    const sdkMap = generateSDKMap('/fake/path', 'python', {
+    const sdkMap = generateSDKMap('python', {
       sdkName: 'my-custom-sdk',
       sdkVersion: '9.9.9',
       commit: 'abc1234',
@@ -334,6 +334,27 @@ describe('generateSDKMap', () => {
     expect(sdkMap.sdk_name).toBe('my-custom-sdk');
     expect(sdkMap.sdk_version).toBe('9.9.9');
     expect(sdkMap.commit).toBe('abc1234');
+  });
+
+  it('emits the real published package/import names (no introspection)', () => {
+    // JavaScript/TypeScript → "accumulate.js"
+    expect(generateSDKMap('javascript').entrypoints.every((e) => e.path === 'accumulate.js')).toBe(true);
+    expect(generateSDKMap('typescript').entrypoints.every((e) => e.path === 'accumulate.js')).toBe(true);
+    // Dart → "package:opendlt_accumulate/opendlt_accumulate.dart"
+    expect(generateSDKMap('dart').entrypoints[0].path).toContain('opendlt_accumulate');
+    // C# → "Acme.Net.Sdk"
+    expect(generateSDKMap('csharp').entrypoints.every((e) => e.path.startsWith('Acme.Net.Sdk'))).toBe(true);
+    // Python/Rust → "accumulate_client" (already correct)
+    expect(generateSDKMap('python').entrypoints[0].path).toBe('accumulate_client');
+    expect(generateSDKMap('rust').entrypoints[0].path).toBe('accumulate_client');
+    // No emitted path should use the old wrong names
+    for (const lang of ['javascript', 'dart', 'csharp'] as const) {
+      for (const ep of generateSDKMap(lang).entrypoints) {
+        expect(ep.path).not.toContain('accumulate-js');
+        expect(ep.path).not.toContain('package:accumulate_client');
+        expect(ep.path).not.toContain('Accumulate.Client');
+      }
+    }
   });
 });
 

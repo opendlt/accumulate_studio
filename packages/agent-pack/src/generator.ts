@@ -32,7 +32,7 @@ export interface AgentPackFiles {
 }
 
 export interface GeneratorOptions {
-  /** SDK path for introspection */
+  /** SDK path (retained for API compatibility; the pack is built from curated templates, not introspected) */
   sdkPath: string;
   /** Target language */
   language: SDKLanguage;
@@ -66,7 +66,7 @@ export interface GeneratorOptions {
  * Generate a complete agent pack for an SDK
  */
 export function generateAgentPack(
-  sdkPath: string,
+  _sdkPath: string,
   language: SDKLanguage,
   options?: Partial<Omit<GeneratorOptions, 'sdkPath' | 'language'>>
 ): AgentPackFiles {
@@ -80,7 +80,7 @@ export function generateAgentPack(
     notes: options?.notes,
   };
 
-  const sdkMap = generateSDKMap(sdkPath, language, sdkMapOptions);
+  const sdkMap = generateSDKMap(language, sdkMapOptions);
 
   // Generate AGENTS.md
   const agentsOptions: AgentsTemplateOptions = {
@@ -317,7 +317,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// Prerequisites: ${op.requires.join(', ') || 'None'}
 
 import 'dart:io';
-import 'package:accumulate_client/accumulate_client.dart';
+import 'package:opendlt_accumulate/opendlt_accumulate.dart';
 
 void main() async {
   // Connect to testnet
@@ -341,7 +341,7 @@ void main() async {
  * Prerequisites: ${op.requires.join(', ') || 'None'}
  */
 
-import { Accumulate, TxBody, SmartSigner } from 'accumulate-js';
+import { Accumulate, TxBody, SmartSigner } from 'accumulate.js';
 
 async function main() {
   // Connect to testnet
@@ -365,8 +365,8 @@ main().catch(console.error);
 /// Prerequisites: ${op.requires.join(', ') || 'None'}
 /// </summary>
 
-using Accumulate.Client;
-using Accumulate.Client.Helpers;
+using Acme.Net.Sdk;
+using Acme.Net.Sdk.Helpers;
 
 class Program
 {
@@ -500,7 +500,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// Prerequisites: Private key in ACC_PRIVATE_KEY environment variable
 
 import 'dart:io';
-import 'package:accumulate_client/accumulate_client.dart';
+import 'package:opendlt_accumulate/opendlt_accumulate.dart';
 
 void main() async {
   // Connect to testnet
@@ -544,7 +544,7 @@ void main() async {
  * Prerequisites: Private key in ACC_PRIVATE_KEY environment variable
  */
 
-import { Accumulate, TxBody, SmartSigner } from 'accumulate-js';
+import { Accumulate, TxBody, SmartSigner } from 'accumulate.js';
 
 async function main() {
   // Connect to testnet
@@ -589,8 +589,8 @@ main().catch(console.error);
 /// Prerequisites: Private key in ACC_PRIVATE_KEY environment variable
 /// </summary>
 
-using Accumulate.Client;
-using Accumulate.Client.Helpers;
+using Acme.Net.Sdk;
+using Acme.Net.Sdk.Helpers;
 
 class CompleteExample
 {

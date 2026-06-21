@@ -20,7 +20,7 @@ accumulate-studio/
     types/           Shared TypeScript type definitions
     codegen/         Multi-language code generation engine (Handlebars templates)
     verification/    Cryptographic receipt and Merkle proof verification
-    agent-pack/      Agent Pack definitions for SDK capabilities
+    agent-pack/      Representative AGENTS.md/sdk.map templates for the SDKs (curated, not introspected from source)
   schemas/           JSON schemas for agent packs, bundles, assertions, SDK maps
   templates/         Golden-path YAML workflow templates
   scripts/           Code generation and validation scripts

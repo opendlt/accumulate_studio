@@ -1,5 +1,7 @@
 /**
- * SDK Mapper - Introspects SDK source files to generate sdk.map.json
+ * SDK Mapper - Builds a representative sdk.map.json from curated, per-language
+ * templates. This is NOT introspected from SDK source; the authoritative
+ * capability data lives in packages/codegen/src/manifests/*.sdk-manifest.json.
  */
 
 import type {
@@ -29,74 +31,28 @@ export interface SDKMapperOptions {
   notes?: string;
 }
 
-export interface IntrospectionResult {
-  entrypoints: SDKEntryPoint[];
-  operations: SDKOperation[];
-  errors: SDKError[];
-}
-
-// =============================================================================
-// Language-specific patterns for introspection
-// =============================================================================
-
-interface LanguagePatterns {
-  classPattern: RegExp;
-  functionPattern: RegExp;
-  methodPattern: RegExp;
-  errorPattern: RegExp;
-  importPattern: RegExp;
-  docPattern: RegExp;
-}
-
-export const LANGUAGE_PATTERNS: Record<SDKLanguage, LanguagePatterns> = {
-  python: {
-    classPattern: /^class\s+(\w+)(?:\([^)]*\))?:/gm,
-    functionPattern: /^def\s+(\w+)\s*\(([^)]*)\)(?:\s*->\s*([^:]+))?:/gm,
-    methodPattern: /^\s+def\s+(\w+)\s*\(self(?:,\s*)?([^)]*)\)(?:\s*->\s*([^:]+))?:/gm,
-    errorPattern: /class\s+(\w+Error)\s*\(/g,
-    importPattern: /^from\s+([\w.]+)\s+import|^import\s+([\w.]+)/gm,
-    docPattern: /"""([^"]+)"""|'''([^']+)'''/g,
-  },
-  typescript: {
-    classPattern: /^export\s+class\s+(\w+)/gm,
-    functionPattern: /^export\s+(?:async\s+)?function\s+(\w+)\s*(?:<[^>]*>)?\s*\(([^)]*)\)(?:\s*:\s*([^{]+))?/gm,
-    methodPattern: /^\s+(?:async\s+)?(\w+)\s*\(([^)]*)\)(?:\s*:\s*([^{]+))?/gm,
-    errorPattern: /class\s+(\w+Error)\s+extends/g,
-    importPattern: /^import\s+.*\s+from\s+['"]([^'"]+)['"]/gm,
-    docPattern: /\/\*\*([^*]+)\*\//g,
-  },
-  javascript: {
-    classPattern: /^export\s+class\s+(\w+)/gm,
-    functionPattern: /^export\s+(?:async\s+)?function\s+(\w+)\s*\(([^)]*)\)/gm,
-    methodPattern: /^\s+(?:async\s+)?(\w+)\s*\(([^)]*)\)/gm,
-    errorPattern: /class\s+(\w+Error)\s+extends/g,
-    importPattern: /^import\s+.*\s+from\s+['"]([^'"]+)['"]/gm,
-    docPattern: /\/\*\*([^*]+)\*\//g,
-  },
-  rust: {
-    classPattern: /^pub\s+struct\s+(\w+)/gm,
-    functionPattern: /^pub\s+(?:async\s+)?fn\s+(\w+)\s*(?:<[^>]*>)?\s*\(([^)]*)\)(?:\s*->\s*([^{]+))?/gm,
-    methodPattern: /^\s+pub\s+(?:async\s+)?fn\s+(\w+)\s*\(&(?:mut\s+)?self(?:,\s*)?([^)]*)\)(?:\s*->\s*([^{]+))?/gm,
-    errorPattern: /enum\s+(\w+Error)\s*\{/g,
-    importPattern: /^use\s+([\w:]+)/gm,
-    docPattern: /\/\/\/([^\n]+)/g,
-  },
-  dart: {
-    classPattern: /^class\s+(\w+)/gm,
-    functionPattern: /^(?:Future<[^>]+>|void|\w+)\s+(\w+)\s*\(([^)]*)\)/gm,
-    methodPattern: /^\s+(?:Future<[^>]+>|void|\w+)\s+(\w+)\s*\(([^)]*)\)/gm,
-    errorPattern: /class\s+(\w+Exception)\s+/g,
-    importPattern: /^import\s+['"]([^'"]+)['"]/gm,
-    docPattern: /\/\/\/([^\n]+)/g,
-  },
-  csharp: {
-    classPattern: /^public\s+class\s+(\w+)/gm,
-    functionPattern: /^public\s+(?:static\s+)?(?:async\s+)?(?:Task<[^>]+>|void|\w+)\s+(\w+)\s*\(([^)]*)\)/gm,
-    methodPattern: /^\s+public\s+(?:async\s+)?(?:Task<[^>]+>|void|\w+)\s+(\w+)\s*\(([^)]*)\)/gm,
-    errorPattern: /class\s+(\w+Exception)\s*:/g,
-    importPattern: /^using\s+([\w.]+)/gm,
-    docPattern: /\/\/\/\s*<summary>([^<]+)<\/summary>/g,
-  },
+/**
+ * Real published SDK package / import identifiers — the single source of truth
+ * for every name agent-pack emits. Verified against the live SDK repos:
+ *  - opendlt-javascript-v2v3-sdk/javascript/package.json  → "accumulate.js"
+ *  - opendlt-python-v2v3-sdk/unified/pyproject.toml        → pip "accumulate-sdk-opendlt", import "accumulate_client"
+ *  - opendlt-rust-v2v3-sdk/unified/Cargo.toml              → crate "accumulate-sdk", lib "accumulate_client"
+ *  - opendlt-dart-v2v3-sdk/unified/pubspec.yaml            → "opendlt_accumulate"
+ *  - opendlt-c-sharp-v2v3-sdk/src/Acme.Net.Sdk            → PackageId/namespace "Acme.Net.Sdk"
+ * (cross-checked against the working import lines in packages/codegen's per-language _preamble.hbs)
+ */
+export const SDK_PACKAGE_NAMES: Record<SDKLanguage, {
+  /** how you install it (pip/npm/cargo/pub/nuget) */
+  install: string;
+  /** how you import/use it in code */
+  importName: string;
+}> = {
+  python: { install: 'accumulate-sdk-opendlt', importName: 'accumulate_client' },
+  rust: { install: 'accumulate-sdk', importName: 'accumulate_client' },
+  dart: { install: 'opendlt_accumulate', importName: 'opendlt_accumulate' },
+  javascript: { install: 'accumulate.js', importName: 'accumulate.js' },
+  typescript: { install: 'accumulate.js', importName: 'accumulate.js' },
+  csharp: { install: 'Acme.Net.Sdk', importName: 'Acme.Net.Sdk' },
 };
 
 // =============================================================================
@@ -175,12 +131,10 @@ export const KNOWN_ERRORS: SDKError[] = [
 // =============================================================================
 
 /**
- * Generate an SDK map from SDK source files
- * In a real implementation, this would parse actual SDK source files
- * For now, we generate a representative map based on the language
+ * Build a representative SDK map from curated, per-language templates.
+ * NOT introspected from source — see the module header.
  */
 export function generateSDKMap(
-  _sdkPath: string,
   language: SDKLanguage,
   options?: Partial<SDKMapperOptions>
 ): SDKMap {
@@ -213,42 +167,44 @@ export function generateSDKMap(
  * Generate entry points for a specific language
  */
 function generateLanguageEntryPoints(language: SDKLanguage): SDKEntryPoint[] {
+  const pkg = SDK_PACKAGE_NAMES[language].importName;
+
   switch (language) {
     case 'python':
       return [
-        { symbol: 'Accumulate', path: 'accumulate_client', kind: 'class', doc: 'Main facade for Accumulate SDK' },
-        { symbol: 'TxBody', path: 'accumulate_client.convenience', kind: 'class', doc: 'Transaction body builder' },
-        { symbol: 'SmartSigner', path: 'accumulate_client.convenience', kind: 'class', doc: 'Automatic key resolution signer' },
+        { symbol: 'Accumulate', path: pkg, kind: 'class', doc: 'Main facade for Accumulate SDK' },
+        { symbol: 'TxBody', path: `${pkg}.convenience`, kind: 'class', doc: 'Transaction body builder' },
+        { symbol: 'SmartSigner', path: `${pkg}.convenience`, kind: 'class', doc: 'Automatic key resolution signer' },
       ];
 
     case 'rust':
       return [
-        { symbol: 'AccumulateClient', path: 'accumulate_client', kind: 'class', doc: 'Main client for Accumulate SDK' },
-        { symbol: 'TxBody', path: 'accumulate_client::helpers', kind: 'module', doc: 'Transaction body builder' },
-        { symbol: 'SmartSigner', path: 'accumulate_client::helpers', kind: 'class', doc: 'Automatic key resolution signer' },
+        { symbol: 'AccumulateClient', path: pkg, kind: 'class', doc: 'Main client for Accumulate SDK' },
+        { symbol: 'TxBody', path: `${pkg}::helpers`, kind: 'module', doc: 'Transaction body builder' },
+        { symbol: 'SmartSigner', path: `${pkg}::helpers`, kind: 'class', doc: 'Automatic key resolution signer' },
       ];
 
     case 'dart':
       return [
-        { symbol: 'Accumulate', path: 'package:accumulate_client/accumulate_client.dart', kind: 'class', doc: 'Main facade for Accumulate SDK' },
-        { symbol: 'TxBody', path: 'package:accumulate_client/accumulate_client.dart', kind: 'class', doc: 'Transaction body builder' },
-        { symbol: 'TxSigner', path: 'package:accumulate_client/accumulate_client.dart', kind: 'class', doc: 'Transaction signer' },
-        { symbol: 'AccumulateHelper', path: 'package:accumulate_client/accumulate_client.dart', kind: 'class', doc: 'Helper utilities' },
+        { symbol: 'Accumulate', path: `package:${pkg}/${pkg}.dart`, kind: 'class', doc: 'Main facade for Accumulate SDK' },
+        { symbol: 'TxBody', path: `package:${pkg}/${pkg}.dart`, kind: 'class', doc: 'Transaction body builder' },
+        { symbol: 'TxSigner', path: `package:${pkg}/${pkg}.dart`, kind: 'class', doc: 'Transaction signer' },
+        { symbol: 'AccumulateHelper', path: `package:${pkg}/${pkg}.dart`, kind: 'class', doc: 'Helper utilities' },
       ];
 
     case 'javascript':
     case 'typescript':
       return [
-        { symbol: 'Accumulate', path: 'accumulate-js', kind: 'class', doc: 'Main facade for Accumulate SDK' },
-        { symbol: 'TxBody', path: 'accumulate-js', kind: 'class', doc: 'Transaction body builder' },
-        { symbol: 'SmartSigner', path: 'accumulate-js', kind: 'class', doc: 'Automatic key resolution signer' },
+        { symbol: 'Accumulate', path: pkg, kind: 'class', doc: 'Main facade for Accumulate SDK' },
+        { symbol: 'TxBody', path: pkg, kind: 'class', doc: 'Transaction body builder' },
+        { symbol: 'SmartSigner', path: pkg, kind: 'class', doc: 'Automatic key resolution signer' },
       ];
 
     case 'csharp':
       return [
-        { symbol: 'AccumulateClient', path: 'Accumulate.Client', kind: 'class', doc: 'Main client for Accumulate SDK' },
-        { symbol: 'TxBody', path: 'Accumulate.Client.Helpers', kind: 'class', doc: 'Transaction body builder' },
-        { symbol: 'SmartSigner', path: 'Accumulate.Client.Helpers', kind: 'class', doc: 'Automatic key resolution signer' },
+        { symbol: 'AccumulateClient', path: pkg, kind: 'class', doc: 'Main client for Accumulate SDK' },
+        { symbol: 'TxBody', path: `${pkg}.Helpers`, kind: 'class', doc: 'Transaction body builder' },
+        { symbol: 'SmartSigner', path: `${pkg}.Helpers`, kind: 'class', doc: 'Automatic key resolution signer' },
       ];
 
     default:
@@ -287,26 +243,27 @@ function generateLanguageOperations(language: SDKLanguage): SDKOperation[] {
  */
 function getSymbolRefForOperation(opName: string, language: SDKLanguage): SymbolRef {
   const methodName = toCamelCase(opName, language);
+  const pkg = SDK_PACKAGE_NAMES[language].importName;
 
   switch (language) {
     case 'python':
       return {
         symbol: methodName,
-        path: 'accumulate_client.convenience',
+        path: `${pkg}.convenience`,
         signature: `TxBody.${methodName}(...)`,
       };
 
     case 'rust':
       return {
         symbol: methodName,
-        path: 'accumulate_client::helpers',
+        path: `${pkg}::helpers`,
         signature: `TxBody::${methodName}(...)`,
       };
 
     case 'dart':
       return {
         symbol: methodName,
-        path: 'package:accumulate_client/accumulate_client.dart',
+        path: `package:${pkg}/${pkg}.dart`,
         signature: `TxBody.${methodName}(...)`,
       };
 
@@ -314,14 +271,14 @@ function getSymbolRefForOperation(opName: string, language: SDKLanguage): Symbol
     case 'typescript':
       return {
         symbol: methodName,
-        path: 'accumulate-js',
+        path: pkg,
         signature: `TxBody.${methodName}(...)`,
       };
 
     case 'csharp':
       return {
         symbol: toPascalCase(opName),
-        path: 'Accumulate.Client.Helpers',
+        path: `${pkg}.Helpers`,
         signature: `TxBody.${toPascalCase(opName)}(...)`,
       };
 
@@ -463,31 +420,9 @@ function getFileExtension(language: SDKLanguage): string {
   return extensions[language] || 'txt';
 }
 
-/**
- * Introspect actual source files (stub implementation)
- * In a real implementation, this would parse the source files
- */
-export async function introspectSDKSource(
-  sdkPath: string,
-  language: SDKLanguage
-): Promise<IntrospectionResult> {
-  // This is a stub - in a real implementation, we would:
-  // 1. Read source files from sdkPath
-  // 2. Parse them using the language patterns
-  // 3. Extract classes, functions, methods, and errors
-
-  console.log(`Introspecting ${language} SDK at ${sdkPath}`);
-
-  return {
-    entrypoints: generateLanguageEntryPoints(language),
-    operations: generateLanguageOperations(language),
-    errors: KNOWN_ERRORS,
-  };
-}
-
 export default {
   generateSDKMap,
-  introspectSDKSource,
   KNOWN_ERRORS,
   OPERATION_MAPPINGS,
+  SDK_PACKAGE_NAMES,
 };

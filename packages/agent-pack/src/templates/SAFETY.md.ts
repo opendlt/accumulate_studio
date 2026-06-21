@@ -250,7 +250,7 @@ let signer = SmartSigner::from_env("ACC_PRIVATE_KEY")?;
     case 'dart':
       return `\`\`\`dart
 import 'dart:io';
-import 'package:accumulate_client/accumulate_client.dart';
+import 'package:opendlt_accumulate/opendlt_accumulate.dart';
 
 // GOOD: Load from environment variable
 final privateKey = Platform.environment['ACC_PRIVATE_KEY'];
@@ -269,7 +269,7 @@ final signer = TxSigner.fromEnv('ACC_PRIVATE_KEY');
     case 'javascript':
     case 'typescript':
       return `\`\`\`typescript
-import { SmartSigner } from 'accumulate-js';
+import { SmartSigner } from 'accumulate.js';
 
 // GOOD: Load from environment variable
 const privateKey = process.env.ACC_PRIVATE_KEY;
@@ -288,7 +288,7 @@ const signer = SmartSigner.fromEnv('ACC_PRIVATE_KEY');
     case 'csharp':
       return `\`\`\`csharp
 using System;
-using Accumulate.Client.Helpers;
+using Acme.Net.Sdk.Helpers;
 
 // GOOD: Load from environment variable
 var privateKey = Environment.GetEnvironmentVariable("ACC_PRIVATE_KEY");
@@ -350,7 +350,7 @@ let signed_tx = signer.sign(&tx)?;
 
     case 'dart':
       return `\`\`\`dart
-import 'package:accumulate_client/accumulate_client.dart';
+import 'package:opendlt_accumulate/opendlt_accumulate.dart';
 
 // Default signing configuration
 final signer = TxSigner.fromEnv('ACC_PRIVATE_KEY');
@@ -369,7 +369,7 @@ final signedTx = signer.sign(tx);
     case 'javascript':
     case 'typescript':
       return `\`\`\`typescript
-import { TxBody, SmartSigner } from 'accumulate-js';
+import { TxBody, SmartSigner } from 'accumulate.js';
 
 // Default signing configuration
 const signer = SmartSigner.fromEnv('ACC_PRIVATE_KEY');
@@ -387,7 +387,7 @@ const signedTx = await signer.sign(tx);
 
     case 'csharp':
       return `\`\`\`csharp
-using Accumulate.Client.Helpers;
+using Acme.Net.Sdk.Helpers;
 
 // Default signing configuration
 var signer = SmartSigner.FromEnvironment("ACC_PRIVATE_KEY");

@@ -38,16 +38,15 @@ export {
 } from './validator';
 
 // =============================================================================
-// SDK Mapper - Introspects SDKs to generate sdk.map.json
+// SDK Mapper - Builds a representative sdk.map.json from curated templates
 // =============================================================================
 
 export {
   generateSDKMap,
-  introspectSDKSource,
   KNOWN_ERRORS,
   OPERATION_MAPPINGS,
+  SDK_PACKAGE_NAMES,
   type SDKMapperOptions,
-  type IntrospectionResult,
 } from './sdk-mapper';
 
 // =============================================================================
