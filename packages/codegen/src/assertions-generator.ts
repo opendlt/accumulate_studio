@@ -6,7 +6,6 @@ import type {
   Flow,
   FlowNode,
   FlowAssertion,
-  AssertionType,
   BlockType,
 } from '@accumulate-studio/types';
 
@@ -88,7 +87,7 @@ export function generateAssertions(flow: Flow): GeneratedAssertions {
  */
 function generateNodeAssertions(
   node: FlowNode,
-  flow: Flow
+  _flow: Flow
 ): GeneratedAssertions {
   const assertions: FlowAssertion[] = [];
   const expectedState: ExpectedState = {
@@ -201,12 +200,6 @@ function generateNodeAssertions(
         expectedState.balanceDeltas[recipient.url] = recipient.amount;
       }
 
-      // Calculate total outgoing amount
-      const totalAmount = recipients.reduce(
-        (sum, r) => sum + BigInt(r.amount),
-        BigInt(0)
-      );
-
       // Source account loses tokens (negative delta would need principal URL)
       // Note: We'd need to track the principal separately
       break;
@@ -226,7 +219,6 @@ function generateNodeAssertions(
     }
 
     case 'BurnTokens': {
-      const amount = config.amount as string;
       // Burning reduces balance (negative delta on principal)
       // Note: Principal tracking would be needed
       break;
@@ -388,7 +380,7 @@ function deduplicateAssertions(assertions: FlowAssertion[]): FlowAssertion[] {
  * Generate a unique key for an assertion
  */
 function getAssertionKey(assertion: FlowAssertion): string {
-  const parts = [assertion.type];
+  const parts: string[] = [assertion.type];
 
   if (assertion.account) parts.push(`account:${assertion.account}`);
   if (assertion.url) parts.push(`url:${assertion.url}`);

@@ -179,7 +179,11 @@ import jsUpdateKey from './templates/javascript/update_key.hbs?raw';
 function buildTemplateMap(...pairs: [string, string][]): Record<string, string> {
   const map: Record<string, string> = {};
   for (const [key, value] of pairs) {
-    map[key] = value;
+    // Normalize line endings to LF so generated code is byte-identical across
+    // platforms. The .hbs sources are imported raw via Vite's ?raw loader and
+    // would otherwise carry the checkout's EOL (CRLF on Windows), making
+    // generated output — and golden snapshots — non-portable.
+    map[key] = value.replace(/\r\n/g, '\n');
   }
   return map;
 }

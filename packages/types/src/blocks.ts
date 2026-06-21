@@ -239,7 +239,19 @@ export interface CommentConfig {
 // Union Type for All Configs
 // =============================================================================
 
-export type BlockConfig =
+/**
+ * A block's runtime configuration is an open key/value bag: it is rendered from
+ * each block's `configSchema`, edited in the UI, and cast to the specific
+ * `*Config` interface (below) by the executor for the matching block type.
+ * Templates legitimately omit auto-resolved fields and carry common ones
+ * (principal/signer), so a strict discriminated union does not model it. The
+ * named interfaces remain the source of truth for per-block field shapes and are
+ * used via explicit casts.
+ */
+export type BlockConfig = Record<string, unknown>;
+
+/** Union of the specific per-block config interfaces (for documentation/casts). */
+export type SpecificBlockConfig =
   | CreateIdentityConfig
   | CreateKeyBookConfig
   | CreateKeyPageConfig

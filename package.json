@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "npm run dev --workspace=apps/studio",
     "dev:mcp": "npm run dev --workspace=apps/mcp-server",
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspaces --if-present",
     "build:studio": "npm run build --workspace=apps/studio",
     "build:mcp": "npm run build --workspace=apps/mcp-server",
     "build:types": "npm run build --workspace=packages/types",

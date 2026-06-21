@@ -77,6 +77,7 @@ export interface FlowVariable {
 export type AssertionType =
   | 'balance.delta'
   | 'balance.equals'
+  | 'balance.gte'
   | 'account.exists'
   | 'account.not_exists'
   | 'chain.entry_count_delta_min'

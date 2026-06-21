@@ -3,7 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X, Play, AlertTriangle, Zap, Layers, CreditCard, Globe } from 'lucide-react';
 import { cn, Button } from '../ui';
 import { useFlowStore, useUIStore } from '../../store';
-import { NETWORKS, BLOCK_CATALOG, isTransactionBlock, type NetworkId } from '@accumulate-studio/types';
+import { NETWORKS, isTransactionBlock, type NetworkId } from '@accumulate-studio/types';
 
 // =============================================================================
 // Types

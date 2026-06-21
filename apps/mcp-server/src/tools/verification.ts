@@ -3,8 +3,8 @@
  * MCP tools for proof verification and synthetic message tracing
  */
 
-import {
-  NETWORKS,
+import { NETWORKS } from '@accumulate-studio/types';
+import type {
   NetworkId,
   TransactionReceipt,
   MerkleProofEntry,
@@ -127,7 +127,7 @@ export async function proofGetReceipt(
       ]);
     }
 
-    const result = await response.json();
+    const result = await response.json() as Record<string, any>;
 
     if (result.error) {
       return errorResponse([
@@ -432,7 +432,7 @@ export async function traceSynthetics(
       ]);
     }
 
-    const result = await response.json();
+    const result = await response.json() as Record<string, any>;
 
     if (result.error) {
       return errorResponse([
@@ -471,7 +471,7 @@ export async function traceSynthetics(
           });
 
           if (synResponse.ok) {
-            const synResult = await synResponse.json();
+            const synResult = await synResponse.json() as Record<string, any>;
             if (!synResult.error) {
               const synData = synResult.result;
               synthetics.push({

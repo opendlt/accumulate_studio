@@ -57,7 +57,7 @@ const StatusBadge: React.FC<{ status: NodeExecutionStatus }> = ({ status }) => {
   );
 };
 
-const TransactionItem: React.FC<TransactionItemProps> = ({ nodeId, displayName, state }) => {
+const TransactionItem: React.FC<TransactionItemProps> = ({ displayName, state }) => {
   const [expanded, setExpanded] = useState(false);
 
   const handleCopyHash = async () => {
@@ -183,7 +183,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ nodeId, displayName, 
                   <p className="text-sm text-red-600 dark:text-red-300 mt-1">
                     {state.error.message}
                   </p>
-                  {state.error.details && (
+                  {!!state.error.details && (
                     <pre className="mt-2 text-xs text-red-500 dark:text-red-400 overflow-x-auto">
                       {JSON.stringify(state.error.details, null, 2)}
                     </pre>

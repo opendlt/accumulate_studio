@@ -3,7 +3,8 @@
  * MCP tools for querying Accumulate accounts and chains
  */
 
-import { NETWORKS, NetworkId } from '@accumulate-studio/types';
+import { NETWORKS } from '@accumulate-studio/types';
+import type { NetworkId } from '@accumulate-studio/types';
 
 import {
   OperationCategory,
@@ -14,7 +15,7 @@ import {
   requirePermission,
 } from '../permissions.js';
 
-import { getCurrentNetwork, getCurrentNetworkConfig } from './network.js';
+import { getCurrentNetwork } from './network.js';
 
 // =============================================================================
 // Types
@@ -117,7 +118,7 @@ export async function accQuery(args: AccQueryArgs): Promise<ToolResponse<AccQuer
       ]);
     }
 
-    const result = await response.json();
+    const result = await response.json() as Record<string, any>;
 
     if (result.error) {
       return errorResponse([
@@ -270,7 +271,7 @@ export async function accGetChain(args: AccGetChainArgs): Promise<ToolResponse<A
       ]);
     }
 
-    const result = await response.json();
+    const result = await response.json() as Record<string, any>;
 
     if (result.error) {
       return errorResponse([
@@ -416,7 +417,7 @@ export async function accGetBalance(args: AccGetBalanceArgs): Promise<ToolRespon
       ]);
     }
 
-    const result = await response.json();
+    const result = await response.json() as Record<string, any>;
 
     if (result.error) {
       return errorResponse([
@@ -465,7 +466,7 @@ export async function accGetBalance(args: AccGetBalanceArgs): Promise<ToolRespon
         });
 
         if (tokenResponse.ok) {
-          const tokenResult = await tokenResponse.json();
+          const tokenResult = await tokenResponse.json() as Record<string, any>;
           if (!tokenResult.error && tokenResult.result?.data) {
             symbol = tokenResult.result.data.symbol ?? 'UNKNOWN';
             precision = tokenResult.result.data.precision ?? 8;

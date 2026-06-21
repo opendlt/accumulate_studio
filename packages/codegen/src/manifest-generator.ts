@@ -609,7 +609,6 @@ function computeNodeVars(
   const isRust = language === 'rust';
   const isDart = language === 'dart';
   const isJs = language === 'javascript';
-  const isRawLang = language !== 'python'; // Only Python uses str() wrapping; all others use raw variable references
 
   // Language-aware variable suffixes
   const sfx = getSuffixMap(language);
@@ -1102,6 +1101,10 @@ function computeNodeVars(
         vars.keyPagePrincipalIsRef = true;
       } else {
         vars.keyPagePrincipal = principalExpr(config.principal, 'acc://my-identity.acme/book');
+        // A resolved principal may be an expression (f-string / variable) that must not be
+        // re-quoted, or a literal URL that must be. Mirror the *PrincipalIsRef pattern used by
+        // every other block so the template can quote conditionally.
+        vars.keyPagePrincipalIsRef = isVarRef(String(vars.keyPagePrincipal));
       }
       break;
     }

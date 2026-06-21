@@ -5,7 +5,7 @@ import { X, Clock, Star, ChevronRight, Layout, Coins, Database, Zap, GitBranch }
 import { cn, Button } from '../ui';
 import { useFlowStore } from '../../store';
 import { GOLDEN_PATH_TEMPLATES } from '../../data/flow-templates';
-import type { FlowTemplate, Flow } from '@accumulate-studio/types';
+import type { FlowTemplate } from '@accumulate-studio/types';
 
 // =============================================================================
 // Types

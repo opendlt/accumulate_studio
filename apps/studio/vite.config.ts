@@ -1,9 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import checker from 'vite-plugin-checker';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Typecheck in-process (tsc --noEmit). composite:true does NOT emit here, so
+    // no stray .js/.d.ts land in src; the build fails on a type error.
+    checker({ typescript: { tsconfigPath: './tsconfig.json' } }),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

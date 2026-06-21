@@ -17,6 +17,16 @@ const SDK_EXAMPLES_DIR = process.env.PYTHON_SDK_EXAMPLES_DIR || 'C:/Accumulate_S
 const HARNESS_PATH = join(__dirname, 'validate_python.py');
 const BASELINES_DIR = join(__dirname, 'baselines');
 
+/** Whether a `python` interpreter is on PATH; the mock harness shells out to it. */
+const HAS_PYTHON = (() => {
+  try {
+    execSync(process.platform === 'win32' ? 'where python' : 'which python', { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+})();
+
 /**
  * Extract the last top-level JSON object from output by brace matching.
  * The mock harness outputs print() statements followed by a JSON report.
@@ -96,6 +106,10 @@ describe('Python SDK Example Baselines', () => {
     const examplePath = join(SDK_EXAMPLES_DIR, example.file);
 
     it(`${example.name} (${example.description}) runs under mock`, () => {
+      if (!HAS_PYTHON) {
+        console.warn(`Skipping ${example.file}: python not on PATH`);
+        return;
+      }
       // Skip if example file doesn't exist
       if (!existsSync(examplePath)) {
         console.warn(`Skipping ${example.file}: file not found at ${examplePath}`);

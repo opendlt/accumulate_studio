@@ -132,8 +132,10 @@ describe('C# Generated Code Validation', () => {
       harnessReady = true;
     } catch (e) {
       const err = e as { stderr?: string };
-      console.warn('dotnet restore failed:', err.stderr?.slice(0, 500));
-      harnessReady = true; // Still try individual tests
+      console.warn('dotnet restore failed (skipping C# compilation checks):', err.stderr?.slice(0, 500));
+      // Toolchain or SDK unavailable (e.g. CI without dotnet, or the published
+      // Acme.Net.Sdk package unresolvable) — skip compilation, keep generation tests.
+      harnessReady = false;
     }
   }, 180000); // 3 minute timeout for dotnet restore
 

@@ -70,7 +70,7 @@ interface BlockNodeData {
 }
 
 export const BlockNode: React.FC<NodeProps> = memo(({ id, data, selected }) => {
-  const nodeData = data as BlockNodeData;
+  const nodeData = data as unknown as BlockNodeData;
   const blockDef = BLOCK_CATALOG[nodeData.type];
   const executionState = useFlowStore(selectNodeExecutionState(id));
   const validationResult = useFlowStore(selectNodeValidation(id));

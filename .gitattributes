@@ -1,0 +1,6 @@
+# Golden codegen snapshots must stay LF so generated-code comparisons are
+# byte-identical across platforms (generator output is normalized to LF).
+packages/codegen/tests/__snapshots__/*.snap text eol=lf
+
+# Handlebars code templates drive generated output — keep them LF everywhere.
+packages/codegen/src/templates/**/*.hbs text eol=lf

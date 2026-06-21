@@ -2,8 +2,8 @@
  * Toast Component Tests
  */
 
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { ToastProvider, useToast } from '../ui/Toast';
 
 // Helper component that triggers toasts

@@ -82,7 +82,7 @@ const StatusBadge: React.FC<{ status: TransactionStatus }> = ({ status }) => {
   );
 };
 
-const SyntheticMessageCard: React.FC<SyntheticMessageCardProps> = ({ message, index }) => {
+const SyntheticMessageCard: React.FC<SyntheticMessageCardProps> = ({ message }) => {
   const [expanded, setExpanded] = useState(false);
 
   const handleCopyHash = async () => {

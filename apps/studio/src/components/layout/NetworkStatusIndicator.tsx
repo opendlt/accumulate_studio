@@ -24,9 +24,9 @@ export const NetworkStatusIndicator: React.FC = () => {
     if (currentStatus) {
       setStatus({
         connected: currentStatus.connected,
-        blockHeight: currentStatus.blockHeight,
+        blockHeight: currentStatus.lastBlock,
         lastBlockTime: currentStatus.lastBlockTime,
-        oraclePrice: currentStatus.oraclePrice,
+        oraclePrice: currentStatus.oracle?.price,
         error: currentStatus.error,
       });
     }
@@ -35,9 +35,9 @@ export const NetworkStatusIndicator: React.FC = () => {
     const unsubscribe = networkService.onStatusChange((newStatus) => {
       setStatus({
         connected: newStatus.connected,
-        blockHeight: newStatus.blockHeight,
+        blockHeight: newStatus.lastBlock,
         lastBlockTime: newStatus.lastBlockTime,
-        oraclePrice: newStatus.oraclePrice,
+        oraclePrice: newStatus.oracle?.price,
         error: newStatus.error,
       });
     });

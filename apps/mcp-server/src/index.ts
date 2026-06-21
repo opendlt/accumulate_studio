@@ -15,7 +15,6 @@ import {
 
 import {
   allTools,
-  toolsByName,
   // Network tools
   netList,
   netSelect,
@@ -57,28 +56,34 @@ const SERVER_VERSION = '1.0.0';
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<unknown>;
 
+// Each tool validates its own args at runtime; asHandler erases the specific arg
+// type for the dynamic dispatch table (the documented TS2352 escape hatch).
+function asHandler<A>(fn: (args: A) => Promise<unknown>): ToolHandler {
+  return fn as unknown as ToolHandler;
+}
+
 const toolHandlers: Record<string, ToolHandler> = {
   // Network tools
-  'net.list': netList as ToolHandler,
-  'net.select': netSelect as ToolHandler,
-  'net.status': netStatus as ToolHandler,
+  'net.list': asHandler(netList),
+  'net.select': asHandler(netSelect),
+  'net.status': asHandler(netStatus),
 
   // Query tools
-  'acc.query': accQuery as ToolHandler,
-  'acc.get_chain': accGetChain as ToolHandler,
-  'acc.get_balance': accGetBalance as ToolHandler,
+  'acc.query': asHandler(accQuery),
+  'acc.get_chain': asHandler(accGetChain),
+  'acc.get_balance': asHandler(accGetBalance),
 
   // Transaction tools
-  'tx.build': txBuild as ToolHandler,
-  'tx.estimate_credits': txEstimateCredits as ToolHandler,
-  'tx.validate_prereqs': txValidatePrereqs as ToolHandler,
-  'tx.submit': txSubmit as ToolHandler,
-  'tx.wait': txWait as ToolHandler,
+  'tx.build': asHandler(txBuild),
+  'tx.estimate_credits': asHandler(txEstimateCredits),
+  'tx.validate_prereqs': asHandler(txValidatePrereqs),
+  'tx.submit': asHandler(txSubmit),
+  'tx.wait': asHandler(txWait),
 
   // Verification tools
-  'proof.get_receipt': proofGetReceipt as ToolHandler,
-  'proof.verify_receipt': proofVerifyReceipt as ToolHandler,
-  'trace.synthetics': traceSynthetics as ToolHandler,
+  'proof.get_receipt': asHandler(proofGetReceipt),
+  'proof.verify_receipt': asHandler(proofVerifyReceipt),
+  'trace.synthetics': asHandler(traceSynthetics),
 };
 
 // =============================================================================

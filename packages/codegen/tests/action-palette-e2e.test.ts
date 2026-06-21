@@ -36,6 +36,10 @@ import { loadManifest } from '../src/manifest-loader';
 // ── Configuration ────────────────────────────────────────────────────────
 
 const TEST_MODE = (process.env.TEST_MODE || 'kermit').toLowerCase() as 'kermit' | 'mock';
+// This suite compiles+runs generated code against all five real SDKs and, by default,
+// executes it against the live Kermit testnet. It cannot run in a generic CI (no SDKs,
+// no network) and is opt-in: set RUN_E2E=1 (locally or in a dedicated SDK/testnet job).
+const RUN_E2E = process.env.RUN_E2E === '1';
 const KERMIT_TIMEOUT = 300_000;   // 5 min per test on live network
 const MOCK_TIMEOUT = 60_000;      // 1 min per test on mock
 const COMPILE_TIMEOUT = 300_000;  // 5 min for cargo build (all bins)
@@ -343,7 +347,7 @@ function ensureJsHarness(): void {
 
 // ── Test Suites ──────────────────────────────────────────────────────────
 
-describe('Action Palette E2E', () => {
+describe.skipIf(!RUN_E2E)('Action Palette E2E', () => {
   let mock: MockServer | null = null;
 
   beforeAll(async () => {

@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: typecheck · build · test · manifests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install (clean)
+        run: npm ci
+
+      # types must build first so dist/ is fresh for downstream workspaces
+      - name: Build @accumulate-studio/types
+        run: npm run build:types
+
+      - name: Typecheck (all workspaces with a typecheck script)
+        run: npm run typecheck
+
+      - name: Build all workspaces
+        run: npm run build --workspaces --if-present
+
+      - name: Assert studio did not emit into src/
+        run: |
+          if git status --porcelain apps/studio/src | grep -E '\.(js|d\.ts)(\.map)?$'; then
+            echo "::error::vite build emitted compiled artifacts into apps/studio/src — composite emit leaked"
+            exit 1
+          fi
+
+      - name: Test
+        run: npm test
+
+      - name: Validate SDK manifests (all 5 languages)
+        run: npm run validate:manifests

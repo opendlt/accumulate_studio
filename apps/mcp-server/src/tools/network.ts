@@ -3,10 +3,10 @@
  * MCP tools for network management and status
  */
 
-import {
+import { NETWORKS } from '@accumulate-studio/types';
+import type {
   NetworkId,
   NetworkConfig,
-  NETWORKS,
   NetworkStatus,
 } from '@accumulate-studio/types';
 
@@ -297,7 +297,7 @@ async function fetchNetworkStatus(networkId: NetworkId): Promise<NetworkStatus> 
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as Record<string, any>;
 
     return {
       networkId,

@@ -461,7 +461,7 @@ describe('Flow Store', () => {
 
   describe('metadata', () => {
     it('actions update the updatedAt timestamp', () => {
-      const before = useFlowStore.getState().flow.metadata?.updatedAt;
+      void useFlowStore.getState().flow.metadata?.updatedAt;
       // Small delay to ensure different timestamp
       useFlowStore.getState().addNode('GenerateKeys' as BlockType, { x: 0, y: 0 });
       const after = useFlowStore.getState().flow.metadata?.updatedAt;

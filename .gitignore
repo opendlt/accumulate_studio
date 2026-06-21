@@ -40,7 +40,7 @@ packages/codegen/tests/dart-harness/.dart_tool/
 packages/codegen/tests/js-harness/node_modules/
 
 # ── Test snapshots & generated output ──
-packages/codegen/tests/__snapshots__/
+# __snapshots__/ holds committed golden snapshots (codegen-snapshots.test.ts) — version-controlled on purpose.
 packages/codegen/tests/action-palette-output/
 packages/codegen/tests/snapshots/
 

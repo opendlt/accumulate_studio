@@ -31,28 +31,22 @@ export class NetworkService {
 
     this.currentNetwork = config;
 
-    // Initialize status
-    this.status = {
-      networkId,
-      connected: false,
-    };
+    // Build into a non-null local, then store, so TS keeps it narrowed.
+    const status: NetworkStatus = { networkId, connected: false };
+    this.status = status;
 
     try {
       // Test connection by fetching network status (v3 — v2 is unsupported on Kermit)
       const response = await this.fetchApi('v3', 'network-status', {});
 
       if (response && !response.error) {
-        this.status = {
-          networkId,
-          connected: true,
-          lastBlock: response.result?.directoryHeight ?? response.result?.majorBlockHeight,
-          lastBlockTime: response.result?.majorBlockTime,
-        };
+        status.connected = true;
+        status.lastBlock = response.result?.directoryHeight ?? response.result?.majorBlockHeight;
+        status.lastBlockTime = response.result?.majorBlockTime;
 
         // Fetch oracle price
         try {
-          const oracle = await this.getOraclePrice();
-          this.status.oracle = oracle;
+          status.oracle = await this.getOraclePrice();
         } catch {
           // Oracle fetch is optional
         }
@@ -60,14 +54,14 @@ export class NetworkService {
         // Start periodic status checks
         this.startStatusCheck();
       } else {
-        this.status.error = response?.error?.message || 'Failed to connect';
+        status.error = response?.error?.message || 'Failed to connect';
       }
     } catch (error) {
-      this.status.error = error instanceof Error ? error.message : 'Connection failed';
+      status.error = error instanceof Error ? error.message : 'Connection failed';
     }
 
     this.notifyListeners();
-    return this.status;
+    return status;
   }
 
   /**
@@ -130,7 +124,9 @@ export class NetworkService {
     method: string,
     params: Record<string, unknown>
   ): Promise<{
-    result?: Record<string, unknown>;
+    // JSON-RPC result is an untyped network payload (see api.ts callV2).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    result?: Record<string, any>;
     error?: { code: number; message: string };
   }> {
     if (!this.currentNetwork) {

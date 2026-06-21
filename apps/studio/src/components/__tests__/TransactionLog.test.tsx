@@ -5,7 +5,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TransactionLog } from '../execution/TransactionLog';
-import type { FlowExecutionState, NodeExecutionState } from '@accumulate-studio/types';
+import type { FlowExecutionState } from '@accumulate-studio/types';
 
 // Mock stores
 vi.mock('../../store', () => ({

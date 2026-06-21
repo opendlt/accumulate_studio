@@ -8,7 +8,6 @@ import type {
   SDKEntryPoint,
   SDKOperation,
   SDKError,
-  EntryPointKind,
   OperationCategory,
   SymbolRef,
   InputParam,
@@ -49,7 +48,7 @@ interface LanguagePatterns {
   docPattern: RegExp;
 }
 
-const LANGUAGE_PATTERNS: Record<SDKLanguage, LanguagePatterns> = {
+export const LANGUAGE_PATTERNS: Record<SDKLanguage, LanguagePatterns> = {
   python: {
     classPattern: /^class\s+(\w+)(?:\([^)]*\))?:/gm,
     functionPattern: /^def\s+(\w+)\s*\(([^)]*)\)(?:\s*->\s*([^:]+))?:/gm,
@@ -104,7 +103,7 @@ const LANGUAGE_PATTERNS: Record<SDKLanguage, LanguagePatterns> = {
 // Known Accumulate operations mapping
 // =============================================================================
 
-const OPERATION_MAPPINGS: Record<string, { category: OperationCategory; requires: string[] }> = {
+export const OPERATION_MAPPINGS: Record<string, { category: OperationCategory; requires: string[] }> = {
   // Identity operations
   create_identity: { category: 'identity', requires: ['funded-lite-account', 'credits'] },
   create_adi: { category: 'identity', requires: ['funded-lite-account', 'credits'] },
@@ -158,7 +157,7 @@ const OPERATION_MAPPINGS: Record<string, { category: OperationCategory; requires
 // Known error codes
 // =============================================================================
 
-const KNOWN_ERRORS: SDKError[] = [
+export const KNOWN_ERRORS: SDKError[] = [
   { code: 'InsufficientBalance', hint: 'Account does not have enough tokens', details: 'Check balance before transfer' },
   { code: 'InsufficientCredits', hint: 'Account does not have enough credits', details: 'Add credits using AddCredits transaction' },
   { code: 'Unauthorized', hint: 'Signer does not have authority', details: 'Verify the signing key is on an authorized key page' },
@@ -181,7 +180,7 @@ const KNOWN_ERRORS: SDKError[] = [
  * For now, we generate a representative map based on the language
  */
 export function generateSDKMap(
-  sdkPath: string,
+  _sdkPath: string,
   language: SDKLanguage,
   options?: Partial<SDKMapperOptions>
 ): SDKMap {
@@ -334,7 +333,7 @@ function getSymbolRefForOperation(opName: string, language: SDKLanguage): Symbol
 /**
  * Get input parameters for an operation
  */
-function getInputsForOperation(opName: string, language: SDKLanguage): InputParam[] {
+function getInputsForOperation(opName: string, _language: SDKLanguage): InputParam[] {
   // Define common inputs for operations
   const commonInputs: Record<string, InputParam[]> = {
     send_tokens: [

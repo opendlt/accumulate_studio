@@ -18,6 +18,16 @@ const SDK_HARNESS_DIR = SDK_ROOT;
 const HARNESS_PATH = join(__dirname, 'validate_dart.py');
 const BASELINES_DIR = join(__dirname, 'baselines/dart');
 
+/** Whether a `python` interpreter is on PATH; the dart mock harness shells out to it. */
+const HAS_PYTHON = (() => {
+  try {
+    execSync(process.platform === 'win32' ? 'where python' : 'which python', { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+})();
+
 /**
  * Extract the last top-level JSON object from output by brace matching.
  */
@@ -94,6 +104,10 @@ if (!existsSync(BASELINES_DIR)) {
 describe('Dart SDK Example Baselines', () => {
   for (const example of EXAMPLES) {
     it(`${example.name} (${example.description}) runs under mock`, () => {
+      if (!HAS_PYTHON) {
+        console.warn(`Skipping ${example.name}: python not on PATH`);
+        return;
+      }
       const examplePath = join(SDK_EXAMPLE_DIR, example.file);
 
       if (!existsSync(examplePath)) {

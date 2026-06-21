@@ -41,8 +41,8 @@ describe('NetworkStatusIndicator', () => {
   it('shows connected state', () => {
     mockGetStatus.mockReturnValue({
       connected: true,
-      blockHeight: 12345,
-      oraclePrice: 500,
+      lastBlock: 12345,
+      oracle: { price: 500, timestamp: '' },
     });
 
     render(<NetworkStatusIndicator />);
@@ -65,8 +65,8 @@ describe('NetworkStatusIndicator', () => {
   it('expands to show details on click', () => {
     mockGetStatus.mockReturnValue({
       connected: true,
-      blockHeight: 12345,
-      oraclePrice: 500,
+      lastBlock: 12345,
+      oracle: { price: 500, timestamp: '' },
     });
 
     render(<NetworkStatusIndicator />);

@@ -125,8 +125,7 @@ ${generateErrorReference(sdkMap)}
 `;
 }
 
-function getLanguageSpecificQuickStart(language: SDKLanguage, sdkMap: SDKMap): string {
-  const mainEntry = sdkMap.entrypoints.find(ep => ep.kind === 'class' || ep.kind === 'module');
+function getLanguageSpecificQuickStart(language: SDKLanguage, _sdkMap: SDKMap): string {
 
   switch (language) {
     case 'python':
@@ -212,7 +211,7 @@ var privateKey = Environment.GetEnvironmentVariable("ACC_PRIVATE_KEY");
   }
 }
 
-function getLanguageSpecificImports(language: SDKLanguage, sdkMap: SDKMap): string {
+function getLanguageSpecificImports(language: SDKLanguage, _sdkMap: SDKMap): string {
   switch (language) {
     case 'python':
       return `\`\`\`python

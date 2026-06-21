@@ -394,7 +394,7 @@ class Program
 /**
  * Generate a complete example that demonstrates the full workflow
  */
-function generateCompleteExample(language: SDKLanguage, sdkMap: SDKMap): string {
+function generateCompleteExample(language: SDKLanguage, _sdkMap: SDKMap): string {
   switch (language) {
     case 'python':
       return `"""

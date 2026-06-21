@@ -14,7 +14,7 @@ import type { SDKMap, SDKLanguage, BlockType } from '../packages/types/src/index
 import { BLOCK_CATALOG, blockTypeToOp, opToBlockType } from '../packages/types/src/index';
 
 const MANIFESTS_DIR = join(__dirname, '../packages/codegen/src/manifests');
-const LANGUAGES: SDKLanguage[] = ['python', 'rust', 'dart'];
+const LANGUAGES: SDKLanguage[] = ['python', 'rust', 'dart', 'csharp', 'javascript'];
 
 interface DriftError {
   code: string;

@@ -300,7 +300,7 @@ function generateAcceptanceCriteria(flow: Flow): string {
   if (flow.assertions && flow.assertions.length > 0) {
     criteria.push('\n### Assertions\n');
     for (const assertion of flow.assertions) {
-      criteria.push(`- [ ] ${assertion.message ?? formatAssertion(assertion)}`);
+      criteria.push(`- [ ] ${assertion.message ?? formatAssertion(assertion as unknown as { type: string; [key: string]: unknown })}`);
     }
   }
 
@@ -366,7 +366,7 @@ function getNodeAcceptanceCriteria(node: FlowNode): string[] {
 /**
  * Generate verification steps
  */
-function generateVerificationSteps(flow: Flow): string {
+function generateVerificationSteps(_flow: Flow): string {
   const steps: string[] = [];
 
   steps.push('1. **Query all created accounts** to verify they exist');

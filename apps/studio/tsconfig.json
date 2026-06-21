@@ -7,12 +7,14 @@
     "paths": {
       "@/*": ["./src/*"],
       "@accumulate-studio/types": ["../../packages/types/src"],
-      "@accumulate-studio/codegen": ["../../packages/codegen/src"]
+      "@accumulate-studio/codegen": ["../../packages/codegen/src"],
+      "@accumulate-studio/verification": ["../../packages/verification/src"]
     }
   },
   "include": ["src"],
   "references": [
     { "path": "../../packages/types" },
-    { "path": "../../packages/codegen" }
+    { "path": "../../packages/codegen" },
+    { "path": "../../packages/verification" }
   ]
 }

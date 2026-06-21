@@ -3,8 +3,8 @@
  * MCP tools for building, validating, and submitting transactions
  */
 
-import {
-  NETWORKS,
+import { NETWORKS } from '@accumulate-studio/types';
+import type {
   NetworkId,
   TransactionStatus,
   TransactionResult,
@@ -300,9 +300,9 @@ export async function txEstimateCredits(
       });
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await response.json() as Record<string, any>;
         if (result.result?.values?.oracle) {
-          oraclePrice = result.result.values.oracle;
+          oraclePrice = Number(result.result.values.oracle);
           // Credits are 1/100th of a cent, oracle is ACME per $1
           const creditsPerAcme = oraclePrice * 100;
           const acmeNeeded = totalCredits / creditsPerAcme;
@@ -407,7 +407,7 @@ export async function txValidatePrereqs(
         signal: AbortSignal.timeout(10000),
       });
 
-      const principalResult = await principalResponse.json();
+      const principalResult = await principalResponse.json() as Record<string, any>;
 
       if (principalResult.error) {
         checks.push({
@@ -618,7 +618,7 @@ export async function txSubmit(args: TxSubmitArgs): Promise<ToolResponse<TxSubmi
       ]);
     }
 
-    const result = await response.json();
+    const result = await response.json() as Record<string, any>;
 
     if (result.error) {
       return errorResponse([
@@ -717,7 +717,6 @@ export async function txWait(args: TxWaitArgs): Promise<ToolResponse<TxWaitResul
 
     const startTime = Date.now();
     let lastStatus: TransactionStatus = 'pending';
-    let lastResult: Record<string, unknown> | null = null;
 
     while (Date.now() - startTime < timeout) {
       try {
@@ -734,10 +733,9 @@ export async function txWait(args: TxWaitArgs): Promise<ToolResponse<TxWaitResul
         });
 
         if (response.ok) {
-          const result = await response.json();
+          const result = await response.json() as Record<string, any>;
 
           if (!result.error) {
-            lastResult = result.result;
             lastStatus = result.result?.status ?? 'pending';
 
             // Check for terminal states
@@ -948,7 +946,7 @@ async function validateTypeSpecificPrereqs(
             signal: AbortSignal.timeout(10000),
           });
 
-          const result = await response.json();
+          const result = await response.json() as Record<string, any>;
           if (!result.error) {
             const balance = BigInt(result.result?.data?.balance ?? '0');
             const totalToSend = calculateTotalSend(payload.to as Array<{ amount: string }>);
@@ -995,7 +993,7 @@ async function validateTypeSpecificPrereqs(
             signal: AbortSignal.timeout(10000),
           });
 
-          const result = await response.json();
+          const result = await response.json() as Record<string, any>;
           if (!result.error) {
             checks.push({
               name: 'url_available',

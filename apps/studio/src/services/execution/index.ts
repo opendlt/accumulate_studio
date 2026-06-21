@@ -5,7 +5,6 @@
 import type {
   Flow,
   FlowNode,
-  NodeExecutionState,
   AccountStateDiff,
   SyntheticMessageType,
 } from '@accumulate-studio/types';
@@ -179,7 +178,9 @@ export class ExecutionEngine {
         });
       }
     } catch (error) {
-      if (this.status !== 'paused') {
+      // Read via getStatus() so TS doesn't narrow `this.status` by control flow —
+      // pause/resume can mutate it across the awaits above.
+      if (this.getStatus() !== 'paused') {
         this.status = 'failed';
         store.completeExecution('failed');
         store.addExecutionLog({
@@ -404,9 +405,9 @@ export class ExecutionEngine {
       }
 
       // Check for pause
-      if (this.status === 'paused') {
+      if (this.getStatus() === 'paused') {
         await this.waitForResume();
-        if (this.status !== 'running') {
+        if (this.getStatus() !== 'running') {
           throw new Error('Execution stopped');
         }
       }

@@ -48,9 +48,12 @@ describe('Case conversion utilities', () => {
 });
 
 describe('nodeToVarName', () => {
-  const makeNode = (type: string, label?: string): FlowNode => ({
-    id: 'test',
-    type: type as FlowNode['type'],
+  // Real flow nodes carry a meaningful id (YAML templates use semantic ids like
+  // `generate_keys`); nodeToVarName derives the variable name from `label || id || type`.
+  // Use the node name as its id so these cases exercise the id-driven naming path.
+  const makeNode = (name: string, label?: string): FlowNode => ({
+    id: name,
+    type: name as FlowNode['type'],
     config: {},
     position: { x: 0, y: 0 },
     label,

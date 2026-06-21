@@ -171,7 +171,7 @@ export const useUIStore = create<UIState & UIActions>()(
           // persisted state should skip onboarding (they're not new)
           state.hasCompletedOnboarding = true;
         }
-        return state as UIState & UIActions;
+        return state as unknown as UIState & UIActions;
       },
       partialize: (state) => ({
         theme: state.theme,

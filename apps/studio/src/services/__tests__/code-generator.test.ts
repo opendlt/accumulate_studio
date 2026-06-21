@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import type { Flow, SDKLanguage } from '@accumulate-studio/types';
+import type { Flow } from '@accumulate-studio/types';
 
 // Mock the codegen package before importing the service
 vi.mock('@accumulate-studio/codegen', () => ({

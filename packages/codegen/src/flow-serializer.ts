@@ -185,7 +185,7 @@ function extractPrincipal(node: FlowNode): string {
  * Format transaction body based on block type
  */
 function formatTransactionBody(
-  type: BlockType,
+  _type: BlockType,
   config: Record<string, unknown>
 ): Record<string, unknown> {
   // Remove principal from body (it's in the transaction envelope)
@@ -244,7 +244,7 @@ function variablesToYaml(variables: FlowVariable[]): Record<string, string> {
   const result: Record<string, string> = {};
 
   for (const variable of variables) {
-    let typeStr = variable.type;
+    let typeStr: string = variable.type;
     if (variable.secret) {
       typeStr = `secret:${typeStr}`;
     }

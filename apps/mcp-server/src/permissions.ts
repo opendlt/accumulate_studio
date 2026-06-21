@@ -248,7 +248,7 @@ export function successResponse<T>(data: T, warnings?: string[]): ToolResponse<T
 /**
  * Create an error response envelope
  */
-export function errorResponse(errors: ToolError[], warnings?: string[]): ToolResponse {
+export function errorResponse<T = never>(errors: ToolError[], warnings?: string[]): ToolResponse<T> {
   return {
     ok: false,
     permissions_effective: currentPermissionMode,
@@ -260,7 +260,7 @@ export function errorResponse(errors: ToolError[], warnings?: string[]): ToolRes
 /**
  * Create an error response from an exception
  */
-export function errorFromException(error: unknown): ToolResponse {
+export function errorFromException<T = never>(error: unknown): ToolResponse<T> {
   if (error instanceof PermissionError) {
     return errorResponse([
       {

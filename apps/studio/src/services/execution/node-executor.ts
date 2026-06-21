@@ -74,52 +74,52 @@ export class NodeExecutor {
 
     switch (type) {
       case 'GenerateKeys':
-        return this.executeGenerateKeys(node.config as GenerateKeysConfig, inputs);
+        return this.executeGenerateKeys(node.config as unknown as GenerateKeysConfig, inputs);
 
       case 'CreateLiteTokenAccount':
         return this.executeCreateLiteTokenAccount(inputs);
 
       case 'Faucet':
-        return this.executeFaucet(node.config as FaucetConfig, inputs);
+        return this.executeFaucet(node.config as unknown as FaucetConfig, inputs);
 
       case 'AddCredits':
-        return this.executeAddCredits(node.config as AddCreditsConfig, inputs, context);
+        return this.executeAddCredits(node.config as unknown as AddCreditsConfig, inputs, context);
 
       case 'CreateIdentity':
-        return this.executeCreateIdentity(node.config as CreateIdentityConfig, inputs, context);
+        return this.executeCreateIdentity(node.config as unknown as CreateIdentityConfig, inputs, context);
 
       case 'CreateKeyBook':
-        return this.executeCreateKeyBook(node.config as CreateKeyBookConfig, inputs, context);
+        return this.executeCreateKeyBook(node.config as unknown as CreateKeyBookConfig, inputs, context);
 
       case 'CreateKeyPage':
-        return this.executeCreateKeyPage(node.config as CreateKeyPageConfig, inputs, context);
+        return this.executeCreateKeyPage(node.config as unknown as CreateKeyPageConfig, inputs, context);
 
       case 'SendTokens':
-        return this.executeSendTokens(node.config as SendTokensConfig, inputs, context);
+        return this.executeSendTokens(node.config as unknown as SendTokensConfig, inputs, context);
 
       case 'CreateTokenAccount':
-        return this.executeCreateTokenAccount(node.config as CreateTokenAccountConfig, inputs, context);
+        return this.executeCreateTokenAccount(node.config as unknown as CreateTokenAccountConfig, inputs, context);
 
       case 'CreateDataAccount':
-        return this.executeCreateDataAccount(node.config as CreateDataAccountConfig, inputs, context);
+        return this.executeCreateDataAccount(node.config as unknown as CreateDataAccountConfig, inputs, context);
 
       case 'WriteData':
-        return this.executeWriteData(node.config as WriteDataConfig, inputs, context);
+        return this.executeWriteData(node.config as unknown as WriteDataConfig, inputs, context);
 
       case 'WriteDataTo':
-        return this.executeWriteDataTo(node.config as WriteDataToConfig, inputs, context);
+        return this.executeWriteDataTo(node.config as unknown as WriteDataToConfig, inputs, context);
 
       case 'QueryAccount':
-        return this.executeQuery(node.config as QueryAccountConfig, inputs);
+        return this.executeQuery(node.config as unknown as QueryAccountConfig, inputs);
 
       case 'WaitForBalance':
-        return this.executeWaitForBalance(node.config as WaitForBalanceConfig, inputs, context);
+        return this.executeWaitForBalance(node.config as unknown as WaitForBalanceConfig, inputs, context);
 
       case 'WaitForCredits':
-        return this.executeWaitForCredits(node.config as WaitForCreditsConfig, inputs, context);
+        return this.executeWaitForCredits(node.config as unknown as WaitForCreditsConfig, inputs, context);
 
       case 'UpdateAccountAuth':
-        return this.executeUpdateAccountAuth(node.config as UpdateAccountAuthConfig, inputs, context);
+        return this.executeUpdateAccountAuth(node.config as unknown as UpdateAccountAuthConfig, inputs, context);
 
       case 'Comment':
         return {}; // No-op for comments
@@ -259,7 +259,7 @@ export class NodeExecutor {
   async executeAddCredits(
     config: AddCreditsConfig,
     inputs: NodeOutputs,
-    context: ExecutionContext
+    _context: ExecutionContext
   ): Promise<NodeOutputs> {
     let recipient = config.recipient ? this.resolveValue(config.recipient, inputs) : '';
     if (!recipient) {
@@ -324,7 +324,7 @@ export class NodeExecutor {
   async executeCreateIdentity(
     config: CreateIdentityConfig,
     inputs: NodeOutputs,
-    context: ExecutionContext
+    _context: ExecutionContext
   ): Promise<NodeOutputs> {
     const url = this.resolveValue(config.url, inputs);
 
@@ -380,7 +380,7 @@ export class NodeExecutor {
   async executeCreateKeyBook(
     config: CreateKeyBookConfig,
     inputs: NodeOutputs,
-    context: ExecutionContext
+    _context: ExecutionContext
   ): Promise<NodeOutputs> {
     const keypair = (inputs.signer || inputs.keypair) as KeyPair | undefined;
     if (!keypair) {
@@ -521,7 +521,7 @@ export class NodeExecutor {
   async executeSendTokens(
     config: SendTokensConfig,
     inputs: NodeOutputs,
-    context: ExecutionContext
+    _context: ExecutionContext
   ): Promise<NodeOutputs> {
     const keypair = (inputs.signer || inputs.keypair) as KeyPair | undefined;
     if (!keypair) {
@@ -907,7 +907,7 @@ export class NodeExecutor {
   async executeWriteData(
     config: WriteDataConfig,
     inputs: NodeOutputs,
-    context: ExecutionContext
+    _context: ExecutionContext
   ): Promise<NodeOutputs> {
     const keypair = (inputs.signer || inputs.keypair) as KeyPair | undefined;
     if (!keypair) {
@@ -1123,7 +1123,7 @@ export class NodeExecutor {
   async executeGenericTransaction(
     node: FlowNode,
     inputs: NodeOutputs,
-    context: ExecutionContext
+    _context: ExecutionContext
   ): Promise<NodeOutputs> {
     const keypair = (inputs.signer || inputs.keypair) as KeyPair | undefined;
     if (!keypair) {

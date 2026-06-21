@@ -323,7 +323,7 @@ export class AccumulateAPI {
             hash: s.hash,
             source: s.source,
             destination: s.destination,
-            status: this.parseTransactionStatus(s.status),
+            status: this.parseTransactionStatus(s.status as Record<string, unknown> | undefined),
           })),
         },
       };
@@ -504,7 +504,10 @@ export class AccumulateAPI {
     method: string,
     params: Record<string, unknown>
   ): Promise<{
-    result?: Record<string, unknown>;
+    // JSON-RPC result is an untyped network payload; `any` at this boundary
+    // lets callers read dynamic fields without per-access casts.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    result?: Record<string, any>;
     error?: { code: number; message: string; data?: unknown };
   }> {
     const response = await fetchWithTimeout(

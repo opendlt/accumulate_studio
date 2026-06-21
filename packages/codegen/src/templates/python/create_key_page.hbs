@@ -3,14 +3,14 @@
         # =========================================================
         {{varName}}_signer = SmartSigner(client=client.v3, keypair={{keyVarName}}_kp, signer_url=str({{keyVarName}}_lta))
         {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
-            principal="{{keyPagePrincipal}}",
+            principal={{#if keyPagePrincipalIsRef}}{{keyPagePrincipal}}{{else}}"{{keyPagePrincipal}}"{{/if}},
             body=TxBody.create_key_page(
                 keys=[
 {{#if keyPageDefaultKey}}
                     {"keyHash": {{keyPageDefaultKey}} },
 {{else}}
 {{#each keyPageKeys}}
-                    {"keyHash": "{{this}}"},
+                    {"keyHash": {{this}} },
 {{/each}}
 {{/if}}
                 ],

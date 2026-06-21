@@ -4,7 +4,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import React from 'react';
 import { CodePanel } from '../code-panel/CodePanel';
 
 // Mock function references declared before vi.mock so they are hoisted correctly
