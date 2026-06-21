@@ -39,6 +39,9 @@ async def add_credits(
         lta = str(kp.derive_lite_token_account_url("ACME"))
         signer = SmartSigner(client=client.v3, keypair=kp, signer_url=lta)
 
+        # req.amount is ACME in BASE UNITS (×1e8 already applied in the engine's parseAmount).
+        # The protocol converts ACME→credits via the oracle, so do NOT apply CreditPrecision (×100)
+        # here — that is only for TransferCredits/BurnCredits in generic.py. See P2-2.
         result = signer.sign_submit_and_wait(
             principal=lta,
             body=TxBody.add_credits(

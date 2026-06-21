@@ -49,6 +49,44 @@ const CONTEXT_KEYS = [
   'recipient',
 ] as const;
 
+// ── Unit precision (see docs/audit-remediation/P2-2) ─────────────────────────
+// ACME tokens: 1 ACME = 1e8 base units. This ×1e8 conversion happens once, here in the engine.
+// Credits use the Go protocol's CreditPrecision = 100, applied once in the proxy (not here):
+// the engine forwards WHOLE credits as an integer; apps/sdk-proxy multiplies by 100.
+export const ACME_PRECISION = 1e8;
+
+/** Block types whose `amount` is denominated in CREDITS (not ACME) and must not be ×1e8. */
+const CREDIT_OPS = ['TransferCredits', 'BurnCredits'] as const;
+
+/**
+ * Parse an ACME token amount to base units (×1e8). For SendTokens, IssueTokens, BurnTokens,
+ * AddCredits (ACME the protocol converts to credits via the oracle) and WaitForBalance.
+ * NOT for credit amounts — see parseCreditAmount.
+ */
+export function parseAcmeAmount(amount: string | number): number {
+  if (typeof amount === 'number') return amount;
+  const cleaned = amount.replace(/[, ]/g, '');
+  const num = parseFloat(cleaned);
+  if (isNaN(num)) {
+    throw new Error(`Invalid amount: ${amount}`);
+  }
+  return Math.round(num * ACME_PRECISION);
+}
+
+/**
+ * Parse a CREDIT amount. Credits are NOT scaled by 1e8 (that is ACME). The engine forwards
+ * whole credits as an integer; the proxy applies CreditPrecision (×100) exactly once.
+ */
+export function parseCreditAmount(amount: string | number): number {
+  if (typeof amount === 'number') return Math.trunc(amount);
+  const cleaned = String(amount).replace(/[, ]/g, '');
+  const num = parseFloat(cleaned);
+  if (isNaN(num)) {
+    throw new Error(`Invalid credit amount: ${amount}`);
+  }
+  return Math.trunc(num); // whole credits; proxy scales ×100
+}
+
 // =============================================================================
 // Node Executor
 // =============================================================================
@@ -1136,6 +1174,12 @@ export class NodeExecutor {
       resolvedConfig[key] = this.deepResolve(value, inputs);
     }
 
+    // Credit ops (TransferCredits/BurnCredits): the `amount` is WHOLE CREDITS. Normalize it to an
+    // integer so the proxy reliably applies CreditPrecision (×100). Do NOT ×1e8 here — that is ACME.
+    if ((CREDIT_OPS as readonly string[]).includes(node.type) && resolvedConfig.amount !== undefined) {
+      resolvedConfig.amount = this.parseCredits(resolvedConfig.amount as string | number);
+    }
+
     // Determine principal and signer based on ADI context
     const adiUrl = inputs.adiUrl as string | undefined;
     const keyPageUrl = inputs.keyPageUrl as string | undefined;
@@ -1299,17 +1343,14 @@ export class NodeExecutor {
     return resolved;
   }
 
-  /**
-   * Parse amount string to number (handles decimals)
-   */
+  /** ACME amount → base units (×1e8). Delegates to the exported, unit-tested helper. */
   private parseAmount(amount: string | number): number {
-    if (typeof amount === 'number') return amount;
-    const cleaned = amount.replace(/[, ]/g, '');
-    const num = parseFloat(cleaned);
-    if (isNaN(num)) {
-      throw new Error(`Invalid amount: ${amount}`);
-    }
-    return Math.round(num * 1e8);
+    return parseAcmeAmount(amount);
+  }
+
+  /** Credit amount → whole credits (no ×1e8). Delegates to the exported, unit-tested helper. */
+  private parseCredits(amount: string | number): number {
+    return parseCreditAmount(amount);
   }
 
   /**

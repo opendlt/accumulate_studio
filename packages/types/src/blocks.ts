@@ -584,8 +584,8 @@ export const BLOCK_CATALOG: Record<BlockType, BlockDefinition> = {
       type: 'object',
       properties: {
         recipient: { type: 'string', description: 'Key page or lite identity to credit (auto-resolved from upstream if empty)' },
-        amount: { type: 'string', description: 'ACME amount to spend (default: 5)' },
-        oracle: { type: 'number', description: 'Oracle price (optional, auto-fetched)' },
+        amount: { type: 'string', description: 'ACME to spend on credits — the oracle converts this to credits (default: 5)' },
+        oracle: { type: 'number', description: 'ACME/credit price used to convert the spend into credits (optional, auto-fetched)' },
       },
       required: [],
     },

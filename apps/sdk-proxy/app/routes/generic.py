@@ -54,19 +54,22 @@ def _normalise_body(body: dict) -> None:
             amt = body.pop("amount", 0)
             body["to"] = [{"url": body.pop("recipient"), "amount": str(amt)}]
 
-    # -- Credit precision: CreditPrecision = 100 in Go protocol ---------------
-    # User enters whole credits (e.g. 3), but the wire format is credit-units
-    # (e.g. 300).  Multiply by 100 for burnCredits and transferCredits.
+    # -- Scaling contract (see docs/audit-remediation/P2-2) -------------------
+    # Credit ops: `amount` arrives as WHOLE CREDITS from the engine. CreditPrecision = 100
+    #   in the Go protocol, applied EXACTLY ONCE, here (the engine never ×1e8 these).
+    # ACME ops: `amount` arrives as base units (already ×1e8 in the engine); the proxy only
+    #   stringifies it for Go's big-int decoding.
+    # `oracle` is the ACME/credit price, never a user amount — it is never scaled.
     is_credit_op = body_type in ("transferCredits", "burnCredits")
     CREDIT_PRECISION = 100
 
-    # -- Ensure amounts are strings (Go expects big-int string encoding) ---
-    # NOTE: credit op amounts are uint64 (integers), not big-int strings.
     for key in ("amount", "oracle"):
         if key in body and isinstance(body[key], (int, float)):
-            if is_credit_op and key == "amount":
+            if key == "oracle":
+                body[key] = int(body[key])          # oracle: never scaled
+            elif is_credit_op:                       # credit amount → credit-units
                 body[key] = int(body[key] * CREDIT_PRECISION)
-            elif not is_credit_op:
+            else:                                    # ACME base units → big-int string
                 body[key] = str(int(body[key]))
 
     for entry in body.get("to", []):
