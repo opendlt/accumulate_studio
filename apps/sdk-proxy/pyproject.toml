@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "SDK proxy service for Accumulate Studio - handles transaction signing and submission via the Python SDK"
 requires-python = ">=3.9"
 dependencies = [
-    "accumulate-sdk-opendlt==2.0.2",
+    "accumulate-sdk-opendlt>=2.1.0",
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
     "pydantic>=2.0.0",
