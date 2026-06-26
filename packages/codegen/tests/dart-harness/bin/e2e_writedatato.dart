@@ -3,6 +3,7 @@
 /// Network: kermit
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -125,6 +126,21 @@ Future<void> main() async {
 
 
     // =========================================================
+    // GenerateKeys_2 (GenerateKeys)
+    // =========================================================
+    final generatekeys_2Kp = await Ed25519KeyPair.generate();
+    final generatekeys_2Key = UnifiedKeyPair.fromEd25519(generatekeys_2Kp);
+    final generatekeys_2Lid = await generatekeys_2Kp.deriveLiteIdentityUrl();
+    final generatekeys_2Lta = await generatekeys_2Kp.deriveLiteTokenAccountUrl();
+    final generatekeys_2PubKey = await generatekeys_2Kp.publicKeyBytes();
+    final generatekeys_2PubHash = toHexString(sha256.convert(generatekeys_2PubKey).bytes);
+    print('Generated keypair:');
+    print('  Lite Identity: ${generatekeys_2Lid}');
+    print('  Lite Token Account: ${generatekeys_2Lta}');
+    print('  Public Key Hash: ${generatekeys_2PubHash}');
+
+
+    // =========================================================
     // WriteDataTo (Action: WriteDataTo)
     // =========================================================
     final writedatatoSigner = SmartSigner(
@@ -133,12 +149,10 @@ Future<void> main() async {
       signerUrl: generatekeysLid.toString(),
     );
     final writedatatoResult = await writedatatoSigner.signSubmitAndWait(
-      principal: 'acc://e2e-315d23df.acme/data',
+      principal: 'acc://e2e-489ac1ad.acme/data',
       body: TxBody.writeDataTo(
-        recipient: 'acc://e2e-315d23df.acme/data',
-        entriesHex: [
-          '48656c6c6f20576f726c64',
-        ],
+        recipient: 'acc://e2e-489ac1ad.acme/data',
+        entriesHex: ['48656c6c6f20576f726c64'],
       ),
       memo: 'Write data to',
       maxAttempts: 30,

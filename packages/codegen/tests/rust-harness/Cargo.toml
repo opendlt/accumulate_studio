@@ -4,9 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-accumulate-sdk = "0.1"
+# Build generated code against the local unified Rust SDK (2.1.0), which carries
+# fixes not yet on crates.io (tx_type codes, binary marshalers). A registry pin
+# like "0.1" can't resolve it; the path matches Cargo.lock's source.
+accumulate-sdk = { path = "../../../../../../opendlt-rust-v2v3-sdk/unified" }
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 serde_json = "1"
 sha2 = "0.10"
 hex = "0.4"
 url = "2"
+
+[build-dependencies]
+# Embeds an asInvoker manifest so Windows' Installer Detection heuristic does not
+# force UAC elevation on binaries named like e2e_updatekey.exe (WinError 740).
+embed-manifest = "1.5"

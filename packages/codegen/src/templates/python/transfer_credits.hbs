@@ -3,11 +3,8 @@
         # =========================================================
         {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
         {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
-            principal="{{transferCreditsPrincipal}}",
-            body=TxBody.transfer_credits(
-                to="{{transferCreditsRecipient}}",
-                amount={{transferCreditsAmount}},
-            ),
+            principal={{#if transferCreditsPrincipalIsRef}}{{transferCreditsPrincipal}}{{else}}"{{transferCreditsPrincipal}}"{{/if}},
+            body={"type": "transferCredits", "to": [{"url": {{#if transferCreditsRecipientIsRef}}{{transferCreditsRecipient}}{{else}}"{{transferCreditsRecipient}}"{{/if}}, "amount": {{transferCreditsAmount}} }] },
             max_attempts=30,
         )
         if {{varName}}_result.success:

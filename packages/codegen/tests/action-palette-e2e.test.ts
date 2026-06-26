@@ -40,7 +40,9 @@ const TEST_MODE = (process.env.TEST_MODE || 'kermit').toLowerCase() as 'kermit' 
 // executes it against the live Kermit testnet. It cannot run in a generic CI (no SDKs,
 // no network) and is opt-in: set RUN_E2E=1 (locally or in a dedicated SDK/testnet job).
 const RUN_E2E = process.env.RUN_E2E === '1';
-const KERMIT_TIMEOUT = 300_000;   // 5 min per test on live network
+const KERMIT_TIMEOUT = 900_000;   // 15 min per test — the longest flows (full ADI +
+                                  // key-page provisioning, e.g. UpdateAccountAuth /
+                                  // TransferCredits) need many real-testnet settle waits.
 const MOCK_TIMEOUT = 60_000;      // 1 min per test on mock
 const COMPILE_TIMEOUT = 300_000;  // 5 min for cargo build (all bins)
 const EXEC_TIMEOUT = TEST_MODE === 'kermit' ? KERMIT_TIMEOUT : MOCK_TIMEOUT;
@@ -307,7 +309,7 @@ function mockEnv(mockUrl: string): Record<string, string> {
 
 /** Ensure the JS harness has SDK shim in node_modules */
 function ensureJsHarness(): void {
-  const shimDir = join(JS_HARNESS, 'node_modules', 'accumulate.js');
+  const shimDir = join(JS_HARNESS, 'node_modules', 'accumulate-sdk-opendlt');
   const shimIndex = join(shimDir, 'index.js');
   if (existsSync(shimIndex)) return; // Already set up
 
@@ -320,7 +322,7 @@ function ensureJsHarness(): void {
 
   const sdkUrl = 'file:///' + sdkIndex.replace(/\\/g, '/');
   writeFileSync(join(shimDir, 'package.json'), JSON.stringify({
-    name: 'accumulate.js', version: '0.0.0', type: 'module', main: 'index.js',
+    name: 'accumulate-sdk-opendlt', version: '0.0.0', type: 'module', main: 'index.js',
   }));
   writeFileSync(shimIndex, `export * from "${sdkUrl}";\n`);
 
@@ -329,7 +331,7 @@ function ensureJsHarness(): void {
   const harnessNm = join(JS_HARNESS, 'node_modules');
   if (existsSync(sdkNm)) {
     for (const dep of readdirSync(sdkNm)) {
-      if (dep === 'accumulate.js' || dep.startsWith('.')) continue;
+      if (dep === 'accumulate-sdk-opendlt' || dep.startsWith('.')) continue;
       const src = join(sdkNm, dep);
       const dst = join(harnessNm, dep);
       if (!existsSync(dst)) {

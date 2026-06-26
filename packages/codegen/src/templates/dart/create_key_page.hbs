@@ -14,7 +14,7 @@
           KeySpecParams.fromHex({{keyPageDefaultKey}}),
 {{else}}
 {{#each keyPageKeys}}
-          KeySpecParams.fromHex('{{this}}'),
+          KeySpecParams.fromHex({{this}}),
 {{/each}}
 {{/if}}
         ],

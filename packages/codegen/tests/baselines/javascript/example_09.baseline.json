@@ -1,0 +1,11 @@
+{
+  "example": "example_09",
+  "jsExample": "example_09_key_management.ts",
+  "templateMapping": "key-rotation",
+  "call_count": 1,
+  "calls": [
+    {
+      "method": "describe"
+    }
+  ]
+}

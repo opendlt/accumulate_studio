@@ -11,10 +11,11 @@
         {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
         {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
             principal={{#if writeDataToPrincipalIsRef}}{{writeDataToPrincipal}}{{else}}"{{writeDataToPrincipal}}"{{/if}},
-            body=TxBody.write_data_to(
-                recipient={{#if writeDataToRecipientIsRef}}{{writeDataToRecipient}}{{else}}"{{writeDataToRecipient}}"{{/if}},
-                entries_hex=[{{{entriesExpr}}}],
-            ),
+            body={
+                "type": "writeDataTo",
+                "recipient": {{#if writeDataToRecipientIsRef}}{{writeDataToRecipient}}{{else}}"{{writeDataToRecipient}}"{{/if}},
+                "entry": {"type": "doubleHash", "data": [{{{entriesExpr}}}]},
+            },
             max_attempts=30,
         )
         if {{varName}}_result.success:

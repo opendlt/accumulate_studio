@@ -1,0 +1,85 @@
+{
+  "example": "example_04",
+  "dartExample": "SDK_Examples_file_4_Data_Accounts_and_Entries_v3.dart",
+  "templateMapping": "data-writing",
+  "call_count": 22,
+  "calls": [
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "network-status"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    }
+  ]
+}

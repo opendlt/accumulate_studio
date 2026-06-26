@@ -1,0 +1,11 @@
+{
+  "example": "example_06",
+  "jsExample": "example_06_custom_tokens.ts",
+  "templateMapping": "custom-token",
+  "call_count": 1,
+  "calls": [
+    {
+      "method": "describe"
+    }
+  ]
+}

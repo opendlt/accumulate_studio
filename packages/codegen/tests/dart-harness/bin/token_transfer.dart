@@ -3,6 +3,7 @@
 /// Network: devnet
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -21,11 +22,17 @@ Future<void> main() async {
   final client = Accumulate.custom(v2Endpoint: v2, v3Endpoint: v3);
   final txIds = <MapEntry<String, String>>[];
   try {
+    // Flow variables (customize these for your use case)
+    final adi_url = '';  // 
+    final sender_account_name = '';  // 
+    final receiver_account_name = '';  // 
+    final transfer_amount = '100000000';  // 
 
 
     // =========================================================
     // CreateTokenAccount (Action: CreateTokenAccount)
     // =========================================================
+    final createSenderAccountUrl = '${adi_url}/${sender_account_name}';
     final createSenderAccountSigner = SmartSigner(
       client: client.v3,
       keypair: createSenderAccountKey,
@@ -34,7 +41,7 @@ Future<void> main() async {
     final createSenderAccountResult = await createSenderAccountSigner.signSubmitAndWait(
       principal: adi_url,
       body: TxBody.createTokenAccount(
-        url: '{adi_url}/{sender_account_name}',
+        url: createSenderAccountUrl,
         tokenUrl: 'acc://ACME',
       ),
       memo: 'Create token account',
@@ -53,6 +60,7 @@ Future<void> main() async {
     // =========================================================
     // CreateTokenAccount (Action: CreateTokenAccount)
     // =========================================================
+    final createReceiverAccountUrl = '${adi_url}/${receiver_account_name}';
     final createReceiverAccountSigner = SmartSigner(
       client: client.v3,
       keypair: createReceiverAccountKey,
@@ -61,7 +69,7 @@ Future<void> main() async {
     final createReceiverAccountResult = await createReceiverAccountSigner.signSubmitAndWait(
       principal: adi_url,
       body: TxBody.createTokenAccount(
-        url: '{adi_url}/{receiver_account_name}',
+        url: createReceiverAccountUrl,
         tokenUrl: 'acc://ACME',
       ),
       memo: 'Create token account',
@@ -80,11 +88,15 @@ Future<void> main() async {
     // =========================================================
     // QueryAccount (QueryAccount)
     // =========================================================
-    final querySenderResult = await client.v3.rawCall('query', {
-      'scope': '{adi_url}/{sender_account_name}',
-      'query': {'queryType': 'default'},
-    });
-    print('Account state: ${querySenderResult}');
+    try {
+      final querySenderResult = await client.v3.rawCall('query', {
+        'scope': '${adi_url}/${sender_account_name}',
+        'query': {'queryType': 'default'},
+      });
+      print('Account state: ${querySenderResult}');
+    } catch (e) {
+      print('Query failed: $e');
+    }
 
 
     // =========================================================
@@ -96,10 +108,10 @@ Future<void> main() async {
       signerUrl: sendTokensLid.toString(),
     );
     final sendTokensResult = await sendTokensSigner.signSubmitAndWait(
-      principal: '{adi_url}/{sender_account_name}',
+      principal: '${adi_url}/${sender_account_name}',
       body: TxBody.sendTokensSingle(
-        toUrl: '{adi_url}/{receiver_account_name}',
-        amount: 'transfer_amount',
+        toUrl: '${adi_url}/${receiver_account_name}',
+        amount: transfer_amount,
       ),
       memo: 'Send tokens',
       maxAttempts: 30,

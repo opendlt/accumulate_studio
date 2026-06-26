@@ -4,9 +4,7 @@
         {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
         {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
             principal={{#if burnCreditsPrincipalIsRef}}{{burnCreditsPrincipal}}{{else}}"{{burnCreditsPrincipal}}"{{/if}},
-            body=TxBody.burn_credits(
-                amount={{burnCreditsAmount}},
-            ),
+            body={"type": "burnCredits", "amount": {{burnCreditsAmount}} },
             max_attempts=30,
         )
         if {{varName}}_result.success:

@@ -3,6 +3,7 @@
 /// Network: devnet
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -21,6 +22,9 @@ Future<void> main() async {
   final client = Accumulate.custom(v2Endpoint: v2, v3Endpoint: v3);
   final txIds = <MapEntry<String, String>>[];
   try {
+    // Flow variables (customize these for your use case)
+    final key_page_url = '';  // 
+    final old_public_key_hash = '';  // 
 
 
     // =========================================================
@@ -49,7 +53,7 @@ Future<void> main() async {
     final updateKeyResult = await updateKeySigner.signSubmitAndWait(
       principal: key_page_url,
       body: TxBody.updateKey(
-        newKeyHash: 'generateNewKeysPubHash',
+        newKeyHash: generateNewKeysPubHash,
       ),
       memo: 'Update key',
       maxAttempts: 30,
@@ -67,11 +71,15 @@ Future<void> main() async {
     // =========================================================
     // QueryAccount (QueryAccount)
     // =========================================================
-    final verifyKeyPageResult = await client.v3.rawCall('query', {
-      'scope': 'key_page_url',
-      'query': {'queryType': 'default'},
-    });
-    print('Account state: ${verifyKeyPageResult}');
+    try {
+      final verifyKeyPageResult = await client.v3.rawCall('query', {
+        'scope': key_page_url,
+        'query': {'queryType': 'default'},
+      });
+      print('Account state: ${verifyKeyPageResult}');
+    } catch (e) {
+      print('Query failed: $e');
+    }
 
 
     print('\n========== Transaction Summary ==========');

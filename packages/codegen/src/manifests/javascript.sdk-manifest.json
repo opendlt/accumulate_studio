@@ -1,30 +1,30 @@
 {
-  "sdk_name": "accumulate.js",
+  "sdk_name": "accumulate-sdk-opendlt",
   "sdk_version": "0.12.0",
   "commit": "0000000",
   "generated_at": "2026-01-01T00:00:00Z",
   "entrypoints": [
     {
       "symbol": "Accumulate",
-      "path": "accumulate.js",
+      "path": "accumulate-sdk-opendlt",
       "kind": "class",
       "doc": "Main client facade with factory methods for network connection"
     },
     {
       "symbol": "TxBody",
-      "path": "accumulate.js",
+      "path": "accumulate-sdk-opendlt",
       "kind": "class",
       "doc": "Static methods that build transaction body objects"
     },
     {
       "symbol": "SmartSigner",
-      "path": "accumulate.js",
+      "path": "accumulate-sdk-opendlt",
       "kind": "class",
       "doc": "Signs, submits, and waits for transaction results"
     },
     {
       "symbol": "Ed25519KeyPair",
-      "path": "accumulate.js",
+      "path": "accumulate-sdk-opendlt",
       "kind": "class",
       "doc": "Ed25519 key pair generation and derivation"
     }
@@ -34,10 +34,10 @@
       "op": "generate_keys",
       "category": "utility",
       "symbols": [
-        { "symbol": "Ed25519KeyPair.generate", "path": "accumulate.js", "signature": "() -> Ed25519KeyPair" },
-        { "symbol": "Ed25519KeyPair.deriveLiteIdentityUrl", "path": "accumulate.js", "signature": "() -> string" },
-        { "symbol": "Ed25519KeyPair.deriveLiteTokenAccountUrl", "path": "accumulate.js", "signature": "() -> string" },
-        { "symbol": "Ed25519KeyPair.publicKeyHashHex", "path": "accumulate.js", "signature": "() -> string" }
+        { "symbol": "Ed25519KeyPair.generate", "path": "accumulate-sdk-opendlt", "signature": "() -> Ed25519KeyPair" },
+        { "symbol": "Ed25519KeyPair.deriveLiteIdentityUrl", "path": "accumulate-sdk-opendlt", "signature": "() -> string" },
+        { "symbol": "Ed25519KeyPair.deriveLiteTokenAccountUrl", "path": "accumulate-sdk-opendlt", "signature": "() -> string" },
+        { "symbol": "Ed25519KeyPair.publicKeyHashHex", "path": "accumulate-sdk-opendlt", "signature": "() -> string" }
       ],
       "inputs": [],
       "outputs": [
@@ -53,7 +53,7 @@
       "op": "faucet",
       "category": "utility",
       "symbols": [
-        { "symbol": "Accumulate.faucet", "path": "accumulate.js", "signature": "(url: string, times: number, delay: number) -> Promise<void>" }
+        { "symbol": "Accumulate.faucet", "path": "accumulate-sdk-opendlt", "signature": "(url: string, times: number, delay: number) -> Promise<void>" }
       ],
       "inputs": [
         { "name": "account", "type": "string", "required": true, "description": "Lite token account URL to fund" },
@@ -67,7 +67,7 @@
       "op": "wait_for_balance",
       "category": "utility",
       "symbols": [
-        { "symbol": "pollForBalance", "path": "accumulate.js", "signature": "(client: Accumulate, url: string) -> Promise<bigint>" }
+        { "symbol": "pollForBalance", "path": "accumulate-sdk-opendlt", "signature": "(client: Accumulate, url: string) -> Promise<bigint>" }
       ],
       "inputs": [
         { "name": "account", "type": "string", "required": true, "description": "Account URL to poll" },
@@ -83,7 +83,7 @@
       "op": "wait_for_credits",
       "category": "utility",
       "symbols": [
-        { "symbol": "pollForCredits", "path": "accumulate.js", "signature": "(client: Accumulate, url: string) -> Promise<number>" }
+        { "symbol": "pollForCredits", "path": "accumulate-sdk-opendlt", "signature": "(client: Accumulate, url: string) -> Promise<number>" }
       ],
       "inputs": [
         { "name": "account", "type": "string", "required": true, "description": "Key page URL to poll" },
@@ -99,8 +99,8 @@
       "op": "add_credits",
       "category": "credits",
       "symbols": [
-        { "symbol": "TxBody.addCredits", "path": "accumulate.js", "signature": "(recipient: string, amount: string, oracle: number) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.addCredits", "path": "accumulate-sdk-opendlt", "signature": "(recipient: string, amount: string, oracle: number) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "recipient", "type": "string", "required": true, "description": "Key page URL to credit" },
@@ -117,8 +117,8 @@
       "op": "create_identity",
       "category": "identity",
       "symbols": [
-        { "symbol": "TxBody.createIdentity", "path": "accumulate.js", "signature": "(url: string, keyBookUrl: string, keyHash: string) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.createIdentity", "path": "accumulate-sdk-opendlt", "signature": "(url: string, keyBookUrl: string, keyHash: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "url", "type": "string", "required": true, "description": "ADI URL" },
@@ -137,8 +137,8 @@
       "op": "create_key_book",
       "category": "identity",
       "symbols": [
-        { "symbol": "TxBody.createKeyBook", "path": "accumulate.js", "signature": "(url: string, publicKeyHash: string) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.createKeyBook", "path": "accumulate-sdk-opendlt", "signature": "(url: string, publicKeyHash: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "url", "type": "string", "required": true, "description": "Key book URL" },
@@ -154,8 +154,8 @@
       "op": "create_key_page",
       "category": "identity",
       "symbols": [
-        { "symbol": "TxBody.createKeyPage", "path": "accumulate.js", "signature": "(url: string, keys: string[]) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.createKeyPage", "path": "accumulate-sdk-opendlt", "signature": "(url: string, keys: string[]) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "url", "type": "string", "required": true, "description": "Key page URL" },
@@ -171,8 +171,8 @@
       "op": "create_token_account",
       "category": "account",
       "symbols": [
-        { "symbol": "TxBody.createTokenAccount", "path": "accumulate.js", "signature": "(url: string, tokenUrl: string) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.createTokenAccount", "path": "accumulate-sdk-opendlt", "signature": "(url: string, tokenUrl: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "url", "type": "string", "required": true, "description": "Token account URL" },
@@ -188,8 +188,8 @@
       "op": "create_data_account",
       "category": "account",
       "symbols": [
-        { "symbol": "TxBody.createDataAccount", "path": "accumulate.js", "signature": "(url: string) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.createDataAccount", "path": "accumulate-sdk-opendlt", "signature": "(url: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "url", "type": "string", "required": true, "description": "Data account URL" }
@@ -204,8 +204,8 @@
       "op": "create_token",
       "category": "account",
       "symbols": [
-        { "symbol": "TxBody.createToken", "path": "accumulate.js", "signature": "(url: string, symbol: string, precision: number) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.createToken", "path": "accumulate-sdk-opendlt", "signature": "(url: string, symbol: string, precision: number) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "url", "type": "string", "required": true, "description": "Token URL" },
@@ -222,9 +222,9 @@
       "op": "send_tokens",
       "category": "transaction",
       "symbols": [
-        { "symbol": "TxBody.sendTokensSingle", "path": "accumulate.js", "signature": "(toUrl: string, amount: string) -> object" },
-        { "symbol": "TxBody.sendTokensMulti", "path": "accumulate.js", "signature": "(recipients: Array<{url, amount}>) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.sendTokensSingle", "path": "accumulate-sdk-opendlt", "signature": "(toUrl: string, amount: string) -> object" },
+        { "symbol": "TxBody.sendTokensMulti", "path": "accumulate-sdk-opendlt", "signature": "(recipients: Array<{url, amount}>) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "recipients", "type": "Array<{url: string, amount: string}>", "required": true, "description": "List of {url, amount} recipients" }
@@ -239,8 +239,8 @@
       "op": "issue_tokens",
       "category": "transaction",
       "symbols": [
-        { "symbol": "TxBody.issueTokens", "path": "accumulate.js", "signature": "(recipient: string, amount: string) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.issueTokens", "path": "accumulate-sdk-opendlt", "signature": "(recipient: string, amount: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "recipient", "type": "string", "required": true, "description": "Recipient token account" },
@@ -256,8 +256,8 @@
       "op": "burn_tokens",
       "category": "transaction",
       "symbols": [
-        { "symbol": "TxBody.burnTokens", "path": "accumulate.js", "signature": "(amount: string) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.burnTokens", "path": "accumulate-sdk-opendlt", "signature": "(amount: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "amount", "type": "string", "required": true, "description": "Amount to burn" }
@@ -272,8 +272,8 @@
       "op": "write_data",
       "category": "transaction",
       "symbols": [
-        { "symbol": "TxBody.writeData", "path": "accumulate.js", "signature": "(entries: string[]) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.writeData", "path": "accumulate-sdk-opendlt", "signature": "(entries: string[]) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "entries", "type": "string[]", "required": true, "description": "Hex-encoded data entries" }
@@ -289,7 +289,7 @@
       "op": "query_account",
       "category": "query",
       "symbols": [
-        { "symbol": "Accumulate.queryAccount", "path": "accumulate.js", "signature": "(url: string) -> Promise<object>" }
+        { "symbol": "Accumulate.queryAccount", "path": "accumulate-sdk-opendlt", "signature": "(url: string) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "url", "type": "string", "required": true, "description": "Account URL to query" }
@@ -304,8 +304,8 @@
       "op": "update_key_page",
       "category": "authority",
       "symbols": [
-        { "symbol": "TxBody.updateKeyPage", "path": "accumulate.js", "signature": "(operations: Array) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.updateKeyPage", "path": "accumulate-sdk-opendlt", "signature": "(operations: Array) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "operations", "type": "Array", "required": true, "description": "Key page operations (add, remove, setThreshold)" }
@@ -320,8 +320,8 @@
       "op": "update_key",
       "category": "authority",
       "symbols": [
-        { "symbol": "TxBody.updateKey", "path": "accumulate.js", "signature": "(newKey: string) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.updateKey", "path": "accumulate-sdk-opendlt", "signature": "(newKey: string) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "newKey", "type": "string", "required": true, "description": "New public key hash" }
@@ -336,7 +336,7 @@
       "op": "create_lite_token_account",
       "category": "account",
       "symbols": [
-        { "symbol": "Ed25519KeyPair.deriveLiteTokenAccountUrl", "path": "accumulate.js", "signature": "() -> string" }
+        { "symbol": "Ed25519KeyPair.deriveLiteTokenAccountUrl", "path": "accumulate-sdk-opendlt", "signature": "() -> string" }
       ],
       "inputs": [],
       "outputs": [
@@ -349,8 +349,8 @@
       "op": "transfer_credits",
       "category": "credits",
       "symbols": [
-        { "symbol": "TxBody.transferCredits", "path": "accumulate.js", "signature": "(recipient: string, amount: number) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.transferCredits", "path": "accumulate-sdk-opendlt", "signature": "(recipient: string, amount: number) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "recipient", "type": "string", "required": true, "description": "Destination key page" },
@@ -366,8 +366,8 @@
       "op": "burn_credits",
       "category": "credits",
       "symbols": [
-        { "symbol": "TxBody.burnCredits", "path": "accumulate.js", "signature": "(amount: number) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.burnCredits", "path": "accumulate-sdk-opendlt", "signature": "(amount: number) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "amount", "type": "number", "required": true, "description": "Credits to burn" }
@@ -382,8 +382,8 @@
       "op": "write_data_to",
       "category": "transaction",
       "symbols": [
-        { "symbol": "TxBody.writeDataTo", "path": "accumulate.js", "signature": "(recipient: string, entries: string[]) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.writeDataTo", "path": "accumulate-sdk-opendlt", "signature": "(recipient: string, entries: string[]) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "recipient", "type": "string", "required": true, "description": "Target data account" },
@@ -399,8 +399,8 @@
       "op": "lock_account",
       "category": "authority",
       "symbols": [
-        { "symbol": "TxBody.lockAccount", "path": "accumulate.js", "signature": "(height: number) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.lockAccount", "path": "accumulate-sdk-opendlt", "signature": "(height: number) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "height", "type": "number", "required": true, "description": "Block height to lock until" }
@@ -415,8 +415,8 @@
       "op": "update_account_auth",
       "category": "authority",
       "symbols": [
-        { "symbol": "TxBody.updateAccountAuth", "path": "accumulate.js", "signature": "(operations: Array) -> object" },
-        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate.js", "signature": "(principal: string, body: object) -> Promise<object>" }
+        { "symbol": "TxBody.updateAccountAuth", "path": "accumulate-sdk-opendlt", "signature": "(operations: Array) -> object" },
+        { "symbol": "SmartSigner.signSubmitAndWait", "path": "accumulate-sdk-opendlt", "signature": "(principal: string, body: object) -> Promise<object>" }
       ],
       "inputs": [
         { "name": "operations", "type": "Array", "required": true, "description": "Auth operations (enable, disable, add, remove)" }

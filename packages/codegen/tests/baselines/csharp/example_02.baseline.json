@@ -1,6 +1,138 @@
 {
-  "success": false,
-  "calls": [],
-  "call_count": 0,
-  "error": "Process timed out after 120 seconds"
+  "success": true,
+  "calls": [
+    {
+      "method": "faucet",
+      "params": {
+        "url": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f/acme"
+      }
+    },
+    {
+      "method": "faucet",
+      "params": {
+        "url": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f/acme"
+      }
+    },
+    {
+      "method": "faucet",
+      "params": {
+        "url": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f/acme"
+      }
+    },
+    {
+      "method": "faucet",
+      "params": {
+        "url": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f/acme"
+      }
+    },
+    {
+      "method": "faucet",
+      "params": {
+        "url": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f/acme"
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f/acme"
+      }
+    },
+    {
+      "method": "network-status",
+      "params": {
+        "partition": "directory"
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f"
+      }
+    },
+    {
+      "method": "submit",
+      "params": {
+        "envelope": {
+          "signatures": [
+            {
+              "type": "ed25519",
+              "publicKey": "ccdfcfb707a76aef9af6e30bc37b0ddb620b1de746d7120424faf43c0ca28622",
+              "signature": "835818c5f282053dc43d7ab82326fe2275bb115ac456f9422f8be641ffc3091cbdb4b74c2812302041541cde0c068ddf2a91f8030c809a0bcbfaccd39dd5d901",
+              "signer": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f",
+              "signerVersion": 1,
+              "timestamp": 1782091583730000,
+              "transactionHash": "1d03d89286c02552e9bfb4888843034332b2eb6dfd4d37925a2cdf7964922691"
+            }
+          ],
+          "transaction": [
+            {
+              "header": {
+                "principal": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f/acme",
+                "initiator": "50ed805a64d98460dfa420af7df1fbbe69c29e2ee353b3d6ac5c805a4e110bd4"
+              },
+              "body": {
+                "type": "addCredits",
+                "recipient": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f",
+                "amount": "2000000",
+                "oracle": 50000000
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f"
+      }
+    },
+    {
+      "method": "submit",
+      "params": {
+        "envelope": {
+          "signatures": [
+            {
+              "type": "ed25519",
+              "publicKey": "ccdfcfb707a76aef9af6e30bc37b0ddb620b1de746d7120424faf43c0ca28622",
+              "signature": "0758d811e3b269ce08d6996e412d885e15dde784137c58bf1f2a8599900cf65f603686dc6e47aae387bf02f7e34bfb0edce5019b9c666df4412c9263b6452d08",
+              "signer": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f",
+              "signerVersion": 1,
+              "timestamp": 1782091588761000,
+              "transactionHash": "256a7f1a9b6451b41d2bd0a15df469c2aae39bb536ea321e132207276b6e41c7"
+            }
+          ],
+          "transaction": [
+            {
+              "header": {
+                "principal": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f/acme",
+                "initiator": "1b7ae8e3ec75cbfb7e06143563b3896e89ea66db8643e7acf8f995f181732a99"
+              },
+              "body": {
+                "type": "createIdentity",
+                "url": "acc://csharp-ex2-1782091583720.acme",
+                "keyBookUrl": "acc://csharp-ex2-1782091583720.acme/book",
+                "keyHash": "f54af97aa2022a1458b42f826a82d779f795bd4bc60c42a104bd49d6a7b26af5"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://csharp-ex2-1782091583720.acme"
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f"
+      }
+    }
+  ],
+  "call_count": 13,
+  "error": null,
+  "stdout": "=== SDK Example 2: ADI Creation (C#) ===\n\nEndpoint: http://127.0.0.1:55974\n\n--- Step 1: Generate Key Pairs ---\n\n[SignatureKeyPair] Imported Ed25519 seed (32 bytes).\n[SignatureKeyPair] Derived pubkey (hex): ccdfcfb707a76aef9af6e30bc37b0ddb620b1de746d7120424faf43c0ca28622\n[SignatureKeyPair] Imported Ed25519 seed (32 bytes).\n[SignatureKeyPair] Derived pubkey (hex): 50c181177c4ef50d8e2620a9c2f4dee705b0330978667abe0b3eeb92b06b8b57\nLite Identity: acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f\nLite Token Account: acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f/acme\nADI Key (pubkey): 50c181177c4ef50d8e2620a9c2f4dee7...\n\n--- Step 2: Fund Account via Faucet ---\n\nRequesting funds from faucet (5 times)...\n  Faucet 1/5: submitted\n  Faucet 2/5: submitted\n  Faucet 3/5: submitted\n  Faucet 4/5: submitted\n  Faucet 5/5: submitted\n\nPolling for balance...\nBalance: 100000000000\n\n--- Step 3: Create ADI ---\n\nADI URL: acc://csharp-ex2-1782091583720.acme\nKey Book: acc://csharp-ex2-1782091583720.acme/book\nKey Page: acc://csharp-ex2-1782091583720.acme/book/1\n\nOracle price: 50000000\nAdding credits to lite identity (2000000 ACME units)...\nCredits: OK\n\nCreating ADI...\nADI created successfully! TxId: 0000000000000000000000000000000000000000000000000000000000000011\n\nADI info:\n{\n  \"account\": {\n    \"version\": 1,\n    \"balance\": \"100000000000\",\n    \"creditBalance\": 10000,\n    \"type\": \"liteTokenAccount\",\n    \"url\": \"acc://csharp-ex2-1782091583720.acme\"\n  }\n}\n\n--- Step 4: Query Lite Identity ---\n\nLite Identity query:\n{\n  \"account\": {\n    \"version\": 1,\n    \"balance\": \"100000000000\",\n    \"creditBalance\": 10000,\n    \"type\": \"liteTokenAccount\",\n    \"url\": \"acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f\"\n  }\n}\n\n=== Summary ===\n\nLite Identity: acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f\nLite Token Account: acc://86b344b5bbf4ccad9be1273d269d1ebf2c4af53fc4530c2f/acme\nBalance: 100000000000\nADI: acc://csharp-ex2-1782091583720.acme\n\nExample 2 COMPLETED SUCCESSFULLY!\n"
 }

@@ -654,6 +654,10 @@ function computeNodeVars(
   const isVarRef = (val: string) => {
     // All-uppercase strings are never variable references — they're literal constants/symbols (e.g., MYT, ACME)
     if (/^[A-Z][A-Z0-9]*$/.test(val)) return false;
+    // A long pure-hex string is a key hash literal (e.g. cafebabe…), not a variable.
+    // Without this, an all-[a-f] hash matches the identifier heuristic below and is
+    // emitted unquoted (a bare identifier / "cannot find value").
+    if (/^[0-9a-fA-F]{16,}$/.test(val)) return false;
     if (language === 'python') return val.startsWith('str(') || val.startsWith('f"') || val.startsWith("f'") || /^[a-z_][a-z0-9_]*$/.test(val);
     if (isCSharp) return val.startsWith('$"') || val.endsWith('.String()') || /^[a-z_]\w*$/i.test(val);
     if (isDart) return val.endsWith('.toString()') || val.includes('${') || /^[a-z_]\w*$/i.test(val);
@@ -843,7 +847,10 @@ function computeNodeVars(
         rawTokenAccUrl = 'acc://my-identity.acme/tokens';
       }
       vars.tokenAccUrl = rawTokenAccUrl;
-      vars.tokenAccUrlIsRef = createIdentityVarName ? true : isVarRef(rawTokenAccUrl);
+      // isRef must reflect what rawTokenAccUrl actually is: subPathUrlExpr emits an
+      // interpolation (detected as a ref), an explicit config.url is a literal. Don't
+      // force true just because a CreateIdentity precedes — that unquotes literal URLs.
+      vars.tokenAccUrlIsRef = isVarRef(rawTokenAccUrl);
       // tokenUrl defaults to CreateToken URL if available (custom token), otherwise ACME
       const ctVarForTa = tracker?.lastCreateTokenVarName;
       let rawTokenUrl: string;
@@ -860,7 +867,11 @@ function computeNodeVars(
         rawTokenUrl = 'acc://ACME';
       }
       vars.tokenUrl = rawTokenUrl;
-      vars.tokenUrlIsRef = ctVarForTa ? true : isVarRef(rawTokenUrl);
+      // isRef must reflect rawTokenUrl's actual shape (the CreateToken branch yields a
+      // var ref that isVarRef detects; config.tokenUrl/default are literals). Forcing
+      // true just because a CreateToken precedes unquotes literal URLs (e.g. acc://ACME),
+      // which in Rust turns `//` into a comment and breaks compilation.
+      vars.tokenUrlIsRef = isVarRef(rawTokenUrl);
       if (!config.principal && createIdentityVarName) {
         const ciUrlVar = `${createIdentityVarName}${ciUrlSuffix}`;
         vars.tokenAccPrincipal = isJs ? ciUrlVar
@@ -932,7 +943,7 @@ function computeNodeVars(
         rawDataAccUrl = 'acc://my-identity.acme/data';
       }
       vars.dataAccUrl = rawDataAccUrl;
-      vars.dataAccUrlIsRef = createIdentityVarName ? true : isVarRef(rawDataAccUrl);
+      vars.dataAccUrlIsRef = isVarRef(rawDataAccUrl);
       if (!config.principal && createIdentityVarName) {
         const ciUrlVar = `${createIdentityVarName}${ciUrlSuffix}`;
         vars.dataAccPrincipal = isJs ? ciUrlVar
@@ -1012,7 +1023,7 @@ function computeNodeVars(
         rawIssuerUrl = 'acc://my-identity.acme/token';
       }
       vars.tokenIssuerUrl = rawIssuerUrl;
-      vars.tokenIssuerUrlIsRef = createIdentityVarName ? true : isVarRef(rawIssuerUrl);
+      vars.tokenIssuerUrlIsRef = isVarRef(rawIssuerUrl);
       const rawSymbol = String(config.symbol || 'MYT');
       // Only treat symbol as var ref if it's a RESOLVED reference (contains known suffix),
       // not a bare identifier like 'MYT' which should be a literal string
@@ -1110,7 +1121,7 @@ function computeNodeVars(
         rawKbUrl = 'acc://my-identity.acme/book';
       }
       vars.keyBookUrl = rawKbUrl;
-      vars.keyBookUrlIsRef = createIdentityVarName ? true : isVarRef(rawKbUrl);
+      vars.keyBookUrlIsRef = isVarRef(rawKbUrl);
       vars.keyBookKeyHash = config.publicKeyHash || `${kv}${pubHashSuffix}`;
       if (!config.principal && createIdentityVarName) {
         const ciUrlVar = `${createIdentityVarName}${ciUrlSuffix}`;
@@ -1128,7 +1139,13 @@ function computeNodeVars(
 
     case 'CreateKeyPage': {
       vars.keyPageUrl = config.url || 'acc://my-identity.acme/book/1';
-      vars.keyPageKeys = (config.keys as string[]) || [];
+      // Each key may be a variable reference (e.g. a generated key's pub hash — emit
+      // bare) or a literal hex hash (emit quoted). Pre-format per item so templates
+      // can emit {{this}} raw; the language-aware quoteLiteral handles Dart's quotes.
+      vars.keyPageKeys = ((config.keys as string[]) || []).map((k) => {
+        const s = String(k);
+        return isVarRef(s) ? s : quoteLiteral(s);
+      });
       // When keys array is empty, default to including a public key hash.
       // With multiple GenerateKeys, use the LAST keypair's hash (the new key being added),
       // since the FIRST keypair is used as the signer (authorized on the book).
@@ -1270,8 +1287,12 @@ function computeNodeVars(
         vars.updateKeyNewKey = `${ukLastKv}${pubHashSuffix}`;
         vars.updateKeyNewKeyIsRef = true;
       } else {
+        // A pure-hex key hash (e.g. cafebabe…) is a literal, not a variable. The
+        // generic identifier heuristic matches an all-[a-f] hash and would emit it
+        // unquoted (a bare identifier / "cannot find value"). Exclude hex literals.
+        const isHexLiteral = /^[0-9a-fA-F]{16,}$/.test(rawNewKey);
         vars.updateKeyNewKey = rawNewKey;
-        vars.updateKeyNewKeyIsRef = isVarRef(rawNewKey) || /^[a-z_]\w*$/i.test(rawNewKey);
+        vars.updateKeyNewKeyIsRef = !isHexLiteral && (isVarRef(rawNewKey) || /^[a-z_]\w*$/i.test(rawNewKey));
       }
       // Smart default: use CreateIdentity's book/1 when available
       if (!config.principal && createIdentityVarName) {

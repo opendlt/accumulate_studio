@@ -3,6 +3,7 @@
 /// Network: kermit
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -127,6 +128,7 @@ Future<void> main() async {
     // =========================================================
     // CreateIdentity (Action: CreateIdentity)
     // =========================================================
+    final createidentityUrl = 'acc://e2e-e19c6cb1.acme';
     final createidentitySigner = SmartSigner(
       client: client.v3,
       keypair: generatekeysKey,
@@ -135,8 +137,8 @@ Future<void> main() async {
     final createidentityResult = await createidentitySigner.signSubmitAndWait(
       principal: generatekeysLta.toString(),
       body: TxBody.createIdentity(
-        url: 'acc://e2e-a18a8510.acme',
-        keyBookUrl: 'acc://e2e-a18a8510.acme/book',
+        url: createidentityUrl,
+        keyBookUrl: '${createidentityUrl}/book',
         publicKeyHash: generatekeysPubHash,
       ),
       memo: 'Create ADI',
@@ -165,7 +167,7 @@ Future<void> main() async {
     final addcredits_2Result = await addcredits_2Signer.signSubmitAndWait(
       principal: generatekeysLta.toString(),
       body: TxBody.addCredits(
-        recipient: generatekeysLid.toString(),
+        recipient: '${createidentityUrl}/book/1',
         amount: '5000000',
         oracle: addcredits_2OraclePrice,
       ),
@@ -189,7 +191,7 @@ Future<void> main() async {
     for (var i = 0; i < 30; i++) {
       try {
         final result = await client.v3.rawCall('query', {
-          'scope': generatekeysLid.toString(),
+          'scope': '${createidentityUrl}/book/1',
           'query': {'queryType': 'default'},
         });
         final creditBalance = result['account']?['creditBalance'];
@@ -201,15 +203,30 @@ Future<void> main() async {
 
 
     // =========================================================
+    // GenerateKeys_2 (GenerateKeys)
+    // =========================================================
+    final generatekeys_2Kp = await Ed25519KeyPair.generate();
+    final generatekeys_2Key = UnifiedKeyPair.fromEd25519(generatekeys_2Kp);
+    final generatekeys_2Lid = await generatekeys_2Kp.deriveLiteIdentityUrl();
+    final generatekeys_2Lta = await generatekeys_2Kp.deriveLiteTokenAccountUrl();
+    final generatekeys_2PubKey = await generatekeys_2Kp.publicKeyBytes();
+    final generatekeys_2PubHash = toHexString(sha256.convert(generatekeys_2PubKey).bytes);
+    print('Generated keypair:');
+    print('  Lite Identity: ${generatekeys_2Lid}');
+    print('  Lite Token Account: ${generatekeys_2Lta}');
+    print('  Public Key Hash: ${generatekeys_2PubHash}');
+
+
+    // =========================================================
     // UpdateKey (Action: UpdateKey)
     // =========================================================
     final updatekeySigner = SmartSigner(
       client: client.v3,
       keypair: generatekeysKey,
-      signerUrl: generatekeysLid.toString(),
+      signerUrl: '${createidentityUrl}/book/1',
     );
     final updatekeyResult = await updatekeySigner.signSubmitAndWait(
-      principal: 'acc://e2e-a18a8510.acme/book/1',
+      principal: 'acc://e2e-e19c6cb1.acme/book/1',
       body: TxBody.updateKey(
         newKeyHash: 'cafebabecafebabecafebabecafebabe',
       ),

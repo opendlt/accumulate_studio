@@ -1,0 +1,107 @@
+{
+  "example": "example_01",
+  "jsExample": "example_01_lite_identities.ts",
+  "templateMapping": "lite-account-setup",
+  "call_count": 33,
+  "calls": [
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    },
+    {
+      "method": "query"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "example": "example_02",
+  "rustExample": "example_02_adi_creation",
+  "templateMapping": "adi-creation",
+  "call_count": 17,
+  "calls": [
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "network-status"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    }
+  ]
+}

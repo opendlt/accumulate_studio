@@ -3,6 +3,7 @@
 /// Network: kermit
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -60,11 +61,15 @@ Future<void> main() async {
     // =========================================================
     // QueryAccount (QueryAccount)
     // =========================================================
-    final queryaccountResult = await client.v3.rawCall('query', {
-      'scope': 'acc://certen-protocol.acme',
-      'query': {'queryType': 'default'},
-    });
-    print('Account state: ${queryaccountResult}');
+    try {
+      final queryaccountResult = await client.v3.rawCall('query', {
+        'scope': 'acc://certen-protocol.acme',
+        'query': {'queryType': 'default'},
+      });
+      print('Account state: ${queryaccountResult}');
+    } catch (e) {
+      print('Query failed: $e');
+    }
 
 
     print('\n========== Transaction Summary ==========');

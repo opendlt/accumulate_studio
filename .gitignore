@@ -84,3 +84,5 @@ nul
 *.log
 npm-debug.log*
 config.bat
+*.stackdump
+apps/studio/.env.development

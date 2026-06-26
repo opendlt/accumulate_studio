@@ -1,0 +1,11 @@
+{
+  "example": "example_10",
+  "jsExample": "example_10_threshold_updates.ts",
+  "templateMapping": "multi-sig-setup",
+  "call_count": 1,
+  "calls": [
+    {
+      "method": "describe"
+    }
+  ]
+}

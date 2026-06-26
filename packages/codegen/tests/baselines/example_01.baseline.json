@@ -31,7 +31,8 @@
       "scopeType": "account"
     },
     {
-      "method": "submit"
+      "method": "submit",
+      "bodyType": "addCredits"
     },
     {
       "method": "query",
@@ -46,7 +47,8 @@
       "scopeType": "account"
     },
     {
-      "method": "submit"
+      "method": "submit",
+      "bodyType": "sendTokens"
     },
     {
       "method": "query",

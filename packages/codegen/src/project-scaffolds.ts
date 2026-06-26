@@ -57,7 +57,7 @@ description = "${flow.description ?? `Accumulate flow: ${flow.name}`}"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "accumulate-sdk-opendlt==2.0.2",
+    "accumulate-sdk-opendlt>=2.1.0",
     "requests>=2.31",
 ]
 
@@ -152,12 +152,32 @@ edition = "2021"
 description = "${flow.description ?? `Accumulate flow: ${flow.name}`}"
 
 [dependencies]
-accumulate-sdk = "0.1"
+accumulate-sdk = "2"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 serde_json = "1"
 sha2 = "0.10"
 hex = "0.4"
 url = "2"
+
+[build-dependencies]
+# Embeds an asInvoker manifest so Windows' Installer Detection heuristic does not
+# force UAC elevation on binaries whose name contains update/setup/install.
+embed-manifest = "1.5"
+`,
+  });
+
+  // build.rs — embed an asInvoker manifest on Windows (see Cargo.toml note).
+  files.push({
+    path: 'build.rs',
+    content: `use embed_manifest::{embed_manifest, new_manifest};
+
+fn main() {
+    if std::env::var_os("CARGO_CFG_WINDOWS").is_some() {
+        embed_manifest(new_manifest("${safeName}"))
+            .expect("unable to embed manifest");
+    }
+    println!("cargo:rerun-if-changed=build.rs");
+}
 `,
   });
 
@@ -223,7 +243,7 @@ environment:
   sdk: '>=3.3.0 <4.0.0'
 
 dependencies:
-  opendlt_accumulate: ^0.1.0
+  opendlt_accumulate: ^2.1.0
   crypto: ^3.0.3
 
 dev_dependencies:
@@ -297,7 +317,7 @@ export function generateJavaScriptProject(flow: Flow): GeneratedFile[] {
           start: 'node src/index.js',
         },
         dependencies: {
-          'accumulate.js': '^0.12.0',
+          'accumulate-sdk-opendlt': '^0.12.3',
         },
       },
       null,
@@ -370,7 +390,7 @@ export function generateCSharpProject(flow: Flow): GeneratedFile[] {
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Acme.Net.Sdk" Version="0.1.*" />
+    <PackageReference Include="Acme.Net.Sdk" Version="1.0.*" />
   </ItemGroup>
 
 </Project>

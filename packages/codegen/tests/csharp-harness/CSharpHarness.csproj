@@ -5,11 +5,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- Skip the native apphost (CSharpHarness.exe) and run via `dotnet CSharpHarness.dll`.
+         If a long flow is killed (SIGTERM on timeout), there is no apphost .exe left
+         file-locked to break the next test's build (MSB3026). -->
+    <UseAppHost>false</UseAppHost>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Acme.Net.Sdk" Version="0.1.*" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="bin-gen/**/*.cs" />
-  </ItemGroup>
+  <!--
+    No default Compile glob: each generated program defines its own top-level
+    `class Program`/`Main`, so compiling them all together collides (CS0101/CS0111).
+    Every consumer (csharp-validation.test.ts, validate_csharp.py, action-palette-e2e.test.ts)
+    appends a single `<Compile Include="..."/>` for the one file under test, then restores.
+  -->
 </Project>

@@ -3,6 +3,7 @@
 /// Network: kermit
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -127,6 +128,7 @@ Future<void> main() async {
     // =========================================================
     // CreateIdentity (Action: CreateIdentity)
     // =========================================================
+    final createidentityUrl = 'acc://e2e-1cefc28e.acme';
     final createidentitySigner = SmartSigner(
       client: client.v3,
       keypair: generatekeysKey,
@@ -135,8 +137,8 @@ Future<void> main() async {
     final createidentityResult = await createidentitySigner.signSubmitAndWait(
       principal: generatekeysLta.toString(),
       body: TxBody.createIdentity(
-        url: 'acc://e2e-7ae7db12.acme',
-        keyBookUrl: 'acc://e2e-7ae7db12.acme/book',
+        url: createidentityUrl,
+        keyBookUrl: '${createidentityUrl}/book',
         publicKeyHash: generatekeysPubHash,
       ),
       memo: 'Create ADI',

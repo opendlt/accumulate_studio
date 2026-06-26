@@ -1,6 +1,153 @@
 {
-  "success": false,
-  "calls": [],
-  "call_count": 0,
-  "error": "Process timed out after 120 seconds"
+  "success": true,
+  "calls": [
+    {
+      "method": "faucet",
+      "params": {
+        "url": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme"
+      }
+    },
+    {
+      "method": "faucet",
+      "params": {
+        "url": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme"
+      }
+    },
+    {
+      "method": "faucet",
+      "params": {
+        "url": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme"
+      }
+    },
+    {
+      "method": "faucet",
+      "params": {
+        "url": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme"
+      }
+    },
+    {
+      "method": "faucet",
+      "params": {
+        "url": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme"
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme"
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme"
+      }
+    },
+    {
+      "method": "network-status",
+      "params": {
+        "partition": "directory"
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758"
+      }
+    },
+    {
+      "method": "submit",
+      "params": {
+        "envelope": {
+          "signatures": [
+            {
+              "type": "ed25519",
+              "publicKey": "2017e6978c7b1c0c9e7721482a523f9ff347fcdf2c9f097f4c9884322bb5097b",
+              "signature": "f1c31e72ace6c63dd4293223d984e7116b66628667d6f90a7765f2fd17e3bb6db1828ab12d2cd05d5745dba07683083a70ac8a07a2675ba1f5483b7cb635a709",
+              "signer": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758",
+              "signerVersion": 1,
+              "timestamp": 1782091560826000,
+              "transactionHash": "d91dc603547724de274ab8523313eee9c9de00272e5e86ee9deadf10a4993b9f"
+            }
+          ],
+          "transaction": [
+            {
+              "header": {
+                "principal": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme",
+                "initiator": "28128354c96131aabf5638f0cefb7ef1fc48296ddecca4899ae7c61e8c415153"
+              },
+              "body": {
+                "type": "addCredits",
+                "recipient": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758",
+                "amount": "1000000",
+                "oracle": 50000000
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758"
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758"
+      }
+    },
+    {
+      "method": "submit",
+      "params": {
+        "envelope": {
+          "signatures": [
+            {
+              "type": "ed25519",
+              "publicKey": "2017e6978c7b1c0c9e7721482a523f9ff347fcdf2c9f097f4c9884322bb5097b",
+              "signature": "96d8d9246d101c61257b06bc79bfbe5e01084e7162068f48c0b89d8637aafbeac7b09cc6da03c2c814a9707dd654048d7a760c5638ebf375350126d273a9a202",
+              "signer": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758",
+              "signerVersion": 1,
+              "timestamp": 1782091565866000,
+              "transactionHash": "976feb1ea89f7714314d8606390abf2f888e2ef4fadd785e001d99f3b8265565"
+            }
+          ],
+          "transaction": [
+            {
+              "header": {
+                "principal": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme",
+                "initiator": "e5bc8867ca8c1c1b102dd7653d0d08df3ebd3d7550dbb8455624820b79d10812"
+              },
+              "body": {
+                "type": "sendTokens",
+                "to": [
+                  {
+                    "url": "acc://96f5f86212e0d56cd14b462bbfb434346069cd6d35ad63ca/acme",
+                    "amount": "100000000"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme"
+      }
+    },
+    {
+      "method": "query",
+      "params": {
+        "scope": "acc://96f5f86212e0d56cd14b462bbfb434346069cd6d35ad63ca/acme"
+      }
+    }
+  ],
+  "call_count": 15,
+  "error": null,
+  "stdout": "=== SDK Example 1: Lite Identities (C#) ===\n\nEndpoint: http://127.0.0.1:55937\n\n--- Step 1: Generate Key Pairs ---\n\n[SignatureKeyPair] Imported Ed25519 seed (32 bytes).\n[SignatureKeyPair] Derived pubkey (hex): 2017e6978c7b1c0c9e7721482a523f9ff347fcdf2c9f097f4c9884322bb5097b\n[SignatureKeyPair] Imported Ed25519 seed (32 bytes).\n[SignatureKeyPair] Derived pubkey (hex): 3e309f281d72c9927425cea25f2c27b9d4e85c4b3be6e5869c1414c067839eb6\nLite Identity 1: acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758\nLite Token Account 1: acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme\nPublic Key 1: 2017e6978c7b1c0c9e7721482a523f9f...\n\nLite Identity 2: acc://96f5f86212e0d56cd14b462bbfb434346069cd6d35ad63ca\nLite Token Account 2: acc://96f5f86212e0d56cd14b462bbfb434346069cd6d35ad63ca/acme\nPublic Key 2: 3e309f281d72c9927425cea25f2c27b9...\n\n--- Step 2: Fund Account via Faucet ---\n\nRequesting funds from faucet (5 times)...\n  Faucet 1/5: mock-faucet-tx-0001...\n  Faucet 2/5: mock-faucet-tx-0002...\n  Faucet 3/5: mock-faucet-tx-0003...\n  Faucet 4/5: mock-faucet-tx-0004...\n  Faucet 5/5: mock-faucet-tx-0005...\n\nPolling for balance...\nBalance confirmed: 100000000000\n\n--- Step 3: Query Account Info (V3) ---\n\nAccount query result:\n{\n  \"account\": {\n    \"version\": 1,\n    \"balance\": \"100000000000\",\n    \"creditBalance\": 10000,\n    \"type\": \"liteTokenAccount\",\n    \"url\": \"acc://5097c1cacda770a5ee09e3cf61cedcba9a4a2b4dad1d2758/acme\"\n  }\n}\n\n--- Step 4: Add Credits (SmartSigner) ---\n\nOracle price: 50000000\nBuying 5000 credits for 1000000 ACME units (0.01 ACME)\nAddCredits: OK\n  TxId: 0000000000000000000000000000000000000000000000000000000000000010\nCredits after purchase: 10000\n\n--- Step 5: Send Tokens (SmartSigner) ---\n\nSending 100000000 units from LTA1 to LTA2...\nTransfer successful! TxId: 0000000000000000000000000000000000000000000000000000000000000013\n\nBalance LTA1 after: 100000000000\nBalance LTA2 after: 100000000000\n\n=== Summary ===\n\nCreated two lite identities:\n  1. acc://5097c1cacda770a5ee"
 }

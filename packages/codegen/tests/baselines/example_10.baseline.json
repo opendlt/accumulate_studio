@@ -27,7 +27,8 @@
       "scopeType": "account"
     },
     {
-      "method": "submit"
+      "method": "submit",
+      "bodyType": "addCredits"
     },
     {
       "method": "query",
@@ -38,7 +39,8 @@
       "scopeType": "account"
     },
     {
-      "method": "submit"
+      "method": "submit",
+      "bodyType": "createIdentity"
     },
     {
       "method": "query",
@@ -52,7 +54,8 @@
       "scopeType": "account"
     },
     {
-      "method": "submit"
+      "method": "submit",
+      "bodyType": "addCredits"
     },
     {
       "method": "query",
@@ -71,7 +74,8 @@
       "scopeType": "account"
     },
     {
-      "method": "submit"
+      "method": "submit",
+      "bodyType": "updateKeyPage"
     },
     {
       "method": "query",
@@ -90,7 +94,8 @@
       "scopeType": "account"
     },
     {
-      "method": "submit"
+      "method": "submit",
+      "bodyType": "updateKeyPage"
     },
     {
       "method": "query",
@@ -109,7 +114,8 @@
       "scopeType": "account"
     },
     {
-      "method": "submit"
+      "method": "submit",
+      "bodyType": "updateKeyPage"
     },
     {
       "method": "query",

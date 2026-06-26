@@ -1,0 +1,56 @@
+{
+  "example": "example_01",
+  "dartExample": "SDK_Examples_file_1_lite_identities_v3.dart",
+  "templateMapping": "lite-account-setup",
+  "call_count": 14,
+  "calls": [
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "faucet"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "network-status"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    },
+    {
+      "method": "submit"
+    },
+    {
+      "method": "query",
+      "scopeType": "txid"
+    },
+    {
+      "method": "query",
+      "scopeType": "account"
+    }
+  ]
+}

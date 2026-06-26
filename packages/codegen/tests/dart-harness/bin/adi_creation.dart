@@ -3,6 +3,7 @@
 /// Network: devnet
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -21,6 +22,9 @@ Future<void> main() async {
   final client = Accumulate.custom(v2Endpoint: v2, v3Endpoint: v3);
   final txIds = <MapEntry<String, String>>[];
   try {
+    // Flow variables (customize these for your use case)
+    final adi_name = 'adi-${DateTime.now().millisecondsSinceEpoch ~/ 1000}';  // 
+    final key_book_name = '';  // 
 
 
     // =========================================================
@@ -109,6 +113,7 @@ Future<void> main() async {
     // =========================================================
     // CreateIdentity (Action: CreateIdentity)
     // =========================================================
+    final createIdentityUrl = 'acc://${adi_name}.acme';
     final createIdentitySigner = SmartSigner(
       client: client.v3,
       keypair: generateKeysKey,
@@ -117,8 +122,8 @@ Future<void> main() async {
     final createIdentityResult = await createIdentitySigner.signSubmitAndWait(
       principal: generateKeysLid.toString(),
       body: TxBody.createIdentity(
-        url: 'acc://{adi_name}.acme',
-        keyBookUrl: 'acc://{adi_name}.acme/book',
+        url: createIdentityUrl,
+        keyBookUrl: '${createIdentityUrl}/book',
         publicKeyHash: generateKeysPubHash,
       ),
       memo: 'Create ADI',
@@ -137,15 +142,16 @@ Future<void> main() async {
     // =========================================================
     // CreateKeyBook (Action: CreateKeyBook)
     // =========================================================
+    final createKeyBookUrl = 'acc://${adi_name}.acme/admin-book';
     final createKeyBookSigner = SmartSigner(
       client: client.v3,
       keypair: generateKeysKey,
-      signerUrl: generateKeysLid.toString(),
+      signerUrl: '${createIdentityUrl}/book/1',
     );
     final createKeyBookResult = await createKeyBookSigner.signSubmitAndWait(
-      principal: 'acc://{adi_name}.acme',
+      principal: 'acc://${adi_name}.acme',
       body: TxBody.createKeyBook(
-        url: 'acc://{adi_name}.acme/admin-book',
+        url: createKeyBookUrl,
         publicKeyHash: generateKeysPubHash,
       ),
       memo: 'Create key book',
@@ -167,13 +173,13 @@ Future<void> main() async {
     final createKeyPageSigner = SmartSigner(
       client: client.v3,
       keypair: generateKeysKey,
-      signerUrl: generateKeysLid.toString(),
+      signerUrl: '${createIdentityUrl}/book/1',
     );
     final createKeyPageResult = await createKeyPageSigner.signSubmitAndWait(
-      principal: 'acc://{adi_name}.acme/admin-book',
+      principal: 'acc://${adi_name}.acme/admin-book',
       body: TxBody.createKeyPage(
         keys: [
-          KeySpecParams.fromHex('generateKeysPubHash'),
+          KeySpecParams.fromHex(generateKeysPubHash),
         ],
       ),
       memo: 'Create key page',

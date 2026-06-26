@@ -4,6 +4,10 @@ version: 0.1.0
 environment:
   sdk: '>=3.3.0 <4.0.0'
 dependencies:
-  opendlt_accumulate: ^0.1.0
+  # opendlt_accumulate is the local unified Dart SDK, consumed by path (it is not
+  # published to pub.dev). A hosted constraint like ^0.1.0 can't resolve it and
+  # breaks `dart pub get`; the path matches pubspec.lock's source.
+  opendlt_accumulate:
+    path: ../../../../../../opendlt-dart-v2v3-sdk/unified
   crypto: ^3.0.3
 publish_to: none

@@ -3,6 +3,7 @@
 /// Network: kermit
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -127,6 +128,7 @@ Future<void> main() async {
     // =========================================================
     // CreateIdentity (Action: CreateIdentity)
     // =========================================================
+    final createidentityUrl = 'acc://e2e-ba2f5504.acme';
     final createidentitySigner = SmartSigner(
       client: client.v3,
       keypair: generatekeysKey,
@@ -135,8 +137,8 @@ Future<void> main() async {
     final createidentityResult = await createidentitySigner.signSubmitAndWait(
       principal: generatekeysLta.toString(),
       body: TxBody.createIdentity(
-        url: 'acc://e2e-6ddfe1f4.acme',
-        keyBookUrl: 'acc://e2e-6ddfe1f4.acme/book',
+        url: createidentityUrl,
+        keyBookUrl: '${createidentityUrl}/book',
         publicKeyHash: generatekeysPubHash,
       ),
       memo: 'Create ADI',
@@ -165,7 +167,7 @@ Future<void> main() async {
     final addcredits_2Result = await addcredits_2Signer.signSubmitAndWait(
       principal: generatekeysLta.toString(),
       body: TxBody.addCredits(
-        recipient: generatekeysLid.toString(),
+        recipient: '${createidentityUrl}/book/1',
         amount: '5000000',
         oracle: addcredits_2OraclePrice,
       ),
@@ -189,7 +191,7 @@ Future<void> main() async {
     for (var i = 0; i < 30; i++) {
       try {
         final result = await client.v3.rawCall('query', {
-          'scope': generatekeysLid.toString(),
+          'scope': '${createidentityUrl}/book/1',
           'query': {'queryType': 'default'},
         });
         final creditBalance = result['account']?['creditBalance'];
@@ -203,15 +205,16 @@ Future<void> main() async {
     // =========================================================
     // CreateToken (Action: CreateToken)
     // =========================================================
+    final createtokenUrl = 'acc://e2e-ba2f5504.acme/my-token';
     final createtokenSigner = SmartSigner(
       client: client.v3,
       keypair: generatekeysKey,
-      signerUrl: generatekeysLid.toString(),
+      signerUrl: '${createidentityUrl}/book/1',
     );
     final createtokenResult = await createtokenSigner.signSubmitAndWait(
-      principal: 'acc://e2e-6ddfe1f4.acme',
+      principal: 'acc://e2e-ba2f5504.acme',
       body: TxBody.createToken(
-        url: 'acc://e2e-6ddfe1f4.acme/my-token',
+        url: createtokenUrl,
         symbol: 'TKN',
         precision: 8,
       ),
@@ -231,15 +234,16 @@ Future<void> main() async {
     // =========================================================
     // CreateTokenAccount (Action: CreateTokenAccount)
     // =========================================================
+    final createtokenaccountUrl = 'acc://e2e-ba2f5504.acme/tokens';
     final createtokenaccountSigner = SmartSigner(
       client: client.v3,
       keypair: generatekeysKey,
-      signerUrl: generatekeysLid.toString(),
+      signerUrl: '${createidentityUrl}/book/1',
     );
     final createtokenaccountResult = await createtokenaccountSigner.signSubmitAndWait(
-      principal: 'acc://e2e-6ddfe1f4.acme',
+      principal: 'acc://e2e-ba2f5504.acme',
       body: TxBody.createTokenAccount(
-        url: 'acc://e2e-6ddfe1f4.acme/tokens',
+        url: createtokenaccountUrl,
         tokenUrl: 'acc://ACME',
       ),
       memo: 'Create token account',
@@ -261,12 +265,12 @@ Future<void> main() async {
     final issuetokensSigner = SmartSigner(
       client: client.v3,
       keypair: generatekeysKey,
-      signerUrl: generatekeysLid.toString(),
+      signerUrl: '${createidentityUrl}/book/1',
     );
     final issuetokensResult = await issuetokensSigner.signSubmitAndWait(
-      principal: 'acc://e2e-6ddfe1f4.acme/my-token',
+      principal: 'acc://e2e-ba2f5504.acme/my-token',
       body: TxBody.issueTokensSingle(
-        toUrl: 'acc://e2e-6ddfe1f4.acme/tokens',
+        toUrl: 'acc://e2e-ba2f5504.acme/tokens',
         amount: '1000000',
       ),
       memo: 'Issue tokens',
@@ -288,10 +292,10 @@ Future<void> main() async {
     final burntokensSigner = SmartSigner(
       client: client.v3,
       keypair: generatekeysKey,
-      signerUrl: generatekeysLid.toString(),
+      signerUrl: '${createidentityUrl}/book/1',
     );
     final burntokensResult = await burntokensSigner.signSubmitAndWait(
-      principal: 'acc://e2e-6ddfe1f4.acme/tokens',
+      principal: 'acc://e2e-ba2f5504.acme/tokens',
       body: TxBody.burnTokens(
         amount: '500',
       ),

@@ -3,6 +3,7 @@
 /// Network: kermit
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -133,7 +134,7 @@ Future<void> main() async {
       signerUrl: generatekeysLid.toString(),
     );
     final burncreditsResult = await burncreditsSigner.signSubmitAndWait(
-      principal: 'acc://e2e-7b3a08f9.acme/book/1',
+      principal: 'acc://e2e-b09c5982.acme/book/1',
       body: TxBody.burnCredits(
         amount: 10,
       ),

@@ -3,6 +3,7 @@
 /// Network: kermit
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -127,6 +128,7 @@ Future<void> main() async {
     // =========================================================
     // CreateIdentity (Action: CreateIdentity)
     // =========================================================
+    final createidentityUrl = 'acc://e2e-fe47bd9a.acme';
     final createidentitySigner = SmartSigner(
       client: client.v3,
       keypair: generatekeysKey,
@@ -135,8 +137,8 @@ Future<void> main() async {
     final createidentityResult = await createidentitySigner.signSubmitAndWait(
       principal: generatekeysLta.toString(),
       body: TxBody.createIdentity(
-        url: 'acc://e2e-ddae784a.acme',
-        keyBookUrl: 'acc://e2e-ddae784a.acme/book',
+        url: createidentityUrl,
+        keyBookUrl: '${createidentityUrl}/book',
         publicKeyHash: generatekeysPubHash,
       ),
       memo: 'Create ADI',
@@ -165,7 +167,7 @@ Future<void> main() async {
     final addcredits_2Result = await addcredits_2Signer.signSubmitAndWait(
       principal: generatekeysLta.toString(),
       body: TxBody.addCredits(
-        recipient: generatekeysLid.toString(),
+        recipient: '${createidentityUrl}/book/1',
         amount: '5000000',
         oracle: addcredits_2OraclePrice,
       ),
@@ -189,7 +191,7 @@ Future<void> main() async {
     for (var i = 0; i < 30; i++) {
       try {
         final result = await client.v3.rawCall('query', {
-          'scope': generatekeysLid.toString(),
+          'scope': '${createidentityUrl}/book/1',
           'query': {'queryType': 'default'},
         });
         final creditBalance = result['account']?['creditBalance'];
@@ -203,14 +205,15 @@ Future<void> main() async {
     // =========================================================
     // CreateDataAccount (Action: CreateDataAccount)
     // =========================================================
+    final createdataaccountUrl = 'acc://e2e-fe47bd9a.acme/data';
     final createdataaccountSigner = SmartSigner(
       client: client.v3,
       keypair: generatekeysKey,
-      signerUrl: generatekeysLid.toString(),
+      signerUrl: '${createidentityUrl}/book/1',
     );
     final createdataaccountResult = await createdataaccountSigner.signSubmitAndWait(
-      principal: 'acc://e2e-ddae784a.acme',
-      body: TxBody.createDataAccount(url: 'acc://e2e-ddae784a.acme/data'),
+      principal: 'acc://e2e-fe47bd9a.acme',
+      body: TxBody.createDataAccount(url: createdataaccountUrl),
       memo: 'Create data account',
       maxAttempts: 30,
     );
@@ -230,13 +233,11 @@ Future<void> main() async {
     final writedataSigner = SmartSigner(
       client: client.v3,
       keypair: generatekeysKey,
-      signerUrl: generatekeysLid.toString(),
+      signerUrl: '${createidentityUrl}/book/1',
     );
     final writedataResult = await writedataSigner.signSubmitAndWait(
-      principal: 'acc://e2e-ddae784a.acme/data',
-      body: TxBody.writeData(entriesHex: [
-        '48656c6c6f20576f726c64',
-      ]),
+      principal: 'acc://e2e-fe47bd9a.acme/data',
+      body: TxBody.writeData(entriesHex: ['48656c6c6f20576f726c64']),
       memo: 'Write data',
       maxAttempts: 30,
     );

@@ -3,6 +3,7 @@
 /// Network: kermit
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -144,13 +145,13 @@ Future<void> main() async {
     // =========================================================
     final sendtokensSigner = SmartSigner(
       client: client.v3,
-      keypair: generatekeys_2Key,
-      signerUrl: generatekeys_2Lid.toString(),
+      keypair: generatekeysKey,
+      signerUrl: generatekeysLid.toString(),
     );
     final sendtokensResult = await sendtokensSigner.signSubmitAndWait(
-      principal: 'acc://e2e-8428765b.acme/tokens',
+      principal: 'acc://e2e-285ae08c.acme/tokens',
       body: TxBody.sendTokensSingle(
-        toUrl: 'acc://e2e-8428765b.acme/tokens',
+        toUrl: 'acc://e2e-285ae08c.acme/tokens',
         amount: '100',
       ),
       memo: 'Send tokens',

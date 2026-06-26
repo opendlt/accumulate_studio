@@ -26,10 +26,15 @@ import threading
 
 
 # ── Default paths ─────────────────────────────────────────────────────────
-DEFAULT_SDK_DIR = os.path.normpath(
+# The JS SDK is checked out as a sibling of the platform repo. From this file
+# (tests/) the repo root is 5 levels up:
+#   tests → codegen → packages → accumulate-studio → on-boarding-platform → <root>
+# so the SDK sits at <root>/opendlt-javascript-v2v3-sdk/javascript.
+# Allow ACCUMULATE_JS_SDK_DIR to override for non-standard checkouts/CI.
+DEFAULT_SDK_DIR = os.environ.get("ACCUMULATE_JS_SDK_DIR") or os.path.normpath(
     os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        "..", "..", "..", "..", "..", "..",
+        "..", "..", "..", "..", "..",
         "opendlt-javascript-v2v3-sdk", "javascript",
     )
 )
@@ -161,7 +166,7 @@ def ensure_sdk_shim(harness_dir, sdk_dir):
     re-exports from the SDK's built output.  This lets generated .mjs files
     do ``import { ... } from "accumulate.js"`` without running npm install.
     """
-    shim_dir = os.path.join(harness_dir, "node_modules", "accumulate.js")
+    shim_dir = os.path.join(harness_dir, "node_modules", "accumulate-sdk-opendlt")
     os.makedirs(shim_dir, exist_ok=True)
 
     # Resolve the SDK's compiled index
@@ -179,7 +184,7 @@ def ensure_sdk_shim(harness_dir, sdk_dir):
     sdk_index_url = "file:///" + sdk_index.replace("\\", "/")
 
     # Write shim package.json
-    pkg = {"name": "accumulate.js", "version": "0.0.0", "type": "module", "main": "index.js"}
+    pkg = {"name": "accumulate-sdk-opendlt", "version": "0.0.0", "type": "module", "main": "index.js"}
     with open(os.path.join(shim_dir, "package.json"), "w") as f:
         json.dump(pkg, f)
 
@@ -193,7 +198,7 @@ def ensure_sdk_shim(harness_dir, sdk_dir):
     for dep in os.listdir(sdk_nm):
         src = os.path.join(sdk_nm, dep)
         dst = os.path.join(harness_nm, dep)
-        if dep == "accumulate.js":
+        if dep == "accumulate-sdk-opendlt":
             continue  # Don't overwrite our shim
         if dep.startswith("."):
             continue
@@ -326,14 +331,23 @@ def run_ts_example(ts_file, sdk_dir=None):
     ts_file_abs = os.path.abspath(ts_file)
 
     try:
-        # Use npx tsx to run TypeScript directly
+        # Run TypeScript via tsx. Invoke tsx's CLI through `node` rather than
+        # `npx`: on Windows `npx` is a .CMD shim that subprocess cannot exec
+        # directly (WinError 2), whereas `node` is a real executable.
+        tsx_cli = os.path.join(sdk_dir, "node_modules", "tsx", "dist", "cli.mjs")
+        if os.path.isfile(tsx_cli):
+            cmd = ["node", tsx_cli, ts_file_abs]
+        else:
+            # Fall back to npx via the shell so the .CMD shim resolves.
+            cmd = "npx tsx \"{}\"".format(ts_file_abs)
         result = subprocess.run(
-            ["npx", "tsx", ts_file_abs],
+            cmd,
             env=env,
             cwd=sdk_dir,
             capture_output=True,
             text=True,
             timeout=60,
+            shell=isinstance(cmd, str),
         )
 
         calls = MockRPCHandler.calls_log[:]

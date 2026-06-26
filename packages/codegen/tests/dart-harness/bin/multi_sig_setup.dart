@@ -3,6 +3,7 @@
 /// Network: devnet
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -21,11 +22,19 @@ Future<void> main() async {
   final client = Accumulate.custom(v2Endpoint: v2, v3Endpoint: v3);
   final txIds = <MapEntry<String, String>>[];
   try {
+    // Flow variables (customize these for your use case)
+    final adi_url = '';  // 
+    final key_book_name = '';  // 
+    final signer_1_public_key_hash = '';  // 
+    final signer_2_public_key_hash = '';  // 
+    final signer_3_public_key_hash = '';  // 
+    final threshold = '';  // 
 
 
     // =========================================================
     // CreateKeyBook (Action: CreateKeyBook)
     // =========================================================
+    final createKeyBookUrl = '${adi_url}/${key_book_name}';
     final createKeyBookSigner = SmartSigner(
       client: client.v3,
       keypair: createKeyBookKey,
@@ -34,7 +43,7 @@ Future<void> main() async {
     final createKeyBookResult = await createKeyBookSigner.signSubmitAndWait(
       principal: adi_url,
       body: TxBody.createKeyBook(
-        url: '{adi_url}/{key_book_name}',
+        url: createKeyBookUrl,
         publicKeyHash: signer_1_public_key_hash,
       ),
       memo: 'Create key book',
@@ -59,10 +68,10 @@ Future<void> main() async {
       signerUrl: createKeyPageLid.toString(),
     );
     final createKeyPageResult = await createKeyPageSigner.signSubmitAndWait(
-      principal: '{adi_url}/{key_book_name}',
+      principal: '${adi_url}/${key_book_name}',
       body: TxBody.createKeyPage(
         keys: [
-          KeySpecParams.fromHex('signer_1_public_key_hash'),
+          KeySpecParams.fromHex(signer_1_public_key_hash),
         ],
       ),
       memo: 'Create key page',
@@ -88,7 +97,7 @@ Future<void> main() async {
     );
     final addSigner_2RawOps = [{"type":"add","key":"signer_2_public_key_hash"}] as List;
     final addSigner_2Result = await addSigner_2Signer.signSubmitAndWait(
-      principal: '{adi_url}/{key_book_name}/1',
+      principal: '${adi_url}/${key_book_name}/1',
       body: TxBody.updateKeyPage(
         operations: addSigner_2RawOps
             .map((op) => KeyPageOperation.fromJson(Map<String, dynamic>.from(op)))
@@ -117,7 +126,7 @@ Future<void> main() async {
     );
     final addSigner_3RawOps = [{"type":"add","key":"signer_3_public_key_hash"}] as List;
     final addSigner_3Result = await addSigner_3Signer.signSubmitAndWait(
-      principal: '{adi_url}/{key_book_name}/1',
+      principal: '${adi_url}/${key_book_name}/1',
       body: TxBody.updateKeyPage(
         operations: addSigner_3RawOps
             .map((op) => KeyPageOperation.fromJson(Map<String, dynamic>.from(op)))
@@ -146,7 +155,7 @@ Future<void> main() async {
     );
     final setThresholdRawOps = [{"type":"setThreshold","threshold":"threshold"}] as List;
     final setThresholdResult = await setThresholdSigner.signSubmitAndWait(
-      principal: '{adi_url}/{key_book_name}/1',
+      principal: '${adi_url}/${key_book_name}/1',
       body: TxBody.updateKeyPage(
         operations: setThresholdRawOps
             .map((op) => KeyPageOperation.fromJson(Map<String, dynamic>.from(op)))

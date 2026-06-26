@@ -6,7 +6,7 @@
     let {{varName}}_key_0 = hex::decode({{keyPageDefaultKey}}).unwrap_or_default();
 {{else}}
 {{#each keyPageKeys}}
-    let {{../varName}}_key_{{@index}} = hex::decode("{{this}}").unwrap_or_default();
+    let {{../varName}}_key_{{@index}} = hex::decode({{this}}).unwrap_or_default();
 {{/each}}
 {{/if}}
     let {{varName}}_key_refs: Vec<&[u8]> = vec![

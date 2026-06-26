@@ -3,6 +3,7 @@
 /// Network: devnet
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -21,11 +22,19 @@ Future<void> main() async {
   final client = Accumulate.custom(v2Endpoint: v2, v3Endpoint: v3);
   final txIds = <MapEntry<String, String>>[];
   try {
+    // Flow variables (customize these for your use case)
+    final adi_url = '';  // 
+    final token_symbol = 'TKN';  // 
+    final token_precision = '';  // 
+    final supply_limit = '';  // 
+    final initial_issue_amount = '100000000000';  // 
+    final recipient_url = '';  // 
 
 
     // =========================================================
     // CreateToken (Action: CreateToken)
     // =========================================================
+    final createTokenUrl = '${adi_url}/${token_symbol}';
     final createTokenSigner = SmartSigner(
       client: client.v3,
       keypair: createTokenKey,
@@ -34,8 +43,8 @@ Future<void> main() async {
     final createTokenResult = await createTokenSigner.signSubmitAndWait(
       principal: adi_url,
       body: TxBody.createToken(
-        url: '{adi_url}/{token_symbol}',
-        symbol: 'token_symbol',
+        url: createTokenUrl,
+        symbol: token_symbol,
         precision: token_precision,
       ),
       memo: 'Create token',
@@ -60,10 +69,10 @@ Future<void> main() async {
       signerUrl: issueTokensLid.toString(),
     );
     final issueTokensResult = await issueTokensSigner.signSubmitAndWait(
-      principal: '{adi_url}/{token_symbol}',
+      principal: '${adi_url}/${token_symbol}',
       body: TxBody.issueTokensSingle(
         toUrl: recipient_url,
-        amount: 'initial_issue_amount',
+        amount: initial_issue_amount,
       ),
       memo: 'Issue tokens',
       maxAttempts: 30,
@@ -81,11 +90,15 @@ Future<void> main() async {
     // =========================================================
     // QueryAccount (QueryAccount)
     // =========================================================
-    final queryTokenResult = await client.v3.rawCall('query', {
-      'scope': '{adi_url}/{token_symbol}',
-      'query': {'queryType': 'default'},
-    });
-    print('Account state: ${queryTokenResult}');
+    try {
+      final queryTokenResult = await client.v3.rawCall('query', {
+        'scope': '${adi_url}/${token_symbol}',
+        'query': {'queryType': 'default'},
+      });
+      print('Account state: ${queryTokenResult}');
+    } catch (e) {
+      print('Query failed: $e');
+    }
 
 
     // =========================================================
@@ -99,7 +112,7 @@ Future<void> main() async {
     final sendTokensResult = await sendTokensSigner.signSubmitAndWait(
       principal: recipient_url,
       body: TxBody.sendTokensSingle(
-        toUrl: 'recipient_url',
+        toUrl: recipient_url,
         amount: '100.00000000',
       ),
       memo: 'Send tokens',

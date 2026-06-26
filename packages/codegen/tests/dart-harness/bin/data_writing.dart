@@ -3,6 +3,7 @@
 /// Network: devnet
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
@@ -21,11 +22,16 @@ Future<void> main() async {
   final client = Accumulate.custom(v2Endpoint: v2, v3Endpoint: v3);
   final txIds = <MapEntry<String, String>>[];
   try {
+    // Flow variables (customize these for your use case)
+    final adi_url = '';  // 
+    final data_account_name = '';  // 
+    final data_content = '48656c6c6f20576f726c64';  // 
 
 
     // =========================================================
     // CreateDataAccount (Action: CreateDataAccount)
     // =========================================================
+    final createDataAccountUrl = '${adi_url}/${data_account_name}';
     final createDataAccountSigner = SmartSigner(
       client: client.v3,
       keypair: createDataAccountKey,
@@ -33,7 +39,7 @@ Future<void> main() async {
     );
     final createDataAccountResult = await createDataAccountSigner.signSubmitAndWait(
       principal: adi_url,
-      body: TxBody.createDataAccount(url: '{adi_url}/{data_account_name}'),
+      body: TxBody.createDataAccount(url: createDataAccountUrl),
       memo: 'Create data account',
       maxAttempts: 30,
     );
@@ -56,10 +62,8 @@ Future<void> main() async {
       signerUrl: writeDataLid.toString(),
     );
     final writeDataResult = await writeDataSigner.signSubmitAndWait(
-      principal: '{adi_url}/{data_account_name}',
-      body: TxBody.writeData(entriesHex: [
-        '646174615f636f6e74656e74',
-      ]),
+      principal: '${adi_url}/${data_account_name}',
+      body: TxBody.writeData(entriesHex: [data_content]),
       memo: 'Write data',
       maxAttempts: 30,
     );
@@ -76,11 +80,15 @@ Future<void> main() async {
     // =========================================================
     // QueryAccount (QueryAccount)
     // =========================================================
-    final queryAccountResult = await client.v3.rawCall('query', {
-      'scope': '{adi_url}/{data_account_name}',
-      'query': {'queryType': 'default'},
-    });
-    print('Account state: ${queryAccountResult}');
+    try {
+      final queryAccountResult = await client.v3.rawCall('query', {
+        'scope': '${adi_url}/${data_account_name}',
+        'query': {'queryType': 'default'},
+      });
+      print('Account state: ${queryAccountResult}');
+    } catch (e) {
+      print('Query failed: $e');
+    }
 
 
     print('\n========== Transaction Summary ==========');
