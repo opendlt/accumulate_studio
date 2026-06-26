@@ -702,7 +702,7 @@ export class NodeExecutor {
       );
     }
 
-    let minBalanceStr = config.minBalance ? this.resolveValue(config.minBalance, inputs) : '';
+    const minBalanceStr = config.minBalance ? this.resolveValue(config.minBalance, inputs) : '';
     const minBalance = minBalanceStr ? this.parseAmount(minBalanceStr) : 1000000;
     const maxAttempts = config.maxAttempts || 30;
     const delayMs = config.delayMs || 2000;
