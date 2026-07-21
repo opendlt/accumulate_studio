@@ -1,0 +1,16 @@
+# Accumulate SDKs — AI Agent Interface
+
+> Machine-readable interface for building on the Accumulate blockchain. One SDK per language; each ships an `llms.txt`, a full `llms-full.txt` API digest, and an `AGENTS.md` guide, all generated from a single manifest source of truth.
+
+## SDKs
+- **Python** — `pip install accumulate-sdk-opendlt` — 24 operations — see `python/llms.txt`
+- **Rust** — `cargo add accumulate-sdk` — 24 operations — see `rust/llms.txt`
+- **Dart** — `dart pub add opendlt_accumulate` — 24 operations — see `dart/llms.txt`
+- **C#** — `dotnet add package Acme.Net.Sdk` — 24 operations — see `csharp/llms.txt`
+- **JavaScript / TypeScript** — `npm install accumulate-sdk-opendlt` — 24 operations — see `javascript/llms.txt`
+
+## Conventions (all SDKs)
+- Networks: Kermit testnet (used by the examples; fund via faucet), plus mainnet and local devnet.
+- Amounts: ACME is denominated in base units where 1 ACME = 1e8 base units. Passing whole ACME as-is is the single most common integration bug.
+- Credits: buying credits uses the network oracle price; an ADI/key page must hold credits before it can sign transactions.
+- Golden path: connect -> build a body with TxBody.<op>(...) -> sign+submit+wait with SmartSigner -> query to confirm.

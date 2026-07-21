@@ -1,0 +1,283 @@
+# Accumulate Rust SDK — Full API Digest
+
+Package `accumulate-sdk` v2.1.2 (source commit a505fda). Generated from the Accumulate SDK manifest (single source of truth).
+
+## Install & import
+```
+cargo add accumulate-sdk
+```
+`use accumulate_client::{QuickStart, TxBody, SmartSigner};`
+
+## Conventions (read first)
+- Networks: Kermit testnet (used by the examples; fund via faucet), plus mainnet and local devnet.
+- Amounts: ACME is denominated in base units where 1 ACME = 1e8 base units. Passing whole ACME as-is is the single most common integration bug.
+- Credits: buying credits uses the network oracle price; an ADI/key page must hold credits before it can sign transactions.
+- Golden path: connect -> build a body with TxBody.<op>(...) -> sign+submit+wait with SmartSigner -> query to confirm.
+
+## Entry points
+- **AccumulateClient** (class, `accumulate_client`) — Main client with async factory methods for network connection
+- **TxBody** (class, `accumulate_client`) — Static methods that build transaction body structs
+- **SmartSigner** (class, `accumulate_client`) — Signs, submits, and waits for transaction results
+- **Ed25519Signer** (class, `accumulate_client::crypto::ed25519`) — Ed25519 key pair generation
+- **AccOptions** (class, `accumulate_client`) — Connection options
+
+## Operations (24)
+
+### generate_keys  —  Generate Keys  [utility]
+Symbols:
+  - `Ed25519Signer::generate` — `() -> Ed25519Signer`
+  - `derive_lite_identity_url` — `(pub_key: &[u8]) -> String`
+  - `derive_lite_token_account_url` — `(pub_key: &[u8]) -> String`
+Outputs:
+  - `signer` (Ed25519Signer)
+  - `liteIdentity` (String)
+  - `liteTokenAccount` (String)
+  - `publicKey` (Vec<u8>)
+Examples: examples/generate_keys.rs
+
+### faucet  —  Faucet  [utility]
+Symbols:
+  - `AccumulateClient::faucet` — `(&self, account: &str) -> Result<()>`
+Inputs:
+  - `account` (&str, required) — Account URL to fund
+  - `times` (u32, optional) — Number of faucet calls
+Requires: keypair
+Examples: examples/faucet.rs
+
+### wait_for_balance  —  Wait For Balance  [utility]
+Symbols:
+  - `AccumulateClient::query` — `(&self, url: &str) -> Result<Value>`
+Inputs:
+  - `account` (&str, required)
+  - `minBalance` (&str, required)
+Outputs:
+  - `balance` (u64)
+Requires: keypair
+Examples: examples/wait_for_balance.rs
+
+### wait_for_credits  —  Wait For Credits  [utility]
+Symbols:
+  - `AccumulateClient::query` — `(&self, url: &str) -> Result<Value>`
+Inputs:
+  - `account` (&str, required)
+  - `minCredits` (u64, required)
+Outputs:
+  - `credits` (u64)
+Requires: keypair
+Examples: examples/wait_for_credits.rs
+
+### add_credits  —  Add Credits  [credits]
+Symbols:
+  - `TxBody::add_credits` — `(recipient: &str, amount: &str, oracle: u64) -> TxBody`
+  - `SmartSigner::sign_submit_and_wait` — `(&mut self, principal: &str, body: &TxBody, memo: Option<&str>, timeout: u64) -> Result<Value>`
+Inputs:
+  - `recipient` (&str, required)
+  - `amount` (&str, required)
+  - `oracle` (u64, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/add_credits.rs
+
+### transfer_credits  —  Transfer Credits  [credits]
+Symbols:
+  - `TxBody::transfer_credits` — `(recipient: &str, amount: u64) -> TxBody`
+Inputs:
+  - `recipient` (&str, required)
+  - `amount` (u64, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/transfer_credits.rs
+
+### burn_credits  —  Burn Credits  [credits]
+Symbols:
+  - `TxBody::burn_credits` — `(amount: u64) -> TxBody`
+Inputs:
+  - `amount` (u64, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/burn_credits.rs
+
+### create_identity  —  Create Identity  [identity]
+Symbols:
+  - `TxBody::create_identity` — `(url: &str, key_book_url: &str, pub_key: &[u8]) -> TxBody`
+  - `SmartSigner::sign_submit_and_wait` — `(&mut self, principal: &str, body: &TxBody, memo: Option<&str>, timeout: u64) -> Result<Value>`
+Inputs:
+  - `url` (&str, required)
+  - `keyBookUrl` (&str, required)
+  - `publicKey` (&[u8], required)
+Outputs:
+  - `adiUrl` (String)
+  - `keyBookUrl` (String)
+Requires: keypair, credits
+Examples: examples/create_identity.rs
+
+### create_key_book  —  Create Key Book  [identity]
+Symbols:
+  - `TxBody::create_key_book` — `(url: &str, pub_key_hash: &str) -> TxBody`
+Inputs:
+  - `url` (&str, required)
+  - `publicKeyHash` (&str, optional)
+Outputs:
+  - `keyBookUrl` (String)
+Requires: keypair, credits
+Examples: examples/create_key_book.rs
+
+### create_key_page  —  Create Key Page  [identity]
+Symbols:
+  - `TxBody::create_key_page` — `(url: &str, keys: &[&str]) -> TxBody`
+Inputs:
+  - `url` (&str, required)
+  - `keys` (Vec<String>, required)
+Outputs:
+  - `keyPageUrl` (String)
+Requires: keypair, credits
+Examples: examples/create_key_page.rs
+
+### create_token_account  —  Create Token Account  [account]
+Symbols:
+  - `TxBody::create_token_account` — `(url: &str, token_url: &str) -> TxBody`
+Inputs:
+  - `url` (&str, required)
+  - `tokenUrl` (&str, required)
+Outputs:
+  - `tokenAccountUrl` (String)
+Requires: keypair, credits
+Examples: examples/create_token_account.rs
+
+### create_data_account  —  Create Data Account  [account]
+Symbols:
+  - `TxBody::create_data_account` — `(url: &str) -> TxBody`
+Inputs:
+  - `url` (&str, required)
+Outputs:
+  - `dataAccountUrl` (String)
+Requires: keypair, credits
+Examples: examples/create_data_account.rs
+
+### create_token  —  Create Token  [account]
+Symbols:
+  - `TxBody::create_token` — `(url: &str, symbol: &str, precision: u8, supply_limit: Option<&str>) -> TxBody`
+Inputs:
+  - `url` (&str, required)
+  - `symbol` (&str, required)
+  - `precision` (u8, required)
+  - `supplyLimit` (Option<&str>, optional)
+Outputs:
+  - `tokenUrl` (String)
+Requires: keypair, credits
+Examples: examples/create_token.rs
+
+### create_lite_token_account  —  Create Lite Token Account  [account]
+Symbols:
+  - `derive_lite_token_account_url` — `(pub_key: &[u8]) -> String`
+Outputs:
+  - `liteTokenAccountUrl` (String)
+Requires: keypair
+Examples: examples/create_lite_token_account.rs
+
+### send_tokens  —  Send Tokens  [transaction]
+Symbols:
+  - `TxBody::send_tokens_single` — `(to_url: &str, amount: &str) -> TxBody`
+  - `TxBody::send_tokens_multi` — `(recipients: &[(&str, &str)]) -> TxBody`
+Inputs:
+  - `recipients` (Vec<(String, String)>, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/send_tokens.rs
+
+### issue_tokens  —  Issue Tokens  [transaction]
+Symbols:
+  - `TxBody::issue_tokens` — `(recipient: &str, amount: &str) -> TxBody`
+Inputs:
+  - `recipient` (&str, required)
+  - `amount` (&str, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/issue_tokens.rs
+
+### burn_tokens  —  Burn Tokens  [transaction]
+Symbols:
+  - `TxBody::burn_tokens` — `(amount: &str) -> TxBody`
+Inputs:
+  - `amount` (&str, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/burn_tokens.rs
+
+### write_data  —  Write Data  [transaction]
+Symbols:
+  - `TxBody::write_data` — `(entries: &[Vec<u8>]) -> TxBody`
+Inputs:
+  - `entries` (Vec<Vec<u8>>, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/write_data.rs
+
+### write_data_to  —  Write Data To  [transaction]
+Symbols:
+  - `TxBody::write_data_to` — `(recipient: &str, entries: &[Vec<u8>]) -> TxBody`
+Inputs:
+  - `recipient` (&str, required)
+  - `entries` (Vec<Vec<u8>>, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/write_data_to.rs
+
+### query_account  —  Query Account  [query]
+Symbols:
+  - `AccumulateClient::query` — `(&self, url: &str) -> Result<Value>`
+Inputs:
+  - `url` (&str, required)
+Outputs:
+  - `account` (Value)
+Examples: examples/query_account.rs
+
+### update_key_page  —  Update Key Page  [authority]
+Symbols:
+  - `TxBody::update_key_page_add_key` — `(key: &str) -> TxBody`
+  - `TxBody::update_key_page_remove_key` — `(key: &str) -> TxBody`
+  - `TxBody::update_key_page_set_threshold` — `(threshold: u64) -> TxBody`
+Inputs:
+  - `operations` (Vec<KeyPageOp>, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/update_key_page.rs
+
+### update_key  —  Update Key  [authority]
+Symbols:
+  - `TxBody::update_key` — `(new_key: &str) -> TxBody`
+Inputs:
+  - `newKey` (&str, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/update_key.rs
+
+### lock_account  —  Lock Account  [authority]
+Symbols:
+  - `TxBody::lock_account` — `(height: u64) -> TxBody`
+Inputs:
+  - `height` (u64, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/lock_account.rs
+
+### update_account_auth  —  Update Account Auth  [authority]
+Symbols:
+  - `TxBody::update_account_auth` — `(operations: &[AuthOp]) -> TxBody`
+Inputs:
+  - `operations` (Vec<AuthOp>, required)
+Outputs:
+  - `txHash` (String)
+Requires: keypair, credits
+Examples: examples/update_account_auth.rs

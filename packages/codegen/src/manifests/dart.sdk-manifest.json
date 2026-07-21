@@ -1,8 +1,8 @@
 {
   "sdk_name": "opendlt-dart-v2v3-sdk",
-  "sdk_version": "0.1.0",
-  "commit": "0000000",
-  "generated_at": "2026-01-01T00:00:00Z",
+  "sdk_version": "2.1.2",
+  "commit": "197e5bb",
+  "generated_at": "2026-07-21T00:00:00Z",
   "entrypoints": [
     {
       "symbol": "Accumulate",

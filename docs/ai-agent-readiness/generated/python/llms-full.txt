@@ -1,0 +1,299 @@
+# Accumulate Python SDK — Full API Digest
+
+Package `accumulate-sdk-opendlt` v2.1.2 (source commit 8fd15ac). Generated from the Accumulate SDK manifest (single source of truth).
+
+## Install & import
+```
+pip install accumulate-sdk-opendlt
+```
+`from accumulate_client import Accumulate, TxBody, SmartSigner, QuickStart`
+
+## Conventions (read first)
+- Networks: Kermit testnet (used by the examples; fund via faucet), plus mainnet and local devnet.
+- Amounts: ACME is denominated in base units where 1 ACME = 1e8 base units. Passing whole ACME as-is is the single most common integration bug.
+- Credits: buying credits uses the network oracle price; an ADI/key page must hold credits before it can sign transactions.
+- Golden path: connect -> build a body with TxBody.<op>(...) -> sign+submit+wait with SmartSigner -> query to confirm.
+
+## Entry points
+- **Accumulate** (class, `accumulate_client`) — Main client facade with factory methods for network connection
+- **TxBody** (class, `accumulate_client.convenience`) — Static methods that build transaction body objects
+- **SmartSigner** (class, `accumulate_client.convenience`) — Signs, submits, and waits for transaction results
+- **Ed25519KeyPair** (class, `accumulate_client.crypto.ed25519`) — Ed25519 key pair generation and derivation
+
+## Operations (24)
+
+### generate_keys  —  Generate Keys  [utility]
+Symbols:
+  - `Ed25519KeyPair.generate` — `() -> Ed25519KeyPair`
+  - `Ed25519KeyPair.derive_lite_identity_url` — `(self) -> str`
+  - `Ed25519KeyPair.derive_lite_token_account_url` — `(self, token: str) -> str`
+  - `Ed25519KeyPair.public_key_bytes` — `(self) -> bytes`
+Outputs:
+  - `keypair` (Ed25519KeyPair)
+  - `liteIdentity` (str)
+  - `liteTokenAccount` (str)
+  - `publicKeyHash` (str)
+Examples: examples/generate_keys.py
+
+### faucet  —  Faucet  [utility]
+Symbols:
+  - `Accumulate.faucet` — `(self, account: str) -> dict`
+Inputs:
+  - `account` (str, required) — Lite token account URL to fund
+  - `times` (int, optional) — Number of faucet calls [e.g. 1]
+Requires: keypair
+Examples: examples/faucet.py
+
+### wait_for_balance  —  Wait For Balance  [utility]
+Symbols:
+  - `Accumulate.v3.query` — `(self, url: str) -> dict`
+Inputs:
+  - `account` (str, required) — Account URL to poll
+  - `minBalance` (str, required) — Minimum balance to wait for
+Outputs:
+  - `balance` (str)
+Requires: keypair
+Examples: examples/wait_for_balance.py
+
+### wait_for_credits  —  Wait For Credits  [utility]
+Symbols:
+  - `Accumulate.v3.query` — `(self, url: str) -> dict`
+Inputs:
+  - `account` (str, required) — Key page URL to poll
+  - `minCredits` (int, required) — Minimum credit balance to wait for
+Outputs:
+  - `credits` (int)
+Requires: keypair
+Examples: examples/wait_for_credits.py
+
+### add_credits  —  Add Credits  [credits]
+Symbols:
+  - `TxBody.add_credits` — `(recipient: str, amount: str, oracle: int) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `recipient` (str, required) — Key page URL to credit
+  - `amount` (str, required) — ACME amount to spend
+  - `oracle` (int, required) — Oracle price (fetched at runtime)
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Examples: examples/add_credits.py
+
+### transfer_credits  —  Transfer Credits  [credits]
+Symbols:
+  - `TxBody.transfer_credits` — `(recipient: str, amount: int) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `recipient` (str, required) — Destination key page
+  - `amount` (int, required) — Credits to transfer
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Examples: examples/transfer_credits.py
+
+### burn_credits  —  Burn Credits  [credits]
+Symbols:
+  - `TxBody.burn_credits` — `(amount: int) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `amount` (int, required) — Credits to burn
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Examples: examples/burn_credits.py
+
+### create_identity  —  Create Identity  [identity]
+Symbols:
+  - `TxBody.create_identity` — `(url: str, key_book_url: str, public_key_hash: str) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `url` (str, required) — ADI URL
+  - `keyBookUrl` (str, required) — Key book URL
+  - `publicKeyHash` (str, required) — SHA256 hash of public key
+Outputs:
+  - `adiUrl` (str)
+  - `keyBookUrl` (str)
+  - `keyPageUrl` (str)
+Requires: keypair, credits
+Examples: examples/create_identity.py
+
+### create_key_book  —  Create Key Book  [identity]
+Symbols:
+  - `TxBody.create_key_book` — `(url: str, public_key_hash: str) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `url` (str, required) — Key book URL
+  - `publicKeyHash` (str, optional) — Initial key hash
+Outputs:
+  - `keyBookUrl` (str)
+Requires: keypair, credits
+Examples: examples/create_key_book.py
+
+### create_key_page  —  Create Key Page  [identity]
+Symbols:
+  - `TxBody.create_key_page` — `(url: str, keys: list[str]) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `url` (str, required) — Key page URL
+  - `keys` (list[str], required) — Initial key hashes
+Outputs:
+  - `keyPageUrl` (str)
+Requires: keypair, credits
+Examples: examples/create_key_page.py
+
+### create_token_account  —  Create Token Account  [account]
+Symbols:
+  - `TxBody.create_token_account` — `(url: str, token_url: str) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `url` (str, required) — Token account URL
+  - `tokenUrl` (str, required) — Token type URL
+Outputs:
+  - `tokenAccountUrl` (str)
+Requires: keypair, credits
+Examples: examples/create_token_account.py
+
+### create_data_account  —  Create Data Account  [account]
+Symbols:
+  - `TxBody.create_data_account` — `(url: str) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `url` (str, required) — Data account URL
+Outputs:
+  - `dataAccountUrl` (str)
+Requires: keypair, credits
+Examples: examples/create_data_account.py
+
+### create_token  —  Create Token  [account]
+Symbols:
+  - `TxBody.create_token` — `(url: str, symbol: str, precision: int, supply_limit: str | None) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `url` (str, required) — Token URL
+  - `symbol` (str, required) — Token symbol
+  - `precision` (int, required) — Decimal precision
+  - `supplyLimit` (str, optional) — Maximum supply
+Outputs:
+  - `tokenUrl` (str)
+Requires: keypair, credits
+Examples: examples/create_token.py
+
+### create_lite_token_account  —  Create Lite Token Account  [account]
+Symbols:
+  - `Ed25519KeyPair.derive_lite_token_account_url` — `(self, token: str) -> str`
+Outputs:
+  - `liteTokenAccountUrl` (str)
+Requires: keypair
+Examples: examples/create_lite_token_account.py
+
+### send_tokens  —  Send Tokens  [transaction]
+Symbols:
+  - `TxBody.send_tokens_single` — `(to_url: str, amount: str) -> dict`
+  - `TxBody.send_tokens` — `(recipients: list[tuple[str, str]]) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `recipients` (list[tuple[str, str]], required) — List of (url, amount) tuples
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Examples: examples/send_tokens.py
+
+### issue_tokens  —  Issue Tokens  [transaction]
+Symbols:
+  - `TxBody.issue_tokens` — `(recipient: str, amount: str) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `recipient` (str, required) — Recipient token account
+  - `amount` (str, required) — Amount to issue
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Examples: examples/issue_tokens.py
+
+### burn_tokens  —  Burn Tokens  [transaction]
+Symbols:
+  - `TxBody.burn_tokens` — `(amount: str) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `amount` (str, required) — Amount to burn
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Examples: examples/burn_tokens.py
+
+### write_data  —  Write Data  [transaction]
+Symbols:
+  - `TxBody.write_data` — `(data: list[str]) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `entries` (list[str], required) — Hex-encoded data entries
+Outputs:
+  - `txHash` (str)
+  - `entryHash` (str)
+Requires: keypair, credits
+Examples: examples/write_data.py
+
+### write_data_to  —  Write Data To  [transaction]
+Symbols:
+  - `TxBody.write_data_to` — `(recipient: str, data: list[str]) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `recipient` (str, required) — Target data account
+  - `entries` (list[str], required) — Hex-encoded data entries
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Examples: examples/write_data_to.py
+
+### query_account  —  Query Account  [query]
+Symbols:
+  - `Accumulate.v3.query` — `(self, url: str) -> dict`
+Inputs:
+  - `url` (str, required) — Account URL to query
+Outputs:
+  - `account` (dict)
+Examples: examples/query_account.py
+
+### update_key_page  —  Update Key Page  [authority]
+Symbols:
+  - `TxBody.update_key_page` — `(operations: list) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `operations` (list, required) — Key page operations (add, remove, setThreshold)
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Examples: examples/update_key_page.py
+
+### update_key  —  Update Key  [authority]
+Symbols:
+  - `TxBody.update_key` — `(new_key: str) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `newKey` (str, required) — New public key hash
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Examples: examples/update_key.py
+
+### lock_account  —  Lock Account  [authority]
+Symbols:
+  - `TxBody.lock_account` — `(height: int) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `height` (int, required) — Block height to lock until
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Examples: examples/lock_account.py
+
+### update_account_auth  —  Update Account Auth  [authority]
+Symbols:
+  - `TxBody.update_account_auth` — `(operations: list) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+Inputs:
+  - `operations` (list, required) — Auth operations (enable, disable, add, remove)
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Examples: examples/update_account_auth.py
