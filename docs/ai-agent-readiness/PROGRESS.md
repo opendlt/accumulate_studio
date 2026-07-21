@@ -59,9 +59,11 @@ Only **JS/npm** remains: NuGet/crates/PyPI/pub.dev are done and green. Provide a
 | P2-ST-02/03/05 llms.txt / llms-full.txt / AGENTS.md generator | ✅ | `scripts/generate-agent-artifacts.mjs` (SSOT-driven, **deterministic** — verified by double-run hash); `npm run gen:agent[:dist]` |
 | Generated artifacts (5 SDKs × 3 + router) | ✅ | `docs/ai-agent-readiness/generated/`; 24 ops each, per-language install/import/conventions + full per-op digest |
 | Distribute into SDK repos + package them | ✅ | committed to all 5 repos with packaging config (Cargo `include`, npm `files`, csproj `<None Pack>`, MANIFEST.in; Dart auto). rust `ddd2be5`, js `70dec26`, csharp `472c643`, python `89fb1c4`, dart `8f9a688` |
-| P2-ST-06 per-package READMEs (codegen/mcp-server/agent-pack/types) | ⬜ | not done (studio-internal, low agent-impact) |
+| P2-ST-06 per-package READMEs (codegen/mcp-server/agent-pack/types) | ✅ | READMEs added for all 4 packages; studio `704e081` |
+| P2-ST-09/10 MCP hardening + install docs | ✅ | honors `ACCUMULATE_NETWORK` + `ACCUMULATE_MCP_PERMISSION` env (safe defaults: testnet, BUILD_ONLY); typecheck clean; `apps/mcp-server/README.md` + `docs/ai-agent-readiness/MCP.md` |
+| P2-ST-07 MCP publish-ready | ✅ | `private:false`, `publishConfig.access=public`, `files`, metadata — ready to publish, not yet published |
 | P2-ST-04 full agent-pack (sdk.map.json/SAFETY.md/prompts) | ⬜ | superseded for llms/AGENTS by the new generator; SAFETY/prompts not yet emitted |
-| P2-ST-07…11 publish + harden MCP | ⏳ | gated on an npm token (MCP server publishes to npm) |
+| P2-ST-08/11 publish MCP + harness MCP-mode | ⏳ | actual npm publish + live agent runs gated on npm token / agent key |
 
 **llms.txt is committed to every SDK repo (GitHub-visible now) and packaged to ship on the next release.** It is NOT yet in the *published* registry artifacts, so `artifact-verify` LLMS_TXT stays EXPECTED_FAIL / K5 red until a republish. The 4 non-npm SDKs can be republished (2.1.3 / 1.1.2) to flip K5 green whenever desired; JS waits on the npm token.
 
