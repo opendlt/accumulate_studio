@@ -364,6 +364,18 @@ export function getCurrentNetworkConfig(): NetworkConfig {
   return NETWORKS[currentNetwork];
 }
 
+/**
+ * Set the current network by id (e.g. from the ACCUMULATE_NETWORK env var at
+ * startup). Returns true if the id was valid and applied, false otherwise.
+ */
+export function setCurrentNetwork(network: string): boolean {
+  if (Object.prototype.hasOwnProperty.call(NETWORKS, network)) {
+    currentNetwork = network as NetworkId;
+    return true;
+  }
+  return false;
+}
+
 // =============================================================================
 // Export all tools
 // =============================================================================

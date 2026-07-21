@@ -43,6 +43,8 @@ import {
   errorFromException,
 } from './permissions.js';
 
+import { setCurrentNetwork } from './tools/network.js';
+
 // =============================================================================
 // Server Configuration
 // =============================================================================
@@ -167,11 +169,24 @@ function createServer(): Server {
 // =============================================================================
 
 /**
- * Parse command line arguments
+ * Parse a permission mode string (from env or CLI). Returns undefined if unset
+ * or unrecognized, so callers can fall back to the safe default.
+ */
+function parsePermissionMode(value: string | undefined): PermissionMode | undefined {
+  const mode = value?.toUpperCase().replace(/-/g, '_');
+  if (mode === 'READ_ONLY') return PermissionMode.READ_ONLY;
+  if (mode === 'BUILD_ONLY') return PermissionMode.BUILD_ONLY;
+  if (mode === 'SIGN_AND_SUBMIT') return PermissionMode.SIGN_AND_SUBMIT;
+  return undefined;
+}
+
+/**
+ * Parse command line arguments. Precedence: CLI flag > ACCUMULATE_MCP_PERMISSION
+ * env > safe default (BUILD_ONLY). Signing is never enabled implicitly.
  */
 function parseArgs(): { permissionMode: PermissionMode } {
   const args = process.argv.slice(2);
-  let permissionMode = PermissionMode.BUILD_ONLY;
+  let permissionMode = parsePermissionMode(process.env.ACCUMULATE_MCP_PERMISSION) ?? PermissionMode.BUILD_ONLY;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -271,6 +286,16 @@ async function main(): Promise<void> {
 
   // Set permission mode
   setPermissionMode(permissionMode);
+
+  // Apply default network from env (safe default is testnet; never mainnet implicitly)
+  const netEnv = process.env.ACCUMULATE_NETWORK;
+  if (netEnv) {
+    if (setCurrentNetwork(netEnv)) {
+      console.error(`Default network: ${netEnv}`);
+    } else {
+      console.error(`Ignoring unknown ACCUMULATE_NETWORK="${netEnv}" (keeping testnet)`);
+    }
+  }
 
   // Log startup info to stderr (stdout is for MCP communication)
   console.error(`Starting ${SERVER_NAME} v${SERVER_VERSION}`);
