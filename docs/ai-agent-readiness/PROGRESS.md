@@ -67,8 +67,19 @@ Only **JS/npm** remains: NuGet/crates/PyPI/pub.dev are done and green. Provide a
 
 **llms.txt is committed to every SDK repo (GitHub-visible now) and packaged to ship on the next release.** It is NOT yet in the *published* registry artifacts, so `artifact-verify` LLMS_TXT stays EXPECTED_FAIL / K5 red until a republish. The 4 non-npm SDKs can be republished (2.1.3 / 1.1.2) to flip K5 green whenever desired; JS waits on the npm token.
 
-## Phase 3 — API Depth — ⬜ not started
-Typed tx bodies (Rust/C#), unified error hierarchy wired into the live path (Dart is the priority — its rich taxonomy is currently dead code), one canonical entry point per SDK, `Amount` helper, doctests. Large per-language effort; each change gated by build+test per language.
+## Phase 3 — API Depth — 🟡 in progress
+
+| Workstream | Status | Evidence |
+|---|---|---|
+| **D — `Amount` helper (×1e8 footgun)** | ✅ **all 5 languages** | Python `1c8bb75` (import+conversions verified), Dart `f775720` (analyze+runtime), Rust `5cc537c` (build+**doctest passes**), C# `b5929f9` (build), JS `048496d` (typecheck 0 errors + logic). Identical semantics: `Amount.acme(5).toWire() == "500000000"`, plus `baseUnits`/`credits`/`toAcme`. |
+| E — doctests / `@example` | 🟡 partial | Rust `Amount` doctest runs in `cargo test --doc`; C# `<example>`, JS `@example`, Dart dartdoc examples on `Amount`. Broader coverage (SmartSigner/TxBody) pending. |
+| A — typed tx bodies (Rust `Value`→typed, C# `Dictionary`→typed) | ⬜ | not started |
+| B — unified typed errors wired into live path (Dart priority: dead `AccError` taxonomy) | ⬜ | not started |
+| C — one canonical entry point per SDK | ⬜ | not started |
+
+Also fixed: Python `__init__.__version__` was hardcoded `2.1.1` (stale vs the 2.1.2 package) — now sourced from `_version.py` (single source).
+
+**Note:** these add a new public API (`Amount`) to each SDK, so the eventual comprehensive publish should be a **minor** bump (e.g. 2.2.0 / 1.2.0 / 0.13.0), not a patch.
 
 ## Phase 4 — Differentiation — ⬜ not started
 MCP GA, `accumulate-gen` CLI, hosted llms.txt, agent skill packs, self-verifying codegen.
