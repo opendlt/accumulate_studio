@@ -1,0 +1,18 @@
+id: create-adi
+title: Create an ADI (Accumulate Digital Identifier)
+maps_to_template: adi-creation
+network: kermit-testnet
+preconditions:
+  - funded lite token account (harness provisions via faucet)
+  - lite identity has purchased credits
+prompt_to_agent: |
+  Using the installed Accumulate SDK for <LANG>, write and run a program that
+  creates a new ADI with a key book and key page, signed by the provided lite
+  identity, and waits for the transaction to settle. Print the ADI URL and the
+  transaction id.
+inputs:
+  adi_url: acc://<generated>.acme
+success_assertions:
+  - adi_account_exists == true
+  - key_book_exists == true
+scoring: { first_try: bool, turns_to_success: int, human_interventions: int }

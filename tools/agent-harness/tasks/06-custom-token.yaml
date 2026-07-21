@@ -1,0 +1,19 @@
+id: custom-token
+title: Custom token issuance
+maps_to_template: custom-token
+network: kermit-testnet
+preconditions:
+  - existing ADI with a credited key page
+prompt_to_agent: |
+  Using the installed Accumulate SDK for <LANG>, write and run a program that
+  creates a custom token issuer under the provided ADI (symbol + precision),
+  creates a token account for that custom token, and issues an initial supply to
+  it. Print the issuer URL and the issued balance.
+inputs:
+  token_symbol: TESTTKN
+  precision: 8
+  issue_amount: 1000
+success_assertions:
+  - token_issuer_exists == true
+  - token_account_balance == issue_amount
+scoring: { first_try: bool, turns_to_success: int, human_interventions: int }

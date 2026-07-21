@@ -1,0 +1,14 @@
+id: lite-account
+title: Lite account setup
+maps_to_template: lite-account-setup
+network: kermit-testnet
+preconditions: []
+prompt_to_agent: |
+  Using the installed Accumulate SDK for <LANG>, write and run a program that
+  generates an Ed25519 key, derives its lite identity and lite token account
+  URLs, funds the lite token account from the testnet faucet, and prints the
+  confirmed ACME balance.
+inputs: {}
+success_assertions:
+  - lite_token_account_balance > 0
+scoring: { first_try: bool, turns_to_success: int, human_interventions: int }

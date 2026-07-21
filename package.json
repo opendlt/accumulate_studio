@@ -25,7 +25,11 @@
     "dev:proxy": "cd apps/sdk-proxy && python -m uvicorn app.main:app --reload --port 8000",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:proxy\"",
     "install:proxy": "cd apps/sdk-proxy && pip install -e .",
-    "validate:manifests": "npx tsx scripts/check-manifest-drift.ts"
+    "validate:manifests": "npx tsx scripts/check-manifest-drift.ts",
+    "validate:canonical": "npx tsx scripts/check-canonical-coverage.ts",
+    "verify:artifacts": "node tools/artifact-verify/verify.mjs --out docs/ai-agent-readiness/artifact-verify.json",
+    "verify:scorecard": "node tools/agent-harness/scorecard.mjs",
+    "harness:list": "node tools/agent-harness/runner.mjs --list"
   },
   "devDependencies": {
     "concurrently": "^8.2.0",

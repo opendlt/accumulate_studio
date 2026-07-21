@@ -1,0 +1,18 @@
+id: multisig-setup
+title: Multi-signature setup
+maps_to_template: multi-sig-setup
+network: kermit-testnet
+preconditions:
+  - existing ADI with a credited key page
+prompt_to_agent: |
+  Using the installed Accumulate SDK for <LANG>, write and run a program that
+  configures a key page with two keys and a signature threshold of 2, then
+  performs a transaction that requires both signatures to satisfy the threshold.
+  Print the key page threshold and the transaction status.
+inputs:
+  threshold: 2
+  key_count: 2
+success_assertions:
+  - key_page_threshold == 2
+  - multisig_tx_status == delivered
+scoring: { first_try: bool, turns_to_success: int, human_interventions: int }

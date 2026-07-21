@@ -1,0 +1,17 @@
+id: key-rotation
+title: Key rotation
+maps_to_template: key-rotation
+network: kermit-testnet
+preconditions:
+  - existing ADI with a credited key page holding a known key
+prompt_to_agent: |
+  Using the installed Accumulate SDK for <LANG>, write and run a program that
+  rotates the key on the provided key page: add a new key, remove the old key,
+  and verify the page now holds only the new key. Print the key page's key set
+  before and after.
+inputs:
+  key_page_url: acc://<generated>.acme/book/1
+success_assertions:
+  - key_page_contains_new_key == true
+  - key_page_contains_old_key == false
+scoring: { first_try: bool, turns_to_success: int, human_interventions: int }

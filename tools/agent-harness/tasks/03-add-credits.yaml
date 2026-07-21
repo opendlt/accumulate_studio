@@ -1,0 +1,19 @@
+id: add-credits
+title: Add credits to a key page
+maps_to_template: adi-creation
+network: kermit-testnet
+preconditions:
+  - funded lite token account
+  - existing ADI with a key page
+prompt_to_agent: |
+  Using the installed Accumulate SDK for <LANG>, write and run a program that
+  converts ACME into credits and adds them to the provided key page, then waits
+  for the credit balance to reflect. Print the resulting credit balance.
+  Note the amount scaling: credits use the oracle price; ACME is denominated in
+  base units (1 ACME = 1e8).
+inputs:
+  key_page_url: acc://<generated>.acme/book/1
+  credits: 5000
+success_assertions:
+  - key_page_credit_balance >= 5000
+scoring: { first_try: bool, turns_to_success: int, human_interventions: int }

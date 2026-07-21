@@ -1,0 +1,17 @@
+id: write-data
+title: Write data to a data account
+maps_to_template: data-writing
+network: kermit-testnet
+preconditions:
+  - existing ADI with a credited key page
+prompt_to_agent: |
+  Using the installed Accumulate SDK for <LANG>, write and run a program that
+  creates a data account under the provided ADI and writes a data entry to it,
+  then queries the entry back. Print the entry hash and the retrieved content.
+inputs:
+  data_account_url: acc://<generated>.acme/data
+  payload: "hello accumulate"
+success_assertions:
+  - data_account_exists == true
+  - retrieved_entry == payload
+scoring: { first_try: bool, turns_to_success: int, human_interventions: int }

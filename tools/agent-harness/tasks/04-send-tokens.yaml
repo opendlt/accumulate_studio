@@ -1,0 +1,18 @@
+id: send-tokens
+title: Send ACME tokens between accounts
+maps_to_template: token-transfer
+network: kermit-testnet
+preconditions:
+  - funded lite token account (harness provisions via faucet)
+prompt_to_agent: |
+  Using the installed Accumulate SDK for <LANG>, write and run a program that
+  sends 5 ACME from the provided lite token account to a newly created ADI token
+  account, and waits for the transaction to settle. Print the transaction id and
+  the recipient balance.
+  Amount scaling: 1 ACME = 1e8 base units — use the SDK's amount helper if one exists.
+inputs:
+  amount_acme: 5
+success_assertions:
+  - tx_status == delivered
+  - recipient_balance_increased_by == 5 ACME
+scoring: { first_try: bool, turns_to_success: int, human_interventions: int }

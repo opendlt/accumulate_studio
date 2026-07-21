@@ -1,0 +1,133 @@
+{
+  "generatedAt": null,
+  "tool": "artifact-verify",
+  "phase": "P0-ST-07",
+  "results": [
+    {
+      "lang": "rust",
+      "id": "VERSION",
+      "status": "INFO",
+      "detail": "accumulate-sdk @ 2.1.1 (crates)"
+    },
+    {
+      "lang": "rust",
+      "id": "NAME_PARITY",
+      "status": "FAIL",
+      "detail": "README tells agents to install \"accumulate-client\", which does NOT exist on crates. Real package: \"accumulate-sdk\". Fix in Phase 1."
+    },
+    {
+      "lang": "rust",
+      "id": "LLMS_TXT",
+      "status": "EXPECTED_FAIL",
+      "detail": "no llms.txt yet (delivered in Phase 2 — P2-*-01)"
+    },
+    {
+      "lang": "python",
+      "id": "VERSION",
+      "status": "INFO",
+      "detail": "accumulate-sdk-opendlt @ 2.1.1 (pypi)"
+    },
+    {
+      "lang": "python",
+      "id": "NAME_PARITY",
+      "status": "PASS",
+      "detail": "README install name matches published package (accumulate-sdk-opendlt)"
+    },
+    {
+      "lang": "python",
+      "id": "TYPE_SIGNALS",
+      "status": "PASS",
+      "detail": "wheel ships py.typed (typed API)"
+    },
+    {
+      "lang": "python",
+      "id": "LLMS_TXT",
+      "status": "EXPECTED_FAIL",
+      "detail": "no llms.txt yet (delivered in Phase 2 — P2-*-01)"
+    },
+    {
+      "lang": "dart",
+      "id": "VERSION",
+      "status": "INFO",
+      "detail": "opendlt_accumulate @ 2.1.1 (pub)"
+    },
+    {
+      "lang": "dart",
+      "id": "NAME_PARITY",
+      "status": "PASS",
+      "detail": "README install name matches published package (opendlt_accumulate)"
+    },
+    {
+      "lang": "dart",
+      "id": "LLMS_TXT",
+      "status": "EXPECTED_FAIL",
+      "detail": "no llms.txt yet (delivered in Phase 2 — P2-*-01)"
+    },
+    {
+      "lang": "csharp",
+      "id": "VERSION",
+      "status": "INFO",
+      "detail": "Acme.Net.Sdk @ 1.1.0 (nuget)"
+    },
+    {
+      "lang": "csharp",
+      "id": "NAME_PARITY",
+      "status": "PASS",
+      "detail": "README install name matches published package (Acme.Net.Sdk)"
+    },
+    {
+      "lang": "csharp",
+      "id": "TYPE_SIGNALS",
+      "status": "FAIL",
+      "detail": "nupkg ships NO .xml doc file — set <GenerateDocumentationFile>true (P1-CS-01)"
+    },
+    {
+      "lang": "csharp",
+      "id": "LLMS_TXT",
+      "status": "EXPECTED_FAIL",
+      "detail": "no llms.txt yet (delivered in Phase 2 — P2-*-01)"
+    },
+    {
+      "lang": "javascript",
+      "id": "VERSION",
+      "status": "INFO",
+      "detail": "accumulate-sdk-opendlt @ 0.12.3 (npm)"
+    },
+    {
+      "lang": "javascript",
+      "id": "NAME_PARITY",
+      "status": "FAIL",
+      "detail": "README install name \"accumulate.js\" resolves but is a DIFFERENT package than the real \"accumulate-sdk-opendlt\". Fix in Phase 1."
+    },
+    {
+      "lang": "javascript",
+      "id": "TYPE_SIGNALS",
+      "status": "FAIL",
+      "detail": "types entry \"lib/index.d.ts\" is declared but MISSING from tarball (P1-JS-02)"
+    },
+    {
+      "lang": "javascript",
+      "id": "EXPORTS_RESOLVE",
+      "status": "FAIL",
+      "detail": "27 exports target(s) do not resolve, e.g. ./lib/index.d.ts, ./lib/address/index.js, ./lib/address/index.d.ts (P1-JS-03)"
+    },
+    {
+      "lang": "javascript",
+      "id": "LLMS_TXT",
+      "status": "EXPECTED_FAIL",
+      "detail": "no llms.txt yet (delivered in Phase 2 — P2-*-01)"
+    },
+    {
+      "lang": "fleet",
+      "id": "VERSION_PARITY",
+      "status": "FAIL",
+      "detail": "distinct minor lines: 3 (2.1, 1.1, 0.12) — target 1 (K8)"
+    }
+  ],
+  "counts": {
+    "INFO": 5,
+    "FAIL": 6,
+    "EXPECTED_FAIL": 5,
+    "PASS": 4
+  }
+}
