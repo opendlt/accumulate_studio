@@ -32,11 +32,11 @@ const CANONICAL_TASK_OPS: Record<string, string[]> = {
 // Published versions verified via registry APIs (2026-07-21). A manifest whose
 // sdk_version is a placeholder (0.1.0 / commit 0000000) is drifting from reality.
 const PUBLISHED_VERSION: Record<string, string> = {
-  python: '2.1.1',
-  rust: '2.1.1',
-  dart: '2.1.1',
-  csharp: '1.1.0',
-  javascript: '0.12.3',
+  python: '2.1.2',
+  rust: '2.1.2',
+  dart: '2.1.2',
+  csharp: '1.1.1',
+  javascript: '0.12.3', // JS republish pending an npm publish token
 };
 
 interface Manifest {

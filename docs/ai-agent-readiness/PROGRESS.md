@@ -24,17 +24,22 @@ Baseline scorecard: **0 green, 5 red, 5 pending** — honest cold start.
 
 ---
 
-## Phase 1 — Front-Door Correctness — 🟡 source-complete, pending republish
+## Phase 1 — Front-Door Correctness — ✅ 4/5 published & live-verified · JS blocked on npm token
 
-All five SDK repos are on `main` with fixes verified locally (build/pack/syntax). Re-run `npm run verify:artifacts` after each package is republished to flip the checks green.
+Four SDKs republished and **verified green against the live registries** by `artifact-verify`. JS fix is committed but not published (npm auth gap — see below).
 
-| SDK | Fixes | Verified | Commit |
+| SDK | Fixes | Published | Live artifact-verify |
 |---|---|---|---|
-| **C#** | GenerateDocumentationFile (ships `.xml`), `Accumulate.Kermit()` factory, deleted `Class1` stub, ExampleReadme .NET 9 | `dotnet pack` → nupkg now contains `Acme.Net.Sdk.xml` (436 KB); `dotnet build` OK | csharp `4374652` |
-| **JS/TS** | README name `accumulate.js`→`accumulate-sdk-opendlt`, `main`/`types`/all `exports` repointed to real tsc output (`lib/src/*`), added `./helpers` subpath, amount note | all 32 package path targets resolve on disk (npm ships `/lib` wholesale) | js `4d0bbe4` |
-| **Rust** | README badge/install/link `accumulate-client`→`accumulate-sdk`, crate-doc clarifies import path | `cargo build --lib` OK; `cargo doc` intra-doc links resolve | rust `6a611bd` |
-| **Python** | ACME base-unit scaling documented on `TxBody.add_credits` | `ast.parse` OK | python `c2f915d` |
-| **Dart** | README dep pin `^2.1.0`, ACME base-unit amount note | README-only | dart `08ccba8` |
+| **C#** | GenerateDocumentationFile (ships `.xml`), `Accumulate.Kermit()` factory, deleted `Class1` stub, ExampleReadme .NET 9 | **NuGet 1.1.1** (csharp `c0c4cbf`) | TYPE_SIGNALS ✅ (nupkg now ships `Acme.Net.Sdk.xml`) |
+| **Rust** | README badge/install/link `accumulate-client`→`accumulate-sdk`, crate-doc clarifies import path | **crates.io 2.1.2** (rust `a505fda`) | NAME_PARITY ✅ |
+| **Python** | ACME base-unit scaling documented on `TxBody.add_credits` | **PyPI 2.1.2** (python `8fd15ac`) | NAME_PARITY ✅, py.typed ✅ |
+| **Dart** | README dep pin `^2.1.0`, ACME base-unit amount note, CHANGELOG | **pub.dev 2.1.2** (dart `197e5bb`) | NAME_PARITY ✅ |
+| **JS/TS** | README name→`accumulate-sdk-opendlt`, `main`/`types`/all `exports`→real tsc output (`lib/src/*`), `./helpers` subpath, amount note | ⏳ **not published** (needs npm token) | NAME_PARITY ❌, TYPE_SIGNALS ❌, EXPORTS ❌ (published 0.12.3 still broken) |
+
+**artifact-verify: 6 fails → 4 fails.** Remaining fails are all JS (3) + fleet version parity (1). K1 name-parity 3/5 → 4/5.
+
+### JS/npm publish — blocked
+`npm_recovery_codes.txt` holds 2FA **recovery codes**, which cannot authenticate `npm publish`. `npm login`/`npm token create` also needs the account **username + password** (the recovery code only replaces the OTP). **To finish JS:** provide an npm **automation/granular access token** (create at npmjs.com → Access Tokens), or run `npm login` yourself and share nothing. Then bump `javascript/package.json` 0.12.3→0.12.4 and `npm publish`. That flips K1→5/5 and clears K10.
 
 Notes:
 - C#/Dart/Python were already green on name-parity + type signals; their items were polish. Rust and JS had the genuinely fatal front-door bugs (wrong/nonexistent install name; broken types/exports) — both fixed.
@@ -42,7 +47,7 @@ Notes:
 - **Version convergence (P1-XR-01):** still skewed (2.1.1 / 2.1.1 / 2.1.1 / 1.1.0 / 0.12.3) — decision pending.
 
 ### External gate to finish Phase 1
-Republish the 5 fixed packages to their registries (npm/NuGet/crates/pub/PyPI). Requires maintainer publish tokens. After republish, `artifact-verify` NAME_PARITY (rust, js) and TYPE_SIGNALS (csharp) flip green → K1 → 5/5, K10 → clean.
+Only **JS/npm** remains: NuGet/crates/PyPI/pub.dev are done and green. Provide an npm automation token (or `npm login`), then publish `accumulate-sdk-opendlt` 0.12.4 → K1 → 5/5, K10 → clean. (Fleet version parity K8 also needs the C#→2.x / JS→2.x convergence decision, P1-XR-01.)
 
 ---
 

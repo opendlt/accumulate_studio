@@ -8,7 +8,7 @@
 
 | KPI | Metric | Status | Value | Target |
 |---|---|:--:|---|---|
-| K1 | Quickstart-verbatim (install-name parity) | 🔴 | 3/5 install-name parity (proxy for verbatim quickstart) | 5/5 |
+| K1 | Quickstart-verbatim (install-name parity) | 🔴 | 4/5 install-name parity (proxy for verbatim quickstart) | 5/5 |
 | K2 | Task first-try pass rate | ⚪ | PENDING_RUNNER | >= 90% |
 | K3 | Turns-to-first-tx | ⚪ | PENDING_RUNNER | <= 6 |
 | K4 | Human interventions per task | ⚪ | PENDING_RUNNER | <= 0.2 |
@@ -23,10 +23,10 @@
 
 | Lang | Version | Name parity | Type signals | Exports | llms.txt |
 |---|---|:--:|:--:|:--:|:--:|
-| rust | 2.1.1 | ❌ | · | · | 🔶 |
-| python | 2.1.1 | ✅ | ✅ | · | 🔶 |
-| dart | 2.1.1 | ✅ | · | · | 🔶 |
-| csharp | 1.1.0 | ✅ | ❌ | · | 🔶 |
+| rust | 2.1.2 | ✅ | · | · | 🔶 |
+| python | 2.1.2 | ✅ | ✅ | · | 🔶 |
+| dart | 2.1.2 | ✅ | · | · | 🔶 |
+| csharp | 1.1.1 | ✅ | ✅ | · | 🔶 |
 | javascript | 0.12.3 | ❌ | ❌ | ❌ | 🔶 |
 
 ## Legend

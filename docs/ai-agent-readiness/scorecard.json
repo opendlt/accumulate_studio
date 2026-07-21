@@ -4,7 +4,7 @@
     {
       "id": "K1",
       "name": "Quickstart-verbatim (install-name parity)",
-      "value": "3/5 install-name parity (proxy for verbatim quickstart)",
+      "value": "4/5 install-name parity (proxy for verbatim quickstart)",
       "status": "RED",
       "target": "5/5"
     },
@@ -75,15 +75,15 @@
   "perLang": [
     {
       "lang": "rust",
-      "version": "2.1.1",
-      "name_parity": "FAIL",
+      "version": "2.1.2",
+      "name_parity": "PASS",
       "type_signals": "-",
       "exports": "-",
       "llms": "EXPECTED_FAIL"
     },
     {
       "lang": "python",
-      "version": "2.1.1",
+      "version": "2.1.2",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "-",
@@ -91,7 +91,7 @@
     },
     {
       "lang": "dart",
-      "version": "2.1.1",
+      "version": "2.1.2",
       "name_parity": "PASS",
       "type_signals": "-",
       "exports": "-",
@@ -99,9 +99,9 @@
     },
     {
       "lang": "csharp",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "name_parity": "PASS",
-      "type_signals": "FAIL",
+      "type_signals": "PASS",
       "exports": "-",
       "llms": "EXPECTED_FAIL"
     },
@@ -123,13 +123,13 @@
         "lang": "rust",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk @ 2.1.1 (crates)"
+        "detail": "accumulate-sdk @ 2.1.2 (crates)"
       },
       {
         "lang": "rust",
         "id": "NAME_PARITY",
-        "status": "FAIL",
-        "detail": "README tells agents to install \"accumulate-client\", which does NOT exist on crates. Real package: \"accumulate-sdk\". Fix in Phase 1."
+        "status": "PASS",
+        "detail": "README install name matches published package (accumulate-sdk)"
       },
       {
         "lang": "rust",
@@ -141,7 +141,7 @@
         "lang": "python",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk-opendlt @ 2.1.1 (pypi)"
+        "detail": "accumulate-sdk-opendlt @ 2.1.2 (pypi)"
       },
       {
         "lang": "python",
@@ -165,7 +165,7 @@
         "lang": "dart",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "opendlt_accumulate @ 2.1.1 (pub)"
+        "detail": "opendlt_accumulate @ 2.1.2 (pub)"
       },
       {
         "lang": "dart",
@@ -183,7 +183,7 @@
         "lang": "csharp",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "Acme.Net.Sdk @ 1.1.0 (nuget)"
+        "detail": "Acme.Net.Sdk @ 1.1.1 (nuget)"
       },
       {
         "lang": "csharp",
@@ -194,8 +194,8 @@
       {
         "lang": "csharp",
         "id": "TYPE_SIGNALS",
-        "status": "FAIL",
-        "detail": "nupkg ships NO .xml doc file — set <GenerateDocumentationFile>true (P1-CS-01)"
+        "status": "PASS",
+        "detail": "nupkg ships lib/<tfm>/*.xml (IntelliSense docs present)"
       },
       {
         "lang": "csharp",
@@ -242,9 +242,9 @@
     ],
     "counts": {
       "INFO": 5,
-      "FAIL": 6,
+      "PASS": 6,
       "EXPECTED_FAIL": 5,
-      "PASS": 4
+      "FAIL": 4
     }
   }
 }

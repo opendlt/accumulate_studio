@@ -39,7 +39,7 @@ const TARGETS = [
     lang: 'rust',
     registry: 'crates',
     actualPackage: 'accumulate-sdk',
-    readmeInstallName: 'accumulate-client', // README: `accumulate-client = "2.0"` — does not exist
+    readmeInstallName: 'accumulate-sdk', // fixed & published in 2.1.2 (was wrongly `accumulate-client`)
     note: 'lib import name is accumulate_client (correct); the crate name is accumulate-sdk',
   },
   {
