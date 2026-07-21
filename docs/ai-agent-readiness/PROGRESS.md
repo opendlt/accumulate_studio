@@ -51,8 +51,19 @@ Only **JS/npm** remains: NuGet/crates/PyPI/pub.dev are done and green. Provide a
 
 ---
 
-## Phase 2 — Machine-Readable Interface — ⬜ not started
-Generators (`llms.txt`/`llms-full.txt`/`AGENTS.md` from the manifest SSOT), per-package READMEs, and MCP publish. Depends on refreshing manifest metadata (P2-ST-01) — the manifests currently carry placeholder `sdk_version` (flagged by `check-canonical-coverage`). MCP publish needs npm credentials.
+## Phase 2 — Machine-Readable Interface — 🟡 generators done & distributed; MCP publish gated
+
+| Task | Status | Evidence |
+|---|---|---|
+| P2-ST-01 refresh manifest metadata | ✅ | all 5 manifests now carry real `sdk_version`+`commit`; `validate:canonical` placeholder warning cleared; studio `f9588d4` |
+| P2-ST-02/03/05 llms.txt / llms-full.txt / AGENTS.md generator | ✅ | `scripts/generate-agent-artifacts.mjs` (SSOT-driven, **deterministic** — verified by double-run hash); `npm run gen:agent[:dist]` |
+| Generated artifacts (5 SDKs × 3 + router) | ✅ | `docs/ai-agent-readiness/generated/`; 24 ops each, per-language install/import/conventions + full per-op digest |
+| Distribute into SDK repos + package them | ✅ | committed to all 5 repos with packaging config (Cargo `include`, npm `files`, csproj `<None Pack>`, MANIFEST.in; Dart auto). rust `ddd2be5`, js `70dec26`, csharp `472c643`, python `89fb1c4`, dart `8f9a688` |
+| P2-ST-06 per-package READMEs (codegen/mcp-server/agent-pack/types) | ⬜ | not done (studio-internal, low agent-impact) |
+| P2-ST-04 full agent-pack (sdk.map.json/SAFETY.md/prompts) | ⬜ | superseded for llms/AGENTS by the new generator; SAFETY/prompts not yet emitted |
+| P2-ST-07…11 publish + harden MCP | ⏳ | gated on an npm token (MCP server publishes to npm) |
+
+**llms.txt is committed to every SDK repo (GitHub-visible now) and packaged to ship on the next release.** It is NOT yet in the *published* registry artifacts, so `artifact-verify` LLMS_TXT stays EXPECTED_FAIL / K5 red until a republish. The 4 non-npm SDKs can be republished (2.1.3 / 1.1.2) to flip K5 green whenever desired; JS waits on the npm token.
 
 ## Phase 3 — API Depth — ⬜ not started
 Typed tx bodies (Rust/C#), unified error hierarchy wired into the live path (Dart is the priority — its rich taxonomy is currently dead code), one canonical entry point per SDK, `Amount` helper, doctests. Large per-language effort; each change gated by build+test per language.
