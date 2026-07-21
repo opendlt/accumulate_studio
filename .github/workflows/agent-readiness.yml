@@ -1,0 +1,58 @@
+name: agent-readiness
+
+# Phase 0 (P0-XR-10): continuously produce the AI-agent readiness KPIs.
+#   - Hard gates (studio controls these): manifest drift + canonical coverage.
+#   - Informational until Phase 1 publishes fixes: artifact-verify against live
+#     registries (SDK registry state is not controlled by this repo), plus the
+#     generated scorecard uploaded as a build artifact.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      # --- Hard gates: this repo owns the manifests -----------------------
+      - name: Validate manifest drift (P2 SSOT)
+        run: npm run validate:manifests
+
+      - name: Validate canonical task coverage (P0-ST-09)
+        run: npm run validate:canonical
+
+      # --- Harness self-test: task specs load & are well-formed ------------
+      - name: Harness self-test
+        run: node tools/agent-harness/runner.mjs --self-test
+
+      # --- Informational until Phase 1 republishes packages ---------------
+      - name: Verify published artifacts (P0-ST-07)
+        id: artifacts
+        continue-on-error: true
+        run: npm run verify:artifacts
+
+      - name: Regenerate scorecard (P0-XR-06)
+        run: npm run verify:scorecard
+
+      - name: Upload scorecard
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-readiness-scorecard
+          path: |
+            docs/ai-agent-readiness/SCORECARD.md
+            docs/ai-agent-readiness/scorecard.json
+            docs/ai-agent-readiness/artifact-verify.json
+
+      # Once Phase 1 lands and packages are republished, flip artifact-verify
+      # into a hard gate by removing continue-on-error above.

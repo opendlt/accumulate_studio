@@ -72,7 +72,25 @@ const opt = (name, def) => {
   return i >= 0 ? args[i + 1] : def;
 };
 
+function selfTest() {
+  const tasks = allTasks();
+  const errors = [];
+  const required = ['id', 'title', 'network', 'template'];
+  if (tasks.length !== 8) errors.push(`expected 8 canonical task specs, found ${tasks.length}`);
+  for (const t of tasks) {
+    for (const f of required) if (!t[f]) errors.push(`${t.file}: missing "${f === 'template' ? 'maps_to_template' : f}"`);
+  }
+  if (errors.length) {
+    console.error('Harness self-test FAILED:');
+    for (const e of errors) console.error(`  - ${e}`);
+    process.exit(1);
+  }
+  console.log(`Harness self-test PASS: ${tasks.length} task specs well-formed; ${LANGS.length} langs; modes ${MODES.join('/')}.`);
+}
+
 function main() {
+  if (args.includes('--self-test')) return selfTest();
+
   const tasks = allTasks();
 
   if (args.includes('--list')) {
