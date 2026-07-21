@@ -71,9 +71,9 @@ Only **JS/npm** remains: NuGet/crates/PyPI/pub.dev are done and green. Provide a
 
 | Workstream | Status | Evidence |
 |---|---|---|
-| **D — `Amount` helper (×1e8 footgun)** | ✅ **all 5 languages** | Python `1c8bb75` (import+conversions verified), Dart `f775720` (analyze+runtime), Rust `5cc537c` (build+**doctest passes**), C# `b5929f9` (build), JS `048496d` (typecheck 0 errors + logic). Identical semantics: `Amount.acme(5).toWire() == "500000000"`, plus `baseUnits`/`credits`/`toAcme`. |
+| **D — `Amount` helper (×1e8 footgun)** | ✅ **all 5 languages + TESTNET-VERIFIED** | Python `1c8bb75`, Dart `f775720`, Rust `5cc537c` (build+**doctest**), C# `b5929f9`, JS `048496d` (typecheck 0 errors). **On-chain proof (Kermit):** `Amount.credits(1000, oracle)` bought credits and `Amount.acme(1)` sent exactly `100000000` base units; recipient's on-chain balance confirmed 1 ACME delivered. Testnet verification loop established. |
 | E — doctests / `@example` | 🟡 partial | Rust `Amount` doctest runs in `cargo test --doc`; C# `<example>`, JS `@example`, Dart dartdoc examples on `Amount`. Broader coverage (SmartSigner/TxBody) pending. |
-| A — typed tx bodies (Rust `Value`→typed, C# `Dictionary`→typed) | ⬜ | not started |
+| A — typed tx bodies (Rust `Value`→typed, C# `Dictionary`→typed) | ⚠️ HIGH-RISK — needs byte-compat harness | The full signing path (`marshal_body_to_binary`) is byte-exact and Value/Dictionary-based; a bad refactor silently breaks signatures for all users. Requires a golden marshaled-bytes test (assert identical before/after) + per-tx-type testnet verification before shipping. Recommend building the byte-compat harness first. |
 | B — unified typed errors wired into live path (Dart priority: dead `AccError` taxonomy) | ⬜ | not started |
 | C — one canonical entry point per SDK | ⬜ | not started |
 
