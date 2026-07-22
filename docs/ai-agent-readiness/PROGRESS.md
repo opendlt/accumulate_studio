@@ -46,20 +46,23 @@ Notes:
 - **Remaining Phase 1 polish (optional, lower value):** Python root-vs-`unified` reconcile is moot (GitHub repo root *is* `unified/`); selfcheck count refresh (P1-PY-03) and Dart example-folder decluttering (P1-DT-02) not yet done.
 - **Version convergence (P1-XR-01):** still skewed (2.1.1 / 2.1.1 / 2.1.1 / 1.1.0 / 0.12.3) — decision pending.
 
-## Comprehensive Publish (2026-07-22) — 4/6 live, JS + MCP blocked on npm 2FA
+## Comprehensive Publish (2026-07-22) — ✅ 6/6 LIVE
 
-One coordinated release bundling all Phase 1–3 work. **Published & verified:**
-- **crates.io** `accumulate-sdk` **2.2.0** (rust `ccdf688`)
-- **PyPI** `accumulate-sdk-opendlt` **2.2.0** (python `1096ae9`) — wheel contains `amounts.py`
-- **pub.dev** `opendlt_accumulate` **2.2.0** (dart `e58d10d`)
-- **NuGet** `Acme.Net.Sdk` **1.2.0** (csharp `6cf85db`) — nupkg has XML docs + `llms.txt` + `AGENTS.md`
+One coordinated release bundling all Phase 1–3 work. **All published & verified against the live registries:**
+- **crates.io** `accumulate-sdk` **2.2.0** — ships `llms.txt` ✅
+- **PyPI** `accumulate-sdk-opendlt` **2.2.0** — wheel has `amounts.py` + `py.typed` (llms.txt in sdist, not wheel)
+- **pub.dev** `opendlt_accumulate` **2.2.0** — ships `llms.txt` ✅
+- **NuGet** `Acme.Net.Sdk` **1.2.0** — XML docs + `llms.txt` ✅
+- **npm** `accumulate-sdk-opendlt` **0.13.0** — `types`/`exports` resolve + `llms.txt` ✅
+- **npm** `accumulate-studio-mcp` **1.0.0** — the Accumulate MCP, self-contained bundle (only `@modelcontextprotocol/sdk` external)
 
-Each ships the `Amount` helper, refreshed `llms.txt`/`llms-full.txt`/`AGENTS.md`, and the Phase 3 fixes. Studio manifests bumped + artifacts regenerated (`89e38a7`).
+Each SDK ships the `Amount` helper, `llms.txt`/`llms-full.txt`/`AGENTS.md`, and the Phase 3 fixes.
 
-**Blocked: JS `0.13.0` + MCP `@accumulate-studio/mcp-server 1.0.0`** (both npm). The `npm` CLI can't run here (`spawn EPERM`, Windows-level), so I published via the registry HTTP API directly; the token authenticates (`whoami` → `jason-gregoire`) but publish is rejected with *"You must provide a one-time pass"* — the account requires **2FA for writes** and the supplied token is a *publish/classic* token, which still needs an OTP. JS 0.13.0 is built, verified, committed (`c030553`), and ready.
+**npm publish path:** the `npm` CLI can't run here (`spawn EPERM`, Windows), so JS + MCP were published via the registry HTTP API directly (`scratchpad/npm-http-publish.mjs` — builds packument + sha512 integrity; registry validates it). Needed an **automation** token (bypasses 2FA); the first classic token was rejected for an OTP. MCP renamed from the unregistered scope `@accumulate-studio/mcp-server` → unscoped `accumulate-studio-mcp`.
 
-### To finish (one remaining gate)
-Create an **npm Automation token** (npmjs.com → Access Tokens → Generate New Token → **Classic → Automation**; bypasses 2FA). With it I publish JS 0.13.0 + the MCP immediately → K1 → 5/5, K10 → clean, MCP live (K9).
+### Scorecard after publish (deterministic KPIs)
+**K1 🟢 5/5** (verbatim install works every language) · **K9 🟢** (MCP live) · **K10 🟢** (zero docs-vs-artifact drift). artifact-verify: **13 pass / 1 fail**.
+Remaining reds: **K5 4/5** (Python *wheel* lacks llms.txt — sdist + GitHub + other 4 SDKs have it; minor) and **K8** (fleet version parity: 2.2 / 1.2 / 0.13 — a semver convergence decision for C# and JS, not a defect).
 
 ---
 
