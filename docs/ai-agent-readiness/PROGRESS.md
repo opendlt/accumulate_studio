@@ -46,8 +46,20 @@ Notes:
 - **Remaining Phase 1 polish (optional, lower value):** Python root-vs-`unified` reconcile is moot (GitHub repo root *is* `unified/`); selfcheck count refresh (P1-PY-03) and Dart example-folder decluttering (P1-DT-02) not yet done.
 - **Version convergence (P1-XR-01):** still skewed (2.1.1 / 2.1.1 / 2.1.1 / 1.1.0 / 0.12.3) — decision pending.
 
-### External gate to finish Phase 1
-Only **JS/npm** remains: NuGet/crates/PyPI/pub.dev are done and green. Provide an npm automation token (or `npm login`), then publish `accumulate-sdk-opendlt` 0.12.4 → K1 → 5/5, K10 → clean. (Fleet version parity K8 also needs the C#→2.x / JS→2.x convergence decision, P1-XR-01.)
+## Comprehensive Publish (2026-07-22) — 4/6 live, JS + MCP blocked on npm 2FA
+
+One coordinated release bundling all Phase 1–3 work. **Published & verified:**
+- **crates.io** `accumulate-sdk` **2.2.0** (rust `ccdf688`)
+- **PyPI** `accumulate-sdk-opendlt` **2.2.0** (python `1096ae9`) — wheel contains `amounts.py`
+- **pub.dev** `opendlt_accumulate` **2.2.0** (dart `e58d10d`)
+- **NuGet** `Acme.Net.Sdk` **1.2.0** (csharp `6cf85db`) — nupkg has XML docs + `llms.txt` + `AGENTS.md`
+
+Each ships the `Amount` helper, refreshed `llms.txt`/`llms-full.txt`/`AGENTS.md`, and the Phase 3 fixes. Studio manifests bumped + artifacts regenerated (`89e38a7`).
+
+**Blocked: JS `0.13.0` + MCP `@accumulate-studio/mcp-server 1.0.0`** (both npm). The `npm` CLI can't run here (`spawn EPERM`, Windows-level), so I published via the registry HTTP API directly; the token authenticates (`whoami` → `jason-gregoire`) but publish is rejected with *"You must provide a one-time pass"* — the account requires **2FA for writes** and the supplied token is a *publish/classic* token, which still needs an OTP. JS 0.13.0 is built, verified, committed (`c030553`), and ready.
+
+### To finish (one remaining gate)
+Create an **npm Automation token** (npmjs.com → Access Tokens → Generate New Token → **Classic → Automation**; bypasses 2FA). With it I publish JS 0.13.0 + the MCP immediately → K1 → 5/5, K10 → clean, MCP live (K9).
 
 ---
 
