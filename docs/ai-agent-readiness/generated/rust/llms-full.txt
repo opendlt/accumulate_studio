@@ -1,6 +1,6 @@
 # Accumulate Rust SDK — Full API Digest
 
-Package `accumulate-sdk` v2.1.2 (source commit a505fda). Generated from the Accumulate SDK manifest (single source of truth).
+Package `accumulate-sdk` v2.2.0 (source commit a505fda). Generated from the Accumulate SDK manifest (single source of truth).
 
 ## Install & import
 ```

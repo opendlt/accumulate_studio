@@ -1,6 +1,6 @@
 # Accumulate Rust SDK
 
-> Build on the Accumulate blockchain from Rust. Package: `accumulate-sdk` (v2.1.2).
+> Build on the Accumulate blockchain from Rust. Package: `accumulate-sdk` (v2.2.0).
 
 ## Install
 ```

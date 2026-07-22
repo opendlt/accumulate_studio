@@ -1,6 +1,6 @@
 # Accumulate Python SDK — Full API Digest
 
-Package `accumulate-sdk-opendlt` v2.1.2 (source commit 8fd15ac). Generated from the Accumulate SDK manifest (single source of truth).
+Package `accumulate-sdk-opendlt` v2.2.0 (source commit 8fd15ac). Generated from the Accumulate SDK manifest (single source of truth).
 
 ## Install & import
 ```

@@ -1,6 +1,6 @@
 # Accumulate Python SDK
 
-> Build on the Accumulate blockchain from Python. Package: `accumulate-sdk-opendlt` (v2.1.2).
+> Build on the Accumulate blockchain from Python. Package: `accumulate-sdk-opendlt` (v2.2.0).
 
 ## Install
 ```
