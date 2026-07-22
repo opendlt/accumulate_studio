@@ -60,9 +60,14 @@ Each SDK ships the `Amount` helper, `llms.txt`/`llms-full.txt`/`AGENTS.md`, and 
 
 **npm publish path:** the `npm` CLI can't run here (`spawn EPERM`, Windows), so JS + MCP were published via the registry HTTP API directly (`scratchpad/npm-http-publish.mjs` — builds packument + sha512 integrity; registry validates it). Needed an **automation** token (bypasses 2FA); the first classic token was rejected for an OTP. MCP renamed from the unregistered scope `@accumulate-studio/mcp-server` → unscoped `accumulate-studio-mcp`.
 
-### Scorecard after publish (deterministic KPIs)
-**K1 🟢 5/5** (verbatim install works every language) · **K9 🟢** (MCP live) · **K10 🟢** (zero docs-vs-artifact drift). artifact-verify: **13 pass / 1 fail**.
-Remaining reds: **K5 4/5** (Python *wheel* lacks llms.txt — sdist + GitHub + other 4 SDKs have it; minor) and **K8** (fleet version parity: 2.2 / 1.2 / 0.13 — a semver convergence decision for C# and JS, not a defect).
+### Scorecard — ALL deterministic KPIs green (2026-07-22)
+**K1 🟢 5/5** · **K5 🟢 5/5** · **K8 🟢** · **K9 🟢** · **K10 🟢**. artifact-verify: **15 pass / 0 fail**.
+
+Follow-up release closing the last two reds:
+- **K5 → 5/5:** Python **2.2.1** ships `llms.txt` inside the *wheel* (via `[tool.setuptools.data-files]`), verified in the built wheel.
+- **K8 → green:** fleet converged onto the **2.2.x** line — C# **1.2.0 → 2.2.0**, JS **0.13.0 → 2.2.0** (Rust/Python/Dart already 2.2.x). All five SDKs now report the same minor line.
+
+Only the 5 pending KPIs remain (K2–K4 agent-runner + K6/K7), all gated on turning on the agent harness (needs an agent API key). Every deterministic, ship-side objective is met.
 
 ---
 
