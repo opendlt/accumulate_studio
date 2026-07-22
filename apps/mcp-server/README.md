@@ -1,4 +1,4 @@
-# @accumulate-studio/mcp-server
+# accumulate-studio-mcp
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that gives an AI agent typed, permissioned tools for the **Accumulate** blockchain — query accounts, build and validate transactions, sign & submit, and verify receipts — over stdio.
 
@@ -49,7 +49,7 @@ Add to your MCP client config (Claude Code / Codex / any MCP host). See `docs/ai
   "mcpServers": {
     "accumulate": {
       "command": "npx",
-      "args": ["-y", "@accumulate-studio/mcp-server"],
+      "args": ["-y", "accumulate-studio-mcp"],
       "env": { "ACCUMULATE_NETWORK": "testnet", "ACCUMULATE_MCP_PERMISSION": "BUILD_ONLY" }
     }
   }

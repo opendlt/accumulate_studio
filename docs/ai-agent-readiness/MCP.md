@@ -1,6 +1,6 @@
 # Accumulate MCP — install & use (Phase 2 · P2-ST-09)
 
-The Accumulate MCP server (`@accumulate-studio/mcp-server`) gives an AI agent 14 typed tools for Accumulate with a safe-by-default permission model. This page is the install reference.
+The Accumulate MCP server (`accumulate-studio-mcp`) gives an AI agent 14 typed tools for Accumulate with a safe-by-default permission model. This page is the install reference.
 
 ## What an agent gets
 
@@ -25,7 +25,7 @@ Claude Code / any MCP host — add to the MCP config:
   "mcpServers": {
     "accumulate": {
       "command": "npx",
-      "args": ["-y", "@accumulate-studio/mcp-server"],
+      "args": ["-y", "accumulate-studio-mcp"],
       "env": {
         "ACCUMULATE_NETWORK": "testnet",
         "ACCUMULATE_MCP_PERMISSION": "BUILD_ONLY"
@@ -67,4 +67,4 @@ Keep this on **testnet** for agent development. The server bundles no keys — s
 
 ## Status
 
-Publish is gated on an npm token and is bundled into the comprehensive end-of-program publish. The server itself is hardened and publish-ready (`private: false`, `bin`, `files`, honors `ACCUMULATE_NETWORK` / `ACCUMULATE_MCP_PERMISSION`).
+**Published:** `accumulate-studio-mcp@1.0.0` on npm (self-contained bundle; only `@modelcontextprotocol/sdk` is an external dependency). Hardened with safe defaults (testnet, `BUILD_ONLY`) and honors `ACCUMULATE_NETWORK` / `ACCUMULATE_MCP_PERMISSION`. Install with `npx -y accumulate-studio-mcp`.

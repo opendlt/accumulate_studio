@@ -495,7 +495,7 @@ export function generateMCPConfig(flow: Flow): MCPConfig {
     mcpServers: {
       'accumulate-mcp': {
         command: 'npx',
-        args: ['-y', '@accumulate-studio/mcp-server'],
+        args: ['-y', 'accumulate-studio-mcp'],
         env: {
           ACCUMULATE_NETWORK: flow.network ?? 'testnet',
         },
