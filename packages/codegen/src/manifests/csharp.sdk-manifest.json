@@ -1,6 +1,6 @@
 {
   "sdk_name": "opendlt-c-sharp-v2v3-sdk",
-  "sdk_version": "1.2.0",
+  "sdk_version": "2.2.0",
   "commit": "c0c4cbf",
   "generated_at": "2026-07-21T00:00:00Z",
   "entrypoints": [

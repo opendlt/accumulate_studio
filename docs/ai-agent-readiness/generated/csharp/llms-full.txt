@@ -1,6 +1,6 @@
 # Accumulate C# SDK — Full API Digest
 
-Package `Acme.Net.Sdk` v1.2.0 (source commit c0c4cbf). Generated from the Accumulate SDK manifest (single source of truth).
+Package `Acme.Net.Sdk` v2.2.0 (source commit c0c4cbf). Generated from the Accumulate SDK manifest (single source of truth).
 
 ## Install & import
 ```
