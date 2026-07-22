@@ -32,8 +32,8 @@
     {
       "id": "K5",
       "name": "API-ingestion coverage (llms.txt shipped)",
-      "value": "4/5",
-      "status": "RED",
+      "value": "5/5",
+      "status": "GREEN",
       "target": "5/5 (Phase 2)"
     },
     {
@@ -53,7 +53,7 @@
     {
       "id": "K8",
       "name": "Fleet version parity",
-      "value": "distinct minor lines: 3 (2.2, 1.2, 0.13) — target 1 (K8)",
+      "value": "distinct minor lines: 2 (2.2, 1.2) — target 1 (K8)",
       "status": "RED",
       "target": "1 minor line"
     },
@@ -83,11 +83,11 @@
     },
     {
       "lang": "python",
-      "version": "2.2.0",
+      "version": "2.2.1",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "-",
-      "llms": "EXPECTED_FAIL"
+      "llms": "PASS"
     },
     {
       "lang": "dart",
@@ -107,7 +107,7 @@
     },
     {
       "lang": "javascript",
-      "version": "0.13.0",
+      "version": "2.2.0",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "PASS",
@@ -141,7 +141,7 @@
         "lang": "python",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk-opendlt @ 2.2.0 (pypi)"
+        "detail": "accumulate-sdk-opendlt @ 2.2.1 (pypi)"
       },
       {
         "lang": "python",
@@ -158,8 +158,8 @@
       {
         "lang": "python",
         "id": "LLMS_TXT",
-        "status": "EXPECTED_FAIL",
-        "detail": "no llms.txt yet (delivered in Phase 2 — P2-*-01)"
+        "status": "PASS",
+        "detail": "ships llms.txt/llms-full.txt"
       },
       {
         "lang": "dart",
@@ -207,7 +207,7 @@
         "lang": "javascript",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk-opendlt @ 0.13.0 (npm)"
+        "detail": "accumulate-sdk-opendlt @ 2.2.0 (npm)"
       },
       {
         "lang": "javascript",
@@ -237,13 +237,12 @@
         "lang": "fleet",
         "id": "VERSION_PARITY",
         "status": "FAIL",
-        "detail": "distinct minor lines: 3 (2.2, 1.2, 0.13) — target 1 (K8)"
+        "detail": "distinct minor lines: 2 (2.2, 1.2) — target 1 (K8)"
       }
     ],
     "counts": {
       "INFO": 5,
-      "PASS": 13,
-      "EXPECTED_FAIL": 1,
+      "PASS": 14,
       "FAIL": 1
     }
   }
