@@ -66,7 +66,7 @@ const TARGETS = [
     lang: 'javascript',
     registry: 'npm',
     actualPackage: 'accumulate-sdk-opendlt',
-    readmeInstallName: 'accumulate.js', // README: `npm install accumulate.js` — different upstream pkg
+    readmeInstallName: 'accumulate-sdk-opendlt', // fixed & published in 0.13.0 (was wrongly `accumulate.js`)
     expectTypesEntry: true,
     expectExportsResolve: true,
   },

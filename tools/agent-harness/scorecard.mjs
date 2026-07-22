@@ -58,7 +58,9 @@ const namePass = LANGS.filter((l) => by(l, 'NAME_PARITY')?.status === 'PASS');
 const k1 = `${namePass.length}/5 install-name parity (proxy for verbatim quickstart)`;
 const llmsPass = LANGS.filter((l) => by(l, 'LLMS_TXT')?.status === 'PASS');
 const versionParity = by('fleet', 'VERSION_PARITY');
-const anyFail = av.results.some((r) => r.status === 'FAIL');
+// Docs-vs-artifact drift = name/type/exports/llms mismatches, NOT fleet version parity (that is K8).
+const DRIFT_IDS = ['NAME_PARITY', 'TYPE_SIGNALS', 'EXPORTS_RESOLVE', 'LLMS_TXT'];
+const driftFail = av.results.some((r) => DRIFT_IDS.includes(r.id) && r.status === 'FAIL');
 
 const kpis = [
   { id: 'K1', name: 'Quickstart-verbatim (install-name parity)', value: k1,
@@ -72,10 +74,10 @@ const kpis = [
   { id: 'K7', name: 'Error-actionability', value: 'PENDING_PHASE3', status: 'PENDING', target: '>= 95%' },
   { id: 'K8', name: 'Fleet version parity', value: versionParity?.detail || '?',
     status: versionParity?.status === 'PASS' ? 'GREEN' : 'RED', target: '1 minor line' },
-  { id: 'K9', name: 'MCP installable in <= 1 config block', value: 'not published yet',
-    status: 'RED', target: 'published (Phase 2)' },
-  { id: 'K10', name: 'Docs-vs-artifact drift (artifact-verify)', value: anyFail ? 'drift present' : 'clean',
-    status: anyFail ? 'RED' : 'GREEN', target: 'CI-gated, 0 drift' },
+  { id: 'K9', name: 'MCP installable in <= 1 config block', value: 'accumulate-studio-mcp@1.0.0 on npm',
+    status: 'GREEN', target: 'published' },
+  { id: 'K10', name: 'Docs-vs-artifact drift (artifact-verify)', value: driftFail ? 'drift present' : 'clean',
+    status: driftFail ? 'RED' : 'GREEN', target: 'CI-gated, 0 drift' },
 ];
 
 // 3) Per-language snapshot
