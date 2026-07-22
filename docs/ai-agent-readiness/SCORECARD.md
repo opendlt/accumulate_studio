@@ -15,7 +15,7 @@
 | K5 | API-ingestion coverage (llms.txt shipped) | 🟢 | 5/5 | 5/5 (Phase 2) |
 | K6 | Typed-surface ratio | ⚪ | PENDING_PHASE3 | 100% |
 | K7 | Error-actionability | ⚪ | PENDING_PHASE3 | >= 95% |
-| K8 | Fleet version parity | 🔴 | distinct minor lines: 2 (2.2, 1.2) — target 1 (K8) | 1 minor line |
+| K8 | Fleet version parity | 🟢 | distinct minor lines: 1 (2.2) — target 1 (K8) | 1 minor line |
 | K9 | MCP installable in <= 1 config block | 🟢 | accumulate-studio-mcp@1.0.0 on npm | published |
 | K10 | Docs-vs-artifact drift (artifact-verify) | 🟢 | clean | CI-gated, 0 drift |
 
@@ -26,7 +26,7 @@
 | rust | 2.2.0 | ✅ | · | · | ✅ |
 | python | 2.2.1 | ✅ | ✅ | · | ✅ |
 | dart | 2.2.0 | ✅ | · | · | ✅ |
-| csharp | 1.2.0 | ✅ | ✅ | · | ✅ |
+| csharp | 2.2.0 | ✅ | ✅ | · | ✅ |
 | javascript | 2.2.0 | ✅ | ✅ | ✅ | ✅ |
 
 ## Legend

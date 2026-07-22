@@ -67,7 +67,7 @@
       "lang": "csharp",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "Acme.Net.Sdk @ 1.2.0 (nuget)"
+      "detail": "Acme.Net.Sdk @ 2.2.0 (nuget)"
     },
     {
       "lang": "csharp",
@@ -120,13 +120,12 @@
     {
       "lang": "fleet",
       "id": "VERSION_PARITY",
-      "status": "FAIL",
-      "detail": "distinct minor lines: 2 (2.2, 1.2) — target 1 (K8)"
+      "status": "PASS",
+      "detail": "distinct minor lines: 1 (2.2) — target 1 (K8)"
     }
   ],
   "counts": {
     "INFO": 5,
-    "PASS": 14,
-    "FAIL": 1
+    "PASS": 15
   }
 }
