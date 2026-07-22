@@ -17,7 +17,7 @@ let r = signer.sign_submit_and_wait(principal, body).await?;
 - **Testnet first:** target Kermit and fund lite accounts via the faucet before spending.
 - **Prerequisites matter:** create an ADI, then buy credits for its key page before it can sign; wait for balances/credits to settle before the next step.
 - **Errors are typed:** branch on the SDK error type/code; retry only on network errors, not validation errors.
-- **Entry point:** start from `AccumulateClient` — do not hand-roll envelopes or signing.
+- **One canonical client:** connect with `AccumulateClient`, build with `TxBody`, sign with `SmartSigner`. Do not hand-roll envelopes/signing, and ignore any alternate or legacy client classes — this is the only path you need.
 
 ## Operations available
 - **utility:** `generate_keys`, `faucet`, `wait_for_balance`, `wait_for_credits`

@@ -231,7 +231,7 @@ function renderAgents(lang, m) {
   L.push('- **Testnet first:** target Kermit and fund lite accounts via the faucet before spending.');
   L.push('- **Prerequisites matter:** create an ADI, then buy credits for its key page before it can sign; wait for balances/credits to settle before the next step.');
   L.push('- **Errors are typed:** branch on the SDK error type/code; retry only on network errors, not validation errors.');
-  L.push('- **Entry point:** start from `' + m.entrypoints[0]?.symbol + '` — do not hand-roll envelopes or signing.');
+  L.push('- **One canonical client:** connect with `' + m.entrypoints[0]?.symbol + '`, build with `TxBody`, sign with `SmartSigner`. Do not hand-roll envelopes/signing, and ignore any alternate or legacy client classes — this is the only path you need.');
   L.push('');
   L.push('## Operations available');
   const groups = opsByCategory(m.operations);
