@@ -4,37 +4,37 @@
     {
       "method": "faucet",
       "params": {
-        "url": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089/acme"
+        "url": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e/acme"
       }
     },
     {
       "method": "faucet",
       "params": {
-        "url": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089/acme"
+        "url": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e/acme"
       }
     },
     {
       "method": "faucet",
       "params": {
-        "url": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089/acme"
+        "url": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e/acme"
       }
     },
     {
       "method": "faucet",
       "params": {
-        "url": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089/acme"
+        "url": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e/acme"
       }
     },
     {
       "method": "faucet",
       "params": {
-        "url": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089/acme"
+        "url": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e/acme"
       }
     },
     {
       "method": "query",
       "params": {
-        "scope": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089/acme"
+        "scope": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e/acme"
       }
     },
     {
@@ -46,7 +46,7 @@
     {
       "method": "query",
       "params": {
-        "scope": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089"
+        "scope": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e"
       }
     },
     {
@@ -56,23 +56,23 @@
           "signatures": [
             {
               "type": "ed25519",
-              "publicKey": "9d58113cfa5c8216c363e4b08363782a633df61f93ea1f21425110995ef2df42",
-              "signature": "6449f8a186c8eaf60da9a568629d4fadeda8f254c1643fcc92440e91d81df19ad54f58b59c196646f36a585c80769b187d24ca7f693a6456a60403c238791f05",
-              "signer": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089",
+              "publicKey": "f6996c0b2dcb8dac9960283d2da273eb4200d9c73c75b3ead408a3a637719db8",
+              "signature": "50ab6182353be7a045785fa58b9c9dfff453144953c1aa0b48532cd9bc418c424b8d415d8fcc2538e06dab0cea81de89ad64186ed073938aa4a49e3cd2225700",
+              "signer": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e",
               "signerVersion": 1,
-              "timestamp": 1782091736332000,
-              "transactionHash": "c038593dc0fe71b591d954fb3541842a60de949b5fd84c1fc9bb9bd1adda1470"
+              "timestamp": 1785283497945000,
+              "transactionHash": "577d93a47c1c1ad54ff94de0e170c988c6b117181d4132f03da569df2598a9ec"
             }
           ],
           "transaction": [
             {
               "header": {
-                "principal": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089/acme",
-                "initiator": "e88a14e13c48ab6f7380a551cd9ed8d58506a2e7f22b8cfd771c929aac66fc4c"
+                "principal": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e/acme",
+                "initiator": "cb7aaf7509f8f9c70dd9ef6cac5e626bc1abb4e66117cc4815efde21b50b268a"
               },
               "body": {
                 "type": "addCredits",
-                "recipient": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089",
+                "recipient": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e",
                 "amount": "4000000",
                 "oracle": 50000000
               }
@@ -84,7 +84,7 @@
     {
       "method": "query",
       "params": {
-        "scope": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089"
+        "scope": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e"
       }
     },
     {
@@ -94,25 +94,25 @@
           "signatures": [
             {
               "type": "ed25519",
-              "publicKey": "9d58113cfa5c8216c363e4b08363782a633df61f93ea1f21425110995ef2df42",
-              "signature": "544ea4ba633cef929003683c4ddf093e94cc4c7aa09fab5d44cbae71f00ead37bfa8aebb66d79f815ab1083ed581d5f5ec6b4e0127853c67f33ada54f1f94c00",
-              "signer": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089",
+              "publicKey": "f6996c0b2dcb8dac9960283d2da273eb4200d9c73c75b3ead408a3a637719db8",
+              "signature": "a77344088ff87e972622df2ac6acc71d50023179c59ce49bc8caad1a919a7e969ef01b4ebb68f041c8bf8c51323c0c2a3d6a1d1cd0e33e1b5143362f0326430c",
+              "signer": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e",
               "signerVersion": 1,
-              "timestamp": 1782091741360000,
-              "transactionHash": "7cc0fb73ebe8dd92672eb6ae46293b5cddfaf945fe4e8b38e79233026caccb6c"
+              "timestamp": 1785283502987000,
+              "transactionHash": "3cdbff41ea0460dc7fe9c8c6a3975334b3843c6a744b11d23097e104a911a34f"
             }
           ],
           "transaction": [
             {
               "header": {
-                "principal": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089/acme",
-                "initiator": "f3603c63710d816be5d5e1ffaa13c92885d1fd8c2a9684da690b01b323697ca7"
+                "principal": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e/acme",
+                "initiator": "225482afa8d81d9fc1e031b8ec5ce297cd430169cbd18743880bb8c1de6a98a6"
               },
               "body": {
                 "type": "createIdentity",
-                "url": "acc://csharp-ex6-1782091736322.acme",
-                "keyBookUrl": "acc://csharp-ex6-1782091736322.acme/book",
-                "keyHash": "bcbc910a6bec23fd471ccff5dbdf94bce15a6ac5c4ae59806d0a5c69f07dc474"
+                "url": "acc://csharp-ex6-1785283497934.acme",
+                "keyBookUrl": "acc://csharp-ex6-1785283497934.acme/book",
+                "keyHash": "cd1470125afda9e609fa8b90d86c533195058e10f31f9f4850124c152d0e4828"
               }
             }
           ]
@@ -122,7 +122,7 @@
     {
       "method": "query",
       "params": {
-        "scope": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089"
+        "scope": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e"
       }
     },
     {
@@ -132,23 +132,23 @@
           "signatures": [
             {
               "type": "ed25519",
-              "publicKey": "9d58113cfa5c8216c363e4b08363782a633df61f93ea1f21425110995ef2df42",
-              "signature": "bc836638eb058fd217e916302830f437e900ff13e06e236bea644ab4ba175c054feb505141752c56a22b14a91d1fa681503a11cd3e47cfd6b369f768d31c220e",
-              "signer": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089",
+              "publicKey": "f6996c0b2dcb8dac9960283d2da273eb4200d9c73c75b3ead408a3a637719db8",
+              "signature": "942c057a28766601a570d6277a2b5944b63ad67bee92eb28955b643bd948aba9c7773d18236444054273473a956b3046c8e09dfe70f5cdc13a9fb39aca425b01",
+              "signer": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e",
               "signerVersion": 1,
-              "timestamp": 1782091746384000,
-              "transactionHash": "5c422a8253e9ee6ca42141ff14be023ad97c598825ed61a15309dbd4df93e1a3"
+              "timestamp": 1785283508003000,
+              "transactionHash": "5fc97e891cf6195c7a32cb9ce7b6c2d57e40dfd398a61178c4ee22de2f0edbe4"
             }
           ],
           "transaction": [
             {
               "header": {
-                "principal": "acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089/acme",
-                "initiator": "54a838c3b586087438cfbe9651762f6af4ce0c9369244a3622dd73c6971c457c"
+                "principal": "acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e/acme",
+                "initiator": "1ea971bb015ff74c149951aeb645c99f806487bd3814519169342bff744303a8"
               },
               "body": {
                 "type": "addCredits",
-                "recipient": "acc://csharp-ex6-1782091736322.acme/book/1",
+                "recipient": "acc://csharp-ex6-1785283497934.acme/book/1",
                 "amount": "2000000",
                 "oracle": 50000000
               }
@@ -160,7 +160,7 @@
     {
       "method": "query",
       "params": {
-        "scope": "acc://csharp-ex6-1782091736322.acme/book/1"
+        "scope": "acc://csharp-ex6-1785283497934.acme/book/1"
       }
     },
     {
@@ -170,23 +170,23 @@
           "signatures": [
             {
               "type": "ed25519",
-              "publicKey": "222f95ffc432f1c588e1a39ac9ca76c2cdd264712f5116ad3174bcce2441a260",
-              "signature": "235460a7fee10749714a7671e93186f5755c1ef3f2a8aed7a02d75a94f73e3e539d705889448538a3d80b984150f6c60886495c845da398ab2a0481983a28f0f",
-              "signer": "acc://csharp-ex6-1782091736322.acme/book/1",
+              "publicKey": "c24cfd6a164975b5b9e2311b902103b8acd83a0abc8e02b3390f9b68fe7936fa",
+              "signature": "4effbfeb35e657ba1f91c8364bbb2949bdcd7bfd3211c595cbb874e60f8547f4d447b20ea3bd56a144fe142bcfc0d74de3b707000eb21ddc89a06062f4f37d06",
+              "signer": "acc://csharp-ex6-1785283497934.acme/book/1",
               "signerVersion": 1,
-              "timestamp": 1782091751398000,
-              "transactionHash": "7d2c8cd4bb26f961f761d7fe1a6c820b7e84b23c25b644af5b5156ff57b79071"
+              "timestamp": 1785283513015000,
+              "transactionHash": "a6a2263eeac4da40556c4f805ff6eedfccbaa50232d5f0684fdf45c73274dc1f"
             }
           ],
           "transaction": [
             {
               "header": {
-                "principal": "acc://csharp-ex6-1782091736322.acme",
-                "initiator": "abeb25ff04c8c74574c3e533885abe4bd2e595160dc1f83b34ca3df4acf06ddd"
+                "principal": "acc://csharp-ex6-1785283497934.acme",
+                "initiator": "4ac22fbdf8ba8510b464c10baa76df2ae883f9ffe67ee5cf5adcfe829e9fe666"
               },
               "body": {
                 "type": "createToken",
-                "url": "acc://csharp-ex6-1782091736322.acme/my-token",
+                "url": "acc://csharp-ex6-1785283497934.acme/my-token",
                 "symbol": "MYT",
                 "precision": 8,
                 "supplyLimit": "100000000000000"
@@ -199,7 +199,7 @@
     {
       "method": "query",
       "params": {
-        "scope": "acc://csharp-ex6-1782091736322.acme/book/1"
+        "scope": "acc://csharp-ex6-1785283497934.acme/book/1"
       }
     },
     {
@@ -209,24 +209,24 @@
           "signatures": [
             {
               "type": "ed25519",
-              "publicKey": "222f95ffc432f1c588e1a39ac9ca76c2cdd264712f5116ad3174bcce2441a260",
-              "signature": "fb30e191eda33f7fa802111844ea3ba4edd03f15469ae5b49b3fd61752cc831543dbb54bbcb1429dd7fb25e94fcd229707df5d7d14fb6e49838c8f83340e860f",
-              "signer": "acc://csharp-ex6-1782091736322.acme/book/1",
+              "publicKey": "c24cfd6a164975b5b9e2311b902103b8acd83a0abc8e02b3390f9b68fe7936fa",
+              "signature": "8ae6299a659d6199cae1a6db53c79faecf351b8a966496f76e580fc1ded7bfef44b3a806be3d6e37b13a8704f2765deae7a1341cf6cb82206693df180aeeb60e",
+              "signer": "acc://csharp-ex6-1785283497934.acme/book/1",
               "signerVersion": 1,
-              "timestamp": 1782091756413000,
-              "transactionHash": "21d4c3e2a2b0bd8fa7bd03a7da500bd0fa307de1fe0501c6ec858349e04c1f6e"
+              "timestamp": 1785283518033000,
+              "transactionHash": "293a66118183bdfb4f0bea62fe568271d817795d55725d08d480ad323d7012f2"
             }
           ],
           "transaction": [
             {
               "header": {
-                "principal": "acc://csharp-ex6-1782091736322.acme",
-                "initiator": "83be0e695ce4ae2b18411a49dac423804f7cf5117d12202efb0f80296f957ef8"
+                "principal": "acc://csharp-ex6-1785283497934.acme",
+                "initiator": "80ae093c772262da2ecd9f071b11d742cd05aee08186b3aa4a78f6329de9226d"
               },
               "body": {
                 "type": "createTokenAccount",
-                "url": "acc://csharp-ex6-1782091736322.acme/token-acct-1",
-                "tokenUrl": "acc://csharp-ex6-1782091736322.acme/my-token"
+                "url": "acc://csharp-ex6-1785283497934.acme/token-acct-1",
+                "tokenUrl": "acc://csharp-ex6-1785283497934.acme/my-token"
               }
             }
           ]
@@ -236,7 +236,7 @@
     {
       "method": "query",
       "params": {
-        "scope": "acc://csharp-ex6-1782091736322.acme/book/1"
+        "scope": "acc://csharp-ex6-1785283497934.acme/book/1"
       }
     },
     {
@@ -246,24 +246,24 @@
           "signatures": [
             {
               "type": "ed25519",
-              "publicKey": "222f95ffc432f1c588e1a39ac9ca76c2cdd264712f5116ad3174bcce2441a260",
-              "signature": "2738bd0b2dfdc18ea77b0487e5a8ddd4c404b41ef91f47ce0901e0d94611271cc34c95b9790e2597bcb63bd69e758d389a9f294802e4b0fd58a0b3fdb59b3806",
-              "signer": "acc://csharp-ex6-1782091736322.acme/book/1",
+              "publicKey": "c24cfd6a164975b5b9e2311b902103b8acd83a0abc8e02b3390f9b68fe7936fa",
+              "signature": "c91a641a3cf681f99bddcfb20315079e0bfa929771d0d07df473ab73d09596e5fd644367af499ff79c9b5763cd577f42ad4d4f2df8dcc117abc0ae84bc15cc0b",
+              "signer": "acc://csharp-ex6-1785283497934.acme/book/1",
               "signerVersion": 1,
-              "timestamp": 1782091759422000,
-              "transactionHash": "8b2bfee643c723d0ba5d521b80b99b5b2a92ff7b3485f066dc7223006b95d217"
+              "timestamp": 1785283521054000,
+              "transactionHash": "f5e6c666cf3b285a0495b0d765365fbc707b6dff38477e1d0c34b07df903f7ea"
             }
           ],
           "transaction": [
             {
               "header": {
-                "principal": "acc://csharp-ex6-1782091736322.acme",
-                "initiator": "cc9c340252d7c30fb630a5e349b3c3ce0840d0a1e198ea9b800f001fc9942245"
+                "principal": "acc://csharp-ex6-1785283497934.acme",
+                "initiator": "f09f3881917fd609052ecb2bd3ed8e6ab198ac660cc4ca5f3e76f424867c5d00"
               },
               "body": {
                 "type": "createTokenAccount",
-                "url": "acc://csharp-ex6-1782091736322.acme/token-acct-2",
-                "tokenUrl": "acc://csharp-ex6-1782091736322.acme/my-token"
+                "url": "acc://csharp-ex6-1785283497934.acme/token-acct-2",
+                "tokenUrl": "acc://csharp-ex6-1785283497934.acme/my-token"
               }
             }
           ]
@@ -273,7 +273,7 @@
     {
       "method": "query",
       "params": {
-        "scope": "acc://csharp-ex6-1782091736322.acme/book/1"
+        "scope": "acc://csharp-ex6-1785283497934.acme/book/1"
       }
     },
     {
@@ -283,23 +283,23 @@
           "signatures": [
             {
               "type": "ed25519",
-              "publicKey": "222f95ffc432f1c588e1a39ac9ca76c2cdd264712f5116ad3174bcce2441a260",
-              "signature": "d0186aa8fb1d7651c1e33dace34f74ded233cafa592b8f8fdf4dcae88074095df31d6ce17e619349ef980290338e525a4cebc2db3458ca5bcec91f36b1b0f206",
-              "signer": "acc://csharp-ex6-1782091736322.acme/book/1",
+              "publicKey": "c24cfd6a164975b5b9e2311b902103b8acd83a0abc8e02b3390f9b68fe7936fa",
+              "signature": "f33033f9ea18223a53142a530bedc788f4810304ee87768f9fa96fecb79d5d6e7eef0031a0cd206c5d15d2c823d2470636d7cf3e974a386ba523333b951bb10f",
+              "signer": "acc://csharp-ex6-1785283497934.acme/book/1",
               "signerVersion": 1,
-              "timestamp": 1782091764430000,
-              "transactionHash": "f25236783b4dfc63b759373251784a33f9457be645f8d328318664e97d7c25a5"
+              "timestamp": 1785283526074000,
+              "transactionHash": "93287c7e52399e4d3d52053b601a5691055e23d44821ec885546620484e7e93a"
             }
           ],
           "transaction": [
             {
               "header": {
-                "principal": "acc://csharp-ex6-1782091736322.acme/my-token",
-                "initiator": "d911991f5b159689f28891e8192036a43cb3d9a0aa7130b067d8092452b42312"
+                "principal": "acc://csharp-ex6-1785283497934.acme/my-token",
+                "initiator": "a59a40074b3345a4f9e3debfe2f68dc17d3d9f1204b780cb8ae511f42e81301e"
               },
               "body": {
                 "type": "issueTokens",
-                "recipient": "acc://csharp-ex6-1782091736322.acme/token-acct-1",
+                "recipient": "acc://csharp-ex6-1785283497934.acme/token-acct-1",
                 "amount": "50000000000"
               }
             }
@@ -310,7 +310,7 @@
     {
       "method": "query",
       "params": {
-        "scope": "acc://csharp-ex6-1782091736322.acme/book/1"
+        "scope": "acc://csharp-ex6-1785283497934.acme/book/1"
       }
     },
     {
@@ -320,25 +320,25 @@
           "signatures": [
             {
               "type": "ed25519",
-              "publicKey": "222f95ffc432f1c588e1a39ac9ca76c2cdd264712f5116ad3174bcce2441a260",
-              "signature": "2ff3dad9cf083185147203ceb5ff6ca6329b7a46434b17ad7c0b2e0203b90123f0f9c00a33ed013f88044a21a901ba61c1bc6cd9d78795d4e52212bc0594890c",
-              "signer": "acc://csharp-ex6-1782091736322.acme/book/1",
+              "publicKey": "c24cfd6a164975b5b9e2311b902103b8acd83a0abc8e02b3390f9b68fe7936fa",
+              "signature": "fd9efb08f6ec08a06aefad44481c88f319606a876a750d9363c8cd55db3860cec6f3dc72cf930eabd370936dff285e5e896c7107b2b94565fc6c245c2daa6200",
+              "signer": "acc://csharp-ex6-1785283497934.acme/book/1",
               "signerVersion": 1,
-              "timestamp": 1782091769442000,
-              "transactionHash": "ede7ad4a6978c01d11dd35f87ee21ac847da2e9923505ee1fa380ad0e6a979d2"
+              "timestamp": 1785283531084000,
+              "transactionHash": "687a74d34fe6d32793ce04ce2cae051807d83d14165f26ff9312ca8040f6ec43"
             }
           ],
           "transaction": [
             {
               "header": {
-                "principal": "acc://csharp-ex6-1782091736322.acme/token-acct-1",
-                "initiator": "8adc4241c493d6fbb76889f0e029084beb798d98b947a8ded7f3f35fa5f6175a"
+                "principal": "acc://csharp-ex6-1785283497934.acme/token-acct-1",
+                "initiator": "49a058c58c481233a94ad33a45291e8e5d02a4648b41ee9c62bcf8c076830329"
               },
               "body": {
                 "type": "sendTokens",
                 "to": [
                   {
-                    "url": "acc://csharp-ex6-1782091736322.acme/token-acct-2",
+                    "url": "acc://csharp-ex6-1785283497934.acme/token-acct-2",
                     "amount": "10000000000"
                   }
                 ]
@@ -351,23 +351,23 @@
     {
       "method": "query",
       "params": {
-        "scope": "acc://csharp-ex6-1782091736322.acme/token-acct-1"
+        "scope": "acc://csharp-ex6-1785283497934.acme/token-acct-1"
       }
     },
     {
       "method": "query",
       "params": {
-        "scope": "acc://csharp-ex6-1782091736322.acme/token-acct-2"
+        "scope": "acc://csharp-ex6-1785283497934.acme/token-acct-2"
       }
     },
     {
       "method": "query",
       "params": {
-        "scope": "acc://csharp-ex6-1782091736322.acme/my-token"
+        "scope": "acc://csharp-ex6-1785283497934.acme/my-token"
       }
     }
   ],
   "call_count": 26,
   "error": null,
-  "stdout": "=== SDK Example 6: Custom Tokens (C#) ===\n\nEndpoint: http://127.0.0.1:51237\n\n--- Step 1: Generate Key Pairs ---\n\n[SignatureKeyPair] Imported Ed25519 seed (32 bytes).\n[SignatureKeyPair] Derived pubkey (hex): 9d58113cfa5c8216c363e4b08363782a633df61f93ea1f21425110995ef2df42\n[SignatureKeyPair] Imported Ed25519 seed (32 bytes).\n[SignatureKeyPair] Derived pubkey (hex): 222f95ffc432f1c588e1a39ac9ca76c2cdd264712f5116ad3174bcce2441a260\nLite Identity: acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089\nLite Token Account: acc://5ea6442507f8e17705ad39fe1840115872c635a85bdf8089/acme\n\n--- Step 2: Fund Account ---\n\n  Faucet 1/5: submitted\n  Faucet 2/5: submitted\n  Faucet 3/5: submitted\n  Faucet 4/5: submitted\n  Faucet 5/5: submitted\n\nPolling for balance...\nBalance: 100000000000\n\n--- Step 3: Create ADI + Custom Token ---\n\nADI: acc://csharp-ex6-1782091736322.acme\nCustom Token Issuer: acc://csharp-ex6-1782091736322.acme/my-token\nToken Account 1: acc://csharp-ex6-1782091736322.acme/token-acct-1\nToken Account 2: acc://csharp-ex6-1782091736322.acme/token-acct-2\n\nOracle price: 50000000\nAdding credits to lite identity...\nCredits: OK\nCreating ADI...\nADI: OK\nAdding credits to ADI key page...\nADI credits: OK\nCreating custom token issuer...\nToken issuer: OK\nCreating token account 1...\nToken account 1: OK\nCreating token account 2...\nToken account 2: OK\n\n--- Step 4: Issue + Transfer Custom Tokens ---\n\nIssuing tokens to account 1...\nIssue tokens: OK\nTransferring custom tokens from acct 1 to acct 2...\nTransfer: OK\n\n--- Step 5: Query Balances ---\n\nToken Account 1 balance: 100000000000\nToken Account 2 balance: 100000000000\n\nToken issuer info:\n{\n  \"account\": {\n    \"version\": 1,\n    \"balance\": \"100000000000\",\n    \"creditBalance\": 10000,\n    \"type\": \"liteTokenAccount\",\n    \"url\": \"acc://csharp-ex6-1782091736322.acme/my-token\"\n  }\n}\n\n=== Summary ===\n\nADI: acc://csharp-ex6-1782091736322.acme\nCustom Token Issuer: acc://csharp-ex6-1782091736322.acme/my-token\nToken Account 1: acc://csharp-ex6-178209173"
+  "stdout": "=== SDK Example 6: Custom Tokens (C#) ===\n\nEndpoint: http://127.0.0.1:54666\n\n--- Step 1: Generate Key Pairs ---\n\n[SignatureKeyPair] Imported Ed25519 seed (32 bytes).\n[SignatureKeyPair] Derived pubkey (hex): f6996c0b2dcb8dac9960283d2da273eb4200d9c73c75b3ead408a3a637719db8\n[SignatureKeyPair] Imported Ed25519 seed (32 bytes).\n[SignatureKeyPair] Derived pubkey (hex): c24cfd6a164975b5b9e2311b902103b8acd83a0abc8e02b3390f9b68fe7936fa\nLite Identity: acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e\nLite Token Account: acc://c09aa98b968be4d78f3ed2e97f7afa014ff9abce7bebc31e/acme\n\n--- Step 2: Fund Account ---\n\n  Faucet 1/5: submitted\n  Faucet 2/5: submitted\n  Faucet 3/5: submitted\n  Faucet 4/5: submitted\n  Faucet 5/5: submitted\n\nPolling for balance...\nBalance: 100000000000\n\n--- Step 3: Create ADI + Custom Token ---\n\nADI: acc://csharp-ex6-1785283497934.acme\nCustom Token Issuer: acc://csharp-ex6-1785283497934.acme/my-token\nToken Account 1: acc://csharp-ex6-1785283497934.acme/token-acct-1\nToken Account 2: acc://csharp-ex6-1785283497934.acme/token-acct-2\n\nOracle price: 50000000\nAdding credits to lite identity...\nCredits: OK\nCreating ADI...\nADI: OK\nAdding credits to ADI key page...\nADI credits: OK\nCreating custom token issuer...\nToken issuer: OK\nCreating token account 1...\nToken account 1: OK\nCreating token account 2...\nToken account 2: OK\n\n--- Step 4: Issue + Transfer Custom Tokens ---\n\nIssuing tokens to account 1...\nIssue tokens: OK\nTransferring custom tokens from acct 1 to acct 2...\nTransfer: OK\n\n--- Step 5: Query Balances ---\n\nToken Account 1 balance: 100000000000\nToken Account 2 balance: 100000000000\n\nToken issuer info:\n{\n  \"account\": {\n    \"version\": 1,\n    \"balance\": \"100000000000\",\n    \"creditBalance\": 10000,\n    \"type\": \"liteTokenAccount\",\n    \"url\": \"acc://csharp-ex6-1785283497934.acme/my-token\"\n  }\n}\n\n=== Summary ===\n\nADI: acc://csharp-ex6-1785283497934.acme\nCustom Token Issuer: acc://csharp-ex6-1785283497934.acme/my-token\nToken Account 1: acc://csharp-ex6-178528349"
 }

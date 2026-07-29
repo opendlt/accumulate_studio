@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "lang": "rust",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "send-tokens",
+    "file": "04-send-tokens.yaml",
+    "title": "Send ACME tokens between accounts",
+    "specHash": "04b11771f6b0"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": true,
+  "turns": 22,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "tx_status == delivered",
+      "subject": "tx_status",
+      "op": "==",
+      "passed": true,
+      "actual": "delivered",
+      "expected": "delivered"
+    },
+    {
+      "assertion": "recipient_balance_increased_by == 5 ACME",
+      "subject": "recipient_balance_increased_by",
+      "op": "==",
+      "passed": true,
+      "actual": "500000000",
+      "actualAcme": 5,
+      "expected": "5 ACME"
+    }
+  ],
+  "artifacts": {
+    "adiUrl": "acc://harness-1785184268416.acme",
+    "keyBookUrl": "acc://harness-1785184268416.acme/book",
+    "keyPageUrl": "acc://harness-1785184268416.acme/book/1",
+    "liteIdentityUrl": "acc://b8f6bf737c46ecf3e5bdf6bb316531062576596f725b9e3c",
+    "liteTokenAccountUrl": "acc://b8f6bf737c46ecf3e5bdf6bb316531062576596f725b9e3c/ACME",
+    "recipientUrl": "acc://harness-1785184268416.acme/tokens",
+    "txid": "acc://3538c2123b7df3789673547b1ddeb3b44989d575cde8862074bb02797a39b2b1@b8f6bf737c46ecf3e5bdf6bb316531062576596f725b9e3c",
+    "txids": [
+      "acc://2667b125a443910009e462a1ae265f7f1c16933d9d43503dbcc47c3f6fde2fed@b8f6bf737c46ecf3e5bdf6bb316531062576596f725b9e3c",
+      "acc://ab7304e3b0803df85ad91936130b8bd452716a9828f4f963208a810667c70de8@b8f6bf737c46ecf3e5bdf6bb316531062576596f725b9e3c",
+      "acc://9f36923d8e52bc33cd246f39faf609c8647693b85c14a6c07b793ff3fa210411@b8f6bf737c46ecf3e5bdf6bb316531062576596f725b9e3c",
+      "acc://25074d39a3bf6f96dd0559bb76d96b086420c198535c15bcddfd4ea3f4309fb0@harness-1785184268416.acme/book/1",
+      "acc://3538c2123b7df3789673547b1ddeb3b44989d575cde8862074bb02797a39b2b1@b8f6bf737c46ecf3e5bdf6bb316531062576596f725b9e3c"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://b8f6bf737c46ecf3e5bdf6bb316531062576596f725b9e3c",
+    "liteTokenAccount": "acc://b8f6bf737c46ecf3e5bdf6bb316531062576596f725b9e3c/ACME",
+    "publicKeyHex": "10bc1dc047cd00150f85be52c9eae978e214780954d4df54348daf261ae4b334",
+    "suggestedAdiUrl": "acc://harness-13e38083.acme"
+  },
+  "durationMs": 342969,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\rust--send-tokens.txt",
+  "error": null,
+  "startedAt": "2026-07-27T20:26:15.026Z",
+  "finishedAt": "2026-07-27T20:32:19.544Z"
+}

@@ -9,6 +9,11 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListResourcesRequestSchema,
+  ListResourceTemplatesRequestSchema,
+  ReadResourceRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
   ErrorCode,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
@@ -43,7 +48,14 @@ import {
   errorFromException,
 } from './permissions.js';
 
-import { setCurrentNetwork } from './tools/network.js';
+import { setCurrentNetwork, getCurrentNetwork } from './tools/network.js';
+
+import {
+  staticResources,
+  resourceTemplates,
+  readResource,
+} from './resources/index.js';
+import { allPrompts, getPrompt } from './prompts/index.js';
 
 // =============================================================================
 // Server Configuration
@@ -104,6 +116,11 @@ function createServer(): Server {
     {
       capabilities: {
         tools: {},
+        // Resources give an agent the context it needs to USE the tools (the
+        // 1e8 rule, the credit prerequisite chain, the operation catalogs).
+        // Prompts expose the 8 validated golden paths as invocable workflows.
+        resources: {},
+        prompts: {},
       },
     }
   );
@@ -117,6 +134,40 @@ function createServer(): Server {
         inputSchema: tool.inputSchema,
       })),
     };
+  });
+
+  // --- Resources ------------------------------------------------------------
+  // Read-only context, available in every permission mode including READ_ONLY.
+
+  server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+    resources: staticResources,
+  }));
+
+  server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({
+    resourceTemplates,
+  }));
+
+  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    // Network state is read at call time so accumulate://networks reflects the
+    // live selection rather than a build-time snapshot.
+    const contents = readResource(request.params.uri, getCurrentNetwork());
+    return { contents: [contents] };
+  });
+
+  // --- Prompts --------------------------------------------------------------
+
+  server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+    prompts: allPrompts,
+  }));
+
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    // The current mode is passed in so a workflow ending in a submit can warn
+    // that the submit will be refused, instead of leading the agent into it.
+    return getPrompt(
+      request.params.name,
+      (request.params.arguments ?? {}) as Record<string, string>,
+      getPermissionMode()
+    );
   });
 
   // Register tool call handler
@@ -261,6 +312,17 @@ AVAILABLE TOOLS:
     proof.verify_receipt Verify a Merkle receipt
     trace.synthetics   Trace synthetic messages
 
+RESOURCES (read for context — available in every permission mode):
+  accumulate://concepts/{topic}          amount-scaling, credits, adi-vs-lite,
+                                         key-hierarchy, networks
+  accumulate://networks                  live network registry + current selection
+  accumulate://sdk/{language}/operations machine-readable operation catalog
+  accumulate://templates[/{id}]          the golden-path workflows
+
+PROMPTS (invocable workflows):
+  lite-account-setup, create-adi, zero-to-hero, token-transfer,
+  data-writing, custom-token, multi-sig-setup, key-rotation
+
 EXAMPLES:
   # Start with default BUILD_ONLY mode
   accumulate-studio-mcp
@@ -301,7 +363,10 @@ async function main(): Promise<void> {
   console.error(`Starting ${SERVER_NAME} v${SERVER_VERSION}`);
   console.error(`Permission mode: ${getPermissionMode()}`);
   console.error(getPermissionModeDescription());
-  console.error(`Registered ${allTools.length} tools`);
+  console.error(
+    `Registered ${allTools.length} tools, ${staticResources.length} resources ` +
+      `(+${resourceTemplates.length} templates), ${allPrompts.length} prompts`
+  );
 
   // Create server
   const server = createServer();

@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "lang": "rust",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "custom-token",
+    "file": "06-custom-token.yaml",
+    "title": "Custom token issuance",
+    "specHash": "f9068d5ec05f"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": false,
+  "turns": 26,
+  "interventions": 0,
+  "failureClass": "amount-scaling",
+  "assertions": [
+    {
+      "assertion": "token_issuer_exists == true",
+      "subject": "token_issuer_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "token_account_balance == issue_amount",
+      "subject": "token_account_balance",
+      "op": "==",
+      "passed": false,
+      "actual": 0.00001,
+      "expected": 1000
+    }
+  ],
+  "artifacts": {
+    "adiUrl": "acc://custom-token-1785236895014.acme",
+    "keyBookUrl": "acc://custom-token-1785236895014.acme/book",
+    "keyPageUrl": "acc://custom-token-1785236895014.acme/book/1",
+    "liteIdentityUrl": "acc://fa4892457343b2c31e50e1410ebc4b789a24412f05b137eb",
+    "liteTokenAccountUrl": "acc://fa4892457343b2c31e50e1410ebc4b789a24412f05b137eb/ACME",
+    "tokenAccountUrl": "acc://custom-token-1785236895014.acme/token-account",
+    "tokenIssuerUrl": "acc://custom-token-1785236895014.acme/TESTTKN",
+    "txid": "acc://fd43361c0bd38da57ee79f4494d588723aaeef22b752a1e41bb7ead991604a83@custom-token-1785236895014.acme/book/1",
+    "txids": [
+      "acc://04ae9983576369e0f551e7e198610be345fc2c5e50cb4b0e5a2f496b4fe4a298@fa4892457343b2c31e50e1410ebc4b789a24412f05b137eb",
+      "acc://04e196f674c24ef5ed3c3534c6269d55b71a3ceb8e419680afe37420d0a692fc@fa4892457343b2c31e50e1410ebc4b789a24412f05b137eb",
+      "acc://88242a1f56ab85a186e1061a4b1f624b4388790fcad4d6f4b433c90fd184600e@fa4892457343b2c31e50e1410ebc4b789a24412f05b137eb",
+      "acc://bf58e248f01f22a4c3093e4a6b6c3461d3564e7cfafaf45b361b09773c21b93b@custom-token-1785236895014.acme/book/1",
+      "acc://ead4de0b823dc4884b164be7f44297c9ee38a06c8034469d386e9716f53a7496@custom-token-1785236895014.acme/book/1",
+      "acc://fd43361c0bd38da57ee79f4494d588723aaeef22b752a1e41bb7ead991604a83@custom-token-1785236895014.acme/book/1"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://fa4892457343b2c31e50e1410ebc4b789a24412f05b137eb",
+    "liteTokenAccount": "acc://fa4892457343b2c31e50e1410ebc4b789a24412f05b137eb/ACME",
+    "publicKeyHex": "c8c50a2c93300fe865dfdd678dcfc3339aa59af5e4970186b9031d6451bcc72e",
+    "suggestedAdiUrl": "acc://harness-6b56e557.acme"
+  },
+  "durationMs": 936763,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\rust--custom-token.txt",
+  "error": null,
+  "startedAt": "2026-07-28T10:48:10.233Z",
+  "finishedAt": "2026-07-28T11:09:35.543Z"
+}

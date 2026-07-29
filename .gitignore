@@ -86,3 +86,9 @@ npm-debug.log*
 config.bat
 *.stackdump
 apps/studio/.env.development
+
+# ── Agent-harness ──
+# Run records (JSON) ARE committed — they are the K2–K4 evidence.
+# Transcripts are large and contain full agent output; keep them local.
+tools/agent-harness/results/**/transcripts/
+tools/studio-headless/dist/

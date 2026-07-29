@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "key-rotation",
+    "file": "08-key-rotation.yaml",
+    "title": "Key rotation",
+    "specHash": "8650c147a3d2"
+  },
+  "sdkVersion": "2.2.1",
+  "passed": true,
+  "turns": 29,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_contains_new_key == true",
+      "subject": "key_page_contains_new_key",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "key_page_contains_old_key == false",
+      "subject": "key_page_contains_old_key",
+      "op": "==",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://f2bc46436a68a86b7d2a85ef8fcfe1765762cb00aff3e969",
+    "liteTokenAccountUrl": "acc://f2bc46436a68a86b7d2a85ef8fcfe1765762cb00aff3e969/ACME",
+    "adiUrl": "acc://rotate-297d1df2.acme",
+    "keyBookUrl": "acc://rotate-297d1df2.acme/book",
+    "keyPageUrl": "acc://rotate-297d1df2.acme/book/1",
+    "txid": "acc://58790473ca0bbd4589b9cf705a5ed26276fb46832873c18b929b531eed8fb399@rotate-297d1df2.acme/book/1",
+    "txids": [
+      "acc://d61836b9d6cf8a597fa1b84725e0aef6b421502d9a2389b9570b5c2fe8660edb@f2bc46436a68a86b7d2a85ef8fcfe1765762cb00aff3e969/ACME",
+      "acc://53c41dbc1cf2536909ba3c3cce323b251858a31a8e231d2cec29a5a984a87547@f2bc46436a68a86b7d2a85ef8fcfe1765762cb00aff3e969/ACME",
+      "acc://58790473ca0bbd4589b9cf705a5ed26276fb46832873c18b929b531eed8fb399@rotate-297d1df2.acme/book/1",
+      "acc://e1aa95a386987ff2241f11feb795645706a5df319fe11d13fd47cb26e74af222@rotate-297d1df2.acme/book/1",
+      "acc://1ffd9247dc25fca08044e42741ab9174a21a2b72c5da107be699cdadabda3d7c@rotate-297d1df2.acme/book/1"
+    ],
+    "newKeyHash": "3d8c54b1a153b7edd0e75e158b38f5d00e5a54499bde9a8ad84d9385ed58f78c",
+    "oldKeyHash": "f2bc46436a68a86b7d2a85ef8fcfe1765762cb002309c536a5fb5b10aa910a92"
+  },
+  "environment": {
+    "liteIdentity": "acc://f2bc46436a68a86b7d2a85ef8fcfe1765762cb00aff3e969",
+    "liteTokenAccount": "acc://f2bc46436a68a86b7d2a85ef8fcfe1765762cb00aff3e969/ACME",
+    "publicKeyHex": "614e9264027aced7e51d986f3b66708c7c33ffc1a7f656ee7c44b0386f1a1350",
+    "suggestedAdiUrl": "acc://harness-514d7a7f.acme"
+  },
+  "durationMs": 823245,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\python--key-rotation.txt",
+  "error": null,
+  "startedAt": "2026-07-27T22:52:35.783Z",
+  "finishedAt": "2026-07-27T23:11:43.417Z"
+}

@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "lang": "dart",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "add-credits",
+    "file": "03-add-credits.yaml",
+    "title": "Add credits to a key page",
+    "specHash": "990525ec062a"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": true,
+  "turns": 40,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_credit_balance >= 5000",
+      "subject": "key_page_credit_balance",
+      "op": ">=",
+      "passed": true,
+      "actual": 1700000,
+      "expected": 5000
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://be6f456ef70c867683877c171ddd67947e761c650e730ff5",
+    "liteTokenAccountUrl": "acc://be6f456ef70c867683877c171ddd67947e761c650e730ff5/ACME",
+    "adiUrl": "acc://harness-8c28362c.acme",
+    "keyBookUrl": "acc://harness-8c28362c.acme/book",
+    "keyPageUrl": "acc://harness-8c28362c.acme/book/1",
+    "recipientUrl": "acc://harness-8c28362c.acme/book/1",
+    "txid": "acc://5b822c5dd612581f03129e2a609c33f36deba8a18066f4f2abb5d0b8b5a135bb@be6f456ef70c867683877c171ddd67947e761c650e730ff5/ACME",
+    "txids": [
+      "acc://378fc80e2bffb1df3314d8b81d2fd41adde7f20f743939a57be5024f98b728f2@be6f456ef70c867683877c171ddd67947e761c650e730ff5/ACME",
+      "acc://5b822c5dd612581f03129e2a609c33f36deba8a18066f4f2abb5d0b8b5a135bb@be6f456ef70c867683877c171ddd67947e761c650e730ff5/ACME"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://be6f456ef70c867683877c171ddd67947e761c650e730ff5",
+    "liteTokenAccount": "acc://be6f456ef70c867683877c171ddd67947e761c650e730ff5/ACME",
+    "publicKeyHex": "4e7b55ea407ae6b665e1422e16e18cb30b1804e1d33d7ff00bc364c60ec72a40",
+    "suggestedAdiUrl": "acc://harness-8c28362c.acme"
+  },
+  "durationMs": 677573,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\dart--add-credits.txt",
+  "error": null,
+  "startedAt": "2026-07-27T23:27:46.840Z",
+  "finishedAt": "2026-07-27T23:43:35.947Z"
+}

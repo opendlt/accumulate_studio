@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "lang": "dart",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "multisig-setup",
+    "file": "07-multisig-setup.yaml",
+    "title": "Multi-signature setup",
+    "specHash": "a9a1532bdf4f"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": false,
+  "turns": null,
+  "interventions": 0,
+  "failureClass": "timeout",
+  "assertions": [
+    {
+      "assertion": "key_page_threshold == 2",
+      "subject": "key_page_threshold",
+      "op": "==",
+      "passed": false,
+      "actual": 1,
+      "expected": 2
+    },
+    {
+      "assertion": "multisig_tx_status == delivered",
+      "subject": "multisig_tx_status",
+      "op": "==",
+      "passed": false,
+      "actual": "unknown",
+      "expected": "delivered"
+    }
+  ],
+  "artifacts": {},
+  "environment": {
+    "liteIdentity": "acc://49fd00e3846a916474111b157b8ae7c53a02500b71be8f84",
+    "liteTokenAccount": "acc://49fd00e3846a916474111b157b8ae7c53a02500b71be8f84/ACME",
+    "publicKeyHex": "b49577cd05d9d3b0cbc6639778c6e99513c297d292b7267b95afe05c163126fa",
+    "suggestedAdiUrl": "acc://harness-d448b810.acme"
+  },
+  "durationMs": 1799859,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\dart--multisig-setup.txt",
+  "error": null,
+  "startedAt": "2026-07-28T10:12:57.573Z",
+  "finishedAt": "2026-07-28T10:48:10.231Z"
+}

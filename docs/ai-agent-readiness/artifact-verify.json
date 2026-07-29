@@ -7,13 +7,19 @@
       "lang": "rust",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "accumulate-sdk @ 2.2.0 (crates)"
+      "detail": "accumulate-sdk @ 2.3.1 (crates)"
     },
     {
       "lang": "rust",
       "id": "NAME_PARITY",
       "status": "PASS",
       "detail": "README install name matches published package (accumulate-sdk)"
+    },
+    {
+      "lang": "rust",
+      "id": "TYPE_SIGNALS",
+      "status": "FAIL",
+      "detail": "docs.rs build FAILED for 2.3.1 — agents cannot read the API"
     },
     {
       "lang": "rust",
@@ -25,7 +31,7 @@
       "lang": "python",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "accumulate-sdk-opendlt @ 2.2.1 (pypi)"
+      "detail": "accumulate-sdk-opendlt @ 2.3.0 (pypi)"
     },
     {
       "lang": "python",
@@ -49,13 +55,25 @@
       "lang": "dart",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "opendlt_accumulate @ 2.2.0 (pub)"
+      "detail": "opendlt_accumulate @ 2.3.2 (pub)"
     },
     {
       "lang": "dart",
       "id": "NAME_PARITY",
       "status": "PASS",
       "detail": "README install name matches published package (opendlt_accumulate)"
+    },
+    {
+      "lang": "dart",
+      "id": "RUNTIME_IMPORT",
+      "status": "PASS",
+      "detail": "umbrella import compiles and runs against a clean pub install"
+    },
+    {
+      "lang": "dart",
+      "id": "TYPE_SIGNALS",
+      "status": "PASS",
+      "detail": "dartdoc comments in 8/40 sampled lib files; pub.dev clean (score 0/0)"
     },
     {
       "lang": "dart",
@@ -67,7 +85,7 @@
       "lang": "csharp",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "Acme.Net.Sdk @ 2.2.0 (nuget)"
+      "detail": "Acme.Net.Sdk @ 2.3.0 (nuget)"
     },
     {
       "lang": "csharp",
@@ -91,13 +109,19 @@
       "lang": "javascript",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "accumulate-sdk-opendlt @ 2.2.0 (npm)"
+      "detail": "accumulate-sdk-opendlt @ 2.3.0 (npm)"
     },
     {
       "lang": "javascript",
       "id": "NAME_PARITY",
       "status": "PASS",
       "detail": "README install name matches published package (accumulate-sdk-opendlt)"
+    },
+    {
+      "lang": "javascript",
+      "id": "RUNTIME_IMPORT",
+      "status": "FAIL",
+      "detail": "root import FAILS in a clean install: Command failed: npm install --no-audit --no-fund --silent accumulate-sdk-opendlt"
     },
     {
       "lang": "javascript",
@@ -121,11 +145,12 @@
       "lang": "fleet",
       "id": "VERSION_PARITY",
       "status": "PASS",
-      "detail": "distinct minor lines: 1 (2.2) — target 1 (K8)"
+      "detail": "distinct minor lines: 1 (2.3) — target 1 (K8)"
     }
   ],
   "counts": {
     "INFO": 5,
-    "PASS": 15
+    "PASS": 17,
+    "FAIL": 2
   }
 }

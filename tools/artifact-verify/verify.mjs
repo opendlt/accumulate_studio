@@ -24,7 +24,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname, basename } from 'node:path';
 
@@ -41,6 +41,10 @@ const TARGETS = [
     actualPackage: 'accumulate-sdk',
     readmeInstallName: 'accumulate-sdk', // fixed & published in 2.1.2 (was wrongly `accumulate-client`)
     note: 'lib import name is accumulate_client (correct); the crate name is accumulate-sdk',
+    // Rust is statically typed, so a py.typed equivalent is meaningless. The
+    // agent-facing type surface is rustdoc — and a docs.rs build that fails is
+    // invisible locally while breaking every agent that consults it.
+    expectDocsRs: true,
   },
   {
     lang: 'python',
@@ -54,6 +58,15 @@ const TARGETS = [
     registry: 'pub',
     actualPackage: 'opendlt_accumulate',
     readmeInstallName: 'opendlt_accumulate',
+    // Dart is statically typed too; the agent-facing surface is dartdoc. The
+    // published archive must carry `///` doc comments on the public API, and
+    // pub.dev's analyzer must not be erroring on the package.
+    expectDartDoc: true,
+    // Compile the documented umbrella import against a clean pub install.
+    // Archive-contents checks are not enough: 2.2.0 shipped a lib/ that looked
+    // plausible while `lib/src/build/` was missing, so the umbrella library
+    // re-exported files that did not exist and NOTHING could import the package.
+    expectDartImport: true,
   },
   {
     lang: 'csharp',
@@ -69,6 +82,11 @@ const TARGETS = [
     readmeInstallName: 'accumulate-sdk-opendlt', // fixed & published in 0.13.0 (was wrongly `accumulate.js`)
     expectTypesEntry: true,
     expectExportsResolve: true,
+    // Installs the package and imports it. npm is the only registry where this
+    // is cheap enough to run every time; the other four would need their full
+    // toolchains (see tools/agent-harness for the equivalent per-language
+    // install probe).
+    expectRuntimeImport: true,
   },
 ];
 
@@ -270,6 +288,123 @@ async function verifyTarget(t) {
     );
   }
 
+  // Rust: rustdoc is the agent-facing type surface, and docs.rs is where agents
+  // read it. A failed docs.rs build is invisible in a local `cargo doc`.
+  if (t.expectDocsRs) {
+    try {
+      const st = await fetchJson(
+        `https://docs.rs/crate/${t.actualPackage}/${actual.version || 'latest'}/status.json`,
+      );
+      record(
+        t.lang,
+        'TYPE_SIGNALS',
+        st.doc_status === true ? 'PASS' : 'FAIL',
+        st.doc_status === true
+          ? `docs.rs built rustdoc for ${st.version || actual.version} (type surface reachable)`
+          : `docs.rs build FAILED for ${st.version || actual.version} — agents cannot read the API`,
+      );
+    } catch (e) {
+      record(t.lang, 'TYPE_SIGNALS', 'SKIP', `could not reach docs.rs: ${e.message}`);
+    }
+  }
+
+  // Dart: the documented umbrella import must actually COMPILE against a clean
+  // `dart pub add` of the published version.
+  if (t.expectDartImport) {
+    const dir = mkdtempSync(join(tmpdir(), 'acc-dartimport-'));
+    try {
+      mkdirSync(join(dir, 'bin'), { recursive: true });
+      writeFileSync(
+        join(dir, 'pubspec.yaml'),
+        `name: probe\nversion: 0.0.1\nenvironment:\n  sdk: '>=3.3.0 <4.0.0'\n`,
+      );
+      writeFileSync(
+        join(dir, 'bin', 'main.dart'),
+        `import 'package:${t.actualPackage}/${t.actualPackage}.dart';\nvoid main() { print('ok'); }\n`,
+      );
+      execFileSync('dart', ['pub', 'add', t.actualPackage], {
+        cwd: dir, stdio: 'ignore', timeout: 300000, shell: process.platform === 'win32',
+      });
+      const out = execFileSync('dart', ['run', 'bin/main.dart'], {
+        cwd: dir, encoding: 'utf-8', timeout: 300000, shell: process.platform === 'win32',
+      });
+      record(
+        t.lang,
+        'RUNTIME_IMPORT',
+        /ok/.test(out) ? 'PASS' : 'FAIL',
+        /ok/.test(out)
+          ? 'umbrella import compiles and runs against a clean pub install'
+          : `unexpected output from the import probe: ${out.slice(0, 160)}`,
+      );
+    } catch (e) {
+      const msg = [e.stdout?.toString?.(), e.stderr?.toString?.(), e.message].filter(Boolean).join(' ');
+      const missing = [...msg.matchAll(/Error when reading '[^']*\/([^'/]+\.dart)'/g)].map((m) => m[1]);
+      record(
+        t.lang,
+        'RUNTIME_IMPORT',
+        'FAIL',
+        missing.length
+          ? `umbrella import does NOT compile — the archive is missing ${[...new Set(missing)].join(', ')} (re-exported by the umbrella library)`
+          : `umbrella import does NOT compile: ${msg.slice(0, 220).replace(/\s+/g, ' ')}`,
+      );
+    } finally {
+      try { rmSync(dir, { recursive: true, force: true, maxRetries: 3 }); } catch { /* locked */ }
+    }
+  }
+
+  // Dart: the published archive must carry dartdoc comments on the public API,
+  // and pub.dev's analyzer must not be erroring on the package.
+  if (t.expectDartDoc) {
+    let docFindings = null;
+    try {
+      const dir = dirname(join(workDir, `${t.lang}-artifact`));
+      const libFiles = (entries || []).filter((e) => /^lib\/.*\.dart$/.test(e));
+      if (libFiles.length) {
+        // Extract and sample the public API for `///` doc comments.
+        execFileSync('tar', ['-xf', `${t.lang}-artifact`], { cwd: dir, stdio: 'ignore' });
+        let documented = 0;
+        let sampled = 0;
+        for (const f of libFiles.slice(0, 40)) {
+          try {
+            const src = readFileSync(join(dir, f), 'utf-8');
+            sampled++;
+            if (/^\s*\/\/\/\s/m.test(src)) documented++;
+          } catch { /* skip unreadable entry */ }
+        }
+        docFindings = { documented, sampled };
+      }
+    } catch { /* fall through to the pub.dev signal */ }
+
+    let pubTags = [];
+    try {
+      const score = await fetchJson(`https://pub.dev/api/packages/${t.actualPackage}/score`);
+      pubTags = score.tags || [];
+      const hasError = pubTags.includes('has:error');
+      const pts = `${score.grantedPoints}/${score.maxPoints}`;
+      if (hasError) {
+        record(
+          t.lang,
+          'TYPE_SIGNALS',
+          'FAIL',
+          `pub.dev analysis reports has:error (score ${pts}) — analyzer errors degrade every agent's code intelligence`,
+        );
+      } else if (docFindings && docFindings.documented === 0) {
+        record(t.lang, 'TYPE_SIGNALS', 'FAIL', `no /// doc comments found in ${docFindings.sampled} sampled lib files`);
+      } else if (docFindings) {
+        record(
+          t.lang,
+          'TYPE_SIGNALS',
+          'PASS',
+          `dartdoc comments in ${docFindings.documented}/${docFindings.sampled} sampled lib files; pub.dev clean (score ${pts})`,
+        );
+      } else {
+        record(t.lang, 'TYPE_SIGNALS', 'PASS', `pub.dev analysis clean (score ${pts})`);
+      }
+    } catch (e) {
+      record(t.lang, 'TYPE_SIGNALS', 'SKIP', `could not reach pub.dev score API: ${e.message}`);
+    }
+  }
+
   // Python: py.typed must ship
   if (t.expectPyTyped && entries) {
     record(
@@ -278,6 +413,49 @@ async function verifyTarget(t) {
       has(/py\.typed$/) ? 'PASS' : 'FAIL',
       has(/py\.typed$/) ? 'wheel ships py.typed (typed API)' : 'wheel missing py.typed',
     );
+  }
+
+  // JS: the documented root import must actually WORK in a clean install.
+  //
+  // EXPORTS_RESOLVE below only proves the tarball contains a file at each
+  // exports path. That is not the same as the import succeeding:
+  // accumulate-sdk-opendlt@2.2.0 passes every path check and still throws
+  // ERR_MODULE_NOT_FOUND on `import 'accumulate-sdk-opendlt'`, because the
+  // barrel pulls in @scure/bip32 which is declared as a devDependency. K1
+  // ("quickstart-verbatim") read 5/5 green while the published quickstart line
+  // was broken. Installing and importing is the only check that catches this.
+  if (t.expectRuntimeImport) {
+    const dir = mkdtempSync(join(tmpdir(), `acc-import-${t.lang}-`));
+    try {
+      writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'probe', private: true, type: 'module' }));
+      execFileSync('npm', ['install', '--no-audit', '--no-fund', '--silent', t.actualPackage], {
+        cwd: dir, stdio: 'ignore', timeout: 300000, shell: process.platform === 'win32',
+      });
+      const probe = join(dir, 'probe.mjs');
+      writeFileSync(
+        probe,
+        `import * as m from ${JSON.stringify(t.actualPackage)};\n` +
+          `console.log(JSON.stringify({exports: Object.keys(m).length}));\n`,
+      );
+      const out = execFileSync(process.execPath, [probe], {
+        cwd: dir, encoding: 'utf-8', timeout: 120000, stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      const n = JSON.parse(out.trim()).exports;
+      record(t.lang, 'RUNTIME_IMPORT', 'PASS', `root import succeeds in a clean install (${n} exports)`);
+    } catch (e) {
+      const msg = [e.stderr?.toString?.(), e.message].filter(Boolean).join(' ');
+      const missing = msg.match(/Cannot find package '([^']+)'/);
+      record(
+        t.lang,
+        'RUNTIME_IMPORT',
+        'FAIL',
+        missing
+          ? `root import FAILS in a clean install: missing package "${missing[1]}" — likely a runtime dep declared under devDependencies`
+          : `root import FAILS in a clean install: ${msg.slice(0, 220).replace(/\s+/g, ' ')}`,
+      );
+    } finally {
+      try { rmSync(dir, { recursive: true, force: true, maxRetries: 3 }); } catch { /* windows lock */ }
+    }
   }
 
   // JS: declared `types` entry must exist in the tarball; exports targets must resolve

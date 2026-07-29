@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "lang": "dart",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "custom-token",
+    "file": "06-custom-token.yaml",
+    "title": "Custom token issuance",
+    "specHash": "f9068d5ec05f"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": false,
+  "turns": 57,
+  "interventions": 0,
+  "failureClass": "amount-scaling",
+  "assertions": [
+    {
+      "assertion": "token_issuer_exists == true",
+      "subject": "token_issuer_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "token_account_balance == issue_amount",
+      "subject": "token_account_balance",
+      "op": "==",
+      "passed": false,
+      "actual": 0.00001,
+      "expected": 1000
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://905f899257c6e5ddbafa2120f6e4cf690acea29fe3718417",
+    "liteTokenAccountUrl": "acc://905f899257c6e5ddbafa2120f6e4cf690acea29fe3718417/ACME",
+    "adiUrl": "acc://harness-tokens-1785263030569.acme",
+    "keyBookUrl": "acc://harness-tokens-1785263030569.acme/book",
+    "keyPageUrl": "acc://harness-tokens-1785263030569.acme/book/1",
+    "tokenIssuerUrl": "acc://harness-tokens-1785263030569.acme/TESTTKN",
+    "tokenAccountUrl": "acc://harness-tokens-1785263030569.acme/tokens",
+    "txid": "acc://4a4e86e95a7f0cdea4ba6ef2539beb0342b8d1e8597ac72a87c9c135fa971492@harness-tokens-1785263030569.acme/TESTTKN",
+    "txids": [
+      "acc://fde01aff65b7b01178f89d0355201e34419663ac360cf4bee6f0fc1a5152bada@905f899257c6e5ddbafa2120f6e4cf690acea29fe3718417/ACME",
+      "acc://137067a6b26ff2b4ae043e101bc1896f9e396487d1ef3cbab35f0bc3872c0419@905f899257c6e5ddbafa2120f6e4cf690acea29fe3718417/ACME",
+      "acc://4f61674635353eae11785c6bc68c5dbf38a0753c2eae724bb2d7b1c3d1c53047@905f899257c6e5ddbafa2120f6e4cf690acea29fe3718417/ACME",
+      "acc://292a3f8bd8e57d0579b42b31cda7aed745d3b7d9e29e4c0f763bec85e8b35cba@harness-tokens-1785263030569.acme",
+      "acc://0e27bcfcca075fcdf77f69b986b240daac527dbaa5bf2b16c94df0320dacd9ed@harness-tokens-1785263030569.acme",
+      "acc://4a4e86e95a7f0cdea4ba6ef2539beb0342b8d1e8597ac72a87c9c135fa971492@harness-tokens-1785263030569.acme/TESTTKN"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://905f899257c6e5ddbafa2120f6e4cf690acea29fe3718417",
+    "liteTokenAccount": "acc://905f899257c6e5ddbafa2120f6e4cf690acea29fe3718417/ACME",
+    "publicKeyHex": "f697c5d1475bce6f17a0d517ea1926504574e19808a8482d718e18e90c9bc927",
+    "suggestedAdiUrl": "acc://harness-8950f714.acme"
+  },
+  "durationMs": 665307,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\dart--custom-token.txt",
+  "error": null,
+  "startedAt": "2026-07-28T18:09:27.305Z",
+  "finishedAt": "2026-07-28T18:25:14.861Z"
+}

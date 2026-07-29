@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "lang": "rust",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "write-data",
+    "file": "05-write-data.yaml",
+    "title": "Write data to a data account",
+    "specHash": "9e9c1d819284"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": true,
+  "turns": 38,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "data_account_exists == true",
+      "subject": "data_account_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "retrieved_entry == payload",
+      "subject": "retrieved_entry",
+      "op": "==",
+      "passed": true,
+      "actual": "hello accumulate",
+      "expected": "hello accumulate"
+    }
+  ],
+  "artifacts": {
+    "adiUrl": "acc://harness-dd0ceb7f-a9282bf2.acme",
+    "dataAccountUrl": "acc://harness-dd0ceb7f-a9282bf2.acme/data",
+    "keyBookUrl": "acc://harness-dd0ceb7f-a9282bf2.acme/book",
+    "keyPageUrl": "acc://harness-dd0ceb7f-a9282bf2.acme/book/1",
+    "liteIdentityUrl": "acc://a9282bf2bf1af52cb37c16f1384d17146f3a38b667d4a41f",
+    "liteTokenAccountUrl": "acc://a9282bf2bf1af52cb37c16f1384d17146f3a38b667d4a41f/ACME",
+    "retrievedEntry": "hello accumulate",
+    "txid": "acc://2834ec289bbffb8982b0a4e0853cef7c813b09cc957ee550ead213b07eeb8f4a@harness-dd0ceb7f-a9282bf2.acme/book/1",
+    "txids": [
+      "acc://81c854aa8195d92f1450e796337f71b4efbacab9f618563e23f139081ce683fe@a9282bf2bf1af52cb37c16f1384d17146f3a38b667d4a41f",
+      "acc://3f07d4f1800ccae44a80f451277a48e3d3823cc9b9069e63ea5e4a0e742ed65a@a9282bf2bf1af52cb37c16f1384d17146f3a38b667d4a41f",
+      "acc://4dc6dc6072f150ec50a0d2a9277e3aab5b54298611de6b52adc0baf208fafbb4@harness-dd0ceb7f-a9282bf2.acme/book/1",
+      "acc://2834ec289bbffb8982b0a4e0853cef7c813b09cc957ee550ead213b07eeb8f4a@harness-dd0ceb7f-a9282bf2.acme/book/1"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://a9282bf2bf1af52cb37c16f1384d17146f3a38b667d4a41f",
+    "liteTokenAccount": "acc://a9282bf2bf1af52cb37c16f1384d17146f3a38b667d4a41f/ACME",
+    "publicKeyHex": "eb0d1866a781aec47f155160d4ac921ccf8e6fbf1dd8a512f29ab87e0ab23a4f",
+    "suggestedAdiUrl": "acc://harness-dd0ceb7f.acme"
+  },
+  "durationMs": 665907,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\rust--write-data.txt",
+  "error": null,
+  "startedAt": "2026-07-27T20:32:20.347Z",
+  "finishedAt": "2026-07-27T20:47:57.505Z"
+}

@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "lang": "dart",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "create-adi",
+    "file": "02-create-adi.yaml",
+    "title": "Create an ADI (Accumulate Digital Identifier)",
+    "specHash": "93a188817a2e"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": true,
+  "turns": 47,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "adi_account_exists == true",
+      "subject": "adi_account_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "key_book_exists == true",
+      "subject": "key_book_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://8a4929c67b6bfb4fa6fc40a3888726127501c1a78be6099b",
+    "liteTokenAccountUrl": "acc://8a4929c67b6bfb4fa6fc40a3888726127501c1a78be6099b/ACME",
+    "adiUrl": "acc://harness-4e493208.acme",
+    "keyBookUrl": "acc://harness-4e493208.acme/book",
+    "keyPageUrl": "acc://harness-4e493208.acme/book/1",
+    "txid": "acc://4cbd9177f151b8bb85bdd88cfb69a446b2657994624aaf64a5c2f5fafe352f84@8a4929c67b6bfb4fa6fc40a3888726127501c1a78be6099b/ACME",
+    "txids": [
+      "acc://acaa2f768a9503a24cc14b8f554eedf1317b5d86f26609d3c9d87f98586ad844@8a4929c67b6bfb4fa6fc40a3888726127501c1a78be6099b/ACME",
+      "acc://4cbd9177f151b8bb85bdd88cfb69a446b2657994624aaf64a5c2f5fafe352f84@8a4929c67b6bfb4fa6fc40a3888726127501c1a78be6099b/ACME"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://8a4929c67b6bfb4fa6fc40a3888726127501c1a78be6099b",
+    "liteTokenAccount": "acc://8a4929c67b6bfb4fa6fc40a3888726127501c1a78be6099b/ACME",
+    "publicKeyHex": "d719e429a69c74eead37d94079580df80ca699f5b20d2506580e86d72d63bdef",
+    "suggestedAdiUrl": "acc://harness-4e493208.acme"
+  },
+  "durationMs": 666398,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\dart--create-adi.txt",
+  "error": null,
+  "startedAt": "2026-07-27T23:16:16.589Z",
+  "finishedAt": "2026-07-27T23:27:46.834Z"
+}

@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "lang": "csharp",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "multisig-setup",
+    "file": "07-multisig-setup.yaml",
+    "title": "Multi-signature setup",
+    "specHash": "a9a1532bdf4f"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": true,
+  "turns": 32,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_threshold == 2",
+      "subject": "key_page_threshold",
+      "op": "==",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "assertion": "multisig_tx_status == delivered",
+      "subject": "multisig_tx_status",
+      "op": "==",
+      "passed": true,
+      "actual": "delivered",
+      "expected": "delivered"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://94dda9b08dc0e6b3f8cdf430605eb76bacde6a2140580bf2",
+    "liteTokenAccountUrl": "acc://94dda9b08dc0e6b3f8cdf430605eb76bacde6a2140580bf2/ACME",
+    "adiUrl": "acc://msigf6bda286.acme",
+    "keyBookUrl": "acc://msigf6bda286.acme/book",
+    "keyPageUrl": "acc://msigf6bda286.acme/book/1",
+    "tokenAccountUrl": "acc://msigf6bda286.acme/tokens",
+    "txid": "acc://e162c3de58a77dafd78029e734cf0520307a2cdf26e8544b14629728f020d7f3@msigf6bda286.acme",
+    "txids": [
+      "acc://aede3be2d98d4bf43b353577a487ac00b039339e552d9fbb244b9a9dc8f53626@94dda9b08dc0e6b3f8cdf430605eb76bacde6a2140580bf2/acme",
+      "acc://9853bde8f723a32754e26a84ae585f9d3c52e40e39c7571f5d85b3d478f94e2f@94dda9b08dc0e6b3f8cdf430605eb76bacde6a2140580bf2/acme",
+      "acc://298a00359d5883d62e477a14a57b08f990948e9aaec718b7e969142003844ced@94dda9b08dc0e6b3f8cdf430605eb76bacde6a2140580bf2/acme",
+      "acc://9015f0880e4e34b007dbd0aac6f3e1925cfe16bd1dc4ee45fedca798dda237b5@msigf6bda286.acme/book/1",
+      "acc://00bc430096285d07fe95d6c3764222da68cfb613b580a4fbe7dc580af2027ba3@msigf6bda286.acme/book/1",
+      "acc://e162c3de58a77dafd78029e734cf0520307a2cdf26e8544b14629728f020d7f3@msigf6bda286.acme"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://94dda9b08dc0e6b3f8cdf430605eb76bacde6a2140580bf2",
+    "liteTokenAccount": "acc://94dda9b08dc0e6b3f8cdf430605eb76bacde6a2140580bf2/ACME",
+    "publicKeyHex": "813f2de8360e306993308b20d073ed76015cfff49a7d52285473d035a510ecbc",
+    "suggestedAdiUrl": "acc://harness-24c2ebb1.acme"
+  },
+  "durationMs": 992109,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\csharp--multisig-setup.txt",
+  "error": null,
+  "startedAt": "2026-07-28T09:49:07.786Z",
+  "finishedAt": "2026-07-28T10:10:09.926Z"
+}

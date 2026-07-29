@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "lang": "csharp",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "write-data",
+    "file": "05-write-data.yaml",
+    "title": "Write data to a data account",
+    "specHash": "9e9c1d819284"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": true,
+  "turns": 41,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "data_account_exists == true",
+      "subject": "data_account_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "retrieved_entry == payload",
+      "subject": "retrieved_entry",
+      "op": "==",
+      "passed": true,
+      "actual": "hello accumulate",
+      "expected": "hello accumulate"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://41a0293f2981f39e485a29f2b0a77e3c12020bb79cd9e0da",
+    "liteTokenAccountUrl": "acc://41a0293f2981f39e485a29f2b0a77e3c12020bb79cd9e0da/ACME",
+    "adiUrl": "acc://harness-c3bbda1b-agent.acme",
+    "keyBookUrl": "acc://harness-c3bbda1b-agent.acme/book",
+    "keyPageUrl": "acc://harness-c3bbda1b-agent.acme/book/1",
+    "dataAccountUrl": "acc://harness-c3bbda1b-agent.acme/data",
+    "entryHash": "80d921ad4f794fb7a41108b6d06440dc7cd613c7fc3a96aca772bf8a688f1d75",
+    "txid": "acc://75f0c40b096f8a3b5c0d891b05263cad506ff79f9e58d7ec60d70fe35bc2d506@harness-c3bbda1b-agent.acme/data",
+    "txids": [
+      "acc://bf0d2423c1f8650258161f010c3f0507b4289b6676893d0a44b7be762fb37485@41a0293f2981f39e485a29f2b0a77e3c12020bb79cd9e0da/ACME",
+      "acc://b8f0b91872c5a09d87c3fc9b2143af8385f67570c712b3ef58273e44158665ea@41a0293f2981f39e485a29f2b0a77e3c12020bb79cd9e0da/ACME",
+      "acc://67d56d1ceba06b08948afb7a17887f254a640d198895dde7ec0d347925def4c6@41a0293f2981f39e485a29f2b0a77e3c12020bb79cd9e0da/ACME",
+      "acc://ebbcfcce8ae9cadaf0047ca6663f43e54ec8c61fac6119ab17a740b75a98f88a@harness-c3bbda1b-agent.acme",
+      "acc://75f0c40b096f8a3b5c0d891b05263cad506ff79f9e58d7ec60d70fe35bc2d506@harness-c3bbda1b-agent.acme/data"
+    ],
+    "retrievedEntry": "hello accumulate"
+  },
+  "environment": {
+    "liteIdentity": "acc://41a0293f2981f39e485a29f2b0a77e3c12020bb79cd9e0da",
+    "liteTokenAccount": "acc://41a0293f2981f39e485a29f2b0a77e3c12020bb79cd9e0da/ACME",
+    "publicKeyHex": "44ca9fdd3046ca0166f9ad9dda76095f01cedb6f78ffbd13d7982191b9ef3176",
+    "suggestedAdiUrl": "acc://harness-c3bbda1b.acme"
+  },
+  "durationMs": 929236,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\csharp--write-data.txt",
+  "error": null,
+  "startedAt": "2026-07-28T09:49:07.793Z",
+  "finishedAt": "2026-07-28T10:12:57.509Z"
+}

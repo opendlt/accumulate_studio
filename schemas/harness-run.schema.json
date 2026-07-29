@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://opendlt.io/schemas/harness-run.schema.json",
+  "title": "Agent-harness run record",
+  "description": "One (lang x task x mode) run of the Accumulate agent harness. Produced by tools/agent-harness/runner.mjs; consumed by scorecard.mjs to derive K2/K3/K4.",
+  "type": "object",
+  "required": ["schema", "lang", "mode", "backend", "task", "passed", "finishedAt"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": 1 },
+    "lang": { "enum": ["rust", "python", "dart", "csharp", "javascript"] },
+    "mode": { "enum": ["sdk", "mcp", "codegen", "cli"] },
+    "backend": { "type": "string", "minLength": 1 },
+    "network": { "type": ["string", "null"] },
+    "task": {
+      "type": "object",
+      "required": ["id", "file", "specHash"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "file": { "type": "string" },
+        "title": { "type": ["string", "null"] },
+        "specHash": {
+          "type": "string",
+          "description": "sha256 prefix of the task spec. Editing a spec invalidates cross-run comparison."
+        }
+      }
+    },
+    "sdkVersion": { "type": ["string", "null"] },
+    "passed": {
+      "type": "boolean",
+      "description": "True only when every success_assertion was verified against chain state by the harness. Never derived from the agent's own claim."
+    },
+    "turns": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Assistant turns until the first successful on-chain transaction (K3)."
+    },
+    "interventions": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Corrections the harness injected (K4). Zero in default scoring mode."
+    },
+    "failureClass": {
+      "type": ["string", "null"],
+      "enum": [
+        "amount-scaling",
+        "missing-prereq",
+        "wrong-symbol",
+        "error-opaque",
+        "install-fail",
+        "network-flake",
+        "harness-setup-failed",
+        "timeout",
+        "no-artifacts",
+        "other",
+        null
+      ],
+      "description": "Null when passed. 'network-flake' is excluded from the K2 denominator."
+    },
+    "assertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["assertion", "passed"],
+        "properties": {
+          "assertion": { "type": "string" },
+          "subject": { "type": "string" },
+          "op": { "type": "string" },
+          "passed": { "type": "boolean" },
+          "actual": {},
+          "actualAcme": { "type": ["number", "null"] },
+          "expected": {},
+          "error": { "type": "string" }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "description": "Identifiers the agent reported (URLs, txids, key hashes). Identifiers only — the harness verifies state itself."
+    },
+    "environment": {
+      "type": ["object", "null"],
+      "description": "Provisioned public identifiers. Private keys are never recorded.",
+      "additionalProperties": false,
+      "properties": {
+        "liteIdentity": { "type": "string" },
+        "liteTokenAccount": { "type": "string" },
+        "publicKeyHex": { "type": "string" },
+        "suggestedAdiUrl": { "type": "string" }
+      }
+    },
+    "durationMs": { "type": ["integer", "null"] },
+    "transcriptPath": { "type": ["string", "null"] },
+    "error": { "type": ["string", "null"] },
+    "startedAt": { "type": ["string", "null"], "format": "date-time" },
+    "finishedAt": { "type": "string", "format": "date-time" }
+  }
+}

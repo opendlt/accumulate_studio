@@ -1,32 +1,32 @@
 {
-  "baselineDate": "2026-07-22",
+  "baselineDate": "2026-07-28",
   "kpis": [
     {
       "id": "K1",
       "name": "Quickstart-verbatim (install-name parity)",
-      "value": "5/5 install-name parity (proxy for verbatim quickstart)",
+      "value": "5/5 quickstart-runnable (install-name parity + import probe on dart, javascript)",
       "status": "GREEN",
       "target": "5/5"
     },
     {
       "id": "K2",
       "name": "Task first-try pass rate",
-      "value": "PENDING_RUNNER",
-      "status": "PENDING",
+      "value": "88% (35/40)",
+      "status": "RED",
       "target": ">= 90%"
     },
     {
       "id": "K3",
       "name": "Turns-to-first-tx",
-      "value": "PENDING_RUNNER",
-      "status": "PENDING",
+      "value": "25.5 mean turns (n=35)",
+      "status": "RED",
       "target": "<= 6"
     },
     {
       "id": "K4",
       "name": "Human interventions per task",
-      "value": "PENDING_RUNNER",
-      "status": "PENDING",
+      "value": "0.00 per task",
+      "status": "GREEN",
       "target": "<= 0.2"
     },
     {
@@ -39,8 +39,8 @@
     {
       "id": "K6",
       "name": "Typed-surface ratio",
-      "value": "PENDING_PHASE3",
-      "status": "PENDING",
+      "value": "4/5 languages expose a machine-readable API surface",
+      "status": "RED",
       "target": "100%"
     },
     {
@@ -53,14 +53,14 @@
     {
       "id": "K8",
       "name": "Fleet version parity",
-      "value": "distinct minor lines: 1 (2.2) — target 1 (K8)",
-      "status": "GREEN",
+      "value": "distinct minor lines: 2 (2.3, 2.2) — target 1 (K8)",
+      "status": "RED",
       "target": "1 minor line"
     },
     {
       "id": "K9",
       "name": "MCP installable in <= 1 config block",
-      "value": "accumulate-studio-mcp@1.0.0 on npm",
+      "value": "accumulate-studio-mcp@1.1.0 on npm (tools + resources + prompts)",
       "status": "GREEN",
       "target": "published"
     },
@@ -75,9 +75,9 @@
   "perLang": [
     {
       "lang": "rust",
-      "version": "2.2.0",
+      "version": "2.3.0",
       "name_parity": "PASS",
-      "type_signals": "-",
+      "type_signals": "PASS",
       "exports": "-",
       "llms": "PASS"
     },
@@ -91,9 +91,9 @@
     },
     {
       "lang": "dart",
-      "version": "2.2.0",
+      "version": "2.2.2",
       "name_parity": "PASS",
-      "type_signals": "-",
+      "type_signals": "FAIL",
       "exports": "-",
       "llms": "PASS"
     },
@@ -107,13 +107,386 @@
     },
     {
       "lang": "javascript",
-      "version": "2.2.0",
+      "version": "2.2.1",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "PASS",
       "llms": "PASS"
     }
   ],
+  "agentRuns": {
+    "mode": "sdk",
+    "date": "2026-07-27",
+    "scoredCount": 40,
+    "passedCount": 35,
+    "excludedFlake": 0,
+    "failureClasses": {
+      "timeout": 3,
+      "amount-scaling": 2
+    },
+    "runs": [
+      {
+        "lang": "csharp",
+        "task": "add-credits",
+        "passed": true,
+        "turns": 26,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "csharp",
+        "task": "create-adi",
+        "passed": true,
+        "turns": 26,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "csharp",
+        "task": "custom-token",
+        "passed": true,
+        "turns": 21,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "csharp",
+        "task": "key-rotation",
+        "passed": false,
+        "turns": null,
+        "interventions": 0,
+        "failureClass": "timeout",
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "csharp",
+        "task": "lite-account",
+        "passed": true,
+        "turns": 19,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "csharp",
+        "task": "multisig-setup",
+        "passed": true,
+        "turns": 32,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "csharp",
+        "task": "send-tokens",
+        "passed": true,
+        "turns": 31,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "csharp",
+        "task": "write-data",
+        "passed": true,
+        "turns": 41,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "dart",
+        "task": "add-credits",
+        "passed": true,
+        "turns": 40,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "dart",
+        "task": "create-adi",
+        "passed": true,
+        "turns": 47,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "dart",
+        "task": "custom-token",
+        "passed": false,
+        "turns": 57,
+        "interventions": 0,
+        "failureClass": "amount-scaling",
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "dart",
+        "task": "key-rotation",
+        "passed": false,
+        "turns": null,
+        "interventions": 0,
+        "failureClass": "timeout",
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "dart",
+        "task": "lite-account",
+        "passed": true,
+        "turns": 20,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "dart",
+        "task": "multisig-setup",
+        "passed": false,
+        "turns": null,
+        "interventions": 0,
+        "failureClass": "timeout",
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "dart",
+        "task": "send-tokens",
+        "passed": true,
+        "turns": 41,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "dart",
+        "task": "write-data",
+        "passed": true,
+        "turns": 59,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "javascript",
+        "task": "add-credits",
+        "passed": true,
+        "turns": 18,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "javascript",
+        "task": "create-adi",
+        "passed": true,
+        "turns": 18,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "javascript",
+        "task": "custom-token",
+        "passed": true,
+        "turns": 15,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "javascript",
+        "task": "key-rotation",
+        "passed": true,
+        "turns": 34,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "javascript",
+        "task": "lite-account",
+        "passed": true,
+        "turns": 14,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "javascript",
+        "task": "multisig-setup",
+        "passed": true,
+        "turns": 15,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "javascript",
+        "task": "send-tokens",
+        "passed": true,
+        "turns": 18,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "javascript",
+        "task": "write-data",
+        "passed": true,
+        "turns": 26,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "python",
+        "task": "add-credits",
+        "passed": true,
+        "turns": 14,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.1"
+      },
+      {
+        "lang": "python",
+        "task": "create-adi",
+        "passed": true,
+        "turns": 15,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.1"
+      },
+      {
+        "lang": "python",
+        "task": "custom-token",
+        "passed": true,
+        "turns": 3,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.1"
+      },
+      {
+        "lang": "python",
+        "task": "key-rotation",
+        "passed": true,
+        "turns": 29,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.1"
+      },
+      {
+        "lang": "python",
+        "task": "lite-account",
+        "passed": true,
+        "turns": 15,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.1"
+      },
+      {
+        "lang": "python",
+        "task": "multisig-setup",
+        "passed": true,
+        "turns": 19,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.1"
+      },
+      {
+        "lang": "python",
+        "task": "send-tokens",
+        "passed": true,
+        "turns": 22,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.1"
+      },
+      {
+        "lang": "python",
+        "task": "write-data",
+        "passed": true,
+        "turns": 36,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.1"
+      },
+      {
+        "lang": "rust",
+        "task": "add-credits",
+        "passed": true,
+        "turns": 22,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "rust",
+        "task": "create-adi",
+        "passed": true,
+        "turns": 18,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "rust",
+        "task": "custom-token",
+        "passed": false,
+        "turns": 26,
+        "interventions": 0,
+        "failureClass": "amount-scaling",
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "rust",
+        "task": "key-rotation",
+        "passed": true,
+        "turns": 35,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "rust",
+        "task": "lite-account",
+        "passed": true,
+        "turns": 14,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "rust",
+        "task": "multisig-setup",
+        "passed": true,
+        "turns": 30,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "rust",
+        "task": "send-tokens",
+        "passed": true,
+        "turns": 22,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      },
+      {
+        "lang": "rust",
+        "task": "write-data",
+        "passed": true,
+        "turns": 38,
+        "interventions": 0,
+        "failureClass": null,
+        "sdkVersion": "2.2.0"
+      }
+    ]
+  },
   "artifactVerify": {
     "generatedAt": null,
     "tool": "artifact-verify",
@@ -123,13 +496,19 @@
         "lang": "rust",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk @ 2.2.0 (crates)"
+        "detail": "accumulate-sdk @ 2.3.0 (crates)"
       },
       {
         "lang": "rust",
         "id": "NAME_PARITY",
         "status": "PASS",
         "detail": "README install name matches published package (accumulate-sdk)"
+      },
+      {
+        "lang": "rust",
+        "id": "TYPE_SIGNALS",
+        "status": "PASS",
+        "detail": "docs.rs built rustdoc for 2.3.0 (type surface reachable)"
       },
       {
         "lang": "rust",
@@ -165,13 +544,25 @@
         "lang": "dart",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "opendlt_accumulate @ 2.2.0 (pub)"
+        "detail": "opendlt_accumulate @ 2.2.2 (pub)"
       },
       {
         "lang": "dart",
         "id": "NAME_PARITY",
         "status": "PASS",
         "detail": "README install name matches published package (opendlt_accumulate)"
+      },
+      {
+        "lang": "dart",
+        "id": "RUNTIME_IMPORT",
+        "status": "PASS",
+        "detail": "umbrella import compiles and runs against a clean pub install"
+      },
+      {
+        "lang": "dart",
+        "id": "TYPE_SIGNALS",
+        "status": "FAIL",
+        "detail": "pub.dev analysis reports has:error (score 50/160) — analyzer errors degrade every agent's code intelligence"
       },
       {
         "lang": "dart",
@@ -207,13 +598,19 @@
         "lang": "javascript",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk-opendlt @ 2.2.0 (npm)"
+        "detail": "accumulate-sdk-opendlt @ 2.2.1 (npm)"
       },
       {
         "lang": "javascript",
         "id": "NAME_PARITY",
         "status": "PASS",
         "detail": "README install name matches published package (accumulate-sdk-opendlt)"
+      },
+      {
+        "lang": "javascript",
+        "id": "RUNTIME_IMPORT",
+        "status": "PASS",
+        "detail": "root import succeeds in a clean install (51 exports)"
       },
       {
         "lang": "javascript",
@@ -236,13 +633,14 @@
       {
         "lang": "fleet",
         "id": "VERSION_PARITY",
-        "status": "PASS",
-        "detail": "distinct minor lines: 1 (2.2) — target 1 (K8)"
+        "status": "FAIL",
+        "detail": "distinct minor lines: 2 (2.3, 2.2) — target 1 (K8)"
       }
     ],
     "counts": {
       "INFO": 5,
-      "PASS": 15
+      "PASS": 17,
+      "FAIL": 2
     }
   }
 }

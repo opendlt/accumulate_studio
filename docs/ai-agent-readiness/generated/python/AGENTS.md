@@ -1,33 +1,72 @@
-# Building on Accumulate with the Python SDK
+# opendlt-python-v2v3-sdk — repository guide for agents
 
-You are integrating the Accumulate blockchain using the Python SDK (`accumulate-sdk-opendlt`). Follow this guide.
+The Python SDK for the Accumulate blockchain. Published as `accumulate-sdk-opendlt` (v2.3.0).
 
-## Golden path (use this, not the low-level API)
+> **The project root is `unified/`, not the repository root.** Run every command below from there unless stated otherwise.
+
+> Building **on** Accumulate rather than **on this SDK**? You want `llms.txt` (quickstart + rules) and `llms-full.txt` (full API). This file is about working on the SDK itself.
+
+## Setup
+
+Toolchain: **Python 3.11+**
+
+```bash
+cd unified
+python -m venv .venv && .venv/Scripts/activate  # POSIX: source .venv/bin/activate
+pip install -e ".[dev]"
 ```
-client = QuickStart.kermit()   # or Accumulate.testnet()/mainnet()/devnet()
-# 1. build the transaction body
-# body = TxBody.<operation>(...)   # see Operations below
-# 2. sign, submit, and wait for delivery
-result = SmartSigner(signer).sign_submit_and_wait(principal, body)
-# 3. query the account to confirm the effect
+
+## Build
+
+```bash
+pip install -e .   # pure Python; no separate build step
 ```
 
-## Rules
-- **Amounts:** 1 ACME = 1e8 base units. Never pass whole ACME as-is.
-- **Testnet first:** target Kermit and fund lite accounts via the faucet before spending.
-- **Prerequisites matter:** create an ADI, then buy credits for its key page before it can sign; wait for balances/credits to settle before the next step.
-- **Errors are typed:** branch on the SDK error type/code; retry only on network errors, not validation errors.
-- **One canonical client:** connect with `Accumulate`, build with `TxBody`, sign with `SmartSigner`. Do not hand-roll envelopes/signing, and ignore any alternate or legacy client classes — this is the only path you need.
+## Test
 
-## Operations available
-- **utility:** `generate_keys`, `faucet`, `wait_for_balance`, `wait_for_credits`
-- **credits:** `add_credits`, `transfer_credits`, `burn_credits`
-- **identity:** `create_identity`, `create_key_book`, `create_key_page`
-- **account:** `create_token_account`, `create_data_account`, `create_token`, `create_lite_token_account`
-- **transaction:** `send_tokens`, `issue_tokens`, `burn_tokens`, `write_data`, `write_data_to`
-- **query:** `query_account`
-- **authority:** `update_key_page`, `update_key`, `lock_account`, `update_account_auth`
+| Command | Covers | Needs network |
+|---|---|:--:|
+| `pytest` | unit suite | no |
+| `pytest unified/tests/integration` | integration suite | **yes** |
 
-## More
-- Complete API with signatures, inputs, outputs, and errors: `llms-full.txt`.
-- Runnable end-to-end examples: `examples/v3/`.
+Network-dependent suites talk to a live testnet. If they fail while the unit suite passes, suspect the network before suspecting your change.
+
+## Lint & format
+
+```bash
+ruff check .
+ruff format --check .
+```
+
+## Layout
+
+```
+unified/src/accumulate_client/  the package (this is the real project root)
+unified/tests/                  test suite
+examples/                       runnable end-to-end examples
+pyproject.toml (root)           a STUB — see gotchas
+```
+
+## Gotchas
+
+- The repo-root `pyproject.toml` declares `name = "accumulate-client"`, `version = "0.0.0"`. That is a stub. The real package is `accumulate-sdk-opendlt` defined in `unified/pyproject.toml`. Always work from `unified/`.
+- Root `pytest.ini` sets `testpaths = unified/tests` with `--import-mode=importlib`, so bare `pytest` from the repo root does find the right tests.
+- The package exports both the canonical path (`Accumulate`/`TxBody`/`SmartSigner`/`QuickStart`) and a legacy `AccumulateClient`. New code uses the canonical path only.
+- `QuickStart` helper methods print progress to stdout. Do not use them in anything whose stdout is parsed.
+
+## Permitted commands
+
+Safe to run unattended: build, test, lint, format, and any read-only query against a **testnet**.
+
+Require a human first:
+
+- publishing or releasing (registry writes are irreversible)
+- anything targeting **mainnet**
+- rewriting git history, force-pushing, or changing CI credentials
+- changing transaction marshaling or signing bytes — consensus-visible
+
+## Before you commit
+
+```bash
+pytest && ruff check .
+```

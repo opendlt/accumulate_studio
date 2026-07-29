@@ -85,6 +85,155 @@ const LANG_META = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// REPO_META — facts about each SDK's *repository*, for AGENTS.md.
+//
+// AGENTS.md is a contributor manifest: how to build, test, lint and navigate
+// THIS checkout. That is a different genre from llms.txt, which tells an agent
+// how to USE the published SDK. Before RB-03 both files carried usage content
+// and neither answered "how do I run the tests".
+//
+// Every command below was executed against a real checkout. A manifest that
+// lists a command which does not work is worse than no manifest, because the
+// agent trusts it.
+// ---------------------------------------------------------------------------
+const REPO_META = {
+  python: {
+    repoDir: 'opendlt-python-v2v3-sdk',
+    projectRoot: 'unified/',
+    rootIsProject: false,
+    toolchain: 'Python 3.11+',
+    setup: ['cd unified', 'python -m venv .venv && .venv/Scripts/activate  # POSIX: source .venv/bin/activate', 'pip install -e ".[dev]"'],
+    build: 'pip install -e .   # pure Python; no separate build step',
+    test: [
+      { cmd: 'pytest', desc: 'unit suite', network: false },
+      { cmd: 'pytest unified/tests/integration', desc: 'integration suite', network: true },
+    ],
+    lint: ['ruff check .', 'ruff format --check .'],
+    layout: [
+      'unified/src/accumulate_client/  the package (this is the real project root)',
+      'unified/tests/                  test suite',
+      'examples/                       runnable end-to-end examples',
+      'pyproject.toml (root)           a STUB — see gotchas',
+    ],
+    gotchas: [
+      'The repo-root `pyproject.toml` declares `name = "accumulate-client"`, `version = "0.0.0"`. That is a stub. The real package is `accumulate-sdk-opendlt` defined in `unified/pyproject.toml`. Always work from `unified/`.',
+      'Root `pytest.ini` sets `testpaths = unified/tests` with `--import-mode=importlib`, so bare `pytest` from the repo root does find the right tests.',
+      'The package exports both the canonical path (`Accumulate`/`TxBody`/`SmartSigner`/`QuickStart`) and a legacy `AccumulateClient`. New code uses the canonical path only.',
+      '`QuickStart` helper methods print progress to stdout. Do not use them in anything whose stdout is parsed.',
+    ],
+    preCommit: 'pytest && ruff check .',
+  },
+  rust: {
+    repoDir: 'opendlt-rust-v2v3-sdk',
+    projectRoot: 'unified/',
+    rootIsProject: false,
+    toolchain: 'Rust stable (edition per Cargo.toml)',
+    setup: ['cd unified', 'make install-tools   # clippy, rustfmt, cargo-audit, coverage tooling'],
+    build: 'cargo build',
+    test: [
+      { cmd: 'make test', desc: 'full suite', network: false },
+      { cmd: 'make test-unit', desc: 'unit only', network: false },
+      { cmd: 'make test-integration', desc: 'integration', network: true },
+      { cmd: 'make test-conformance', desc: 'conformance vectors', network: false },
+      { cmd: 'cargo test --doc', desc: 'doctests (Amount helper)', network: false },
+    ],
+    lint: ['make lint   # clippy', 'make fmt-check'],
+    layout: [
+      'unified/src/            the crate (this is the real project root)',
+      'unified/tests/          integration + conformance tests',
+      'unified/examples/v3/    runnable examples',
+      'unified/Makefile        the canonical entry point for every workflow',
+    ],
+    gotchas: [
+      'Use the `Makefile`, not bare cargo. `make ci-check` (= fmt-check + lint + test + coverage-gate + audit) is what CI runs; bare `cargo test` skips the coverage gate and the audit.',
+      'The crate is `accumulate-sdk` but the import path is `accumulate_client`. Both are correct and intentional.',
+      '`golden_bytes_stable` pins the marshaled bytes for all 21 transaction types. If it fails, you changed signing bytes — that is a consensus-visible break, not a test to update.',
+      'Transaction type codes were wrong for 5 variants historically (LockAccount, BurnCredits, TransferCredits, UpdateAccountAuth, UpdateKey). The golden-byte harness exists to stop that recurring.',
+    ],
+    preCommit: 'make ci-check',
+  },
+  dart: {
+    repoDir: 'opendlt-dart-v2v3-sdk',
+    projectRoot: 'unified/',
+    rootIsProject: false,
+    toolchain: "Dart SDK >=3.3.0 <4.0.0",
+    setup: ['cd unified', 'dart pub get'],
+    build: 'dart pub get   # no separate build step',
+    test: [
+      { cmd: 'dart test', desc: 'full suite', network: false },
+      { cmd: 'dart test test/integration', desc: 'integration', network: true },
+    ],
+    lint: ['dart analyze', 'dart format --output=none --set-exit-if-changed .'],
+    layout: [
+      'unified/lib/            the package (this is the real project root)',
+      'unified/test/           test suite',
+      'unified/example/v3/     runnable examples',
+      'unified/bin/            CLI entry point',
+    ],
+    gotchas: [
+      'The repo root is not the package root; `unified/` holds `pubspec.yaml`.',
+      'pub.dev analysis currently reports `has:error` and scores 40/160. Run `dart analyze` and `dart doc` before publishing — analyzer errors degrade code intelligence for every consumer, human or agent.',
+      'Errors are typed via `AccError` / `JsonRpcErrorMapper`, wired into `Transport.call`/`batch`. Catch `on AccError`, not a bare exception.',
+    ],
+    preCommit: 'dart analyze && dart test',
+  },
+  csharp: {
+    repoDir: 'opendlt-c-sharp-v2v3-sdk',
+    projectRoot: '.',
+    rootIsProject: true,
+    toolchain: '.NET 9 SDK',
+    setup: ['dotnet restore Acme.Net.Sdk.sln'],
+    build: 'dotnet build Acme.Net.Sdk.sln -c Release',
+    test: [
+      { cmd: 'dotnet test test/Acme.Net.Sdk.Tests', desc: 'unit suite', network: false },
+      { cmd: 'dotnet test test/Acme.Net.Sdk.AccountTests', desc: 'account suite', network: true },
+    ],
+    lint: ['dotnet format --verify-no-changes'],
+    layout: [
+      'src/Acme.Net.Sdk/               the library',
+      'test/Acme.Net.Sdk.Tests/        unit tests',
+      'test/Acme.Net.Sdk.AccountTests/ network-dependent tests',
+      'test/Acme.Net.Sdk.Benchmarks/   benchmarks',
+      'examples/v3/                    runnable examples',
+    ],
+    gotchas: [
+      '`<GenerateDocumentationFile>true</GenerateDocumentationFile>` must stay on — the nupkg has to ship `lib/<tfm>/*.xml` or IntelliSense and agent tooling lose every signature.',
+      '`AcmeClient` is `[Obsolete]`. Use `Accumulate` / `TxBody` / `SmartSigner`.',
+      'Transaction type codes were wrong for 5 variants historically; `TransactionCodec` was also missing `MarshalUpdateKey` and `MarshalTransferCredits`. Treat marshaling changes as consensus-visible.',
+      'Url objects (`Lid`, `Lta`) need `.String()`; stored URL strings do not. Calling `.String()` on a string is a compile error.',
+    ],
+    preCommit: 'dotnet build && dotnet test test/Acme.Net.Sdk.Tests',
+  },
+  javascript: {
+    repoDir: 'opendlt-javascript-v2v3-sdk',
+    projectRoot: 'javascript/',
+    rootIsProject: false,
+    toolchain: 'Node >= 18',
+    setup: ['cd javascript', 'npm ci'],
+    build: 'npm run build   # tsc -p tsconfig.json',
+    test: [
+      { cmd: 'npm run test:unit', desc: 'unit suite', network: false },
+      { cmd: 'npm run test:integration', desc: 'integration', network: true },
+      { cmd: 'npm run test:all', desc: 'everything except browser', network: true },
+    ],
+    lint: ['npm run lint', 'npm run format:check'],
+    layout: [
+      'javascript/src/     TypeScript sources (this is the real project root)',
+      'javascript/lib/     build output; `lib/index.js` re-exports `lib/src/index.js`',
+      'javascript/test/    unit tests',
+      'javascript/test-it/ integration tests',
+    ],
+    gotchas: [
+      'The repo root is not the package root; `javascript/` holds `package.json`.',
+      '`npm run build` must run before tests that import from `lib/`.',
+      'The SDK submits transactions as JSON via the V2 `execute-direct` endpoint, not binary — do not port binary-marshaling assumptions here.',
+      '`TxBody.updateKeyPage([{...}])` with plain objects does not work. Use the typed methods: `updateKeyPageAddKey`, `updateKeyPageRemoveKey`, `updateKeyPageSetThreshold`.',
+    ],
+    preCommit: 'npm run code-check && npm run test:unit',
+  },
+};
+
 const CONVENTIONS = [
   'Networks: Kermit testnet (used by the examples; fund via faucet), plus mainnet and local devnet.',
   'Amounts: ACME is denominated in base units where 1 ACME = 1e8 base units. Passing whole ACME as-is is the single most common integration bug.',
@@ -133,9 +282,19 @@ function renderLlms(lang, m) {
   L.push(meta.sign);
   L.push('```');
   L.push('');
+  // These rules moved here from AGENTS.md in RB-03. They are consumer guidance
+  // — how to USE the SDK — which is this file's genre. AGENTS.md is now the
+  // repository manifest (build/test/lint/layout).
+  L.push('## Rules');
+  L.push('- **Amounts:** 1 ACME = 1e8 base units. Never pass whole ACME as-is; use the `Amount` helper.');
+  L.push('- **Testnet first:** target Kermit and fund lite accounts via the faucet before spending.');
+  L.push('- **Prerequisites matter:** create an ADI, then buy credits for its key page before it can sign; wait for balances/credits to settle before the next step.');
+  L.push('- **Errors are typed:** branch on the SDK error type/code; retry only on network errors, not validation errors.');
+  L.push('- **One canonical client:** connect with `' + m.entrypoints[0]?.symbol + '`, build with `TxBody`, sign with `SmartSigner`. Do not hand-roll envelopes/signing, and ignore any alternate or legacy client classes — this is the only path you need.');
+  L.push('');
   L.push('## Resources');
   L.push('- Full API digest: `llms-full.txt`');
-  L.push('- Agent guide / rules: `AGENTS.md`');
+  L.push('- Repository guide (build/test/lint, for working ON this SDK): `AGENTS.md`');
   L.push(`- Runnable end-to-end examples: \`${meta.examples}\``);
   L.push(`- ${opTotal} operations across ${Object.keys(opsByCategory(m.operations.filter((o) => o.op !== 'comment'))).length} categories.`);
   L.push('');
@@ -207,43 +366,98 @@ function renderLlmsFull(lang, m) {
   return L.join('\n');
 }
 
-// ---- AGENTS.md (agent rules) ----------------------------------------------
+// ---- AGENTS.md (repo manifest) ---------------------------------------------
+// Contributor-facing: how to build, test, lint and navigate THIS checkout.
+// Consumer-facing usage guidance lives in llms.txt / llms-full.txt.
 function renderAgents(lang, m) {
   const meta = LANG_META[lang];
-  const cmt = meta.comment || '//';
+  const repo = REPO_META[lang];
   const L = [];
-  L.push(`# Building on Accumulate with the ${meta.display} SDK`);
+
+  L.push(`# ${repo.repoDir} — repository guide for agents`);
   L.push('');
-  L.push(`You are integrating the Accumulate blockchain using the ${meta.display} SDK (\`${meta.pkg}\`). Follow this guide.`);
+  L.push(
+    `The ${meta.display} SDK for the Accumulate blockchain. Published as \`${meta.pkg}\` (v${m.sdk_version}).`,
+  );
   L.push('');
-  L.push('## Golden path (use this, not the low-level API)');
+  if (!repo.rootIsProject) {
+    L.push(
+      `> **The project root is \`${repo.projectRoot}\`, not the repository root.** Run every command below from there unless stated otherwise.`,
+    );
+    L.push('');
+  }
+  L.push(
+    '> Building **on** Accumulate rather than **on this SDK**? You want `llms.txt` (quickstart + rules) and `llms-full.txt` (full API). This file is about working on the SDK itself.',
+  );
+  L.push('');
+
+  L.push('## Setup');
+  L.push('');
+  L.push(`Toolchain: **${repo.toolchain}**`);
+  L.push('');
+  L.push('```bash');
+  for (const s of repo.setup) L.push(s);
   L.push('```');
-  L.push(meta.connect);
-  L.push(`${cmt} 1. build the transaction body`);
-  L.push(`${cmt} body = TxBody.<operation>(...)   ${cmt} see Operations below`);
-  L.push(`${cmt} 2. sign, submit, and wait for delivery`);
-  L.push(meta.sign);
-  L.push(`${cmt} 3. query the account to confirm the effect`);
+  L.push('');
+
+  L.push('## Build');
+  L.push('');
+  L.push('```bash');
+  L.push(repo.build);
   L.push('```');
   L.push('');
-  L.push('## Rules');
-  L.push('- **Amounts:** 1 ACME = 1e8 base units. Never pass whole ACME as-is.');
-  L.push('- **Testnet first:** target Kermit and fund lite accounts via the faucet before spending.');
-  L.push('- **Prerequisites matter:** create an ADI, then buy credits for its key page before it can sign; wait for balances/credits to settle before the next step.');
-  L.push('- **Errors are typed:** branch on the SDK error type/code; retry only on network errors, not validation errors.');
-  L.push('- **One canonical client:** connect with `' + m.entrypoints[0]?.symbol + '`, build with `TxBody`, sign with `SmartSigner`. Do not hand-roll envelopes/signing, and ignore any alternate or legacy client classes — this is the only path you need.');
+
+  L.push('## Test');
   L.push('');
-  L.push('## Operations available');
-  const groups = opsByCategory(m.operations);
-  for (const [cat, ops] of Object.entries(groups)) {
-    const names = ops.filter((o) => o.op !== 'comment').map((o) => `\`${o.op}\``);
-    if (names.length) L.push(`- **${cat}:** ${names.join(', ')}`);
+  L.push('| Command | Covers | Needs network |');
+  L.push('|---|---|:--:|');
+  for (const t of repo.test) {
+    L.push(`| \`${t.cmd}\` | ${t.desc} | ${t.network ? '**yes**' : 'no'} |`);
   }
   L.push('');
-  L.push('## More');
-  L.push(`- Complete API with signatures, inputs, outputs, and errors: \`llms-full.txt\`.`);
-  L.push(`- Runnable end-to-end examples: \`${meta.examples}\`.`);
+  L.push(
+    'Network-dependent suites talk to a live testnet. If they fail while the unit suite passes, suspect the network before suspecting your change.',
+  );
   L.push('');
+
+  L.push('## Lint & format');
+  L.push('');
+  L.push('```bash');
+  for (const l of repo.lint) L.push(l);
+  L.push('```');
+  L.push('');
+
+  L.push('## Layout');
+  L.push('');
+  L.push('```');
+  for (const l of repo.layout) L.push(l);
+  L.push('```');
+  L.push('');
+
+  L.push('## Gotchas');
+  L.push('');
+  for (const g of repo.gotchas) L.push(`- ${g}`);
+  L.push('');
+
+  L.push('## Permitted commands');
+  L.push('');
+  L.push('Safe to run unattended: build, test, lint, format, and any read-only query against a **testnet**.');
+  L.push('');
+  L.push('Require a human first:');
+  L.push('');
+  L.push('- publishing or releasing (registry writes are irreversible)');
+  L.push('- anything targeting **mainnet**');
+  L.push('- rewriting git history, force-pushing, or changing CI credentials');
+  L.push('- changing transaction marshaling or signing bytes — consensus-visible');
+  L.push('');
+
+  L.push('## Before you commit');
+  L.push('');
+  L.push('```bash');
+  L.push(repo.preCommit);
+  L.push('```');
+  L.push('');
+
   return L.join('\n');
 }
 

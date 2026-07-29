@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "create-adi",
+    "file": "02-create-adi.yaml",
+    "title": "Create an ADI (Accumulate Digital Identifier)",
+    "specHash": "93a188817a2e"
+  },
+  "sdkVersion": "2.2.1",
+  "passed": true,
+  "turns": 15,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "adi_account_exists == true",
+      "subject": "adi_account_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "key_book_exists == true",
+      "subject": "key_book_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://876e4862bbd5da58d4a27b7536b235ed0d787c8249360622",
+    "liteTokenAccountUrl": "acc://876e4862bbd5da58d4a27b7536b235ed0d787c8249360622/ACME",
+    "adiUrl": "acc://harness-014ffac4.acme",
+    "keyBookUrl": "acc://harness-014ffac4.acme/book",
+    "keyPageUrl": "acc://harness-014ffac4.acme/book/1",
+    "txid": "acc://d0fd28272da63409fc0e4d4913559a0b5493bef83cf18c6714acb830e278b7b6@876e4862bbd5da58d4a27b7536b235ed0d787c8249360622/ACME",
+    "txids": [
+      "acc://6d8c58591b4b41e46bc3480ffdd90deadd1494569bb99c3546d52f6af1ab8ed6@876e4862bbd5da58d4a27b7536b235ed0d787c8249360622/ACME",
+      "acc://d0fd28272da63409fc0e4d4913559a0b5493bef83cf18c6714acb830e278b7b6@876e4862bbd5da58d4a27b7536b235ed0d787c8249360622/ACME"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://876e4862bbd5da58d4a27b7536b235ed0d787c8249360622",
+    "liteTokenAccount": "acc://876e4862bbd5da58d4a27b7536b235ed0d787c8249360622/ACME",
+    "publicKeyHex": "f6d39e463234c023f01b2517a54aa4be3c88b286e77a2c461822c35d8d191b13",
+    "suggestedAdiUrl": "acc://harness-014ffac4.acme"
+  },
+  "durationMs": 270262,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\python--create-adi.txt",
+  "error": null,
+  "startedAt": "2026-07-27T21:29:37.052Z",
+  "finishedAt": "2026-07-27T21:34:55.021Z"
+}

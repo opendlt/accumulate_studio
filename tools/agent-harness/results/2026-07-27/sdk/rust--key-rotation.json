@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "lang": "rust",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "key-rotation",
+    "file": "08-key-rotation.yaml",
+    "title": "Key rotation",
+    "specHash": "8650c147a3d2"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": true,
+  "turns": 35,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_contains_new_key == true",
+      "subject": "key_page_contains_new_key",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "key_page_contains_old_key == false",
+      "subject": "key_page_contains_old_key",
+      "op": "==",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    }
+  ],
+  "artifacts": {
+    "adiUrl": "acc://rotate-1785187536737.acme",
+    "keyBookUrl": "acc://rotate-1785187536737.acme/book",
+    "keyPageUrl": "acc://rotate-1785187536737.acme/book/1",
+    "liteIdentityUrl": "acc://a13ec679b30e3a6d0c1eaf657bc9bb66576b61d6621b823c",
+    "liteTokenAccountUrl": "acc://a13ec679b30e3a6d0c1eaf657bc9bb66576b61d6621b823c/ACME",
+    "newKeyHash": "b771092cdf9435a3fec71ae46a13ecbfa1e79e52831e0697bd43aab30e578120",
+    "oldKeyHash": "109074643674e1316e49bdb0790b2a21709e9031522e4050a36309c24d44f9f1",
+    "txid": "acc://d463e0a4e7f6f5207f3b3d52cdb4771b5c63985d576d8e764b6e5a420d7a778d@rotate-1785187536737.acme/book/1",
+    "txids": [
+      "acc://70de096e5ea18cb8cb8ba9cada1be4fcf05138ff0765a2e4e08bdb10656f3fb4@a13ec679b30e3a6d0c1eaf657bc9bb66576b61d6621b823c",
+      "acc://f414debd86cadf603203cfe04083f1cad2053f8d3a20a7d397a50439da39ddb8@a13ec679b30e3a6d0c1eaf657bc9bb66576b61d6621b823c",
+      "acc://43b4d5aa71e5641e51977a5b5f03b1c3401c847692c9f163e598b136ec189942@a13ec679b30e3a6d0c1eaf657bc9bb66576b61d6621b823c",
+      "acc://a1674d2a8d09e62b58a1097331ac1c9bb9a34a2a68e5e917008f5e5a8099c734@rotate-1785187536737.acme/book/1",
+      "acc://d463e0a4e7f6f5207f3b3d52cdb4771b5c63985d576d8e764b6e5a420d7a778d@rotate-1785187536737.acme/book/1"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://a13ec679b30e3a6d0c1eaf657bc9bb66576b61d6621b823c",
+    "liteTokenAccount": "acc://a13ec679b30e3a6d0c1eaf657bc9bb66576b61d6621b823c/ACME",
+    "publicKeyHex": "6286b5b2eafcbd0bb3a1e267db44626c7120807e78df034a54309744d524ac82",
+    "suggestedAdiUrl": "acc://harness-9ceea863.acme"
+  },
+  "durationMs": 692950,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\rust--key-rotation.txt",
+  "error": null,
+  "startedAt": "2026-07-27T21:10:45.191Z",
+  "finishedAt": "2026-07-27T21:26:53.197Z"
+}

@@ -4,41 +4,41 @@
     {
       "method": "faucet",
       "params": {
-        "url": "acc://b8e6b692836568a4912b1890c0527dca8366a602e11cb4e1/acme"
+        "url": "acc://24ddcccb9b5028c2772a12aaa1223ff64c595a4849c73cf3/acme"
       }
     },
     {
       "method": "faucet",
       "params": {
-        "url": "acc://b8e6b692836568a4912b1890c0527dca8366a602e11cb4e1/acme"
+        "url": "acc://24ddcccb9b5028c2772a12aaa1223ff64c595a4849c73cf3/acme"
       }
     },
     {
       "method": "faucet",
       "params": {
-        "url": "acc://b8e6b692836568a4912b1890c0527dca8366a602e11cb4e1/acme"
+        "url": "acc://24ddcccb9b5028c2772a12aaa1223ff64c595a4849c73cf3/acme"
       }
     },
     {
       "method": "faucet",
       "params": {
-        "url": "acc://b8e6b692836568a4912b1890c0527dca8366a602e11cb4e1/acme"
+        "url": "acc://24ddcccb9b5028c2772a12aaa1223ff64c595a4849c73cf3/acme"
       }
     },
     {
       "method": "faucet",
       "params": {
-        "url": "acc://b8e6b692836568a4912b1890c0527dca8366a602e11cb4e1/acme"
+        "url": "acc://24ddcccb9b5028c2772a12aaa1223ff64c595a4849c73cf3/acme"
       }
     },
     {
       "method": "query",
       "params": {
-        "scope": "acc://b8e6b692836568a4912b1890c0527dca8366a602e11cb4e1/acme"
+        "scope": "acc://24ddcccb9b5028c2772a12aaa1223ff64c595a4849c73cf3/acme"
       }
     }
   ],
   "call_count": 6,
   "error": null,
-  "stdout": "=== SDK Example 12: QuickStart Demo (C#) ===\n\nThe Accumulate facade provides the simplest interface to Accumulate.\n\nConnecting to http://127.0.0.1:51340...\n\n--- Step 1: Create a Wallet ---\n\n[SignatureKeyPair] Imported Ed25519 seed (32 bytes).\n[SignatureKeyPair] Derived pubkey (hex): c2ac03550c4772fd04774add432d3bedc6eef2a8aa53b738accdb829c26aea30\nCreated wallet:\n  Lite Identity: acc://b8e6b692836568a4912b1890c0527dca8366a602e11cb4e1\n  Lite Token Account: acc://b8e6b692836568a4912b1890c0527dca8366a602e11cb4e1/acme\n  Public Key Hash: c2ac03550c4772fd04774add432d3bed...\n\n--- Step 2: Fund the Wallet ---\n\nRequesting funds from faucet (5 times)...\n  Faucet 1/5: submitted\n  Faucet 2/5: submitted\n  Faucet 3/5: submitted\n  Faucet 4/5: submitted\n  Faucet 5/5: submitted\n\nWaiting 15 seconds for funding...\nBalance: 100000000000 units (1000.00 ACME)\n\n--- Step 3: Derive ADI URL ---\n\nADI URL: acc://quickstart-demo-1782091920576.acme\nKey Book: acc://quickstart-demo-1782091920576.acme/book\nKey Page: acc://quickstart-demo-1782091920576.acme/book/1\n\n--- Step 4: Canonical JSON ---\n\nInput: { z=3, a=1, m=2, nested={ b=\"hello\", a=\"world\" } }\nCanonical: {\"a\":1,\"m\":2,\"nested\":{\"a\":\"world\",\"b\":\"hello\"},\"z\":3}\n\n--- Step 5: Network Endpoints ---\n\nMainnet V2: https://mainnet.accumulatenetwork.io/v2\nMainnet V3: https://mainnet.accumulatenetwork.io/v3\nTestnet V2: https://testnet.accumulatenetwork.io/v2\nTestnet V3: https://testnet.accumulatenetwork.io/v3\nDevnet V2:  http://localhost:26660/v2\nDevnet V3:  http://localhost:26660/v3\n\n--- Step 6: Transaction Type Codes ---\n\n  Code  1: createIdentity\n  Code  2: createTokenAccount\n  Code  3: sendTokens\n  Code  4: createDataAccount\n  Code  5: writeData\n  Code  8: createToken\n  Code  9: issueTokens\n  Code 14: addCredits\n  Code 15: updateKeyPage\n  Code 16: lockAccount\n  Code 17: burnCredits\n  Code 48: remote\n  Code 51: syntheticDepositTokens\n\n=== Summary ===\n\nQuickStart Demo achievements:\n  1. Created wallet with lite accounts\n  2. Funded wallet via faucet\n "
+  "stdout": "=== SDK Example 12: QuickStart Demo (C#) ===\n\nThe Accumulate facade provides the simplest interface to Accumulate.\n\nConnecting to http://127.0.0.1:51608...\n\n--- Step 1: Create a Wallet ---\n\n[SignatureKeyPair] Imported Ed25519 seed (32 bytes).\n[SignatureKeyPair] Derived pubkey (hex): 1aeeeeb80d1eab73438f562cbcd7a93d346265ec75823de97e569ded51513bb3\nCreated wallet:\n  Lite Identity: acc://24ddcccb9b5028c2772a12aaa1223ff64c595a4849c73cf3\n  Lite Token Account: acc://24ddcccb9b5028c2772a12aaa1223ff64c595a4849c73cf3/acme\n  Public Key Hash: 1aeeeeb80d1eab73438f562cbcd7a93d...\n\n--- Step 2: Fund the Wallet ---\n\nRequesting funds from faucet (5 times)...\n  Faucet 1/5: submitted\n  Faucet 2/5: submitted\n  Faucet 3/5: submitted\n  Faucet 4/5: submitted\n  Faucet 5/5: submitted\n\nWaiting 15 seconds for funding...\nBalance: 100000000000 units (1000.00 ACME)\n\n--- Step 3: Derive ADI URL ---\n\nADI URL: acc://quickstart-demo-1785282823470.acme\nKey Book: acc://quickstart-demo-1785282823470.acme/book\nKey Page: acc://quickstart-demo-1785282823470.acme/book/1\n\n--- Step 4: Canonical JSON ---\n\nInput: { z=3, a=1, m=2, nested={ b=\"hello\", a=\"world\" } }\nCanonical: {\"a\":1,\"m\":2,\"nested\":{\"a\":\"world\",\"b\":\"hello\"},\"z\":3}\n\n--- Step 5: Network Endpoints ---\n\nMainnet V2: https://mainnet.accumulatenetwork.io/v2\nMainnet V3: https://mainnet.accumulatenetwork.io/v3\nTestnet V2: https://testnet.accumulatenetwork.io/v2\nTestnet V3: https://testnet.accumulatenetwork.io/v3\nDevnet V2:  http://localhost:26660/v2\nDevnet V3:  http://localhost:26660/v3\n\n--- Step 6: Transaction Type Codes ---\n\n  Code  1: createIdentity\n  Code  2: createTokenAccount\n  Code  3: sendTokens\n  Code  4: createDataAccount\n  Code  5: writeData\n  Code  8: createToken\n  Code  9: issueTokens\n  Code 14: addCredits\n  Code 15: updateKeyPage\n  Code 16: lockAccount\n  Code 17: burnCredits\n  Code 48: remote\n  Code 51: syntheticDepositTokens\n\n=== Summary ===\n\nQuickStart Demo achievements:\n  1. Created wallet with lite accounts\n  2. Funded wallet via faucet\n "
 }

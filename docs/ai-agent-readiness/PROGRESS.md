@@ -106,6 +106,47 @@ MCP GA, `accumulate-gen` CLI, hosted llms.txt, agent skill packs, self-verifying
 
 ---
 
+### Execution status — 2026-07-27
+
+| Runbook | Status | Evidence |
+|---|---|---|
+| RB-01 harness runner | ✅ done | `runner.mjs` executes; 61 unit tests; live Kermit runs passing; K2/K3/K4 derive real values |
+| RB-02 MCP resources + prompts | ✅ done | `accumulate-studio-mcp` 1.1.0; 5 concepts, 5 operation catalogs (120 ops), 8 prompts; 21 protocol tests vs the built bundle |
+| RB-03 manifest genre split | ✅ done | `REPO_META` + 9-section manifests for all 5 SDKs; 4 hand-authored studio manifests; distributed with 0 `dist SKIP`; regeneration byte-identical |
+| RB-07A type signals + K6 | ✅ done | `expectDocsRs` / `expectDartDoc`; K6 live at 4/5 |
+| RB-07B headless devtools | 🟡 partial | 40/40 generations clean in ~2s, no network; browser console/network capture not implemented |
+| RB-04 CLI · RB-05 errors · RB-06 devcontainers | ⬜ | not started |
+
+**New KPI movement:** K3 is **RED** (mean turns well above the ≤6 target — Rust notably worse than Python). K6 is **RED at 4/5**: Dart's pub.dev analysis reports `has:error` at 40/160, a real defect the previous blank was hiding.
+
+**Corrections to the scorecard itself:** `TYPE_SIGNALS` removed from `DRIFT_IDS` (one Dart defect was turning both K6 and K10 red); K9 now reads the MCP version from the package instead of a hardcoded `1.0.0`; the legend now distinguishes "no check defined" from "n/a".
+
+**Defects found by the new tooling:** the Python SDK's `QuickStart` prints progress to stdout (breaks machine-readable callers); `packages/types` and `packages/codegen` both emit extensionless ESM and are not importable by Node; error `-33404` confirmed live for account-not-found (first verified entry for RB-05's catalog).
+
+Full detail in [`runbooks/`](runbooks/README.md) — each completed runbook has an **As-built** section.
+
+---
+
+## Four-pillar review — 2026-07-27
+
+Audit of all six repos against the four agent-support pillars (MCP · AGENTS.md · LSP/code-intelligence · DevTools+sandboxing). Full execution plans in [`runbooks/`](runbooks/README.md).
+
+| Pillar | State | Runbook |
+|---|---|---|
+| MCP | 14 tools, 3-tier permissions, published — but only 1 of MCP's 3 primitives (`index.ts:105` declares `tools` alone) | [RB-02](runbooks/RB-02-mcp-resources-and-prompts.md) |
+| AGENTS.md | All 5 SDKs ship one, but they are SDK *usage* guides (33 lines, no Build/Test/Lint/Layout). `accumulate-studio` has none | [RB-03](runbooks/RB-03-manifest-genre-split.md) |
+| LSP / code intelligence | Typed surfaces mostly good; **no `--json` in any SDK**; error taxonomy absent | [RB-04](runbooks/RB-04-structured-cli.md), [RB-05](runbooks/RB-05-error-taxonomy.md), [RB-07](runbooks/RB-07-devtools-and-typed-surfaces.md) |
+| DevTools / sandboxing | **Absent** — zero devcontainers; no runtime introspection for Studio | [RB-06](runbooks/RB-06-devcontainers.md), [RB-07](runbooks/RB-07-devtools-and-typed-surfaces.md) |
+
+**Two findings worth surfacing here:**
+
+- **The error-catalog renderer is dead code.** `generate-agent-artifacts.mjs:173` and `:202` render `m.errors` / `op.errors`, but all five manifests have **0 top-level errors and 0 operations with errors** (while 22/24 declare `requires`). Every `llms-full.txt` ships with no error information, and every `AGENTS.md` tells agents to "branch on the SDK error type/code." Cheapest high-value fix in the program — the rendering exists, the data is missing. → RB-05
+- **Rust/Dart type signals are unmeasured, not failing.** `verify.mjs` defines type checks for python/csharp/javascript only; rust and dart have none. The scorecard's `·` means *no check defined*. K6 cannot be computed until they exist. → RB-07·A
+
+**Sequencing:** RB-01 (harness runner) first and alone. Every green KPI today measures packaging; every KPI that measures agent *success* is `PENDING`. Without the baseline there is no before/after for any other runbook.
+
+---
+
 ## Two standing external gates (cannot be self-satisfied)
 1. **Registry publish tokens** — to republish fixed packages (finishes Phase 1's green flips) and to publish/GA the MCP + CLI (Phase 2/4).
 2. **Agent API key + testnet faucet** — to activate the agent runner and produce live K2–K4.

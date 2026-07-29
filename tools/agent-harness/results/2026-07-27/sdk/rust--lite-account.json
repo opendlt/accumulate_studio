@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "lang": "rust",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "lite-account",
+    "file": "01-lite-account.yaml",
+    "title": "Lite account setup",
+    "specHash": "6cee357d09fe"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": true,
+  "turns": 14,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "lite_token_account_balance > 0",
+      "subject": "lite_token_account_balance",
+      "op": ">",
+      "passed": true,
+      "actual": "3000000000",
+      "actualAcme": 30,
+      "expected": 0
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://92b3838467ca677716be098384ab3d979d82abcb6274dcf1",
+    "liteTokenAccountUrl": "acc://92b3838467ca677716be098384ab3d979d82abcb6274dcf1/ACME",
+    "txid": "acc://37c5472b60a3fece5b7d573dd8032bc0270a3423f1daedb3d98d6e73b99025d2@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+    "txids": [
+      "acc://37c5472b60a3fece5b7d573dd8032bc0270a3423f1daedb3d98d6e73b99025d2@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+      "acc://ab92b710893c952c890184640998d0f20ed76f8f164a502953767ebac709da85@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+      "acc://9d6d0e21807ac853efd60b652c5ca4c4a987c9aba29f3af003109d9468a4c57e@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://bca25c80d0b39b4cec42e023950d94d04b49d4a8251a3f90",
+    "liteTokenAccount": "acc://bca25c80d0b39b4cec42e023950d94d04b49d4a8251a3f90/ACME",
+    "publicKeyHex": "ff8a88d5376819095c2fafbc3df6cdb53b81862a4081e308977eeeccc92a177a",
+    "suggestedAdiUrl": "acc://harness-b73c7f84.acme"
+  },
+  "durationMs": 255996,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-27\\sdk\\transcripts\\rust--lite-account.txt",
+  "error": null,
+  "startedAt": "2026-07-27T20:06:00.164Z",
+  "finishedAt": "2026-07-27T20:10:19.137Z"
+}

@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "lang": "javascript",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "lite-account",
+    "file": "01-lite-account.yaml",
+    "title": "Lite account setup",
+    "specHash": "6cee357d09fe"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": true,
+  "turns": 14,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "lite_token_account_balance > 0",
+      "subject": "lite_token_account_balance",
+      "op": ">",
+      "passed": true,
+      "actual": "3000000000",
+      "actualAcme": 30,
+      "expected": 0
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://04a4998b38eb6e8876efc77e643d76b968cd7cb4756f1cd2",
+    "liteTokenAccountUrl": "acc://04a4998b38eb6e8876efc77e643d76b968cd7cb4756f1cd2/ACME",
+    "txid": "acc://25857bd264a9ade6598b85c26e50a205b9f060a43dde57da030b5541568e3d44@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+    "txids": [
+      "acc://25857bd264a9ade6598b85c26e50a205b9f060a43dde57da030b5541568e3d44@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+      "acc://8914d515638bb4c0d79fc84cbf5a83694feb0a077f35746b8258c9c65e64bccc@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+      "acc://59e7169e20ee2866497614cc09a78b9a0f3e26401e4020581389351484cc3bc3@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://4adc9e0273b7528e27cfca554e19daeb3b1ab9c9df72f7a4",
+    "liteTokenAccount": "acc://4adc9e0273b7528e27cfca554e19daeb3b1ab9c9df72f7a4/ACME",
+    "publicKeyHex": "d4a37dd0831f5637711448bb521a2b1a12c0935aaa072e9af05c91aabba0f4fc",
+    "suggestedAdiUrl": "acc://harness-cc3fdfca.acme"
+  },
+  "durationMs": 129860,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-28\\sdk\\transcripts\\javascript--lite-account.txt",
+  "error": null,
+  "startedAt": "2026-07-28T02:37:59.943Z",
+  "finishedAt": "2026-07-28T02:40:17.133Z"
+}

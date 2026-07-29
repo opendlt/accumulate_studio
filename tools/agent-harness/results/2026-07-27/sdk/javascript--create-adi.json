@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "lang": "javascript",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "create-adi",
+    "file": "02-create-adi.yaml",
+    "title": "Create an ADI (Accumulate Digital Identifier)",
+    "specHash": "93a188817a2e"
+  },
+  "sdkVersion": "2.2.0",
+  "passed": true,
+  "turns": 18,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "adi_account_exists == true",
+      "subject": "adi_account_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "key_book_exists == true",
+      "subject": "key_book_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://3bca04fd1acea8b33264d5683cc8b7f79dac8473c324c799",
+    "liteTokenAccountUrl": "acc://3bca04fd1acea8b33264d5683cc8b7f79dac8473c324c799/ACME",
+    "adiUrl": "acc://harness-2ff2fc54.acme",
+    "keyBookUrl": "acc://harness-2ff2fc54.acme/book",
+    "keyPageUrl": "acc://harness-2ff2fc54.acme/book/1",
+    "txid": "acc://39c3e8f73ffb392b7950961932d58c983095bfa891ec9da0431de36f9afeadb4@harness-2ff2fc54.acme",
+    "txids": [
+      "acc://d37c2aa3bd3fd59f54b9f3588422b4c9c87101c3df044f97c3d5e8ca522f3652@3bca04fd1acea8b33264d5683cc8b7f79dac8473c324c799/ACME",
+      "acc://39c3e8f73ffb392b7950961932d58c983095bfa891ec9da0431de36f9afeadb4@harness-2ff2fc54.acme"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://3bca04fd1acea8b33264d5683cc8b7f79dac8473c324c799",
+    "liteTokenAccount": "acc://3bca04fd1acea8b33264d5683cc8b7f79dac8473c324c799/ACME",
+    "publicKeyHex": "9b2d9fef3520e19ec892854cf627128d1af3a2b7e33e87ce5efce014be3dda72",
+    "suggestedAdiUrl": "acc://harness-2ff2fc54.acme"
+  },
+  "durationMs": 182480,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-28\\sdk\\transcripts\\javascript--create-adi.txt",
+  "error": null,
+  "startedAt": "2026-07-28T02:40:17.485Z",
+  "finishedAt": "2026-07-28T02:43:51.013Z"
+}
