@@ -590,3 +590,24 @@ describe('run records validate against the published schema', () => {
     }
   });
 });
+
+// ============================================================================
+describe('registry-unreachable is not an SDK defect', () => {
+  test('a proxy-intercepted npm response classifies as network-flake, not install-fail', () => {
+    // A corporate proxy returned an HTML page instead of JSON, so npm reported
+    // `Unexpected token 'P', "Per anonym"... is not valid JSON`. That was scored
+    // install-fail and charged to the SDK, sinking 7 of 8 JavaScript runs.
+    const msg =
+      '[javascript] install failed: Command failed: npm install accumulate-sdk-opendlt\n' +
+      'npm ERR! Unexpected token \'P\', "Per anonym"... is not valid JSON';
+    assert.equal(classifyFailure({ transcript: msg, artifacts: {} }), 'network-flake');
+    assert.equal(countsTowardK2('network-flake'), false);
+  });
+
+  test('a genuinely missing package still classifies as install-fail', () => {
+    // The real JS root-import defect must still be caught.
+    const msg = 'ERR_MODULE_NOT_FOUND: Cannot find package \'@scure/bip32\'';
+    assert.equal(classifyFailure({ transcript: msg, artifacts: {} }), 'install-fail');
+    assert.equal(countsTowardK2('install-fail'), true);
+  });
+});

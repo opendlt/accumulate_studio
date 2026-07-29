@@ -164,7 +164,16 @@ async function executeRun({ lang, task, mode, backendName, backend, model, timeo
   try {
     workspace = await createWorkspaceWithRetry(lang);
   } catch (e) {
-    if (e instanceof InstallFailure) return fail('install-fail', e.message);
+    if (e instanceof InstallFailure) {
+      // Do NOT hardcode `install-fail` here. An install can fail because the
+      // package is genuinely broken (an SDK defect that must count toward K2)
+      // or because the registry was unreachable/intercepted (an environment
+      // problem that must not). Let the classifier read the actual message and
+      // decide — hardcoding it charged 7 JavaScript runs to the SDK when a
+      // proxy was returning HTML instead of JSON.
+      const cls = classifyFailure({ transcript: e.message, artifacts: {} });
+      return fail(cls === 'network-flake' ? 'network-flake' : 'install-fail', e.message);
+    }
     return fail('other', e.message);
   }
 

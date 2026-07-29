@@ -1,6 +1,6 @@
 # opendlt-c-sharp-v2v3-sdk — repository guide for agents
 
-The C# SDK for the Accumulate blockchain. Published as `Acme.Net.Sdk` (v2.3.1).
+The C# SDK for the Accumulate blockchain. Published as `Acme.Net.Sdk` (v2.3.2).
 
 > Building **on** Accumulate rather than **on this SDK**? You want `llms.txt` (quickstart + rules) and `llms-full.txt` (full API). This file is about working on the SDK itself.
 

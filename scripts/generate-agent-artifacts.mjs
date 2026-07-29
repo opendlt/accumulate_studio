@@ -238,6 +238,7 @@ const CONVENTIONS = [
   'Networks: Kermit testnet (used by the examples; fund via faucet), plus mainnet and local devnet.',
   'Amounts: ACME is denominated in base units where 1 ACME = 1e8 base units. Passing whole ACME as-is is the single most common integration bug.',
   'Credits: buying credits uses the network oracle price; an ADI/key page must hold credits before it can sign transactions.',
+  'Custom tokens: each declares its own precision at creation (not 1e8). Amounts on the wire are always base units, so issuing 1000 against a precision-8 token mints 0.00001 tokens. Use the SDK amount helper to convert whole tokens to base units.',
   'Golden path: connect -> build a body with TxBody.<op>(...) -> sign+submit+wait with SmartSigner -> query to confirm.',
 ];
 
@@ -287,6 +288,7 @@ function renderLlms(lang, m) {
   // repository manifest (build/test/lint/layout).
   L.push('## Rules');
   L.push('- **Amounts:** 1 ACME = 1e8 base units. Never pass whole ACME as-is; use the `Amount` helper.');
+  L.push('- **Custom tokens have their OWN precision**, set when the token is created — it is not 1e8. Issuing `1000` against a precision-8 token mints `0.00001` tokens, not 1000, and the transaction succeeds either way. Convert with the token helper (`Amount.token(whole, precision)` / `Amount::token` / `Amount.Token`) rather than passing a raw number.');
   L.push('- **Testnet first:** target Kermit and fund lite accounts via the faucet before spending.');
   L.push('- **Prerequisites matter:** create an ADI, then buy credits for its key page before it can sign; wait for balances/credits to settle before the next step.');
   L.push('- **Errors are typed:** branch on the SDK error type/code; retry only on network errors, not validation errors.');

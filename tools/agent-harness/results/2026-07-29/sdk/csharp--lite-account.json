@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "lang": "csharp",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "lite-account",
+    "file": "01-lite-account.yaml",
+    "title": "Lite account setup",
+    "specHash": "6cee357d09fe"
+  },
+  "sdkVersion": "2.3.1",
+  "passed": true,
+  "turns": 28,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "lite_token_account_balance > 0",
+      "subject": "lite_token_account_balance",
+      "op": ">",
+      "passed": true,
+      "actual": "1000000000",
+      "actualAcme": 10,
+      "expected": 0
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://772e994ce58557f28620c3c354ebb8c4c56129d2b6595212",
+    "liteTokenAccountUrl": "acc://772e994ce58557f28620c3c354ebb8c4c56129d2b6595212/ACME",
+    "txid": "acc://b91678dd68b364f8350c505dec4bccc3190f60315064f815b691cfc14bb2e150@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+    "txids": [
+      "acc://b91678dd68b364f8350c505dec4bccc3190f60315064f815b691cfc14bb2e150@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://6f516b7edb1372036771e74a9e9c4b6cc073726e92b90a8e",
+    "liteTokenAccount": "acc://6f516b7edb1372036771e74a9e9c4b6cc073726e92b90a8e/ACME",
+    "publicKeyHex": "ed3101ecc7d5a6ae14cf80e86e3c2b53cf1e05579199d905298fead54046fbcd",
+    "suggestedAdiUrl": "acc://harness-ffa10302.acme"
+  },
+  "durationMs": 272490,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\csharp--lite-account.txt",
+  "error": null,
+  "startedAt": "2026-07-29T01:35:43.619Z",
+  "finishedAt": "2026-07-29T01:40:21.392Z"
+}

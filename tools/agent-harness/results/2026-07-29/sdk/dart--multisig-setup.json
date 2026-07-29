@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "lang": "dart",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "multisig-setup",
+    "file": "07-multisig-setup.yaml",
+    "title": "Multi-signature setup",
+    "specHash": "a9a1532bdf4f"
+  },
+  "sdkVersion": "2.3.3",
+  "passed": true,
+  "turns": 28,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_threshold == 2",
+      "subject": "key_page_threshold",
+      "op": "==",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "assertion": "multisig_tx_status == delivered",
+      "subject": "multisig_tx_status",
+      "op": "==",
+      "passed": true,
+      "actual": "delivered",
+      "expected": "delivered"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://a6c6e444b5902788f37723d870dc687f528c75ad9bf38ea5",
+    "liteTokenAccountUrl": "acc://a6c6e444b5902788f37723d870dc687f528c75ad9bf38ea5/ACME",
+    "adiUrl": "acc://sdk-multisig-1785289168594.acme",
+    "keyBookUrl": "acc://sdk-multisig-1785289168594.acme/book",
+    "keyPageUrl": "acc://sdk-multisig-1785289168594.acme/book/1",
+    "tokenAccountUrl": "acc://sdk-multisig-1785289168594.acme/tokens",
+    "txid": "acc://b2df9c48a99103aeb4f56b503e0918134994cc5c17fb20286fe8addd3b589b86@sdk-multisig-1785289168594.acme",
+    "txids": [
+      "acc://405d15fa9818af99773b8cc4d322ac02dccf040fe90a9722b2e151009b35b979@a6c6e444b5902788f37723d870dc687f528c75ad9bf38ea5",
+      "acc://4e2d2319e2ab7cf54a3287716fc64b250ae6554eb719a87c22cb8faef6196579@a6c6e444b5902788f37723d870dc687f528c75ad9bf38ea5",
+      "acc://23a956d85c2c62a1d83098168a7e0aec67dcb30cd050e5143ddae73d07e0b136@a6c6e444b5902788f37723d870dc687f528c75ad9bf38ea5",
+      "acc://7e27c54389b991fed6ea7ac17f270ad07ea79c93a7945ca09f53f0fc9a1715e9@sdk-multisig-1785289168594.acme/book/1",
+      "acc://9eb7a7965a3f5ef872e4b9630c5b9b005bd70be85072ec37949ec22c15592285@sdk-multisig-1785289168594.acme/book/1",
+      "acc://b2df9c48a99103aeb4f56b503e0918134994cc5c17fb20286fe8addd3b589b86@sdk-multisig-1785289168594.acme"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://a6c6e444b5902788f37723d870dc687f528c75ad9bf38ea5",
+    "liteTokenAccount": "acc://a6c6e444b5902788f37723d870dc687f528c75ad9bf38ea5/ACME",
+    "publicKeyHex": "b8be27bcbd60a5429a253bdc72b98e7c18a094a472659721825e9d21d32f5e74",
+    "suggestedAdiUrl": "acc://harness-e73b05dd.acme"
+  },
+  "durationMs": 436762,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\dart--multisig-setup.txt",
+  "error": null,
+  "startedAt": "2026-07-29T01:27:26.688Z",
+  "finishedAt": "2026-07-29T01:40:49.949Z"
+}

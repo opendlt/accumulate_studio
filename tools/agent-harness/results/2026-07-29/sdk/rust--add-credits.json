@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "lang": "rust",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "add-credits",
+    "file": "03-add-credits.yaml",
+    "title": "Add credits to a key page",
+    "specHash": "990525ec062a"
+  },
+  "sdkVersion": "2.3.1",
+  "passed": true,
+  "turns": 25,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_credit_balance >= 5000",
+      "subject": "key_page_credit_balance",
+      "op": ">=",
+      "passed": true,
+      "actual": 700000,
+      "expected": 5000
+    }
+  ],
+  "artifacts": {
+    "adiUrl": "acc://harness-c014539c.acme",
+    "keyBookUrl": "acc://harness-c014539c.acme/book",
+    "keyPageUrl": "acc://harness-c014539c.acme/book/1",
+    "liteIdentityUrl": "acc://fc744325eb953550ca5b6414957ec37cd344f40329acaffd",
+    "liteTokenAccountUrl": "acc://fc744325eb953550ca5b6414957ec37cd344f40329acaffd/ACME",
+    "txid": "acc://0028b1501d3f0dfe839cd8ee1db99f111f0e55abdc9e06c9d71082e414ebdec7@fc744325eb953550ca5b6414957ec37cd344f40329acaffd",
+    "txids": [
+      "acc://0028b1501d3f0dfe839cd8ee1db99f111f0e55abdc9e06c9d71082e414ebdec7@fc744325eb953550ca5b6414957ec37cd344f40329acaffd"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://fc744325eb953550ca5b6414957ec37cd344f40329acaffd",
+    "liteTokenAccount": "acc://fc744325eb953550ca5b6414957ec37cd344f40329acaffd/ACME",
+    "publicKeyHex": "b3de1a5da2463a7ab18e39affcf2e70bc33010da65941de284a20823d281e25c",
+    "suggestedAdiUrl": "acc://harness-c014539c.acme"
+  },
+  "durationMs": 330441,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\rust--add-credits.txt",
+  "error": null,
+  "startedAt": "2026-07-29T00:34:32.198Z",
+  "finishedAt": "2026-07-29T00:44:39.181Z"
+}

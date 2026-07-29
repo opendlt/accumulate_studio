@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "lang": "rust",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "custom-token",
+    "file": "06-custom-token.yaml",
+    "title": "Custom token issuance",
+    "specHash": "f9068d5ec05f"
+  },
+  "sdkVersion": "2.3.1",
+  "passed": false,
+  "turns": null,
+  "interventions": 0,
+  "failureClass": "harness-setup-failed",
+  "assertions": [],
+  "artifacts": {},
+  "environment": {
+    "liteIdentity": "acc://febfe1d78d59c43e68dfe49fcafb85cbd17b2a8690e71fdf",
+    "liteTokenAccount": "acc://febfe1d78d59c43e68dfe49fcafb85cbd17b2a8690e71fdf/ACME",
+    "publicKeyHex": "87107f62838c1ea00efca0009e6a6e5dd6e3c03f0a8e8c420ca1e9d538225260",
+    "suggestedAdiUrl": "acc://harness-6efcd19b.acme"
+  },
+  "durationMs": null,
+  "transcriptPath": null,
+  "error": "setup reported acc://harness-6efcd19b.acme but it did not appear on chain within 90s",
+  "startedAt": "2026-07-29T00:40:58.926Z",
+  "finishedAt": "2026-07-29T00:44:36.099Z"
+}

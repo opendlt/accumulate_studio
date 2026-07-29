@@ -31,14 +31,23 @@ export const CLASS_NAMES = Object.keys(FAILURE_CLASSES);
  */
 const RULES = [
   {
+    // A DEFINITIVE packaging failure wins even when the log also mentions a
+    // timeout: "no matching distribution" tells us the package is genuinely
+    // wrong, which is the actionable finding.
     cls: 'install-fail',
     test: (t) =>
       /(could not find a version|no matching distribution|ERR_MODULE_NOT_FOUND|error\[E0432\]|unable to resolve|could not resolve dependencies|NU1101|package .* not found|failed to select a version)/i.test(t),
   },
   {
+    // Everything else that fails around the registry is an ENVIRONMENT problem,
+    // not an SDK defect, so it must not count toward K2. `is not valid JSON`
+    // covers an intercepting proxy returning HTML: npm reported
+    // `Unexpected token 'P', "Per anonym"... is not valid JSON`, which carries
+    // no packaging signal at all, yet sank 7 of 8 JavaScript runs as
+    // install-fail.
     cls: 'network-flake',
     test: (t) =>
-      /(ECONNREFUSED|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|socket hang up|502 Bad Gateway|503 Service|429 Too Many|faucet .*(unavailable|rejected)|did not settle)/i.test(t),
+      /(is not valid JSON|ECONNREFUSED|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|socket hang up|502 Bad Gateway|503 Service|504 Gateway|429 Too Many|ERR_SOCKET_TIMEOUT|tunneling socket|faucet .*(unavailable|rejected)|did not settle)/i.test(t),
   },
   {
     cls: 'amount-scaling',

@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "lang": "rust",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "multisig-setup",
+    "file": "07-multisig-setup.yaml",
+    "title": "Multi-signature setup",
+    "specHash": "a9a1532bdf4f"
+  },
+  "sdkVersion": "2.3.1",
+  "passed": true,
+  "turns": 25,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_threshold == 2",
+      "subject": "key_page_threshold",
+      "op": "==",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "assertion": "multisig_tx_status == delivered",
+      "subject": "multisig_tx_status",
+      "op": "==",
+      "passed": true,
+      "actual": "delivered",
+      "expected": "delivered"
+    }
+  ],
+  "artifacts": {
+    "adiUrl": "acc://multisig-1785286420974.acme",
+    "keyBookUrl": "acc://multisig-1785286420974.acme/book",
+    "keyPageUrl": "acc://multisig-1785286420974.acme/book/1",
+    "liteIdentityUrl": "acc://4d76bca0e916441061ac3ac805349db5cfa40641ae940f15",
+    "liteTokenAccountUrl": "acc://4d76bca0e916441061ac3ac805349db5cfa40641ae940f15/ACME",
+    "tokenAccountUrl": "acc://multisig-1785286420974.acme/tokens",
+    "txid": "acc://6cb9e76adeaacdc2df3650f9a13a4406048fa713b103cad9a2fcff5784f9e18b@multisig-1785286420974.acme",
+    "txids": [
+      "acc://99bbf7bdfe41839c426f3803e1dfdab178981ae7fd1a21f78810b970f6a73632@4d76bca0e916441061ac3ac805349db5cfa40641ae940f15",
+      "acc://e77646949bdc127fc1dc359aeb309450cac130832b2b88f60aab115b2ee71fce@4d76bca0e916441061ac3ac805349db5cfa40641ae940f15",
+      "acc://bd6076d9e223907115b89b8b69c0d54de74dd10c35cfc52016134267b46c9bfd@4d76bca0e916441061ac3ac805349db5cfa40641ae940f15",
+      "acc://191143080a907d9ae40fc55f7d3dffce2fa9374db5a177cbb1afbd26f4d4b0fa@multisig-1785286420974.acme/book/1",
+      "acc://ae224362ad87a852668ea9ad2a98dc1253bfc9824d52fcdb940531d99ff84f16@multisig-1785286420974.acme/book/1",
+      "acc://6cb9e76adeaacdc2df3650f9a13a4406048fa713b103cad9a2fcff5784f9e18b@multisig-1785286420974.acme"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://4d76bca0e916441061ac3ac805349db5cfa40641ae940f15",
+    "liteTokenAccount": "acc://4d76bca0e916441061ac3ac805349db5cfa40641ae940f15/ACME",
+    "publicKeyHex": "38f3b679bb214490d97078e758e859df137d44efe72581fa211500805e6209c2",
+    "suggestedAdiUrl": "acc://harness-2bd99f86.acme"
+  },
+  "durationMs": 472194,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\rust--multisig-setup.txt",
+  "error": null,
+  "startedAt": "2026-07-29T00:41:51.107Z",
+  "finishedAt": "2026-07-29T00:55:00.584Z"
+}

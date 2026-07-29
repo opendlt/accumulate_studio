@@ -173,21 +173,28 @@ export async function createWorkspace(lang, { keep = false } = {}) {
  * contention blip would be charged to the SDK. A genuinely broken package (the
  * JS root-import defect, say) fails both attempts and is still reported.
  */
-export async function createWorkspaceWithRetry(lang, opts = {}) {
-  try {
-    return await createWorkspace(lang, opts);
-  } catch (first) {
-    if (!(first instanceof InstallFailure)) throw first;
-    await new Promise((r) => setTimeout(r, 5000 + Math.floor(Math.random() * 5000)));
+export async function createWorkspaceWithRetry(lang, opts = {}, attempts = 4) {
+  const failures = [];
+  for (let i = 0; i < attempts; i++) {
     try {
       return await createWorkspace(lang, opts);
-    } catch (second) {
-      throw new InstallFailure(
-        lang,
-        `failed twice (transient contention ruled out).\n--- attempt 1 ---\n${first.message}\n--- attempt 2 ---\n${second.message}`,
-      );
+    } catch (e) {
+      if (!(e instanceof InstallFailure)) throw e;
+      failures.push(e.message);
+      if (i < attempts - 1) {
+        // Exponential backoff with jitter. A single retry is not enough against
+        // an intermittently intercepting proxy: npm was observed failing 2 of
+        // every 3 installs, which would still sink most runs at 2 attempts.
+        const wait = 5000 * 2 ** i + Math.floor(Math.random() * 5000);
+        await new Promise((r) => setTimeout(r, wait));
+      }
     }
   }
+  throw new InstallFailure(
+    lang,
+    `failed ${attempts}x (transient contention and flaky-registry retries exhausted).\n` +
+      failures.map((m, i) => `--- attempt ${i + 1} ---\n${m}`).join('\n'),
+  );
 }
 
 export function safeRemove(dir) {

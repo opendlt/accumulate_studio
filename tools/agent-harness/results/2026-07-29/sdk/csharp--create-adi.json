@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "lang": "csharp",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "create-adi",
+    "file": "02-create-adi.yaml",
+    "title": "Create an ADI (Accumulate Digital Identifier)",
+    "specHash": "93a188817a2e"
+  },
+  "sdkVersion": "2.3.1",
+  "passed": true,
+  "turns": 23,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "adi_account_exists == true",
+      "subject": "adi_account_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "key_book_exists == true",
+      "subject": "key_book_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://b77f1ac9d1b0aa0be963c663614b27121d47bc21c9bbac47",
+    "liteTokenAccountUrl": "acc://b77f1ac9d1b0aa0be963c663614b27121d47bc21c9bbac47/ACME",
+    "adiUrl": "acc://harness-ecb8af94.acme",
+    "keyBookUrl": "acc://harness-ecb8af94.acme/book",
+    "keyPageUrl": "acc://harness-ecb8af94.acme/book/1",
+    "txid": "acc://5f527b61ef1e362d285822977c7dc66a8461e765f9649f4518b558f6d83c07f2@harness-ecb8af94.acme",
+    "txids": [
+      "acc://e19bfbb4794110be3c695c7abdad34aebb9e7f7629ad7689880dd6e39859dd14@b77f1ac9d1b0aa0be963c663614b27121d47bc21c9bbac47/ACME",
+      "acc://5f527b61ef1e362d285822977c7dc66a8461e765f9649f4518b558f6d83c07f2@harness-ecb8af94.acme"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://b77f1ac9d1b0aa0be963c663614b27121d47bc21c9bbac47",
+    "liteTokenAccount": "acc://b77f1ac9d1b0aa0be963c663614b27121d47bc21c9bbac47/ACME",
+    "publicKeyHex": "b6bafe0bf890e13142366967c308737e6fe4e30478f91a029385f15223b1f1a7",
+    "suggestedAdiUrl": "acc://harness-ecb8af94.acme"
+  },
+  "durationMs": 347290,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\csharp--create-adi.txt",
+  "error": null,
+  "startedAt": "2026-07-29T01:40:21.416Z",
+  "finishedAt": "2026-07-29T01:46:34.659Z"
+}

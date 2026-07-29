@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "lang": "dart",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "key-rotation",
+    "file": "08-key-rotation.yaml",
+    "title": "Key rotation",
+    "specHash": "8650c147a3d2"
+  },
+  "sdkVersion": "2.3.3",
+  "passed": false,
+  "turns": 40,
+  "interventions": 0,
+  "failureClass": "other",
+  "assertions": [
+    {
+      "assertion": "key_page_contains_new_key == true",
+      "subject": "key_page_contains_new_key",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "assertion": "key_page_contains_old_key == false",
+      "subject": "key_page_contains_old_key",
+      "op": "==",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://0ca394e0937b5bb1235ccfc20b79c69dff9fec4782256f7d",
+    "liteTokenAccountUrl": "acc://0ca394e0937b5bb1235ccfc20b79c69dff9fec4782256f7d/ACME",
+    "adiUrl": "acc://harness-3b62e656.acme",
+    "keyBookUrl": "acc://harness-3b62e656.acme/book",
+    "keyPageUrl": "acc://harness-3b62e656.acme/book/1",
+    "txids": []
+  },
+  "environment": {
+    "liteIdentity": "acc://0ca394e0937b5bb1235ccfc20b79c69dff9fec4782256f7d",
+    "liteTokenAccount": "acc://0ca394e0937b5bb1235ccfc20b79c69dff9fec4782256f7d/ACME",
+    "publicKeyHex": "2f7d921434b448d66f25c30f8cbd0ff95b0f6c99d8b242c349f97dcee78029af",
+    "suggestedAdiUrl": "acc://harness-3b62e656.acme"
+  },
+  "durationMs": 526279,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\dart--key-rotation.txt",
+  "error": null,
+  "startedAt": "2026-07-29T01:31:48.117Z",
+  "finishedAt": "2026-07-29T01:44:41.113Z"
+}
