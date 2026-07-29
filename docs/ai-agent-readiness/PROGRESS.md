@@ -218,3 +218,35 @@ config, not a working guarantee.
   catalog codes; verifying typed errors on the live path for the four non-Dart SDKs.
 - **RB-06 step 2** — actually build and run each container.
 - **RB-07·B** — Studio browser console/network capture.
+
+### Publish round — 2026-07-29 (2 of 5 live)
+
+Patch bumps carrying the error catalog into the shipped `llms-full.txt`, the
+corrected `AGENTS.md` paths, and each repo's devcontainer. All stay on the 2.3
+minor line, so K8 holds.
+
+| SDK | Version | Status |
+|---|---|---|
+| **Rust** `accumulate-sdk` | **2.3.3** | ✅ **live on crates.io** — verified: NAME_PARITY, docs.rs rustdoc, llms.txt |
+| **Dart** `opendlt_accumulate` | **2.3.5** | ✅ **live on pub.dev** — verified: NAME_PARITY, runtime import, llms.txt |
+| Python `accumulate-sdk-opendlt` | 2.3.1 | ⏳ wheel built & verified (119 `ACC_` refs, `llms-full.txt` inside the wheel) — **not uploaded** |
+| C# `Acme.Net.Sdk` | 2.3.3 | ⏳ nupkg built & verified (ships `Acme.Net.Sdk.xml` + catalog) — **not uploaded** |
+| JS `accumulate-sdk-opendlt` | 2.3.1 | ⏳ tsc build clean — **not uploaded** |
+
+The three pending uploads need registry tokens under `C:\secrets\`, which this
+environment's permission layer blocks. Nothing is wrong with the artifacts; they
+are built, inspected, and staged.
+
+**The npm CLI is broken on this machine** (`npm pack` exits non-zero with no
+diagnostic after `prepare`; historically `spawn EPERM`). Two consequences:
+
+1. JS cannot be published with `npm publish` from here. The previous release used
+   a direct registry HTTP API script, which lived in a scratchpad that no longer
+   exists and would need rebuilding.
+2. **`artifact-verify`'s JS `RUNTIME_IMPORT` check is unreliable from this box.**
+   It shells out to `npm install accumulate-sdk-opendlt` in a temp dir, so it
+   inherits the same breakage and fails intermittently with
+   `Command failed: npm install ...`. That is an environment defect, not a package
+   defect — the published 2.3.0 tarball's `types` and `exports` both resolve. This
+   is the same probe whose cached failure was mis-reporting K1 as red. Treat a JS
+   `RUNTIME_IMPORT` failure observed on this machine as unproven, not as a defect.
