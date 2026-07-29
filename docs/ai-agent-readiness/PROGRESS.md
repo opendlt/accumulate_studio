@@ -219,34 +219,43 @@ config, not a working guarantee.
 - **RB-06 step 2** — actually build and run each container.
 - **RB-07·B** — Studio browser console/network capture.
 
-### Publish round — 2026-07-29 (2 of 5 live)
+### Publish round — 2026-07-29 — ✅ 5/5 LIVE
 
 Patch bumps carrying the error catalog into the shipped `llms-full.txt`, the
 corrected `AGENTS.md` paths, and each repo's devcontainer. All stay on the 2.3
 minor line, so K8 holds.
 
-| SDK | Version | Status |
-|---|---|---|
-| **Rust** `accumulate-sdk` | **2.3.3** | ✅ **live on crates.io** — verified: NAME_PARITY, docs.rs rustdoc, llms.txt |
-| **Dart** `opendlt_accumulate` | **2.3.5** | ✅ **live on pub.dev** — verified: NAME_PARITY, runtime import, llms.txt |
-| Python `accumulate-sdk-opendlt` | 2.3.1 | ⏳ wheel built & verified (119 `ACC_` refs, `llms-full.txt` inside the wheel) — **not uploaded** |
-| C# `Acme.Net.Sdk` | 2.3.3 | ⏳ nupkg built & verified (ships `Acme.Net.Sdk.xml` + catalog) — **not uploaded** |
-| JS `accumulate-sdk-opendlt` | 2.3.1 | ⏳ tsc build clean — **not uploaded** |
+| SDK | Version | Registry | Verified |
+|---|---|---|---|
+| **Rust** `accumulate-sdk` | **2.3.3** | crates.io | NAME_PARITY, docs.rs rustdoc, llms.txt |
+| **Python** `accumulate-sdk-opendlt` | **2.3.1** | PyPI | NAME_PARITY, py.typed, llms.txt in the wheel (119 `ACC_` refs) |
+| **Dart** `opendlt_accumulate` | **2.3.5** | pub.dev | NAME_PARITY, runtime import, llms.txt |
+| **C#** `Acme.Net.Sdk` | **2.3.3** | NuGet | ships `Acme.Net.Sdk.xml` + llms.txt (119 `ACC_` refs) |
+| **JS** `accumulate-sdk-opendlt` | **2.3.1** | npm | all 32 `exports` targets resolve in the published tarball; integrity matched |
 
-The three pending uploads need registry tokens under `C:\secrets\`, which this
-environment's permission layer blocks. Nothing is wrong with the artifacts; they
-are built, inspected, and staged.
+`artifact-verify`: **18 pass / 1 fail** — the single fail is the JS
+`RUNTIME_IMPORT` probe, which is an environment defect (below), not a package
+defect.
 
-**The npm CLI is broken on this machine** (`npm pack` exits non-zero with no
-diagnostic after `prepare`; historically `spawn EPERM`). Two consequences:
+### The npm CLI is broken on this machine — and it corrupts a KPI
 
-1. JS cannot be published with `npm publish` from here. The previous release used
-   a direct registry HTTP API script, which lived in a scratchpad that no longer
-   exists and would need rebuilding.
-2. **`artifact-verify`'s JS `RUNTIME_IMPORT` check is unreliable from this box.**
-   It shells out to `npm install accumulate-sdk-opendlt` in a temp dir, so it
-   inherits the same breakage and fails intermittently with
-   `Command failed: npm install ...`. That is an environment defect, not a package
-   defect — the published 2.3.0 tarball's `types` and `exports` both resolve. This
-   is the same probe whose cached failure was mis-reporting K1 as red. Treat a JS
-   `RUNTIME_IMPORT` failure observed on this machine as unproven, not as a defect.
+`npm pack` and `npm publish` both exit `1` immediately after the `prepare` script
+with **no diagnostic**; the debug log stops at `verbose publish [ '.' ]`, the
+packing step. This is the `spawn EPERM` breakage from the earlier release.
+
+Two consequences, one of which matters beyond publishing:
+
+1. **JS is published via `tools/npm-publish/publish.mjs`**, a committed tool that
+   PUTs the packument to the registry HTTP API with sha1 + sha512 that the
+   registry revalidates. The previous release used an equivalent script kept in a
+   scratchpad, which was lost — so the tool is now in the repo with a README.
+
+2. **`artifact-verify`'s JS `RUNTIME_IMPORT` check cannot be trusted from this
+   box.** It shells out to `npm install accumulate-sdk-opendlt`, so it inherits the
+   same breakage and fails with `Command failed: npm install ...`. This is the
+   probe whose *cached* failure was mis-reporting K1 as red earlier in the day.
+   Verified independently instead, by fetching the published tarball straight from
+   the registry: **all 32 `exports` targets resolve, `main` and `types` resolve,
+   and the shipped `llms-full.txt` carries the catalog.** Treat a JS
+   `RUNTIME_IMPORT` failure seen on this machine as unproven rather than as a
+   defect — and fix the probe to not depend on the npm CLI.
