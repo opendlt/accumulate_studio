@@ -10,17 +10,39 @@
     "title": "Key rotation",
     "specHash": "8650c147a3d2"
   },
-  "sdkVersion": null,
+  "sdkVersion": "2.3.0",
   "passed": false,
-  "turns": null,
+  "turns": 1,
   "interventions": 0,
-  "failureClass": "network-flake",
-  "assertions": [],
+  "failureClass": "no-artifacts",
+  "assertions": [
+    {
+      "assertion": "key_page_contains_new_key == true",
+      "subject": "key_page_contains_new_key",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "assertion": "key_page_contains_old_key == false",
+      "subject": "key_page_contains_old_key",
+      "op": "==",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    }
+  ],
   "artifacts": {},
-  "environment": null,
-  "durationMs": null,
-  "transcriptPath": null,
-  "error": "[javascript] install failed: failed 4x (transient contention and flaky-registry retries exhausted).\n--- attempt 1 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_45_02_503Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_45_02_503Z-debug-0.log\n--- attempt 2 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_45_14_467Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_45_14_467Z-debug-0.log\n--- attempt 3 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_45_32_052Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_45_32_052Z-debug-0.log\n--- attempt 4 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_46_00_492Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_46_00_492Z-debug-0.log",
-  "startedAt": "2026-07-29T02:45:01.455Z",
-  "finishedAt": "2026-07-29T02:46:03.371Z"
+  "environment": {
+    "liteIdentity": "acc://1ceb1c4c4a97332f93a351d1d5eb5aac722d8bdaf66867b3",
+    "liteTokenAccount": "acc://1ceb1c4c4a97332f93a351d1d5eb5aac722d8bdaf66867b3/ACME",
+    "publicKeyHex": "9fddcd39898f128e1ceb4485e67baca6afe86ffbda0b7ef0e2c8f2931f6ee3e2",
+    "suggestedAdiUrl": "acc://harness-c97a22c0.acme"
+  },
+  "durationMs": 4865,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\javascript--key-rotation.txt",
+  "error": null,
+  "startedAt": "2026-07-29T09:23:40.857Z",
+  "finishedAt": "2026-07-29T09:29:37.858Z"
 }

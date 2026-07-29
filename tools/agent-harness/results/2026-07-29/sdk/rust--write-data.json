@@ -10,9 +10,9 @@
     "title": "Write data to a data account",
     "specHash": "9e9c1d819284"
   },
-  "sdkVersion": "2.3.1",
+  "sdkVersion": "2.3.2",
   "passed": true,
-  "turns": 48,
+  "turns": 38,
   "interventions": 0,
   "failureClass": null,
   "assertions": [
@@ -34,32 +34,32 @@
     }
   ],
   "artifacts": {
-    "adiUrl": "acc://harness-63a9bcf0-rs.acme",
-    "dataAccountUrl": "acc://harness-63a9bcf0-rs.acme/data",
-    "entryHash": "80d921ad4f794fb7a41108b6d06440dc7cd613c7fc3a96aca772bf8a688f1d75",
-    "keyBookUrl": "acc://harness-63a9bcf0-rs.acme/book",
-    "keyPageUrl": "acc://harness-63a9bcf0-rs.acme/book/1",
-    "liteIdentityUrl": "acc://5d94e72207f3b2f7654e8ed9a53ec4dcceecc377ed4707cb",
-    "liteTokenAccountUrl": "acc://5d94e72207f3b2f7654e8ed9a53ec4dcceecc377ed4707cb/ACME",
-    "retrievedEntry": "hello accumulate",
-    "txid": "acc://1f89c3b38a26ebc0288f34637b7b28422d01e7ba79752e478d7a946d32587e59@harness-63a9bcf0-rs.acme/data",
+    "liteIdentityUrl": "acc://3bf6fa6a1baf563793e32e68abac64dc5368c5ca83c1b0f9",
+    "liteTokenAccountUrl": "acc://3bf6fa6a1baf563793e32e68abac64dc5368c5ca83c1b0f9/ACME",
+    "adiUrl": "acc://harness-a8d13b55-rs.acme",
+    "keyBookUrl": "acc://harness-a8d13b55-rs.acme/book",
+    "keyPageUrl": "acc://harness-a8d13b55-rs.acme/book/1",
+    "dataAccountUrl": "acc://harness-a8d13b55-rs.acme/data",
+    "txid": "acc://e475b2f9e4fc8b01fa4a433110a3d367eb677ae74a02b47335f505f685456f9b@harness-a8d13b55-rs.acme/book/1",
     "txids": [
-      "acc://1a71248169022d8888622630d889b0c98f38435cfe05167abb3e88b265527279@5d94e72207f3b2f7654e8ed9a53ec4dcceecc377ed4707cb/ACME",
-      "acc://fde3d40742054d71f24ac568f1529f4582de5846907d20255ccc38712e1c1941@5d94e72207f3b2f7654e8ed9a53ec4dcceecc377ed4707cb/ACME",
-      "acc://47e114d822d94ec827c25db9ec192fa9b19157db88e6c753cc022fc656b11d96@5d94e72207f3b2f7654e8ed9a53ec4dcceecc377ed4707cb/ACME",
-      "acc://00a763d288e26e3c6381fdbf7b9d8bf61327e7379bb5a8537d04195718fa0316@harness-63a9bcf0-rs.acme",
-      "acc://1f89c3b38a26ebc0288f34637b7b28422d01e7ba79752e478d7a946d32587e59@harness-63a9bcf0-rs.acme/data"
-    ]
+      "acc://11ac7c2846b238eed7e9928a33e5167052836cb383c46e887a6cafe75bbc9910@3bf6fa6a1baf563793e32e68abac64dc5368c5ca83c1b0f9",
+      "acc://d21185d79c75a2af5d0936f258828e786dc60cb60cfb52591593d5a9ca4bc6b3@3bf6fa6a1baf563793e32e68abac64dc5368c5ca83c1b0f9",
+      "acc://15ea769c88fc7465826a4f4c81b15fbfab0bccc15b8343d71f1ce515c233fc28@3bf6fa6a1baf563793e32e68abac64dc5368c5ca83c1b0f9",
+      "acc://847503ad032ae562a644543bf13ae88908b8d314434ad5bffff79cb2450a1e86@harness-a8d13b55-rs.acme/book/1",
+      "acc://e475b2f9e4fc8b01fa4a433110a3d367eb677ae74a02b47335f505f685456f9b@harness-a8d13b55-rs.acme/book/1"
+    ],
+    "entryHash": "80d921ad4f794fb7a41108b6d06440dc7cd613c7fc3a96aca772bf8a688f1d75",
+    "retrievedEntry": "hello accumulate"
   },
   "environment": {
-    "liteIdentity": "acc://5d94e72207f3b2f7654e8ed9a53ec4dcceecc377ed4707cb",
-    "liteTokenAccount": "acc://5d94e72207f3b2f7654e8ed9a53ec4dcceecc377ed4707cb/ACME",
-    "publicKeyHex": "ada783b0f4931ff785116620fb9136e9d67c70415c839627aadb7c9e51889d68",
-    "suggestedAdiUrl": "acc://harness-63a9bcf0.acme"
+    "liteIdentity": "acc://3bf6fa6a1baf563793e32e68abac64dc5368c5ca83c1b0f9",
+    "liteTokenAccount": "acc://3bf6fa6a1baf563793e32e68abac64dc5368c5ca83c1b0f9/ACME",
+    "publicKeyHex": "6fd8e611e11fe754a7151657e3ed7b7f06de574355697e73e346f2d7f70012df",
+    "suggestedAdiUrl": "acc://harness-a8d13b55.acme"
   },
-  "durationMs": 1236548,
+  "durationMs": 717386,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\rust--write-data.txt",
   "error": null,
-  "startedAt": "2026-07-29T00:38:48.472Z",
-  "finishedAt": "2026-07-29T01:03:54.132Z"
+  "startedAt": "2026-07-29T07:34:27.410Z",
+  "finishedAt": "2026-07-29T07:50:35.118Z"
 }

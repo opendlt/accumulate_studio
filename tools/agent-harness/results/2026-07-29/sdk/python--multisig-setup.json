@@ -34,30 +34,32 @@
     }
   ],
   "artifacts": {
-    "liteIdentityUrl": "acc://b1e09c91127f61c4430518392ec29c1f7935a8dbc46a7c25",
-    "liteTokenAccountUrl": "acc://b1e09c91127f61c4430518392ec29c1f7935a8dbc46a7c25/ACME",
-    "adiUrl": "acc://multisig-1785287794.acme",
-    "keyBookUrl": "acc://multisig-1785287794.acme/book",
-    "keyPageUrl": "acc://multisig-1785287794.acme/book/1",
-    "tokenAccountUrl": "acc://multisig-1785287794.acme/tokens",
-    "txid": "acc://0d1564de4b9d534321c68decb1b77547f97598d7511e67158c69902f737bc405@multisig-1785287794.acme",
+    "liteIdentityUrl": "acc://771ea3e9496edbc7029e91dd5868daa9382a3d257acb83d7",
+    "liteTokenAccountUrl": "acc://771ea3e9496edbc7029e91dd5868daa9382a3d257acb83d7/ACME",
+    "adiUrl": "acc://multisig-fa5bd284.acme",
+    "keyBookUrl": "acc://multisig-fa5bd284.acme/book",
+    "keyPageUrl": "acc://multisig-fa5bd284.acme/book/1",
+    "recipientUrl": "acc://multisig-fa5bd284.acme/tokens",
+    "tokenAccountUrl": "acc://multisig-fa5bd284.acme/tokens",
+    "txid": "acc://470d22067eb96baa15a0af9b6a707ae22dbf87e90b67a58a56ad6a5fe4263577@multisig-fa5bd284.acme",
     "txids": [
-      "acc://c9478fa05a5c1a5c557b6b6e54beb1052a0c27473b9cd7c63e3cc8e4397c8b8b@b1e09c91127f61c4430518392ec29c1f7935a8dbc46a7c25/ACME",
-      "acc://69b7c401cbfadda9e5237f5351cc796b1974e2a80de572953baa7056e71570d9@b1e09c91127f61c4430518392ec29c1f7935a8dbc46a7c25/ACME",
-      "acc://6bb73004d8d23b4ec6328ff8b36921114fd7e81a568dc510ec1559d0e21e7689@multisig-1785287794.acme/book/1",
-      "acc://27c92fdba9e38394d9a804b6c5a0b0b8916320fe9486c4296ed1e774ee7006dd@multisig-1785287794.acme/book/1",
-      "acc://0d1564de4b9d534321c68decb1b77547f97598d7511e67158c69902f737bc405@multisig-1785287794.acme"
+      "acc://15a3123d9d26a4e35cbb676b446c9fb9f6653cd06eb80ea4db437abb9a19ae49@771ea3e9496edbc7029e91dd5868daa9382a3d257acb83d7/ACME",
+      "acc://359296e6d6b32fb98750c2e2d6cd9b9544ffceb3095255ddb72993c6bf7cdd05@771ea3e9496edbc7029e91dd5868daa9382a3d257acb83d7/ACME",
+      "acc://1bfbdeac78fe699a89fff77a1e6ea72d7fb3bb3066742c244e76515505ce8e5b@771ea3e9496edbc7029e91dd5868daa9382a3d257acb83d7/ACME",
+      "acc://46b541ed25f96537187f2322e52da1460b42321bd54756ea685da4cda867d08b@multisig-fa5bd284.acme/book/1",
+      "acc://e074c2cf653a3f8606a7a45d47113638f56ea501add7430498ad1af251d31d4e@multisig-fa5bd284.acme/book/1",
+      "acc://470d22067eb96baa15a0af9b6a707ae22dbf87e90b67a58a56ad6a5fe4263577@multisig-fa5bd284.acme"
     ]
   },
   "environment": {
-    "liteIdentity": "acc://b1e09c91127f61c4430518392ec29c1f7935a8dbc46a7c25",
-    "liteTokenAccount": "acc://b1e09c91127f61c4430518392ec29c1f7935a8dbc46a7c25/ACME",
-    "publicKeyHex": "5dbb43bd661fba9cced0d25969b87a6fd96e252546600dbf7e643c91d9ffbed0",
-    "suggestedAdiUrl": "acc://harness-691fc2d9.acme"
+    "liteIdentity": "acc://771ea3e9496edbc7029e91dd5868daa9382a3d257acb83d7",
+    "liteTokenAccount": "acc://771ea3e9496edbc7029e91dd5868daa9382a3d257acb83d7/ACME",
+    "publicKeyHex": "58a9aff3423ac5b76ac30f99bb9d5beea811ce68b4aa31542739e25e0757c0f1",
+    "suggestedAdiUrl": "acc://harness-85992ab0.acme"
   },
-  "durationMs": 690914,
+  "durationMs": 1436456,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\python--multisig-setup.txt",
   "error": null,
-  "startedAt": "2026-07-29T01:04:43.862Z",
-  "finishedAt": "2026-07-29T01:23:41.396Z"
+  "startedAt": "2026-07-29T08:00:57.702Z",
+  "finishedAt": "2026-07-29T08:29:44.839Z"
 }

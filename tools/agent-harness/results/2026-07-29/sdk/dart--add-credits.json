@@ -10,22 +10,41 @@
     "title": "Add credits to a key page",
     "specHash": "990525ec062a"
   },
-  "sdkVersion": "2.3.3",
-  "passed": false,
-  "turns": null,
+  "sdkVersion": "2.3.4",
+  "passed": true,
+  "turns": 21,
   "interventions": 0,
-  "failureClass": "harness-setup-failed",
-  "assertions": [],
-  "artifacts": {},
-  "environment": {
-    "liteIdentity": "acc://ec216e8988c573b070999b9c543c0c174a3e55b2f47646f1",
-    "liteTokenAccount": "acc://ec216e8988c573b070999b9c543c0c174a3e55b2f47646f1/ACME",
-    "publicKeyHex": "bf5ca45dab059a1382b0e8d321ad0c6bea30412b1a395441e4b2f354d741a07b",
-    "suggestedAdiUrl": "acc://harness-e673cedd.acme"
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_credit_balance >= 5000",
+      "subject": "key_page_credit_balance",
+      "op": ">=",
+      "passed": true,
+      "actual": 700000,
+      "expected": 5000
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://cd6c647b11bf8dae94a0f58b0c90befa9c336f6601b62e93",
+    "liteTokenAccountUrl": "acc://cd6c647b11bf8dae94a0f58b0c90befa9c336f6601b62e93/ACME",
+    "adiUrl": "acc://harness-05500ee4.acme",
+    "keyBookUrl": "acc://harness-05500ee4.acme/book",
+    "keyPageUrl": "acc://harness-05500ee4.acme/book/1",
+    "txid": "acc://9484929db9e55d4ad05c5306410420503f9f40ad5cf359d659a7f3aeaaded3b2@cd6c647b11bf8dae94a0f58b0c90befa9c336f6601b62e93/ACME",
+    "txids": [
+      "acc://9484929db9e55d4ad05c5306410420503f9f40ad5cf359d659a7f3aeaaded3b2@cd6c647b11bf8dae94a0f58b0c90befa9c336f6601b62e93/ACME"
+    ]
   },
-  "durationMs": null,
-  "transcriptPath": null,
-  "error": "setup reported acc://harness-e673cedd.acme but it did not appear on chain within 90s",
-  "startedAt": "2026-07-29T01:23:42.577Z",
-  "finishedAt": "2026-07-29T01:27:15.412Z"
+  "environment": {
+    "liteIdentity": "acc://cd6c647b11bf8dae94a0f58b0c90befa9c336f6601b62e93",
+    "liteTokenAccount": "acc://cd6c647b11bf8dae94a0f58b0c90befa9c336f6601b62e93/ACME",
+    "publicKeyHex": "aef64a33b7078f774bb3cc2943ef51fbf842ba79fe888b97d5719a43c0df5d66",
+    "suggestedAdiUrl": "acc://harness-05500ee4.acme"
+  },
+  "durationMs": 457219,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\dart--add-credits.txt",
+  "error": null,
+  "startedAt": "2026-07-29T08:18:55.201Z",
+  "finishedAt": "2026-07-29T08:30:40.460Z"
 }

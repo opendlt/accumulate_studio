@@ -10,17 +10,50 @@
     "title": "Create an ADI (Accumulate Digital Identifier)",
     "specHash": "93a188817a2e"
   },
-  "sdkVersion": null,
-  "passed": false,
-  "turns": null,
+  "sdkVersion": "2.3.0",
+  "passed": true,
+  "turns": 19,
   "interventions": 0,
-  "failureClass": "network-flake",
-  "assertions": [],
-  "artifacts": {},
-  "environment": null,
-  "durationMs": null,
-  "transcriptPath": null,
-  "error": "[javascript] install failed: failed 4x (transient contention and flaky-registry retries exhausted).\n--- attempt 1 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_11_801Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_11_801Z-debug-0.log\n--- attempt 2 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_23_936Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_23_936Z-debug-0.log\n--- attempt 3 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_41_259Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_41_259Z-debug-0.log\n--- attempt 4 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_44_07_127Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_44_07_127Z-debug-0.log",
-  "startedAt": "2026-07-29T02:43:10.688Z",
-  "finishedAt": "2026-07-29T02:44:08.950Z"
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "adi_account_exists == true",
+      "subject": "adi_account_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "key_book_exists == true",
+      "subject": "key_book_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://c8458f2fb07a606fc5ab7fddc57160fbd25471db1d4ea4bc",
+    "liteTokenAccountUrl": "acc://c8458f2fb07a606fc5ab7fddc57160fbd25471db1d4ea4bc/ACME",
+    "adiUrl": "acc://harness-e38ce49c.acme",
+    "keyBookUrl": "acc://harness-e38ce49c.acme/book",
+    "keyPageUrl": "acc://harness-e38ce49c.acme/book/1",
+    "txid": "acc://5b0d828f0e4fd2f2eb1c6ca6a64af79e28ac4f15f1e73afebcf762ddc7f9447f@c8458f2fb07a606fc5ab7fddc57160fbd25471db1d4ea4bc/ACME",
+    "txids": [
+      "acc://8334c1302287b889c47f7ce2cfac863146c95dcf2559318d5095f8a8df48461a@c8458f2fb07a606fc5ab7fddc57160fbd25471db1d4ea4bc/ACME",
+      "acc://5b0d828f0e4fd2f2eb1c6ca6a64af79e28ac4f15f1e73afebcf762ddc7f9447f@c8458f2fb07a606fc5ab7fddc57160fbd25471db1d4ea4bc/ACME"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://c8458f2fb07a606fc5ab7fddc57160fbd25471db1d4ea4bc",
+    "liteTokenAccount": "acc://c8458f2fb07a606fc5ab7fddc57160fbd25471db1d4ea4bc/ACME",
+    "publicKeyHex": "113f1d50540766b39de89e4bc7de78b9a1db9ad1403fd2de755aedb1187f0313",
+    "suggestedAdiUrl": "acc://harness-e38ce49c.acme"
+  },
+  "durationMs": 188903,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\javascript--create-adi.txt",
+  "error": null,
+  "startedAt": "2026-07-29T09:14:19.943Z",
+  "finishedAt": "2026-07-29T09:18:09.969Z"
 }

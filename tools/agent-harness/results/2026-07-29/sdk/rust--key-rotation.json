@@ -10,9 +10,9 @@
     "title": "Key rotation",
     "specHash": "8650c147a3d2"
   },
-  "sdkVersion": "2.3.1",
+  "sdkVersion": "2.3.2",
   "passed": true,
-  "turns": 50,
+  "turns": 35,
   "interventions": 0,
   "failureClass": null,
   "assertions": [
@@ -34,31 +34,31 @@
     }
   ],
   "artifacts": {
-    "adiUrl": "acc://harness-rotate-1785286823583.acme",
-    "keyBookUrl": "acc://harness-rotate-1785286823583.acme/book",
-    "keyPageUrl": "acc://harness-rotate-1785286823583.acme/book/1",
-    "liteIdentityUrl": "acc://1bc7fff8464ed2f1c825846c8d9b4275081ed251f26759a2",
-    "liteTokenAccountUrl": "acc://1bc7fff8464ed2f1c825846c8d9b4275081ed251f26759a2/ACME",
-    "newKeyHash": "fe5a5ba0d247a000575ff7219c8280d87c4d5345f85d6f576f573ff478df410c",
-    "oldKeyHash": "1bc7fff8464ed2f1c825846c8d9b4275081ed251de0bbc5276723bc4713aa71b",
-    "providedKeyPageUrl": "acc://harness-007b1b3b.acme/book/1",
-    "txid": "acc://8b13613263e7998bb240ddd4945381a744a4905929e9e3531b409221f7810a6c@harness-rotate-1785286823583.acme/book/1",
+    "adiUrl": "acc://rotate-1785311529085.acme",
+    "keyBookUrl": "acc://rotate-1785311529085.acme/book",
+    "keyPageUrl": "acc://rotate-1785311529085.acme/book/1",
+    "liteIdentityUrl": "acc://d14a5e0ff2627d2e114f85e16ba0cdde2336c1c6b019af57",
+    "liteTokenAccountUrl": "acc://d14a5e0ff2627d2e114f85e16ba0cdde2336c1c6b019af57/ACME",
+    "newKeyHash": "8af10b4566682525fa9dbe37687ae19cb779992f498b1b66621b0ff26fb07e9f",
+    "oldKeyHash": "d14a5e0ff2627d2e114f85e16ba0cdde2336c1c6e233a0c93dce2962f77861e3",
+    "providedKeyPageUrl": "acc://harness-29d6ff08.acme/book/1",
+    "txid": "acc://761ec1dd7b5afb6973f0a05ae76e980d897a3e0ae4230ab105567a47a6a39f9f@rotate-1785311529085.acme/book/1",
     "txids": [
-      "acc://b0211145817f375aaa2999c07715443f989555f264460bf8117ad4254afcebc9@1bc7fff8464ed2f1c825846c8d9b4275081ed251f26759a2",
-      "acc://7bf55046c622bede84a8813023347e6e5f0a102d82275467c02d78368daff3e2@1bc7fff8464ed2f1c825846c8d9b4275081ed251f26759a2",
-      "acc://70ad41c32b654d7f98e419d014b73b0ad29b986d1e1533eb2d59c903e6708f05@harness-rotate-1785286823583.acme/book/1",
-      "acc://8b13613263e7998bb240ddd4945381a744a4905929e9e3531b409221f7810a6c@harness-rotate-1785286823583.acme/book/1"
+      "acc://d50e0b53a06867058d9302d202ddfd340b64d12213b012032b47ace6fa6a1829@d14a5e0ff2627d2e114f85e16ba0cdde2336c1c6b019af57",
+      "acc://5437a7d35ea2a85aad2f24429aaa070a39a4633668000a813a924a37617e03de@d14a5e0ff2627d2e114f85e16ba0cdde2336c1c6b019af57",
+      "acc://761ec1dd7b5afb6973f0a05ae76e980d897a3e0ae4230ab105567a47a6a39f9f@rotate-1785311529085.acme/book/1",
+      "acc://6705578abbf34758774b909667fbdf0eafde183ed6cf38b9d94717851f9b827e@rotate-1785311529085.acme/book/1"
     ]
   },
   "environment": {
-    "liteIdentity": "acc://1bc7fff8464ed2f1c825846c8d9b4275081ed251f26759a2",
-    "liteTokenAccount": "acc://1bc7fff8464ed2f1c825846c8d9b4275081ed251f26759a2/ACME",
-    "publicKeyHex": "f8930ee666cd35b5f1a7c3ca0e4830bd4055a0ae4752af98bbbc3bed1a1aa017",
-    "suggestedAdiUrl": "acc://harness-007b1b3b.acme"
+    "liteIdentity": "acc://d14a5e0ff2627d2e114f85e16ba0cdde2336c1c6b019af57",
+    "liteTokenAccount": "acc://d14a5e0ff2627d2e114f85e16ba0cdde2336c1c6b019af57/ACME",
+    "publicKeyHex": "986f66e613b949c59ace633f5399b9ff09eefe8b2045b4e52cfaf9d525878cc2",
+    "suggestedAdiUrl": "acc://harness-29d6ff08.acme"
   },
-  "durationMs": 965175,
+  "durationMs": 562899,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\rust--key-rotation.txt",
   "error": null,
-  "startedAt": "2026-07-29T00:44:36.113Z",
-  "finishedAt": "2026-07-29T01:04:42.661Z"
+  "startedAt": "2026-07-29T07:37:37.283Z",
+  "finishedAt": "2026-07-29T07:53:05.291Z"
 }

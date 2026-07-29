@@ -12,7 +12,7 @@
   },
   "sdkVersion": "2.3.0",
   "passed": true,
-  "turns": 12,
+  "turns": 16,
   "interventions": 0,
   "failureClass": null,
   "assertions": [
@@ -27,22 +27,22 @@
     }
   ],
   "artifacts": {
-    "liteIdentityUrl": "acc://c39bba610fdb242c34e8a6ab8249fefebeeccb6d043d27c0",
-    "liteTokenAccountUrl": "acc://c39bba610fdb242c34e8a6ab8249fefebeeccb6d043d27c0/ACME",
-    "txid": "acc://bb4fdea5b1aa027f9fe0e70fafdaf5b67c807dd11d50530f3e9c18950c712c89@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+    "liteIdentityUrl": "acc://dd2978e1dda732dd979f5efa52b50a1cc12b12363e31c376",
+    "liteTokenAccountUrl": "acc://dd2978e1dda732dd979f5efa52b50a1cc12b12363e31c376/ACME",
+    "txid": "acc://7ba3f21304fd668678cab0de1a2c81f918ac2b18ea86e5a295d42d1639c621b7@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
     "txids": [
-      "acc://bb4fdea5b1aa027f9fe0e70fafdaf5b67c807dd11d50530f3e9c18950c712c89@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
+      "acc://7ba3f21304fd668678cab0de1a2c81f918ac2b18ea86e5a295d42d1639c621b7@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
     ]
   },
   "environment": {
-    "liteIdentity": "acc://bc97d7b6849ec629774024cbce6e6448c4e2fd2114c94c9d",
-    "liteTokenAccount": "acc://bc97d7b6849ec629774024cbce6e6448c4e2fd2114c94c9d/ACME",
-    "publicKeyHex": "88c001647b94338d4daff9f7dcb19e67586cc65945eb23e29349ce0cb06089dc",
-    "suggestedAdiUrl": "acc://harness-eb08a6f7.acme"
+    "liteIdentity": "acc://6e8717ea7b669c79fed226a5a4ffc07a3a9d9c80538cc012",
+    "liteTokenAccount": "acc://6e8717ea7b669c79fed226a5a4ffc07a3a9d9c80538cc012/ACME",
+    "publicKeyHex": "106f97ae0d32dffb013c3ba7d2cb73b0665c03060a9bec5d7ce816fac9250efd",
+    "suggestedAdiUrl": "acc://harness-61479023.acme"
   },
-  "durationMs": 140745,
+  "durationMs": 172884,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\python--lite-account.txt",
   "error": null,
-  "startedAt": "2026-07-29T00:44:40.273Z",
-  "finishedAt": "2026-07-29T00:49:28.527Z"
+  "startedAt": "2026-07-29T07:49:24.800Z",
+  "finishedAt": "2026-07-29T07:52:57.974Z"
 }

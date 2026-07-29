@@ -10,22 +10,56 @@
     "title": "Custom token issuance",
     "specHash": "f9068d5ec05f"
   },
-  "sdkVersion": "2.3.1",
-  "passed": false,
-  "turns": null,
+  "sdkVersion": "2.3.2",
+  "passed": true,
+  "turns": 19,
   "interventions": 0,
-  "failureClass": "harness-setup-failed",
-  "assertions": [],
-  "artifacts": {},
-  "environment": {
-    "liteIdentity": "acc://febfe1d78d59c43e68dfe49fcafb85cbd17b2a8690e71fdf",
-    "liteTokenAccount": "acc://febfe1d78d59c43e68dfe49fcafb85cbd17b2a8690e71fdf/ACME",
-    "publicKeyHex": "87107f62838c1ea00efca0009e6a6e5dd6e3c03f0a8e8c420ca1e9d538225260",
-    "suggestedAdiUrl": "acc://harness-6efcd19b.acme"
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "token_issuer_exists == true",
+      "subject": "token_issuer_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "token_account_balance == issue_amount",
+      "subject": "token_account_balance",
+      "op": "==",
+      "passed": true,
+      "actual": 1000,
+      "expected": 1000
+    }
+  ],
+  "artifacts": {
+    "adiUrl": "acc://rust-tkn-1785311289281.acme",
+    "keyBookUrl": "acc://rust-tkn-1785311289281.acme/book",
+    "keyPageUrl": "acc://rust-tkn-1785311289281.acme/book/1",
+    "liteIdentityUrl": "acc://f979fce70bb5a5435929dd7f3c798058cd474f90aab47931",
+    "liteTokenAccountUrl": "acc://f979fce70bb5a5435929dd7f3c798058cd474f90aab47931/ACME",
+    "tokenAccountUrl": "acc://rust-tkn-1785311289281.acme/token-account",
+    "tokenIssuerUrl": "acc://rust-tkn-1785311289281.acme/TESTTKN",
+    "txid": "acc://fe503aed7a828513995be391d4517a2f8ac5dc7a32c6dde9f6e1512bd653c63c@rust-tkn-1785311289281.acme/book/1",
+    "txids": [
+      "acc://8a19ebd5a9a6ed63dbe811796e770f85385ae144df522a675433558a14541c21@f979fce70bb5a5435929dd7f3c798058cd474f90aab47931",
+      "acc://9ffa3dba203413766096f9dc301ecb693aa0ff939a7af316fc416ad04cea1341@f979fce70bb5a5435929dd7f3c798058cd474f90aab47931",
+      "acc://1b8af543644d3c99d072fc7dc3dc0400c1f687ff748394a2e624d00cc3306685@f979fce70bb5a5435929dd7f3c798058cd474f90aab47931",
+      "acc://00080ceb56132f768d391ac4256f6eac0945063363cb43043996ba4da4032298@rust-tkn-1785311289281.acme/book/1",
+      "acc://fb22e3f97185015320aa506da7729b5793cf67a90d8ea2edc2dad6769fc1cb04@rust-tkn-1785311289281.acme/book/1",
+      "acc://fe503aed7a828513995be391d4517a2f8ac5dc7a32c6dde9f6e1512bd653c63c@rust-tkn-1785311289281.acme/book/1"
+    ]
   },
-  "durationMs": null,
-  "transcriptPath": null,
-  "error": "setup reported acc://harness-6efcd19b.acme but it did not appear on chain within 90s",
-  "startedAt": "2026-07-29T00:40:58.926Z",
-  "finishedAt": "2026-07-29T00:44:36.099Z"
+  "environment": {
+    "liteIdentity": "acc://f979fce70bb5a5435929dd7f3c798058cd474f90aab47931",
+    "liteTokenAccount": "acc://f979fce70bb5a5435929dd7f3c798058cd474f90aab47931/ACME",
+    "publicKeyHex": "b647d5f6210f2aa5ab504d2a0dc1974a4086165b157d0b1bd2ee57adc5c7cf40",
+    "suggestedAdiUrl": "acc://harness-7d27d175.acme"
+  },
+  "durationMs": 583793,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\rust--custom-token.txt",
+  "error": null,
+  "startedAt": "2026-07-29T07:34:53.460Z",
+  "finishedAt": "2026-07-29T07:49:23.781Z"
 }

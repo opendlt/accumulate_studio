@@ -611,3 +611,21 @@ describe('registry-unreachable is not an SDK defect', () => {
     assert.equal(countsTowardK2('install-fail'), true);
   });
 });
+
+// ============================================================================
+describe('agent-backend unavailability is not an SDK defect', () => {
+  test('a session/usage limit classifies agent-unavailable and is excluded from K2', () => {
+    // Observed live: the backend refused mid-run with "You've hit your session
+    // limit", producing 1-turn 4-second runs that scored `no-artifacts` — i.e.
+    // an exhausted quota was charged to the SDK.
+    const msg = "You've hit your session limit · resets 7:50am (America/New_York)";
+    assert.equal(classifyFailure({ transcript: msg, artifacts: {} }), 'agent-unavailable');
+    assert.equal(countsTowardK2('agent-unavailable'), false);
+  });
+
+  test('a genuine empty result still classifies no-artifacts', () => {
+    // An agent that ran but reported nothing is a real finding and must count.
+    assert.equal(classifyFailure({ transcript: 'ran fine, wrote nothing', artifacts: {} }), 'no-artifacts');
+    assert.equal(countsTowardK2('no-artifacts'), true);
+  });
+});

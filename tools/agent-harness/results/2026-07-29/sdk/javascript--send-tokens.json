@@ -10,17 +10,55 @@
     "title": "Send ACME tokens between accounts",
     "specHash": "04b11771f6b0"
   },
-  "sdkVersion": null,
-  "passed": false,
-  "turns": null,
+  "sdkVersion": "2.3.0",
+  "passed": true,
+  "turns": 22,
   "interventions": 0,
-  "failureClass": "network-flake",
-  "assertions": [],
-  "artifacts": {},
-  "environment": null,
-  "durationMs": null,
-  "transcriptPath": null,
-  "error": "[javascript] install failed: failed 4x (transient contention and flaky-registry retries exhausted).\n--- attempt 1 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_11_825Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_11_825Z-debug-0.log\n--- attempt 2 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_21_581Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_21_581Z-debug-0.log\n--- attempt 3 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_39_263Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_43_39_263Z-debug-0.log\n--- attempt 4 ---\n[javascript] install failed: Command failed: npm install --no-audit --no-fund accumulate-sdk-opendlt\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_44_04_104Z-debug-0.log\n\nnpm ERR! Unexpected token 'P', \"Per anonym\"... is not valid JSON\n\nnpm ERR! A complete log of this run can be found in: C:\\Users\\jason\\AppData\\Local\\npm-cache\\_logs\\2026-07-29T02_44_04_104Z-debug-0.log",
-  "startedAt": "2026-07-29T02:43:10.733Z",
-  "finishedAt": "2026-07-29T02:44:07.302Z"
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "tx_status == delivered",
+      "subject": "tx_status",
+      "op": "==",
+      "passed": true,
+      "actual": "delivered",
+      "expected": "delivered"
+    },
+    {
+      "assertion": "recipient_balance_increased_by == 5 ACME",
+      "subject": "recipient_balance_increased_by",
+      "op": "==",
+      "passed": true,
+      "actual": "500000000",
+      "actualAcme": 5,
+      "expected": "5 ACME"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://4c9ca800a929e2d628a9e7945dff0f5dc4bedf8429c07d25",
+    "liteTokenAccountUrl": "acc://4c9ca800a929e2d628a9e7945dff0f5dc4bedf8429c07d25/ACME",
+    "adiUrl": "acc://harness-423146aa00c2.acme",
+    "keyBookUrl": "acc://harness-423146aa00c2.acme/book",
+    "keyPageUrl": "acc://harness-423146aa00c2.acme/book/1",
+    "recipientUrl": "acc://harness-423146aa00c2.acme/tokens",
+    "txid": "acc://c3f3415ff34e5666267cdcdfffe6303ba956193c44806bb2eba0de5d3013e518@4c9ca800a929e2d628a9e7945dff0f5dc4bedf8429c07d25/ACME",
+    "txids": [
+      "acc://c5a8ea608ccfb3a9301fbcaa926eb3df9560c843c4ef0f9a4df3a961e53ea5d3@4c9ca800a929e2d628a9e7945dff0f5dc4bedf8429c07d25/ACME",
+      "acc://2f52d4a784a224f0e7e3b8d7b04437ddbf11a06e0fb4c46332472cc637c767f4@4c9ca800a929e2d628a9e7945dff0f5dc4bedf8429c07d25/ACME",
+      "acc://1f8f500d3d0fe69d46f0b533fa91b4b528fec02e1b448367e3b9adeb0a28e396@4c9ca800a929e2d628a9e7945dff0f5dc4bedf8429c07d25/ACME",
+      "acc://0fd41984ce6cd5cd37cb60a962eafe091a4d2c711427f46f9d7123180fcac847@harness-423146aa00c2.acme",
+      "acc://c3f3415ff34e5666267cdcdfffe6303ba956193c44806bb2eba0de5d3013e518@4c9ca800a929e2d628a9e7945dff0f5dc4bedf8429c07d25/ACME"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://4c9ca800a929e2d628a9e7945dff0f5dc4bedf8429c07d25",
+    "liteTokenAccount": "acc://4c9ca800a929e2d628a9e7945dff0f5dc4bedf8429c07d25/ACME",
+    "publicKeyHex": "b734bc05f398a92674092a39bd6d09d82243edd0ac78817c73c565bf3490643a",
+    "suggestedAdiUrl": "acc://harness-7df7f4d8.acme"
+  },
+  "durationMs": 238741,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\javascript--send-tokens.txt",
+  "error": null,
+  "startedAt": "2026-07-29T09:18:11.333Z",
+  "finishedAt": "2026-07-29T09:22:38.802Z"
 }

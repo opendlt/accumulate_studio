@@ -10,9 +10,9 @@
     "title": "Add credits to a key page",
     "specHash": "990525ec062a"
   },
-  "sdkVersion": "2.3.1",
+  "sdkVersion": "2.3.2",
   "passed": true,
-  "turns": 25,
+  "turns": 26,
   "interventions": 0,
   "failureClass": null,
   "assertions": [
@@ -26,25 +26,25 @@
     }
   ],
   "artifacts": {
-    "adiUrl": "acc://harness-c014539c.acme",
-    "keyBookUrl": "acc://harness-c014539c.acme/book",
-    "keyPageUrl": "acc://harness-c014539c.acme/book/1",
-    "liteIdentityUrl": "acc://fc744325eb953550ca5b6414957ec37cd344f40329acaffd",
-    "liteTokenAccountUrl": "acc://fc744325eb953550ca5b6414957ec37cd344f40329acaffd/ACME",
-    "txid": "acc://0028b1501d3f0dfe839cd8ee1db99f111f0e55abdc9e06c9d71082e414ebdec7@fc744325eb953550ca5b6414957ec37cd344f40329acaffd",
+    "adiUrl": "acc://harness-1935e1d1.acme",
+    "keyBookUrl": "acc://harness-1935e1d1.acme/book",
+    "keyPageUrl": "acc://harness-1935e1d1.acme/book/1",
+    "liteIdentityUrl": "acc://def12b70324c66acd314eaf461e5e7866ec4e727b2cf9943",
+    "liteTokenAccountUrl": "acc://def12b70324c66acd314eaf461e5e7866ec4e727b2cf9943/ACME",
+    "txid": "acc://cf8621c77a8c57a078264f75c7f6281a9796105bf971ab571123bceaab5ad115@def12b70324c66acd314eaf461e5e7866ec4e727b2cf9943",
     "txids": [
-      "acc://0028b1501d3f0dfe839cd8ee1db99f111f0e55abdc9e06c9d71082e414ebdec7@fc744325eb953550ca5b6414957ec37cd344f40329acaffd"
+      "acc://cf8621c77a8c57a078264f75c7f6281a9796105bf971ab571123bceaab5ad115@def12b70324c66acd314eaf461e5e7866ec4e727b2cf9943"
     ]
   },
   "environment": {
-    "liteIdentity": "acc://fc744325eb953550ca5b6414957ec37cd344f40329acaffd",
-    "liteTokenAccount": "acc://fc744325eb953550ca5b6414957ec37cd344f40329acaffd/ACME",
-    "publicKeyHex": "b3de1a5da2463a7ab18e39affcf2e70bc33010da65941de284a20823d281e25c",
-    "suggestedAdiUrl": "acc://harness-c014539c.acme"
+    "liteIdentity": "acc://def12b70324c66acd314eaf461e5e7866ec4e727b2cf9943",
+    "liteTokenAccount": "acc://def12b70324c66acd314eaf461e5e7866ec4e727b2cf9943/ACME",
+    "publicKeyHex": "24bb9c4897a1487afc2dc2f1938ce0168074f5e96d8b63a3a803401c9c6ad228",
+    "suggestedAdiUrl": "acc://harness-1935e1d1.acme"
   },
-  "durationMs": 330441,
+  "durationMs": 357293,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\rust--add-credits.txt",
   "error": null,
-  "startedAt": "2026-07-29T00:34:32.198Z",
-  "finishedAt": "2026-07-29T00:44:39.181Z"
+  "startedAt": "2026-07-29T07:27:13.841Z",
+  "finishedAt": "2026-07-29T07:37:36.014Z"
 }

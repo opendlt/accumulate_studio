@@ -10,7 +10,7 @@
     "title": "Lite account setup",
     "specHash": "6cee357d09fe"
   },
-  "sdkVersion": "2.3.1",
+  "sdkVersion": "2.3.2",
   "passed": true,
   "turns": 28,
   "interventions": 0,
@@ -21,28 +21,29 @@
       "subject": "lite_token_account_balance",
       "op": ">",
       "passed": true,
-      "actual": "1000000000",
-      "actualAcme": 10,
+      "actual": "2000000000",
+      "actualAcme": 20,
       "expected": 0
     }
   ],
   "artifacts": {
-    "liteIdentityUrl": "acc://772e994ce58557f28620c3c354ebb8c4c56129d2b6595212",
-    "liteTokenAccountUrl": "acc://772e994ce58557f28620c3c354ebb8c4c56129d2b6595212/ACME",
-    "txid": "acc://b91678dd68b364f8350c505dec4bccc3190f60315064f815b691cfc14bb2e150@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+    "liteIdentityUrl": "acc://c4e04f697b55894764eef0cd72f01ba817834ee9ad4b618c",
+    "liteTokenAccountUrl": "acc://c4e04f697b55894764eef0cd72f01ba817834ee9ad4b618c/ACME",
+    "txid": "acc://be755413600aa0e3b74ed84cad4b0f10d4c931647bffaa554afd513adffb98cf@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
     "txids": [
-      "acc://b91678dd68b364f8350c505dec4bccc3190f60315064f815b691cfc14bb2e150@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
+      "acc://be755413600aa0e3b74ed84cad4b0f10d4c931647bffaa554afd513adffb98cf@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+      "acc://036633e25bcbfe8d69214a29a02d78151a5810beca824b4f096deab13ac7d663@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
     ]
   },
   "environment": {
-    "liteIdentity": "acc://6f516b7edb1372036771e74a9e9c4b6cc073726e92b90a8e",
-    "liteTokenAccount": "acc://6f516b7edb1372036771e74a9e9c4b6cc073726e92b90a8e/ACME",
-    "publicKeyHex": "ed3101ecc7d5a6ae14cf80e86e3c2b53cf1e05579199d905298fead54046fbcd",
-    "suggestedAdiUrl": "acc://harness-ffa10302.acme"
+    "liteIdentity": "acc://7fac6690edf6861a71267eb276a1aa4a7776c0fc449732f8",
+    "liteTokenAccount": "acc://7fac6690edf6861a71267eb276a1aa4a7776c0fc449732f8/ACME",
+    "publicKeyHex": "0d6206a48448a2282dcc22f5ec17fc63c6065a758f8fbad3c4b5e694ab47e38f",
+    "suggestedAdiUrl": "acc://harness-b1c0d108.acme"
   },
-  "durationMs": 272490,
+  "durationMs": 370966,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\csharp--lite-account.txt",
   "error": null,
-  "startedAt": "2026-07-29T01:35:43.619Z",
-  "finishedAt": "2026-07-29T01:40:21.392Z"
+  "startedAt": "2026-07-29T08:30:40.472Z",
+  "finishedAt": "2026-07-29T08:38:32.684Z"
 }

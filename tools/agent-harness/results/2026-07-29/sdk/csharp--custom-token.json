@@ -10,56 +10,39 @@
     "title": "Custom token issuance",
     "specHash": "f9068d5ec05f"
   },
-  "sdkVersion": "2.3.1",
-  "passed": true,
-  "turns": 34,
+  "sdkVersion": "2.3.2",
+  "passed": false,
+  "turns": null,
   "interventions": 0,
-  "failureClass": null,
+  "failureClass": "timeout",
   "assertions": [
     {
       "assertion": "token_issuer_exists == true",
       "subject": "token_issuer_exists",
       "op": "==",
-      "passed": true,
-      "actual": true,
+      "passed": false,
+      "actual": false,
       "expected": true
     },
     {
       "assertion": "token_account_balance == issue_amount",
       "subject": "token_account_balance",
       "op": "==",
-      "passed": true,
-      "actual": 1000,
+      "passed": false,
+      "actual": 0,
       "expected": 1000
     }
   ],
-  "artifacts": {
-    "liteIdentityUrl": "acc://fae9b9031962b9157f44da37a413a5b5c439e047f0824f8d",
-    "liteTokenAccountUrl": "acc://fae9b9031962b9157f44da37a413a5b5c439e047f0824f8d/ACME",
-    "adiUrl": "acc://harnessb75da583.acme",
-    "keyBookUrl": "acc://harnessb75da583.acme/book",
-    "keyPageUrl": "acc://harnessb75da583.acme/book/1",
-    "tokenIssuerUrl": "acc://harnessb75da583.acme/TESTTKN",
-    "tokenAccountUrl": "acc://harnessb75da583.acme/testtkn-account",
-    "txid": "acc://90e4f99a361f1d76e4f8bb4c91e2b27dcf204fc69a8bcfd94d2492b9d6b127da@harnessb75da583.acme/TESTTKN",
-    "txids": [
-      "acc://481d03d9ac425ba01bddc8a87ab29fb99434b857f764daeb18cf717a24243d98@fae9b9031962b9157f44da37a413a5b5c439e047f0824f8d/ACME",
-      "acc://920f083bf8da4ffce1fb4fbf90801ad841e3fe383aeaac17dfa7ebccd5d9b316@harnessb75da583.acme",
-      "acc://2862ec1dedec85ce082ad9e81503bfb10572333edb3ced25730882a1be3789c9@fae9b9031962b9157f44da37a413a5b5c439e047f0824f8d/ACME",
-      "acc://a7568c30bae7a0fa18fb1ab862b81ced91a9ec41defde7196b52b463c1528a9f@harnessb75da583.acme",
-      "acc://b3b38c213129d463a4daeb08e20697a6d4b0ab9bc7e6bfafcce8dde3ed22e159@harnessb75da583.acme",
-      "acc://90e4f99a361f1d76e4f8bb4c91e2b27dcf204fc69a8bcfd94d2492b9d6b127da@harnessb75da583.acme/TESTTKN"
-    ]
-  },
+  "artifacts": {},
   "environment": {
-    "liteIdentity": "acc://fae9b9031962b9157f44da37a413a5b5c439e047f0824f8d",
-    "liteTokenAccount": "acc://fae9b9031962b9157f44da37a413a5b5c439e047f0824f8d/ACME",
-    "publicKeyHex": "ad38925cbc77ed701ebb2f59fe33072b6bda8cc6c286d609efa927fc34adac3f",
-    "suggestedAdiUrl": "acc://harness-98d30140.acme"
+    "liteIdentity": "acc://905b062619f7b26db1861ff084b17f76490f1ad148fb9121",
+    "liteTokenAccount": "acc://905b062619f7b26db1861ff084b17f76490f1ad148fb9121/ACME",
+    "publicKeyHex": "ede7d7dc109cf658933bcf2d2fac8ba9d085cb2a9de482238f020d7ba69627a8",
+    "suggestedAdiUrl": "acc://harness-048791b7.acme"
   },
-  "durationMs": 1203725,
+  "durationMs": 1800019,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\csharp--custom-token.txt",
   "error": null,
-  "startedAt": "2026-07-29T01:46:34.693Z",
-  "finishedAt": "2026-07-29T02:10:43.797Z"
+  "startedAt": "2026-07-29T08:45:11.783Z",
+  "finishedAt": "2026-07-29T09:19:21.753Z"
 }

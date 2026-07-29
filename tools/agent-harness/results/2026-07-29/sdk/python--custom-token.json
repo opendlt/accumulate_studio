@@ -12,7 +12,7 @@
   },
   "sdkVersion": "2.3.0",
   "passed": true,
-  "turns": 14,
+  "turns": 32,
   "interventions": 0,
   "failureClass": null,
   "assertions": [
@@ -34,32 +34,33 @@
     }
   ],
   "artifacts": {
-    "liteIdentityUrl": "acc://b10a0ff44d99017dab0b72423eae22fec90abf0b1e93e2ce",
-    "liteTokenAccountUrl": "acc://b10a0ff44d99017dab0b72423eae22fec90abf0b1e93e2ce/ACME",
-    "adiUrl": "acc://tkn1785287462.acme",
-    "keyBookUrl": "acc://tkn1785287462.acme/book",
-    "keyPageUrl": "acc://tkn1785287462.acme/book/1",
-    "tokenIssuerUrl": "acc://tkn1785287462.acme/TESTTKN",
-    "tokenAccountUrl": "acc://tkn1785287462.acme/token-account",
-    "txid": "acc://1f825dcd482dcfc4877b54142693a7fed77442e331a549f6bbc60d36a6fb0b8a@tkn1785287462.acme/TESTTKN",
+    "liteIdentityUrl": "acc://67b489df6598c3ea99bf33942733a84fa6e8e5d41162a6cc",
+    "liteTokenAccountUrl": "acc://67b489df6598c3ea99bf33942733a84fa6e8e5d41162a6cc/ACME",
+    "adiUrl": "acc://testtkn-issuer-5luqir.acme",
+    "keyBookUrl": "acc://testtkn-issuer-5luqir.acme/book",
+    "keyPageUrl": "acc://testtkn-issuer-5luqir.acme/book/1",
+    "tokenIssuerUrl": "acc://testtkn-issuer-5luqir.acme/TESTTKN",
+    "tokenAccountUrl": "acc://testtkn-issuer-5luqir.acme/token-account",
+    "txid": "acc://1b929ab7b21acef4c1d2680ab59afb403e0ebeec3cfeee533955ad00505559f0@testtkn-issuer-5luqir.acme/TESTTKN",
     "txids": [
-      "acc://58e1a7faa8499394cef8efd4d8384b64797a2590cf6841435e1cb1a972a7575a@b10a0ff44d99017dab0b72423eae22fec90abf0b1e93e2ce/ACME",
-      "acc://a8f636ac6c3cf9291cd75597e61a223e6b28179b91f47e9fdc5336c186cd283a@b10a0ff44d99017dab0b72423eae22fec90abf0b1e93e2ce/ACME",
-      "acc://88ef734b6eec9c205910ac748d8e3c04662ff79892bbb1dab5bb0c36f331971d@b10a0ff44d99017dab0b72423eae22fec90abf0b1e93e2ce/ACME",
-      "acc://75767afce3c9cc6af29954c8f66473ae101f5b28bdc218319f419cff64b9f85c@tkn1785287462.acme",
-      "acc://a02d7c1bb4628334bbffb3c8dec7c90577ad876ec0c311a70f98510a2c215d36@tkn1785287462.acme",
-      "acc://1f825dcd482dcfc4877b54142693a7fed77442e331a549f6bbc60d36a6fb0b8a@tkn1785287462.acme/TESTTKN"
+      "acc://49a9a718643673033b78d219d37baf8ec4bd28e6690023303057f8ab7fe93f02@67b489df6598c3ea99bf33942733a84fa6e8e5d41162a6cc/ACME",
+      "acc://4da5dbfd9f4b590e894232ea3f59c02a37d4a178dddebf384d2dee2ef83b4706@67b489df6598c3ea99bf33942733a84fa6e8e5d41162a6cc/ACME",
+      "acc://3520d1affa4166a23c79b693a053aa3200f53e6e8f5bb9dd472b31caca5c360f@67b489df6598c3ea99bf33942733a84fa6e8e5d41162a6cc/ACME",
+      "acc://7befb6281f85e5035f94fd06abd83a69412c54a2173bf97ac83fdda99fb943fe@67b489df6598c3ea99bf33942733a84fa6e8e5d41162a6cc/ACME",
+      "acc://7a71c18594a5a9cfea66866a77579c4b7151d28726387eace548eeb329ae8f02@testtkn-issuer-5luqir.acme",
+      "acc://f6a2a5b089a95ba0301798c6afb424e50be5e5b3381ab0621b8f7251d72c96e2@testtkn-issuer-5luqir.acme",
+      "acc://1b929ab7b21acef4c1d2680ab59afb403e0ebeec3cfeee533955ad00505559f0@testtkn-issuer-5luqir.acme/TESTTKN"
     ]
   },
   "environment": {
-    "liteIdentity": "acc://b10a0ff44d99017dab0b72423eae22fec90abf0b1e93e2ce",
-    "liteTokenAccount": "acc://b10a0ff44d99017dab0b72423eae22fec90abf0b1e93e2ce/ACME",
-    "publicKeyHex": "7a6a610975053b75edbe3ec6d8c3e25ac0bcdfe16822b4f13bce53f3b714d57c",
-    "suggestedAdiUrl": "acc://harness-33302509.acme"
+    "liteIdentity": "acc://67b489df6598c3ea99bf33942733a84fa6e8e5d41162a6cc",
+    "liteTokenAccount": "acc://67b489df6598c3ea99bf33942733a84fa6e8e5d41162a6cc/ACME",
+    "publicKeyHex": "58b1be44a268f04ea8e3f307d89c3c5d56540eaaf60d67a211567938c0240ba2",
+    "suggestedAdiUrl": "acc://harness-2022fc5a.acme"
   },
-  "durationMs": 477338,
+  "durationMs": 1178189,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\python--custom-token.txt",
   "error": null,
-  "startedAt": "2026-07-29T01:04:26.341Z",
-  "finishedAt": "2026-07-29T01:17:26.246Z"
+  "startedAt": "2026-07-29T07:56:11.139Z",
+  "finishedAt": "2026-07-29T08:20:37.284Z"
 }

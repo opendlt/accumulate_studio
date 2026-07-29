@@ -10,7 +10,7 @@
     "title": "Lite account setup",
     "specHash": "6cee357d09fe"
   },
-  "sdkVersion": "2.3.1",
+  "sdkVersion": "2.3.2",
   "passed": true,
   "turns": 20,
   "interventions": 0,
@@ -21,30 +21,28 @@
       "subject": "lite_token_account_balance",
       "op": ">",
       "passed": true,
-      "actual": "3000000000",
-      "actualAcme": 30,
+      "actual": "1000000000",
+      "actualAcme": 10,
       "expected": 0
     }
   ],
   "artifacts": {
-    "liteIdentityUrl": "acc://cd2f1f014bd5d46fd7ef5e4a75bd83610a806a3902194204",
-    "liteTokenAccountUrl": "acc://cd2f1f014bd5d46fd7ef5e4a75bd83610a806a3902194204/ACME",
-    "txid": "acc://21c186b28e2132604406b11099b2e2a05ea9cbcda391b51b5679c6700721735c@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+    "liteIdentityUrl": "acc://33bb2d56b991421a75a16e86bd9f73588527ed733b41bee0",
+    "liteTokenAccountUrl": "acc://33bb2d56b991421a75a16e86bd9f73588527ed733b41bee0/ACME",
+    "txid": "acc://933a8719ff858f04512a24e5c1b9a8f8206550e45627e7cd27fc0664e2dcf227@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
     "txids": [
-      "acc://21c186b28e2132604406b11099b2e2a05ea9cbcda391b51b5679c6700721735c@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
-      "acc://ba42f467dd0e495ab9a0c591804d0a9a2f0486817f353faeecb93d5b4e7da163@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
-      "acc://33dabc98e41087e39129497f4252b6751da9cd0f2d06c1607e728244fe3bce16@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
+      "acc://933a8719ff858f04512a24e5c1b9a8f8206550e45627e7cd27fc0664e2dcf227@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
     ]
   },
   "environment": {
-    "liteIdentity": "acc://d21f10a5cda522d22528738da48a35dd3d917dd251710d86",
-    "liteTokenAccount": "acc://d21f10a5cda522d22528738da48a35dd3d917dd251710d86/ACME",
-    "publicKeyHex": "d7a388616079a9b9f5e1bb019cc442b1905b478b292c593826ee852f8039fc31",
-    "suggestedAdiUrl": "acc://harness-55ebf261.acme"
+    "liteIdentity": "acc://4d943f1cde4097b041e67e1d0b8630830a2000f593a6bfea",
+    "liteTokenAccount": "acc://4d943f1cde4097b041e67e1d0b8630830a2000f593a6bfea/ACME",
+    "publicKeyHex": "33c8d1ebb6083185b3974d57ea8e2c68a7867248afab895ab0ba5d440a8f6988",
+    "suggestedAdiUrl": "acc://harness-8933174f.acme"
   },
-  "durationMs": 222447,
+  "durationMs": 451905,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-29\\sdk\\transcripts\\rust--lite-account.txt",
   "error": null,
-  "startedAt": "2026-07-29T00:34:32.178Z",
-  "finishedAt": "2026-07-29T00:38:45.027Z"
+  "startedAt": "2026-07-29T07:27:13.784Z",
+  "finishedAt": "2026-07-29T07:34:58.510Z"
 }

@@ -15,6 +15,11 @@ export const FAILURE_CLASSES = {
   'error-opaque':        { excludeFromK2: false, fixedBy: ['RB-05'] },
   'install-fail':        { excludeFromK2: false, fixedBy: ['RB-06'] },
   'network-flake':       { excludeFromK2: true,  fixedBy: [] },
+  // The agent backend refused to run (session/usage limit, rate limit, auth).
+  // No SDK was exercised, so this must not count toward K2 — exactly like
+  // network-flake. Observed: 'You've hit your session limit', which produced
+  // 1-turn 4-second runs scored as `no-artifacts` against the SDK.
+  'agent-unavailable':   { excludeFromK2: true,  fixedBy: [] },
   // A harness setup problem is never an SDK-under-test defect, so like
   // network-flake it must not contaminate K2.
   'harness-setup-failed': { excludeFromK2: true, fixedBy: [] },
@@ -30,6 +35,11 @@ export const CLASS_NAMES = Object.keys(FAILURE_CLASSES);
  * Each rule inspects the agent transcript, stderr, and the assertion results.
  */
 const RULES = [
+  {
+    cls: 'agent-unavailable',
+    test: (t) =>
+      /(hit your session limit|usage limit reached|rate limit exceeded|quota exceeded|too many requests.*anthropic|invalid api key|authentication_error|credit balance is too low)/i.test(t),
+  },
   {
     // A DEFINITIVE packaging failure wins even when the log also mentions a
     // timeout: "no matching distribution" tells us the package is genuinely
