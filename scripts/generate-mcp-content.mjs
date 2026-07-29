@@ -184,6 +184,34 @@ function loadManifest(lang) {
 }
 
 /**
+ * RB-05 canonical error catalog. Normalized so every entry has the optional
+ * arrays present — the MCP matcher and `acc.explain_error` can then read them
+ * without defensive checks.
+ */
+const errorCatalog = (() => {
+  const c = JSON.parse(readFileSync(join(MANIFESTS, 'errors.catalog.json'), 'utf-8'));
+  return {
+    version: c.version,
+    description: c.description,
+    categories: c.categories,
+    bindings: c.bindings,
+    errors: c.errors.map((e) => ({
+      code: e.code,
+      protocolCodes: e.protocolCodes ?? [],
+      category: e.category,
+      retryable: e.retryable,
+      observed: e.observed ?? false,
+      hint: e.hint,
+      messagePatterns: e.messagePatterns ?? [],
+      causes: e.causes ?? [],
+      remediation: e.remediation,
+      relatedOps: e.relatedOps ?? [],
+      bindings: e.bindings ?? {},
+    })),
+  };
+})();
+
+/**
  * Extract prompt-relevant metadata from GOLDEN_PATH_TEMPLATES.
  *
  * Parsing TypeScript with regex is normally a bad idea; it is acceptable here
@@ -323,6 +351,30 @@ export const CONCEPTS: Record<string, ConceptDoc> = ${ts(
 export const OPERATION_CATALOGS: Record<string, OperationCatalog> = ${ts(operations)};
 
 export const GOLDEN_PATHS: GoldenPathTemplate[] = ${ts(templates)};
+
+export interface ErrorCatalogEntry {
+  code: string;
+  protocolCodes: number[];
+  category: string;
+  retryable: boolean;
+  observed?: boolean;
+  hint: string;
+  messagePatterns: string[];
+  causes: string[];
+  remediation: string;
+  relatedOps: string[];
+  bindings: Record<string, string>;
+}
+
+export interface ErrorCatalog {
+  version: string;
+  description: string;
+  categories: Record<string, string>;
+  bindings: Record<string, { base: string; catch: string; codeAccess: string; import?: string }>;
+  errors: ErrorCatalogEntry[];
+}
+
+export const ERROR_CATALOG: ErrorCatalog = ${ts(errorCatalog)};
 `;
 
 mkdirSync(OUT_DIR, { recursive: true });

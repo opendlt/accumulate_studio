@@ -166,3 +166,91 @@ Measuring against the harness corpus rather than the catalog is deliberate — i
 ## Rollback
 
 Removing the `errors` arrays from manifests restores the current output exactly — the renderer branches simply go dead again. The catalog file is inert on its own.
+
+---
+
+## As-built (2026-07-29)
+
+**Status: done.** K7 moved from `PENDING_PHASE3` to a live number.
+
+### What was delivered
+
+| Piece | Where |
+|---|---|
+| Canonical catalog — 14 entries, 5 language bindings | `packages/codegen/src/manifests/errors.catalog.json` |
+| JSON schema | `schemas/errors.catalog.schema.json` |
+| Catalog validation in CI | `scripts/check-manifest-drift.ts` (new `[errors.catalog]` section) |
+| Per-language binding + `op.errors` derivation | `scripts/generate-agent-artifacts.mjs` |
+| `accumulate://errors` + `accumulate://errors/{code}` | `apps/mcp-server/src/resources/index.ts` |
+| `acc.explain_error` tool | `apps/mcp-server/src/tools/errors.ts` |
+| K7 measurement | `tools/agent-harness/lib/error-actionability.mjs` |
+| 6 new MCP protocol tests (26 total, all passing) | `apps/mcp-server/test/protocol.test.mjs` |
+
+### Deviations from the plan
+
+**Bindings live in the catalog, not in the five manifests.** The plan put an
+`errors` array in each `*.sdk-manifest.json`. That recreates the exact risk the
+plan itself names — "five bindings drifting". Instead the catalog carries a
+`bindings` map and `generate-agent-artifacts.mjs` binds at load, injecting
+`m.errors` and `op.errors`. The rendered output is what the plan specified; the
+maintenance surface is one file rather than five. Acceptance criterion "all 5
+manifests populate `errors`" is met in effect, not literally.
+
+**The renderer did change.** The plan predicted the dead branches at `:173`/`:202`
+would light up "with no renderer change". They did light up, but the original
+one-line-per-error format could not carry `retryable` or `remediation` — the two
+fields that make an entry actionable. The catalog section is now a subsection per
+error, plus the language's catch syntax.
+
+**`op.errors` covers 24/24 operations**, above the ≥22 target. Derived from
+`requires` (`credits` → `ACC_INSUFFICIENT_CREDITS`, `keypair` →
+`ACC_UNAUTHORIZED_SIGNER`), plus catalog `relatedOps`, plus a universal network
+class on every operation.
+
+### What the work found
+
+1. **The MCP server had two tool lists that could silently diverge.** `allTools`
+   is advertised via `tools/list`; `toolHandlers` in `index.ts` is what dispatch
+   can actually call. Adding a tool to the first alone made the server advertise
+   `acc.explain_error` and then reject the call — the worst failure mode, because
+   it reads as the agent's mistake. There is now a startup assertion that the two
+   sets match exactly, so the server refuses to boot on a mismatch.
+
+2. **`403` is a verified wire code for unauthorized-signer.** Recovered from a
+   live response in the corpus: `{"code":"unauthorized","codenum":403,...}`. Added
+   to `protocolCodes`.
+
+3. **A real error class was missing: submitted-but-never-settled.** The corpus
+   contained "setup reported acc://... but it did not appear on chain within 90s".
+   Distinct from `ACC_TX_PENDING` (awaiting signatures) and from a network fault.
+   Added as `ACC_TX_NOT_SETTLED`, retryable, with an explicit do-not-resubmit
+   instruction — resubmitting is what an agent naturally does here, and it earns
+   an `ACC_ALREADY_EXISTS`.
+
+### How K7 is measured, and its main weakness
+
+`deriveK7` scores **distinct errors observed in the harness corpus**, not catalog
+self-consistency. The extractor is deliberately catalog-independent: a line
+qualifies only by announcing itself as an error (`error|failed|rejected|...`),
+never by matching a catalog `messagePattern`. Had candidates been pulled using
+the catalog's own patterns, every candidate would match by construction and K7
+would read 100% regardless of coverage — the same class of measurement bug
+RB-01's as-built documents.
+
+**K7 = 100% (4/4), and n=4 is the weakness.** The corpus is 80 run records and 68
+transcripts, but the transcripts are agent *summaries* rather than raw protocol
+logs, so only four distinct self-announced error strings exist across all of it.
+The number is honest but thin. **The way to strengthen it is step 1 of this
+runbook, which was not done:** deliberate negative-case runs (query a nonexistent
+account, send without credits, overspend, bad signature, duplicate ADI). Until
+those run, treat K7 green as provisional.
+
+### Still open
+
+- **Step 1 negative-case harvest** — not run. See above.
+- **Step 9, verify all five SDKs raise typed errors on the live path** — not done.
+  Dart is verified (per Phase 3 workstream B); the other four are assumed, which
+  is exactly what the step says not to do.
+- **Step 8, `errorFromException` emitting catalog codes** — the MCP error path
+  still returns its own shape. `acc.explain_error` gives agents the taxonomy, but
+  a failing `acc.query` does not yet carry an `ACC_*` code.

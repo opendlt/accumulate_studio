@@ -127,6 +127,55 @@ for (const language of LANGUAGES) {
   console.log('');
 }
 
+// ---------------------------------------------------------------------------
+// Error catalog (RB-05)
+//
+// The catalog is a single file consumed by five llms-full.txt renderings, the
+// MCP `accumulate://errors` resource, `acc.explain_error`, and the K7
+// measurement. Once ACC_* codes are published agents branch on them, so this is
+// public API: every entry must stay actionable and every category resolvable.
+// ---------------------------------------------------------------------------
+const CATALOG_PATH = join(MANIFESTS_DIR, 'errors.catalog.json');
+const catalogErrors: string[] = [];
+
+try {
+  const catalog = JSON.parse(readFileSync(CATALOG_PATH, 'utf-8'));
+  const seen = new Set<string>();
+
+  if (!catalog.version) catalogErrors.push('catalog is missing `version`');
+  if (!catalog.errors?.length) catalogErrors.push('catalog declares no errors');
+
+  for (const e of catalog.errors ?? []) {
+    const id = e.code ?? '(unnamed)';
+    if (!/^ACC_[A-Z0-9_]+$/.test(id)) catalogErrors.push(`${id}: code must match ACC_[A-Z0-9_]+`);
+    if (seen.has(id)) catalogErrors.push(`${id}: duplicate code`);
+    seen.add(id);
+
+    // retryable is the field an agent acts on — an omission reads as false and
+    // silently turns a transient fault into a hard failure.
+    if (typeof e.retryable !== 'boolean') catalogErrors.push(`${id}: \`retryable\` must be an explicit boolean`);
+    if (!e.hint?.trim()) catalogErrors.push(`${id}: missing \`hint\``);
+    if (!e.remediation?.trim()) catalogErrors.push(`${id}: missing \`remediation\` — the entry is not actionable`);
+    if (!catalog.categories?.[e.category]) catalogErrors.push(`${id}: category "${e.category}" is not defined in \`categories\``);
+
+    for (const [lang, type] of Object.entries(e.bindings ?? {})) {
+      if (!catalog.bindings?.[lang]) catalogErrors.push(`${id}: binds unknown language "${lang}"`);
+      if (!type) catalogErrors.push(`${id}: empty binding for "${lang}"`);
+    }
+  }
+
+  const status = catalogErrors.length === 0 ? 'PASS' : 'FAIL';
+  console.log(`[errors.catalog] ${status}`);
+  console.log(`  Catalog v${catalog.version}: ${catalog.errors?.length ?? 0} errors, ${Object.keys(catalog.bindings ?? {}).length} language bindings`);
+  for (const err of catalogErrors) console.log(`    - ${err}`);
+  console.log('');
+} catch (e) {
+  catalogErrors.push(`could not read ${CATALOG_PATH}: ${(e as Error).message}`);
+  console.log(`[errors.catalog] FAIL\n    - ${catalogErrors[catalogErrors.length - 1]}\n`);
+}
+
+if (catalogErrors.length > 0) hasErrors = true;
+
 if (hasErrors) {
   console.log('RESULT: FAIL - Manifest drift detected. Fix the issues above.');
   process.exit(1);

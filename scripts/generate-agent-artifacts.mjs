@@ -100,25 +100,23 @@ const LANG_META = {
 const REPO_META = {
   python: {
     repoDir: 'opendlt-python-v2v3-sdk',
-    projectRoot: 'unified/',
-    rootIsProject: false,
-    toolchain: 'Python 3.11+',
-    setup: ['cd unified', 'python -m venv .venv && .venv/Scripts/activate  # POSIX: source .venv/bin/activate', 'pip install -e ".[dev]"'],
+    projectRoot: '.',
+    rootIsProject: true,
+    toolchain: 'Python 3.9+ (3.11 recommended; pyproject declares requires-python >=3.9)',
+    setup: ['python -m venv .venv && .venv/Scripts/activate  # POSIX: source .venv/bin/activate', 'pip install -e ".[dev]"'],
     build: 'pip install -e .   # pure Python; no separate build step',
     test: [
       { cmd: 'pytest', desc: 'unit suite', network: false },
-      { cmd: 'pytest unified/tests/integration', desc: 'integration suite', network: true },
+      { cmd: 'pytest tests/integration', desc: 'integration suite', network: true },
     ],
     lint: ['ruff check .', 'ruff format --check .'],
     layout: [
-      'unified/src/accumulate_client/  the package (this is the real project root)',
-      'unified/tests/                  test suite',
-      'examples/                       runnable end-to-end examples',
-      'pyproject.toml (root)           a STUB — see gotchas',
+      'src/accumulate_client/  the package',
+      'tests/                  test suite (tests/integration needs the network)',
+      'examples/               runnable end-to-end examples',
     ],
     gotchas: [
-      'The repo-root `pyproject.toml` declares `name = "accumulate-client"`, `version = "0.0.0"`. That is a stub. The real package is `accumulate-sdk-opendlt` defined in `unified/pyproject.toml`. Always work from `unified/`.',
-      'Root `pytest.ini` sets `testpaths = unified/tests` with `--import-mode=importlib`, so bare `pytest` from the repo root does find the right tests.',
+      'This repository root IS the package root: `pyproject.toml` here declares `accumulate-sdk-opendlt`. Do not look for a `unified/` subdirectory — that is an artifact of some local working copies and is not part of this repo.',
       'The package exports both the canonical path (`Accumulate`/`TxBody`/`SmartSigner`/`QuickStart`) and a legacy `AccumulateClient`. New code uses the canonical path only.',
       '`QuickStart` helper methods print progress to stdout. Do not use them in anything whose stdout is parsed.',
     ],
@@ -126,10 +124,10 @@ const REPO_META = {
   },
   rust: {
     repoDir: 'opendlt-rust-v2v3-sdk',
-    projectRoot: 'unified/',
-    rootIsProject: false,
-    toolchain: 'Rust stable (edition per Cargo.toml)',
-    setup: ['cd unified', 'make install-tools   # clippy, rustfmt, cargo-audit, coverage tooling'],
+    projectRoot: '.',
+    rootIsProject: true,
+    toolchain: 'Rust stable, rust-version 1.70+ (edition 2021)',
+    setup: ['make install-tools   # clippy, rustfmt, cargo-audit, coverage tooling'],
     build: 'cargo build',
     test: [
       { cmd: 'make test', desc: 'full suite', network: false },
@@ -140,10 +138,10 @@ const REPO_META = {
     ],
     lint: ['make lint   # clippy', 'make fmt-check'],
     layout: [
-      'unified/src/            the crate (this is the real project root)',
-      'unified/tests/          integration + conformance tests',
-      'unified/examples/v3/    runnable examples',
-      'unified/Makefile        the canonical entry point for every workflow',
+      'src/            the crate',
+      'tests/          integration + conformance tests',
+      'examples/v3/    runnable examples',
+      'Makefile        the canonical entry point for every workflow',
     ],
     gotchas: [
       'Use the `Makefile`, not bare cargo. `make ci-check` (= fmt-check + lint + test + coverage-gate + audit) is what CI runs; bare `cargo test` skips the coverage gate and the audit.',
@@ -155,10 +153,10 @@ const REPO_META = {
   },
   dart: {
     repoDir: 'opendlt-dart-v2v3-sdk',
-    projectRoot: 'unified/',
-    rootIsProject: false,
+    projectRoot: '.',
+    rootIsProject: true,
     toolchain: "Dart SDK >=3.3.0 <4.0.0",
-    setup: ['cd unified', 'dart pub get'],
+    setup: ['dart pub get'],
     build: 'dart pub get   # no separate build step',
     test: [
       { cmd: 'dart test', desc: 'full suite', network: false },
@@ -166,13 +164,13 @@ const REPO_META = {
     ],
     lint: ['dart analyze', 'dart format --output=none --set-exit-if-changed .'],
     layout: [
-      'unified/lib/            the package (this is the real project root)',
-      'unified/test/           test suite',
-      'unified/example/v3/     runnable examples',
-      'unified/bin/            CLI entry point',
+      'lib/            the package',
+      'test/           test suite (test/integration needs the network)',
+      'example/v3/     runnable examples',
+      'bin/            CLI entry point',
     ],
     gotchas: [
-      'The repo root is not the package root; `unified/` holds `pubspec.yaml`.',
+      'This repository root IS the package root: `pubspec.yaml` sits here. Do not look for a `unified/` subdirectory — that is an artifact of some local working copies and is not part of this repo.',
       'pub.dev analysis currently reports `has:error` and scores 40/160. Run `dart analyze` and `dart doc` before publishing — analyzer errors degrade code intelligence for every consumer, human or agent.',
       'Errors are typed via `AccError` / `JsonRpcErrorMapper`, wired into `Transport.call`/`batch`. Catch `on AccError`, not a bare exception.',
     ],
@@ -207,10 +205,10 @@ const REPO_META = {
   },
   javascript: {
     repoDir: 'opendlt-javascript-v2v3-sdk',
-    projectRoot: 'javascript/',
-    rootIsProject: false,
+    projectRoot: '.',
+    rootIsProject: true,
     toolchain: 'Node >= 18',
-    setup: ['cd javascript', 'npm ci'],
+    setup: ['npm ci'],
     build: 'npm run build   # tsc -p tsconfig.json',
     test: [
       { cmd: 'npm run test:unit', desc: 'unit suite', network: false },
@@ -219,13 +217,12 @@ const REPO_META = {
     ],
     lint: ['npm run lint', 'npm run format:check'],
     layout: [
-      'javascript/src/     TypeScript sources (this is the real project root)',
-      'javascript/lib/     build output; `lib/index.js` re-exports `lib/src/index.js`',
-      'javascript/test/    unit tests',
-      'javascript/test-it/ integration tests',
+      'src/     TypeScript sources',
+      'lib/     build output; `lib/index.js` re-exports `lib/src/index.js`',
+      'test/    unit tests',
     ],
     gotchas: [
-      'The repo root is not the package root; `javascript/` holds `package.json`.',
+      'This repository root IS the package root: `package.json` sits here. Do not look for a `javascript/` subdirectory — that is an artifact of some local working copies and is not part of this repo.',
       '`npm run build` must run before tests that import from `lib/`.',
       'The SDK submits transactions as JSON via the V2 `execute-direct` endpoint, not binary — do not port binary-marshaling assumptions here.',
       '`TxBody.updateKeyPage([{...}])` with plain objects does not work. Use the typed methods: `updateKeyPageAddKey`, `updateKeyPageRemoveKey`, `updateKeyPageSetThreshold`.',
@@ -246,8 +243,62 @@ function humanize(op) {
   return op.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// ---- error catalog (RB-05) -------------------------------------------------
+// One canonical catalog, bound per language. The manifests deliberately do NOT
+// each carry their own copy: five hand-maintained bindings is the drift surface
+// the catalog exists to remove. Binding happens here, at load.
+const CATALOG = JSON.parse(readFileSync(join(MANIFESTS, 'errors.catalog.json'), 'utf-8'));
+
+// requires -> the error an agent hits when that prerequisite is unmet.
+const REQUIRES_TO_ERROR = {
+  credits: 'ACC_INSUFFICIENT_CREDITS',
+  keypair: 'ACC_UNAUTHORIZED_SIGNER',
+};
+
+/** Codes that apply to every network-touching operation, regardless of op. */
+const UNIVERSAL_CODES = ['ACC_NETWORK_UNAVAILABLE'];
+
+/**
+ * Bind the catalog to one language: resolve `bindings[lang]` to a concrete
+ * `type`, and keep the fields the renderers need.
+ */
+function bindErrors(lang) {
+  return CATALOG.errors.map((e) => ({
+    code: e.code,
+    category: e.category,
+    retryable: e.retryable,
+    observed: e.observed,
+    hint: e.hint,
+    remediation: e.remediation,
+    protocolCodes: e.protocolCodes || [],
+    type: e.bindings?.[lang] || CATALOG.bindings[lang]?.base || null,
+  }));
+}
+
+/**
+ * Derive the errors each operation can raise: mechanically from `requires`,
+ * plus any catalog entry that names the op in `relatedOps`, plus the universal
+ * network class. Sorted for deterministic output.
+ */
+function errorsForOp(op) {
+  if (!op.op || op.op === 'comment') return [];
+  const codes = new Set(UNIVERSAL_CODES);
+  for (const r of op.requires || []) {
+    if (REQUIRES_TO_ERROR[r]) codes.add(REQUIRES_TO_ERROR[r]);
+  }
+  for (const e of CATALOG.errors) {
+    if ((e.relatedOps || []).includes(op.op)) codes.add(e.code);
+  }
+  return [...codes].sort();
+}
+
 function loadManifest(lang) {
-  return JSON.parse(readFileSync(join(MANIFESTS, `${lang}.sdk-manifest.json`), 'utf-8'));
+  const m = JSON.parse(readFileSync(join(MANIFESTS, `${lang}.sdk-manifest.json`), 'utf-8'));
+  m.errors = bindErrors(lang);
+  m.errorBinding = CATALOG.bindings[lang] || null;
+  m.errorCatalogVersion = CATALOG.version;
+  for (const op of m.operations) op.errors = errorsForOp(op);
+  return m;
 }
 
 function opsByCategory(operations) {
@@ -291,7 +342,13 @@ function renderLlms(lang, m) {
   L.push('- **Custom tokens have their OWN precision**, set when the token is created — it is not 1e8. Issuing `1000` against a precision-8 token mints `0.00001` tokens, not 1000, and the transaction succeeds either way. Convert with the token helper (`Amount.token(whole, precision)` / `Amount::token` / `Amount.Token`) rather than passing a raw number.');
   L.push('- **Testnet first:** target Kermit and fund lite accounts via the faucet before spending.');
   L.push('- **Prerequisites matter:** create an ADI, then buy credits for its key page before it can sign; wait for balances/credits to settle before the next step.');
-  L.push('- **Errors are typed:** branch on the SDK error type/code; retry only on network errors, not validation errors.');
+  L.push(
+    '- **Errors are typed:** catch `' +
+      (m.errorBinding?.base || 'the SDK error type') +
+      '` (`' +
+      (m.errorBinding?.catch || '') +
+      '`) and branch on the code. The full catalog — every code, its `retryable` flag, and the fix — is the **Error catalog** section of `llms-full.txt`. **Retry ONLY `ACC_NETWORK_UNAVAILABLE` / `ACC_INTERNAL`;** every other code is a condition that will not change on its own, so retrying it just burns turns.'
+  );
   L.push('- **One canonical client:** connect with `' + m.entrypoints[0]?.symbol + '`, build with `TxBody`, sign with `SmartSigner`. Do not hand-roll envelopes/signing, and ignore any alternate or legacy client classes — this is the only path you need.');
   L.push('');
   L.push('## Resources');
@@ -332,9 +389,30 @@ function renderLlmsFull(lang, m) {
   }
   L.push('');
   if (m.errors?.length) {
-    L.push('## Error catalog');
-    for (const e of m.errors) L.push(`- \`${e.code}\` — ${e.hint}${e.details ? ` (${e.details})` : ''}`);
+    L.push(`## Error catalog (v${m.errorCatalogVersion})`);
     L.push('');
+    L.push('Branch on `code`. **`retryable` decides whether a retry is productive** — retrying a');
+    L.push('validation or auth error only burns turns; the condition will not change on its own.');
+    L.push('');
+    if (m.errorBinding) {
+      L.push('```');
+      if (m.errorBinding.import) L.push(m.errorBinding.import);
+      L.push(m.errorBinding.catch);
+      L.push(`    ${m.errorBinding.codeAccess}`);
+      L.push('```');
+      L.push('');
+    }
+    for (const e of m.errors) {
+      const wire = e.protocolCodes.length ? ` · wire ${e.protocolCodes.join(', ')}` : '';
+      L.push(`### \`${e.code}\``);
+      L.push(`${e.hint}`);
+      L.push('');
+      L.push(`- category: \`${e.category}\`${wire}`);
+      L.push(`- retryable: **${e.retryable ? 'yes' : 'no'}**`);
+      if (e.type) L.push(`- ${LANG_META[lang].display} type: \`${e.type}\``);
+      L.push(`- fix: ${e.remediation}`);
+      L.push('');
+    }
   }
   L.push(`## Operations (${m.operations.filter((o) => o.op !== 'comment').length})`);
   L.push('');

@@ -116,9 +116,9 @@ describe('MCP protocol — built bundle', () => {
   });
 
   // --- tools ---------------------------------------------------------------
-  test('lists 14 tools', async () => {
+  test('lists 15 tools', async () => {
     const r = await client.send('tools/list');
-    assert.equal(r.result.tools.length, 14);
+    assert.equal(r.result.tools.length, 15);
     for (const t of r.result.tools) {
       assert.ok(t.name && t.description && t.inputSchema, `${t.name} is fully described`);
     }
@@ -143,6 +143,77 @@ describe('MCP protocol — built bundle', () => {
     assert.ok(t.includes('accumulate://sdk/{language}/operations'));
     assert.ok(t.includes('accumulate://concepts/{topic}'));
     assert.ok(t.includes('accumulate://templates/{id}'));
+    assert.ok(t.includes('accumulate://errors/{code}'));
+  });
+
+  // --- error catalog (RB-05) ----------------------------------------------
+  test('serves the error catalog, every entry actionable', async () => {
+    const r = await client.send('resources/read', { uri: 'accumulate://errors' });
+    const cat = JSON.parse(r.result.contents[0].text);
+    assert.ok(cat.errors.length > 0, 'catalog is populated');
+    for (const e of cat.errors) {
+      // K7's definition of actionable: a code carrying a non-empty remediation
+      // and an explicit retryable. A catalog entry missing either is noise.
+      assert.match(e.code, /^ACC_[A-Z0-9_]+$/, `${e.code} is well-formed`);
+      assert.equal(typeof e.retryable, 'boolean', `${e.code} declares retryable`);
+      assert.ok(e.remediation && e.remediation.length > 20, `${e.code} has a real fix`);
+      assert.ok(cat.categories[e.category], `${e.code} category is defined`);
+    }
+  });
+
+  test('serves a single error entry by code', async () => {
+    const r = await client.send('resources/read', {
+      uri: 'accumulate://errors/ACC_INSUFFICIENT_CREDITS',
+    });
+    const e = JSON.parse(r.result.contents[0].text);
+    assert.equal(e.code, 'ACC_INSUFFICIENT_CREDITS');
+    assert.equal(e.retryable, false);
+  });
+
+  test('explain_error maps a raw protocol string to the fix, and says do-not-retry', async () => {
+    const r = await client.send('tools/call', {
+      name: 'acc.explain_error',
+      arguments: {
+        error: 'unauthorized: key does not belong to signer',
+        language: 'dart',
+      },
+    });
+    const out = JSON.parse(r.result.content[0].text);
+    const data = out.data ?? out;
+    assert.equal(data.matched, true);
+    assert.equal(data.matches[0].code, 'ACC_UNAUTHORIZED_SIGNER');
+    assert.equal(data.matches[0].retryable, false);
+    assert.match(data.guidance, /DO NOT RETRY/);
+    assert.ok(data.matches[0].catchSyntax, 'returns Dart catch syntax');
+  });
+
+  test('explain_error resolves the -33404 wire code and flags network errors retryable', async () => {
+    const byCode = await client.send('tools/call', {
+      name: 'acc.explain_error',
+      arguments: { error: 'query failed', code: -33404 },
+    });
+    const a = JSON.parse(byCode.result.content[0].text);
+    assert.equal((a.data ?? a).matches[0].code, 'ACC_ACCOUNT_NOT_FOUND');
+
+    const net = await client.send('tools/call', {
+      name: 'acc.explain_error',
+      arguments: { error: 'connect ETIMEDOUT 10.0.0.1:443' },
+    });
+    const b = JSON.parse(net.result.content[0].text);
+    const d = b.data ?? b;
+    assert.equal(d.matches[0].retryable, true);
+    assert.match(d.guidance, /RETRY is productive/);
+  });
+
+  test('explain_error defaults an unknown error to do-not-retry', async () => {
+    const r = await client.send('tools/call', {
+      name: 'acc.explain_error',
+      arguments: { error: 'something entirely unclassified happened' },
+    });
+    const out = JSON.parse(r.result.content[0].text);
+    const data = out.data ?? out;
+    assert.equal(data.matched, false);
+    assert.match(data.guidance, /NOT retryable/i);
   });
 
   test('amount-scaling concept states the 1e8 rule', async () => {

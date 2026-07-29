@@ -2,16 +2,13 @@
 
 The Rust SDK for the Accumulate blockchain. Published as `accumulate-sdk` (v2.3.2).
 
-> **The project root is `unified/`, not the repository root.** Run every command below from there unless stated otherwise.
-
 > Building **on** Accumulate rather than **on this SDK**? You want `llms.txt` (quickstart + rules) and `llms-full.txt` (full API). This file is about working on the SDK itself.
 
 ## Setup
 
-Toolchain: **Rust stable (edition per Cargo.toml)**
+Toolchain: **Rust stable, rust-version 1.70+ (edition 2021)**
 
 ```bash
-cd unified
 make install-tools   # clippy, rustfmt, cargo-audit, coverage tooling
 ```
 
@@ -43,10 +40,10 @@ make fmt-check
 ## Layout
 
 ```
-unified/src/            the crate (this is the real project root)
-unified/tests/          integration + conformance tests
-unified/examples/v3/    runnable examples
-unified/Makefile        the canonical entry point for every workflow
+src/            the crate
+tests/          integration + conformance tests
+examples/v3/    runnable examples
+Makefile        the canonical entry point for every workflow
 ```
 
 ## Gotchas

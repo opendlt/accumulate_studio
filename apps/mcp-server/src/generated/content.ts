@@ -1017,7 +1017,7 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
     "display": "Rust",
     "package": "accumulate-sdk",
     "install": "cargo add accumulate-sdk",
-    "sdkVersion": "2.3.1",
+    "sdkVersion": "2.3.2",
     "entrypoints": [
       {
         "symbol": "AccumulateClient",
@@ -1836,7 +1836,7 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
     "display": "Dart",
     "package": "opendlt_accumulate",
     "install": "dart pub add opendlt_accumulate",
-    "sdkVersion": "2.3.2",
+    "sdkVersion": "2.3.4",
     "entrypoints": [
       {
         "symbol": "Accumulate",
@@ -2640,7 +2640,7 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
     "display": "C#",
     "package": "Acme.Net.Sdk",
     "install": "dotnet add package Acme.Net.Sdk",
-    "sdkVersion": "2.3.1",
+    "sdkVersion": "2.3.2",
     "entrypoints": [
       {
         "symbol": "Accumulate",
@@ -4684,3 +4684,523 @@ export const GOLDEN_PATHS: GoldenPathTemplate[] = [
     ]
   }
 ];
+
+export interface ErrorCatalogEntry {
+  code: string;
+  protocolCodes: number[];
+  category: string;
+  retryable: boolean;
+  observed?: boolean;
+  hint: string;
+  messagePatterns: string[];
+  causes: string[];
+  remediation: string;
+  relatedOps: string[];
+  bindings: Record<string, string>;
+}
+
+export interface ErrorCatalog {
+  version: string;
+  description: string;
+  categories: Record<string, string>;
+  bindings: Record<string, { base: string; catch: string; codeAccess: string; import?: string }>;
+  errors: ErrorCatalogEntry[];
+}
+
+export const ERROR_CATALOG: ErrorCatalog = {
+  "version": "1.0",
+  "description": "Canonical Accumulate error taxonomy. One catalog, five language bindings. Errors are a property of the Accumulate protocol, not of any SDK. Agents branch on `code`; `retryable` decides whether a retry is productive or a wasted turn.",
+  "categories": {
+    "validation": "The request is malformed or semantically invalid. Never retryable — fix the input.",
+    "not_found": "The referenced account, chain, or transaction does not exist on this network.",
+    "insufficient_credits": "The signing key page lacks credits. Credits pay for execution and are distinct from token balance.",
+    "insufficient_balance": "The source account lacks the tokens being moved.",
+    "auth": "The signature, signer, or authority set does not satisfy the principal's requirements.",
+    "conflict": "The target already exists or the transaction duplicates one already recorded.",
+    "pending": "Accepted but not yet final — typically awaiting additional multisig signatures.",
+    "network": "Transport-level failure. Retryable.",
+    "internal": "Server-side fault. Retryable with backoff."
+  },
+  "bindings": {
+    "python": {
+      "base": "AccumulateError",
+      "catch": "except AccumulateError as e:",
+      "codeAccess": "e.code            # ErrorCode IntEnum",
+      "import": "from accumulate_client.runtime.errors import AccumulateError, ErrorCode"
+    },
+    "rust": {
+      "base": "Error",
+      "catch": "match result { Err(e) => ..., Ok(v) => ... }",
+      "codeAccess": "e.code()",
+      "import": "use accumulate_client::errors::Error;"
+    },
+    "dart": {
+      "base": "AccError",
+      "catch": "on AccError catch (e) {",
+      "codeAccess": "e.code            // int; e.name for the mnemonic",
+      "import": "import 'package:opendlt_accumulate/opendlt_accumulate.dart';"
+    },
+    "csharp": {
+      "base": "AccumulateException",
+      "catch": "catch (AccumulateException e) {",
+      "codeAccess": "e.Code",
+      "import": "using Acme.Net.Sdk;"
+    },
+    "javascript": {
+      "base": "AccumulateError",
+      "catch": "catch (e) { if (e instanceof AccumulateError) ... }",
+      "codeAccess": "e.code",
+      "import": "import { AccumulateError } from 'accumulate-sdk-opendlt';"
+    }
+  },
+  "errors": [
+    {
+      "code": "ACC_ACCOUNT_NOT_FOUND",
+      "protocolCodes": [
+        -33404
+      ],
+      "category": "not_found",
+      "retryable": false,
+      "observed": true,
+      "hint": "The account URL does not exist on this network.",
+      "messagePatterns": [
+        "not found",
+        "account .* not found",
+        "-33404"
+      ],
+      "causes": [
+        "typo in the account URL",
+        "the account was never created",
+        "querying the wrong network (mainnet vs Kermit testnet)",
+        "querying immediately after submit, before the transaction reached 'delivered'"
+      ],
+      "remediation": "Verify the URL and the network. If you just created the account, wait for its creating transaction to reach 'delivered' first — use wait_for_balance / wait_for_credits rather than querying straight away.",
+      "relatedOps": [
+        "query_account",
+        "send_tokens",
+        "write_data",
+        "add_credits",
+        "wait_for_balance"
+      ],
+      "bindings": {
+        "python": "AccountNotFoundError",
+        "dart": "ApiError",
+        "rust": "Error::NotFound",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_UNAUTHORIZED_SIGNER",
+      "protocolCodes": [
+        403
+      ],
+      "category": "auth",
+      "retryable": false,
+      "observed": true,
+      "hint": "The signing key is not on the key page that authorizes this principal.",
+      "messagePatterns": [
+        "unauthorized",
+        "key does not belong to signer"
+      ],
+      "causes": [
+        "signing with the lite identity when the principal is an ADI account",
+        "signing with `book/1` when the principal's own book is a different book",
+        "the key was rotated out of the page by a prior update_key operation"
+      ],
+      "remediation": "Sign with a key that is on the principal's authorizing key page. After create_identity, ADI-owned principals are signed by `<adi>/book/1`. A key page owned by a second book (e.g. `multisig-book/1`) must be signed by that page's OWN book — Accumulate requires every authority to approve.",
+      "relatedOps": [
+        "update_key_page",
+        "update_key",
+        "update_account_auth",
+        "send_tokens",
+        "write_data",
+        "lock_account"
+      ],
+      "bindings": {
+        "python": "AccumulateError",
+        "dart": "AuthError",
+        "rust": "Error::Unauthorized",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_INSUFFICIENT_CREDITS",
+      "protocolCodes": [],
+      "category": "insufficient_credits",
+      "retryable": false,
+      "observed": true,
+      "hint": "The signing key page does not hold enough credits to pay for this transaction.",
+      "messagePatterns": [
+        "insufficientcredits",
+        "insufficient credits",
+        "not enough credits"
+      ],
+      "causes": [
+        "credits were never purchased for this key page",
+        "add_credits targeted the lite identity instead of the ADI key page",
+        "the credit purchase has not settled yet"
+      ],
+      "remediation": "Call add_credits for the SIGNING key page, then wait_for_credits on that same page before retrying. Credits are separate from token balance — an account can hold ACME and still be unable to sign. Note add_credits itself must be signed by an account that already has credits (typically the funded lite identity).",
+      "relatedOps": [
+        "add_credits",
+        "wait_for_credits",
+        "create_identity",
+        "create_token_account",
+        "send_tokens",
+        "write_data"
+      ],
+      "bindings": {
+        "python": "InsufficientCreditsError",
+        "dart": "TransactionError",
+        "rust": "Error::InsufficientCredits",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_NOT_SIGNED",
+      "protocolCodes": [],
+      "category": "auth",
+      "retryable": false,
+      "observed": true,
+      "hint": "The envelope reached the network without a valid signature over the transaction body.",
+      "messagePatterns": [
+        "is not signed",
+        "transaction is not signed",
+        "missing signature"
+      ],
+      "causes": [
+        "the transaction body type has no binary marshaler, so only the type number was written",
+        "the envelope was hand-rolled instead of built through SmartSigner",
+        "a wrong transaction type code produced bytes the validator could not match"
+      ],
+      "remediation": "Build and sign through the canonical path — TxBody to construct, SmartSigner to sign and submit. Do not hand-roll envelopes. If you are working ON an SDK and see this for one specific transaction type, its marshaler is missing or its type code is wrong.",
+      "relatedOps": [
+        "update_key",
+        "create_key_book",
+        "transfer_credits",
+        "send_tokens"
+      ],
+      "bindings": {
+        "python": "MissingSignatureError",
+        "dart": "SignatureError",
+        "rust": "Error::InvalidSignature",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_ALREADY_EXISTS",
+      "protocolCodes": [],
+      "category": "conflict",
+      "retryable": false,
+      "observed": true,
+      "hint": "The account or identity being created already exists on chain.",
+      "messagePatterns": [
+        "already exists",
+        "duplicate"
+      ],
+      "causes": [
+        "a re-run of a script that uses a fixed (non-unique) ADI URL",
+        "the previous attempt actually succeeded and the error was misread"
+      ],
+      "remediation": "Query the URL first — if it exists and you own it, skip creation and continue. For repeatable scripts, derive a unique URL (e.g. a timestamp suffix) rather than a fixed name.",
+      "relatedOps": [
+        "create_identity",
+        "create_token_account",
+        "create_data_account",
+        "create_token",
+        "create_key_book",
+        "create_key_page"
+      ],
+      "bindings": {
+        "python": "AccumulateError",
+        "dart": "TransactionError",
+        "rust": "Error::Conflict",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_INVALID_PRINCIPAL",
+      "protocolCodes": [],
+      "category": "validation",
+      "retryable": false,
+      "observed": true,
+      "hint": "The principal URL is not a valid target for this transaction type.",
+      "messagePatterns": [
+        "invalid principal",
+        "bad principal"
+      ],
+      "causes": [
+        "sending tokens with the lite IDENTITY as principal instead of the lite TOKEN ACCOUNT",
+        "targeting an ADI where a key page is required, or vice versa"
+      ],
+      "remediation": "Match the principal to the transaction type. Token transfers use the token account URL (`<lite>/ACME`), credit purchases and key operations use the identity or key page URL.",
+      "relatedOps": [
+        "send_tokens",
+        "add_credits",
+        "write_data",
+        "update_key_page"
+      ],
+      "bindings": {
+        "python": "ValidationError",
+        "dart": "ValidationError",
+        "rust": "Error::InvalidPrincipal",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_INSUFFICIENT_BALANCE",
+      "protocolCodes": [],
+      "category": "insufficient_balance",
+      "retryable": false,
+      "observed": false,
+      "hint": "The source account does not hold enough tokens for this transfer.",
+      "messagePatterns": [
+        "insufficient balance",
+        "insufficient funds",
+        "exceeds balance"
+      ],
+      "causes": [
+        "the faucet deposit has not settled yet",
+        "passing whole ACME where base units are expected, so the amount is 1e8x too large",
+        "a custom token's precision is not 1e8 and the amount was scaled wrongly"
+      ],
+      "remediation": "Confirm the balance with wait_for_balance before transferring. Build amounts with the Amount helper — 1 ACME = 1e8 base units, and custom tokens carry their OWN precision set at creation.",
+      "relatedOps": [
+        "send_tokens",
+        "burn_tokens",
+        "issue_tokens",
+        "wait_for_balance",
+        "faucet"
+      ],
+      "bindings": {
+        "python": "InsufficientBalanceError",
+        "dart": "TransactionError",
+        "rust": "Error::InsufficientBalance",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_TX_PENDING",
+      "protocolCodes": [],
+      "category": "pending",
+      "retryable": true,
+      "observed": true,
+      "hint": "The transaction was accepted but is not final — it is awaiting additional signatures.",
+      "messagePatterns": [
+        "pending",
+        "awaiting signatures"
+      ],
+      "causes": [
+        "the key page threshold is greater than 1 and only one signature has been collected",
+        "polling stopped before the transaction reached 'delivered'"
+      ],
+      "remediation": "This is not a failure. Collect the remaining signatures up to the page threshold, then poll status until 'delivered'. Treating 'pending' as success is the common multisig bug; so is treating it as a hard error.",
+      "relatedOps": [
+        "update_key_page",
+        "send_tokens",
+        "update_account_auth"
+      ],
+      "bindings": {
+        "python": "AccumulateError",
+        "dart": "TransactionError",
+        "rust": "Error::Pending",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_TX_NOT_SETTLED",
+      "protocolCodes": [],
+      "category": "pending",
+      "retryable": true,
+      "observed": true,
+      "hint": "The transaction was submitted and accepted, but did not reach a final state before the wait timed out.",
+      "messagePatterns": [
+        "did not appear on chain",
+        "did not settle",
+        "not delivered within",
+        "timed out waiting for"
+      ],
+      "causes": [
+        "the settle window was shorter than the network's block time",
+        "the transaction produced a synthetic message that is still in flight",
+        "polling stopped at the first non-final status instead of continuing"
+      ],
+      "remediation": "Do NOT resubmit — a resubmit risks a duplicate or an ACC_ALREADY_EXISTS. Keep polling the transaction status until 'delivered', with a longer timeout. Synthetic deposits (faucet, cross-account transfers) routinely need more time than a single block.",
+      "relatedOps": [
+        "wait_for_balance",
+        "wait_for_credits",
+        "faucet",
+        "send_tokens",
+        "create_identity",
+        "write_data"
+      ],
+      "bindings": {
+        "python": "AccumulateError",
+        "dart": "TransactionError",
+        "rust": "Error::Pending",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_INVALID_URL",
+      "protocolCodes": [
+        1002
+      ],
+      "category": "validation",
+      "retryable": false,
+      "observed": false,
+      "hint": "The string is not a well-formed Accumulate URL.",
+      "messagePatterns": [
+        "invalid accumulate url",
+        "invalid url"
+      ],
+      "causes": [
+        "missing the `acc://` scheme",
+        "an unresolved template placeholder left in the string"
+      ],
+      "remediation": "Accumulate URLs are `acc://<authority>[/<path>]`. Lite token accounts end in the token symbol, e.g. `acc://<keyhash>/ACME`.",
+      "relatedOps": [
+        "query_account",
+        "send_tokens",
+        "create_identity"
+      ],
+      "bindings": {
+        "python": "ValidationError",
+        "dart": "ValidationError",
+        "rust": "Error::InvalidUrl",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_INVALID_PARAMS",
+      "protocolCodes": [
+        -32602
+      ],
+      "category": "validation",
+      "retryable": false,
+      "observed": false,
+      "hint": "The JSON-RPC parameters were rejected by the node.",
+      "messagePatterns": [
+        "invalid params",
+        "-32602"
+      ],
+      "causes": [
+        "a required field was omitted",
+        "a field was sent with the wrong type (string vs number vs hex)"
+      ],
+      "remediation": "Check the operation's declared inputs in llms-full.txt. Hashes are 32-byte hex; amounts are base-unit integers, not decimals.",
+      "relatedOps": [
+        "query_account",
+        "write_data"
+      ],
+      "bindings": {
+        "python": "ValidationError",
+        "dart": "ValidationError",
+        "rust": "Error::InvalidParams",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_METHOD_NOT_FOUND",
+      "protocolCodes": [
+        -32601
+      ],
+      "category": "validation",
+      "retryable": false,
+      "observed": false,
+      "hint": "The node does not expose the RPC method that was called.",
+      "messagePatterns": [
+        "method not found",
+        "-32601"
+      ],
+      "causes": [
+        "calling a V3 method against a V2-only endpoint, or vice versa"
+      ],
+      "remediation": "Use the SDK's canonical client rather than raw RPC — it targets the correct API version for the endpoint.",
+      "relatedOps": [
+        "query_account"
+      ],
+      "bindings": {
+        "python": "AccumulateError",
+        "dart": "ApiError",
+        "rust": "Error::MethodNotFound",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_NETWORK_UNAVAILABLE",
+      "protocolCodes": [],
+      "category": "network",
+      "retryable": true,
+      "observed": true,
+      "hint": "The endpoint could not be reached, or the request timed out.",
+      "messagePatterns": [
+        "econnrefused",
+        "econnreset",
+        "etimedout",
+        "timeout",
+        "socket hang up",
+        "service unavailable",
+        "connection closed",
+        "connection reset"
+      ],
+      "causes": [
+        "the testnet endpoint is briefly down",
+        "a slow faucet or settle step exceeded the client timeout",
+        "the response was truncated mid-stream"
+      ],
+      "remediation": "Retry with exponential backoff. This is the ONLY class of error where a bare retry is productive — retrying a validation or auth error just burns turns.",
+      "relatedOps": [
+        "faucet",
+        "wait_for_balance",
+        "wait_for_credits",
+        "query_account"
+      ],
+      "bindings": {
+        "python": "NetworkError",
+        "dart": "NetworkError",
+        "rust": "Error::Network",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_INTERNAL",
+      "protocolCodes": [
+        -32603
+      ],
+      "category": "internal",
+      "retryable": true,
+      "observed": false,
+      "hint": "The node reported an internal error.",
+      "messagePatterns": [
+        "internal error",
+        "-32603"
+      ],
+      "causes": [
+        "a transient node fault"
+      ],
+      "remediation": "Retry once with backoff. If it persists, the request is likely malformed in a way the node did not classify — re-check the transaction body against llms-full.txt.",
+      "relatedOps": [],
+      "bindings": {
+        "python": "AccumulateError",
+        "dart": "ApiError",
+        "rust": "Error::Internal",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    }
+  ]
+};

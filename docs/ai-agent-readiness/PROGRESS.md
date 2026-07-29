@@ -2,7 +2,7 @@
 
 > Honest, commit-referenced status. `artifact-verify` measures the **live registries**, so registry-facing KPIs only flip green after the fixed packages are **republished** — source fixes below are on each repo's `main`, pending a maintainer publish. This file is not auto-generated.
 
-Last updated: 2026-07-21
+Last updated: 2026-07-29
 
 ## Legend
 - ✅ done & verified · 🟡 done in source, pending republish · ⏳ code-complete, gated on a secret · ⬜ not started
@@ -150,3 +150,71 @@ Audit of all six repos against the four agent-support pillars (MCP · AGENTS.md 
 ## Two standing external gates (cannot be self-satisfied)
 1. **Registry publish tokens** — to republish fixed packages (finishes Phase 1's green flips) and to publish/GA the MCP + CLI (Phase 2/4).
 2. **Agent API key + testnet faucet** — to activate the agent runner and produce live K2–K4.
+
+---
+
+## Four-pillar closure — 2026-07-29
+
+Audited all six repos against the four agent-support pillars (MCP · AGENTS.md ·
+LSP/code-intelligence · DevTools+sandboxing).
+
+| Pillar | Before | Now |
+|---|---|---|
+| **MCP** | 3/3 primitives, published | unchanged — plus a 15th tool, `acc.explain_error` |
+| **AGENTS.md** | 9-section manifests in all 6 repos | unchanged — the error rule is now *followable* |
+| **LSP / code intelligence** | typed surfaces 5/5; **no error taxonomy** | **error taxonomy shipped** (RB-05). Still no `--json` CLI (RB-04) |
+| **DevTools / sandboxing** | **0/6 devcontainers** | **6/6 authored** (RB-06) — not yet container-verified |
+
+**Scorecard: 8 green / 2 red / 0 pending.** K7 left `PENDING` for the first time
+and reads a real number. The last two reds (K2 82%, K3 27.7 turns) are both
+agent-*success* metrics — the taxonomy is the intervention aimed at them, and
+neither will move until the harness is re-run.
+
+### K1's red was a stale cache, not a defect
+
+`docs/ai-agent-readiness/artifact-verify.json` held a JS `RUNTIME_IMPORT` FAIL
+whose detail was `Command failed: npm install ... accumulate-sdk-opendlt` — an
+install failure in the probe sandbox, not a broken package. A live
+`npm run verify:artifacts` returns **19 pass / 0 fail**, and K1 is green at 5/5.
+The scorecard reads that JSON rather than re-running the checks, so a stale cache
+silently mis-reports a KPI. Anyone regenerating `SCORECARD.md` must run
+`verify:artifacts` first — `verify:scorecard` alone will reproduce whatever the
+cache last held.
+
+### RB-05 — canonical error taxonomy — ✅
+
+14 errors, 5 language bindings, one file. Renders into all five `llms-full.txt`
+(the `m.errors`/`op.errors` branches were dead code before — the data was simply
+missing), serves as `accumulate://errors[/{code}]`, and answers
+`acc.explain_error` with the one thing an agent actually needs: **is a retry
+productive.** 24/24 operations carry `op.errors`. CI-validated in
+`check-manifest-drift.ts` (negative-tested: it fails on a missing `retryable`,
+an empty `remediation`, and an undefined category).
+
+**K7 = 100% (4/4) — provisional.** Measured against errors observed in the
+harness corpus, with a deliberately catalog-independent extractor so the metric
+cannot be gamed by the catalog it scores. But only four distinct self-announced
+error strings exist in the corpus, because the transcripts are agent summaries
+rather than raw protocol logs. RB-05 step 1 (deliberate negative-case runs) was
+not done and is the way to make this number mean something.
+
+**Found while building it:** the MCP server advertised tools from `allTools` but
+dispatched from a separate `toolHandlers` map, so a tool could be listed and then
+fail on call. Now asserted at startup.
+
+### RB-06 — devcontainers — 🟡
+
+All six repos have `.devcontainer/devcontainer.json`, each pinned to the
+toolchain version read from that repo's own manifest, each defaulting to
+`ACCUMULATE_NETWORK=kermit`, none carrying keys. **None has been booted.**
+"Verify by destruction" (step 2) is outstanding; until it runs, this is authored
+config, not a working guarantee.
+
+### Still open
+
+- **RB-04 structured CLI (`--json`)** — not started. Still zero first-party
+  `--json` across all five SDKs; this is the remaining hole in the code-intelligence pillar.
+- **RB-05 steps 1, 8, 9** — negative-case harvest; `errorFromException` emitting
+  catalog codes; verifying typed errors on the live path for the four non-Dart SDKs.
+- **RB-06 step 2** — actually build and run each container.
+- **RB-07·B** — Studio browser console/network capture.

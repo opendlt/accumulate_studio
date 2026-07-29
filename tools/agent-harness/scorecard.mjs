@@ -20,6 +20,7 @@ import { dirname, join } from 'node:path';
 
 import { loadRuns, latestRunDate } from './lib/record.mjs';
 import { countsTowardK2, summarizeFailures, FAILURE_CLASSES } from './lib/classify.mjs';
+import { deriveK7 } from './lib/error-actionability.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = join(HERE, '..', '..');
@@ -153,6 +154,13 @@ function deriveK6() {
 
 const k6 = deriveK6();
 
+// K7 — scored against the errors the harness corpus actually observed, not
+// against the catalog's own contents. See lib/error-actionability.mjs.
+const k7 = deriveK7(
+  join(REPO, 'packages', 'codegen', 'src', 'manifests', 'errors.catalog.json'),
+  join(HERE, 'results'),
+);
+
 /**
  * K9 descriptor, read from the MCP package rather than hardcoded — a literal
  * here silently goes stale the moment the server is versioned.
@@ -218,7 +226,7 @@ const kpis = [
   { id: 'K5', name: 'API-ingestion coverage (llms.txt shipped)', value: `${llmsPass.length}/5`,
     status: llmsPass.length === 5 ? 'GREEN' : 'RED', target: '5/5 (Phase 2)' },
   { id: 'K6', name: 'Typed-surface ratio', value: k6.value, status: k6.status, target: '100%' },
-  { id: 'K7', name: 'Error-actionability', value: 'PENDING_PHASE3', status: 'PENDING', target: '>= 95%' },
+  { id: 'K7', name: 'Error-actionability', value: k7.value, status: k7.status, target: '>= 95%' },
   { id: 'K8', name: 'Fleet version parity', value: versionParity?.detail || '?',
     status: versionParity?.status === 'PASS' ? 'GREEN' : 'RED', target: '1 minor line' },
   { id: 'K9', name: 'MCP installable in <= 1 config block', value: mcpDescriptor,

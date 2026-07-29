@@ -38,6 +38,8 @@ import {
   proofGetReceipt,
   proofVerifyReceipt,
   traceSynthetics,
+  // Error tools
+  explainError,
 } from './tools/index.js';
 
 import {
@@ -98,7 +100,27 @@ const toolHandlers: Record<string, ToolHandler> = {
   'proof.get_receipt': asHandler(proofGetReceipt),
   'proof.verify_receipt': asHandler(proofVerifyReceipt),
   'trace.synthetics': asHandler(traceSynthetics),
+
+  // Error tools
+  'acc.explain_error': asHandler(explainError),
 };
+
+// `allTools` is what we ADVERTISE; `toolHandlers` is what we can DISPATCH. If
+// they drift, an agent sees a tool in tools/list that fails on call — the worst
+// possible failure mode, because it looks like the agent's mistake. Fail at
+// startup instead.
+{
+  const advertised = allTools.map((t) => t.name).sort();
+  const dispatchable = Object.keys(toolHandlers).sort();
+  const missing = advertised.filter((n) => !dispatchable.includes(n));
+  const orphaned = dispatchable.filter((n) => !advertised.includes(n));
+  if (missing.length || orphaned.length) {
+    throw new Error(
+      `Tool registry mismatch — advertised but not dispatchable: [${missing.join(', ')}]; ` +
+        `dispatchable but not advertised: [${orphaned.join(', ')}]`,
+    );
+  }
+}
 
 // =============================================================================
 // Server Setup
@@ -312,12 +334,16 @@ AVAILABLE TOOLS:
     proof.verify_receipt Verify a Merkle receipt
     trace.synthetics   Trace synthetic messages
 
+  Errors:
+    acc.explain_error  Map a raw error to its cause, fix, and whether to retry
+
 RESOURCES (read for context — available in every permission mode):
   accumulate://concepts/{topic}          amount-scaling, credits, adi-vs-lite,
                                          key-hierarchy, networks
   accumulate://networks                  live network registry + current selection
   accumulate://sdk/{language}/operations machine-readable operation catalog
   accumulate://templates[/{id}]          the golden-path workflows
+  accumulate://errors[/{code}]           canonical error catalog (retryable + fix)
 
 PROMPTS (invocable workflows):
   lite-account-setup, create-adi, zero-to-hero, token-transfer,

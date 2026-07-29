@@ -7,7 +7,7 @@
       "lang": "rust",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "accumulate-sdk @ 2.3.1 (crates)"
+      "detail": "accumulate-sdk @ 2.3.2 (crates)"
     },
     {
       "lang": "rust",
@@ -19,7 +19,7 @@
       "lang": "rust",
       "id": "TYPE_SIGNALS",
       "status": "PASS",
-      "detail": "docs.rs built rustdoc for 2.3.1 (type surface reachable)"
+      "detail": "docs.rs built rustdoc for 2.3.2 (type surface reachable)"
     },
     {
       "lang": "rust",
@@ -55,7 +55,7 @@
       "lang": "dart",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "opendlt_accumulate @ 2.3.3 (pub)"
+      "detail": "opendlt_accumulate @ 2.3.4 (pub)"
     },
     {
       "lang": "dart",
@@ -73,7 +73,7 @@
       "lang": "dart",
       "id": "TYPE_SIGNALS",
       "status": "PASS",
-      "detail": "dartdoc comments in 8/40 sampled lib files; pub.dev clean (score 0/0)"
+      "detail": "dartdoc comments in 8/40 sampled lib files; pub.dev clean (score 130/160)"
     },
     {
       "lang": "dart",
@@ -85,7 +85,7 @@
       "lang": "csharp",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "Acme.Net.Sdk @ 2.3.1 (nuget)"
+      "detail": "Acme.Net.Sdk @ 2.3.2 (nuget)"
     },
     {
       "lang": "csharp",
@@ -120,8 +120,8 @@
     {
       "lang": "javascript",
       "id": "RUNTIME_IMPORT",
-      "status": "FAIL",
-      "detail": "root import FAILS in a clean install: Command failed: npm install --no-audit --no-fund --silent accumulate-sdk-opendlt"
+      "status": "PASS",
+      "detail": "root import succeeds in a clean install (51 exports)"
     },
     {
       "lang": "javascript",
@@ -150,7 +150,6 @@
   ],
   "counts": {
     "INFO": 5,
-    "PASS": 18,
-    "FAIL": 1
+    "PASS": 19
   }
 }

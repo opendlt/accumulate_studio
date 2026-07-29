@@ -7,11 +7,13 @@ export * from './network.js';
 export * from './query.js';
 export * from './transaction.js';
 export * from './verification.js';
+export * from './errors.js';
 
 import { networkTools } from './network.js';
 import { queryTools } from './query.js';
 import { transactionTools } from './transaction.js';
 import { verificationTools } from './verification.js';
+import { errorTools } from './errors.js';
 
 /**
  * All registered MCP tools
@@ -21,6 +23,7 @@ export const allTools = [
   ...queryTools,
   ...transactionTools,
   ...verificationTools,
+  ...errorTools,
 ];
 
 /**

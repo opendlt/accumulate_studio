@@ -8,13 +8,13 @@
 
 | KPI | Metric | Status | Value | Target |
 |---|---|:--:|---|---|
-| K1 | Quickstart-verbatim (install-name parity) | 🔴 | 4/5 quickstart-runnable (install-name parity + import probe on dart, javascript) — root import BROKEN: javascript | 5/5 |
-| K2 | Task first-try pass rate | 🟢 | 94% (29/31) — 9 flake excluded | >= 90% |
-| K3 | Turns-to-first-tx | 🔴 | 27.8 mean turns (n=29) | <= 6 |
+| K1 | Quickstart-verbatim (install-name parity) | 🟢 | 5/5 quickstart-runnable (install-name parity + import probe on dart, javascript) | 5/5 |
+| K2 | Task first-try pass rate | 🔴 | 82% (32/39) — 1 flake excluded | >= 90% |
+| K3 | Turns-to-first-tx | 🔴 | 27.7 mean turns (n=32) | <= 6 |
 | K4 | Human interventions per task | 🟢 | 0.00 per task | <= 0.2 |
 | K5 | API-ingestion coverage (llms.txt shipped) | 🟢 | 5/5 | 5/5 (Phase 2) |
 | K6 | Typed-surface ratio | 🟢 | 5/5 languages expose a machine-readable API surface | 100% |
-| K7 | Error-actionability | ⚪ | PENDING_PHASE3 | >= 95% |
+| K7 | Error-actionability | 🟢 | 100% (4/4 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0 | >= 95% |
 | K8 | Fleet version parity | 🟢 | distinct minor lines: 1 (2.3) — target 1 (K8) | 1 minor line |
 | K9 | MCP installable in <= 1 config block | 🟢 | accumulate-studio-mcp@1.1.0 on npm (tools + resources + prompts) | published |
 | K10 | Docs-vs-artifact drift (artifact-verify) | 🟢 | clean | CI-gated, 0 drift |
@@ -23,23 +23,23 @@
 
 | Lang | Version | Name parity | Type signals | Exports | llms.txt |
 |---|---|:--:|:--:|:--:|:--:|
-| rust | 2.3.1 | ✅ | ✅ | · | ✅ |
+| rust | 2.3.2 | ✅ | ✅ | · | ✅ |
 | python | 2.3.0 | ✅ | ✅ | · | ✅ |
-| dart | 2.3.3 | ✅ | ✅ | · | ✅ |
-| csharp | 2.3.1 | ✅ | ✅ | · | ✅ |
+| dart | 2.3.4 | ✅ | ✅ | · | ✅ |
+| csharp | 2.3.2 | ✅ | ✅ | · | ✅ |
 | javascript | 2.3.0 | ✅ | ✅ | ✅ | ✅ |
 
 ## Agent runs — sdk mode (2026-07-29)
 
-29/31 scored runs passed · 9 excluded as `network-flake`
+32/39 scored runs passed · 1 excluded as `network-flake`
 
 | Lang | add-credits | create-adi | custom-token | key-rotation | lite-account | multisig-setup | send-tokens | write-data |
 |---|---|---|---|---|---|---|---|---|
-| rust | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| rust | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | python | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| dart | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
-| csharp | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| javascript | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| dart | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| csharp | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| javascript | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ |
 
 ### Failure classes
 
@@ -47,10 +47,9 @@ The class is the prioritization input — it says *which runbook* fixes the fail
 
 | Class | Count | Counts toward K2 | Addressed by |
 |---|--:|:--:|---|
-| `network-flake` | 7 | no | — |
-| `harness-setup-failed` | 2 | no | — |
-| `amount-scaling` | 1 | yes | RB-03, RB-05 |
-| `other` | 1 | yes | — |
+| `no-artifacts` | 5 | yes | RB-03 |
+| `timeout` | 2 | yes | — |
+| `harness-setup-failed` | 1 | no | — |
 
 ## Legend
 

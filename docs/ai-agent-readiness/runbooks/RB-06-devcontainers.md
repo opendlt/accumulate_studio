@@ -116,3 +116,50 @@ Prefer official devcontainer features (`ghcr.io/devcontainers/features/rust`, `.
 ## Rollback
 
 Deleting `.devcontainer/` restores host-based development exactly. No repo code depends on the container.
+
+---
+
+## As-built (2026-07-29)
+
+**Status: authored for all six repos — NOT container-verified.**
+
+| Repo | Image | postCreateCommand |
+|---|---|---|
+| accumulate-studio | `javascript-node:1-20-bookworm` + Python 3.11 feature | `npm ci && npm run build:types && npm run install:proxy` |
+| rust | `rust:1-bookworm` | rustup components + `cargo-audit` + `cargo-llvm-cov`, then `cd unified && cargo fetch` |
+| python | `python:1-3.11-bookworm` | `cd unified && pip install -e '.[dev]'` |
+| dart | `dart:stable` | `cd unified && dart pub get` |
+| csharp | `dotnet:1-9.0-bookworm` | `dotnet restore Acme.Net.Sdk.sln` |
+| javascript | `javascript-node:1-20-bookworm` | `cd javascript && npm ci && npm run build` |
+
+All six set `ACCUMULATE_NETWORK=kermit` in `containerEnv`; none bakes keys or
+faucet credentials. Studio additionally pins `ACCUMULATE_MCP_PERMISSION=BUILD_ONLY`
+and forwards 5173 (Vite) and 8000 (uvicorn).
+
+### Deviations and notes
+
+- **Python is pinned to 3.11, but `pyproject.toml` says `requires-python >=3.9`**
+  — the runbook asserted 3.11 as the source of truth, which the file does not say.
+  3.11 satisfies the constraint and is the intended dev runtime; the discrepancy is
+  recorded rather than silently adopted.
+- **Dart uses the upstream `dart:stable` image**, not a devcontainer feature — none
+  exists, as the plan anticipated. Common-utils/git/gh features are layered on so the
+  container behaves like the others.
+- **Studio installs `libarchive-tools` + `unzip` in `onCreateCommand`.** Not in the
+  plan, but `tools/artifact-verify` unpacks published `.nupkg`/`.crate` archives; without
+  `bsdtar` those checks skip and the scorecard silently under-reports.
+- **C# sets `DOTNET_NOLOGO`, `DOTNET_CLI_TELEMETRY_OPTOUT`, and `TERM=dumb`** so
+  `dotnet` stdout is parseable — banner and ANSI colour both corrupt an agent's read.
+
+### The gap that matters
+
+**Step 2, "verify by destruction", was not performed.** No container in this set has
+been built, attached to, or run through its repo's full `AGENTS.md` command set. The
+files are authored against verified toolchain facts (each version above was read from
+the repo's own `Cargo.toml` / `pyproject.toml` / `pubspec.yaml` / `.csproj` /
+`package.json`), but authored-and-plausible is not the same as booted-and-green.
+
+Until a real `devcontainer up` runs per repo, treat this as unverified. The likely
+failure points, in order: Rust's `cargo install cargo-llvm-cov` (slow, and needs
+`llvm-tools-preview`), Dart's non-standard base image lacking a `vscode` user, and
+Studio's proxy `pip install -e .` against a Node-base image.

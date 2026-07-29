@@ -1,0 +1,48 @@
+{
+  "name": "accumulate-studio",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bookworm",
+
+  "features": {
+    // Studio genuinely needs both runtimes: the web app and codegen are Node,
+    // while apps/sdk-proxy is a FastAPI/uvicorn service installed with pip.
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11",
+      "installTools": false
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  // `bsdtar` is not optional: tools/artifact-verify unpacks published .nupkg and
+  // .crate archives to verify what actually shipped. Without it those checks skip
+  // and the scorecard silently under-reports.
+  "onCreateCommand": "sudo apt-get update && sudo apt-get install -y --no-install-recommends libarchive-tools unzip",
+
+  // Ordering is load-bearing. packages/types must build before any dependent
+  // workspace, and the proxy install is a separate Python toolchain.
+  "postCreateCommand": "npm ci && npm run build:types && npm run install:proxy",
+
+  "containerEnv": {
+    // Testnet by default; mainnet is never selected implicitly. The MCP server
+    // reads this and falls back to testnet on an unknown value.
+    "ACCUMULATE_NETWORK": "kermit",
+    "ACCUMULATE_MCP_PERMISSION": "BUILD_ONLY"
+  },
+
+  "forwardPorts": [5173, 8000],
+  "portsAttributes": {
+    "5173": { "label": "Studio (Vite)", "onAutoForward": "notify" },
+    "8000": { "label": "sdk-proxy (uvicorn)", "onAutoForward": "silent" }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-python.python"
+      ]
+    }
+  },
+
+  "remoteUser": "node"
+}

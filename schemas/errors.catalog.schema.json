@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://accumulate.studio/schemas/errors.catalog.schema.json",
+  "title": "Accumulate canonical error catalog",
+  "description": "One catalog, five language bindings. Treated as public API: additive changes only, and bump `version` when entries change meaning.",
+  "type": "object",
+  "required": ["version", "categories", "bindings", "errors"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+$" },
+    "description": { "type": "string" },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "harvestedFrom": { "type": "array", "items": { "type": "string" } },
+        "rules": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "categories": {
+      "type": "object",
+      "description": "category id -> what it means",
+      "additionalProperties": { "type": "string" }
+    },
+    "bindings": {
+      "type": "object",
+      "description": "per-language base error type and catch syntax",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["base", "catch", "codeAccess"],
+        "properties": {
+          "base": { "type": "string" },
+          "catch": { "type": "string" },
+          "codeAccess": { "type": "string" },
+          "import": { "type": "string" }
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["code", "category", "retryable", "hint", "remediation"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^ACC_[A-Z0-9_]+$",
+            "description": "Stable semantic code. Agents branch on this."
+          },
+          "protocolCodes": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "description": "Wire codes VERIFIED from a live response or an SDK mapper. Empty means unconfirmed, not absent."
+          },
+          "category": { "type": "string" },
+          "retryable": {
+            "type": "boolean",
+            "description": "The single most useful field for an agent — never omit it. Only network/internal are true."
+          },
+          "observed": {
+            "type": "boolean",
+            "description": "true = seen in the live harness corpus; false = declared by an SDK taxonomy but not yet corpus-confirmed."
+          },
+          "hint": { "type": "string", "minLength": 1 },
+          "messagePatterns": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Lowercased substrings for matching a raw error string when no numeric code is available."
+          },
+          "causes": { "type": "array", "items": { "type": "string" } },
+          "remediation": { "type": "string", "minLength": 1 },
+          "relatedOps": { "type": "array", "items": { "type": "string" } },
+          "bindings": {
+            "type": "object",
+            "description": "language -> concrete thrown type",
+            "additionalProperties": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -25,6 +25,7 @@ import {
   OPERATION_CATALOGS,
   GOLDEN_PATHS,
   SDK_LANGUAGES,
+  ERROR_CATALOG,
 } from '../generated/content.js';
 
 export interface ResourceDescriptor {
@@ -65,6 +66,13 @@ export const staticResources: ResourceDescriptor[] = [
     description: 'The canonical end-to-end Accumulate workflows, with steps and prerequisites.',
     mimeType: MIME_JSON,
   },
+  {
+    uri: 'accumulate://errors',
+    name: 'Error catalog',
+    description:
+      'Every Accumulate error code with its category, whether a retry is productive (`retryable`), the likely causes, and the concrete fix. Read this before retrying anything.',
+    mimeType: MIME_JSON,
+  },
 ];
 
 export const resourceTemplates: ResourceTemplateDescriptor[] = [
@@ -84,6 +92,12 @@ export const resourceTemplates: ResourceTemplateDescriptor[] = [
     uriTemplate: 'accumulate://templates/{id}',
     name: 'Golden-path template',
     description: `A single canonical workflow. Ids: ${GOLDEN_PATHS.map((t) => t.id).join(', ')}.`,
+    mimeType: MIME_JSON,
+  },
+  {
+    uriTemplate: 'accumulate://errors/{code}',
+    name: 'Error catalog entry',
+    description: `A single error with its cause and fix. Codes: ${ERROR_CATALOG.errors.map((e) => e.code).join(', ')}.`,
     mimeType: MIME_JSON,
   },
 ];
@@ -156,6 +170,22 @@ export function readResource(uri: string, currentNetwork: string): ResourceConte
     return { uri, mimeType: MIME_JSON, text: JSON.stringify(GOLDEN_PATHS, null, 2) };
   }
 
+  if (uri === 'accumulate://errors') {
+    return { uri, mimeType: MIME_JSON, text: JSON.stringify(ERROR_CATALOG, null, 2) };
+  }
+
+  const errCode = uri.match(/^accumulate:\/\/errors\/([A-Z0-9_]+)$/);
+  if (errCode) {
+    const entry = ERROR_CATALOG.errors.find((e) => e.code === errCode[1]);
+    if (!entry) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Unknown error code "${errCode[1]}". Available: ${ERROR_CATALOG.errors.map((e) => e.code).join(', ')}`,
+      );
+    }
+    return { uri, mimeType: MIME_JSON, text: JSON.stringify(entry, null, 2) };
+  }
+
   const tpl = uri.match(/^accumulate:\/\/templates\/([\w-]+)$/);
   if (tpl) {
     const t = GOLDEN_PATHS.find((x) => x.id === tpl[1]);
@@ -170,7 +200,7 @@ export function readResource(uri: string, currentNetwork: string): ResourceConte
 
   throw new McpError(
     ErrorCode.InvalidParams,
-    `Unknown resource URI "${uri}". Valid prefixes: accumulate://concepts/, accumulate://networks, accumulate://sdk/{language}/operations, accumulate://templates/`,
+    `Unknown resource URI "${uri}". Valid prefixes: accumulate://concepts/, accumulate://networks, accumulate://sdk/{language}/operations, accumulate://templates/, accumulate://errors/`,
   );
 }
 

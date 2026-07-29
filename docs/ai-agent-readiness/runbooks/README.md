@@ -12,8 +12,8 @@ These sit beneath the phase docs (`../00-MASTER-PLAN.md` … `../05-PHASE-4-diff
 |---|---|---|
 | **MCP** | 14 tools, 3-tier permissions, published — but only 1 of MCP's 3 primitives | RB-02 |
 | **AGENTS.md** | Present in all 5 SDKs, but they are SDK *usage* guides, not repo manifests; studio has none | RB-03 |
-| **LSP / code intelligence** | Typed surfaces mostly good; no machine-readable CLI; no error taxonomy | RB-04, RB-05, RB-07·A |
-| **DevTools / sandboxing** | Absent — no devcontainers, no runtime introspection for Studio | RB-06, RB-07·B |
+| **LSP / code intelligence** | Typed surfaces 5/5; error taxonomy shipped (RB-05); **still no machine-readable CLI** | RB-04 |
+| **DevTools / sandboxing** | Devcontainers authored for all six repos (unverified); Studio runtime introspection still partial | RB-06, RB-07·B |
 
 ---
 
@@ -25,8 +25,8 @@ These sit beneath the phase docs (`../00-MASTER-PLAN.md` … `../05-PHASE-4-diff
 | [RB-02](RB-02-mcp-resources-and-prompts.md) | MCP Resources + Prompts | K2/K3/K4 in `mcp` mode | RB-01 | ✅ **done** |
 | [RB-03](RB-03-manifest-genre-split.md) | Manifest genre split | K2/K3/K4 in `sdk` mode | RB-01 | ✅ **done** |
 | [RB-04](RB-04-structured-cli.md) | Structured CLI with `--json` | new `cli` mode | RB-05, RB-01 | ⬜ not started |
-| [RB-05](RB-05-error-taxonomy.md) | Canonical error taxonomy | **K7** | RB-01 | ⬜ not started |
-| [RB-06](RB-06-devcontainers.md) | Devcontainers for all six repos | removes `install-fail` | RB-03 | ⬜ not started |
+| [RB-05](RB-05-error-taxonomy.md) | Canonical error taxonomy | **K7** | RB-01 | ✅ **done** |
+| [RB-06](RB-06-devcontainers.md) | Devcontainers for all six repos | removes `install-fail` | RB-03 | 🟡 authored, not container-verified |
 | [RB-07](RB-07-devtools-and-typed-surfaces.md) | Studio agent DevTools + typed-surface closure | **K6**, `codegen` mode | RB-01 | 🟡 Part A done; Part B generation half done |
 
 Each completed runbook carries an **As-built** section recording what was delivered, what deviated from the plan, and what it found. Read those before starting the next one — RB-01's as-built in particular documents three measurement bugs that a false PASS depended on.
