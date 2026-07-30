@@ -14,7 +14,7 @@
 | K4 | Human interventions per task | 🟢 | 0.00 per task | <= 0.2 |
 | K5 | API-ingestion coverage (llms.txt shipped) | 🟢 | 5/5 | 5/5 (Phase 2) |
 | K6 | Typed-surface ratio | 🟢 | 5/5 languages expose a machine-readable API surface | 100% |
-| K7 | Error-actionability | 🟢 | 100% (4/4 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0 | >= 95% |
+| K7 | Error-actionability | 🟢 | 100% (8/8 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0 | >= 95% |
 | K8 | Fleet version parity | 🟢 | distinct minor lines: 1 (2.3) — target 1 (K8) | 1 minor line |
 | K9 | MCP installable in <= 1 config block | 🟢 | accumulate-studio-mcp@1.1.0 on npm (tools + resources + prompts) | published |
 | K10 | Docs-vs-artifact drift (artifact-verify) | 🟢 | clean | CI-gated, 0 drift |

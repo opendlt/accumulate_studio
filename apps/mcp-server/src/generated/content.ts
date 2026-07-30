@@ -4757,6 +4757,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
     {
       "code": "ACC_ACCOUNT_NOT_FOUND",
       "protocolCodes": [
+        -32807,
         -33404
       ],
       "category": "not_found",
@@ -4764,15 +4765,18 @@ export const ERROR_CATALOG: ErrorCatalog = {
       "observed": true,
       "hint": "The account URL does not exist on this network.",
       "messagePatterns": [
+        "accumulate error not found",
         "not found",
         "account .* not found",
+        "-32807",
         "-33404"
       ],
       "causes": [
         "typo in the account URL",
         "the account was never created",
         "querying the wrong network (mainnet vs Kermit testnet)",
-        "querying immediately after submit, before the transaction reached 'delivered'"
+        "querying immediately after submit, before the transaction reached 'delivered'",
+        "a MALFORMED url also surfaces as not-found on V2 rather than as a URL validation error"
       ],
       "remediation": "Verify the URL and the network. If you just created the account, wait for its creating transaction to reach 'delivered' first — use wait_for_balance / wait_for_credits rather than querying straight away.",
       "relatedOps": [
@@ -5065,7 +5069,8 @@ export const ERROR_CATALOG: ErrorCatalog = {
       ],
       "causes": [
         "missing the `acc://` scheme",
-        "an unresolved template placeholder left in the string"
+        "an unresolved template placeholder left in the string",
+        "on the V2 API a malformed URL is reported as not-found, not as a URL error — match on the code, not the text"
       ],
       "remediation": "Accumulate URLs are `acc://<authority>[/<path>]`. Lite token accounts end in the token symbol, e.g. `acc://<keyhash>/ACME`.",
       "relatedOps": [
@@ -5084,14 +5089,18 @@ export const ERROR_CATALOG: ErrorCatalog = {
     {
       "code": "ACC_INVALID_PARAMS",
       "protocolCodes": [
+        -32802,
         -32602
       ],
       "category": "validation",
       "retryable": false,
-      "observed": false,
+      "observed": true,
       "hint": "The JSON-RPC parameters were rejected by the node.",
       "messagePatterns": [
+        "validation error",
         "invalid params",
+        "field validation for",
+        "-32802",
         "-32602"
       ],
       "causes": [
@@ -5118,7 +5127,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
       ],
       "category": "validation",
       "retryable": false,
-      "observed": false,
+      "observed": true,
       "hint": "The node does not expose the RPC method that was called.",
       "messagePatterns": [
         "method not found",
@@ -5198,6 +5207,40 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "AccumulateError",
         "dart": "ApiError",
         "rust": "Error::Internal",
+        "csharp": "AccumulateException",
+        "javascript": "AccumulateError"
+      }
+    },
+    {
+      "code": "ACC_ROUTING_FAILED",
+      "protocolCodes": [
+        -33400
+      ],
+      "category": "validation",
+      "retryable": false,
+      "observed": true,
+      "hint": "The node could not determine which partition should handle the request.",
+      "messagePatterns": [
+        "cannot route request",
+        "nothing to route",
+        "-33400"
+      ],
+      "causes": [
+        "the envelope carries no transaction, or a transaction with no principal",
+        "the principal URL is empty or unparseable, so there is no routing key",
+        "an envelope was hand-assembled and omitted required header fields"
+      ],
+      "remediation": "Build the envelope through TxBody + SmartSigner rather than by hand. Every transaction needs a header with a valid `principal` — that URL is the routing key, and without it the node rejects the request before validating anything else.",
+      "relatedOps": [
+        "send_tokens",
+        "write_data",
+        "add_credits",
+        "create_identity"
+      ],
+      "bindings": {
+        "python": "ValidationError",
+        "dart": "ApiError",
+        "rust": "Error::Routing",
         "csharp": "AccumulateException",
         "javascript": "AccumulateError"
       }

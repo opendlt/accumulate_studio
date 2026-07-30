@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "mode": "negative",
+  "network": "kermit",
+  "task": {
+    "id": "query-missing-required-param",
+    "expectedCode": "ACC_INVALID_PARAMS",
+    "method": "query"
+  },
+  "passed": false,
+  "error": "Validation Error Key: 'GeneralQuery.UrlQuery.Url' Error:Field validation for 'Url' failed on the 'required' tag",
+  "wire": {
+    "httpStatus": 200,
+    "code": -32802,
+    "message": "Validation Error",
+    "data": "Key: 'GeneralQuery.UrlQuery.Url' Error:Field validation for 'Url' failed on the 'required' tag"
+  },
+  "producedError": true,
+  "startedAt": "2026-07-30T00:48:14.928Z"
+}

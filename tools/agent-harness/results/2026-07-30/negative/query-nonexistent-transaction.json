@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "mode": "negative",
+  "network": "kermit",
+  "task": {
+    "id": "query-nonexistent-transaction",
+    "expectedCode": null,
+    "method": "query-tx"
+  },
+  "passed": false,
+  "error": "Accumulate Error Not Found",
+  "wire": {
+    "httpStatus": 200,
+    "code": -32807,
+    "message": "Accumulate Error",
+    "data": "Not Found"
+  },
+  "producedError": true,
+  "startedAt": "2026-07-30T00:48:15.050Z"
+}

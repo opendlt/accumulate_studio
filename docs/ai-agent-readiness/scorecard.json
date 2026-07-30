@@ -46,7 +46,7 @@
     {
       "id": "K7",
       "name": "Error-actionability",
-      "value": "100% (4/4 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0",
+      "value": "100% (8/8 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0",
       "status": "GREEN",
       "target": ">= 95%"
     },

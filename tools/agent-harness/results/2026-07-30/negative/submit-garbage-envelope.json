@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "mode": "negative",
+  "network": "kermit",
+  "task": {
+    "id": "submit-garbage-envelope",
+    "expectedCode": null,
+    "method": "execute-direct"
+  },
+  "passed": false,
+  "error": "Accumulate Error cannot route request: nothing to route (4)",
+  "wire": {
+    "httpStatus": 200,
+    "code": -33400,
+    "message": "Accumulate Error",
+    "data": "cannot route request: nothing to route (4)"
+  },
+  "producedError": true,
+  "startedAt": "2026-07-30T00:48:15.158Z"
+}

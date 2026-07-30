@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "mode": "negative",
+  "network": "kermit",
+  "task": {
+    "id": "unknown-rpc-method",
+    "expectedCode": "ACC_METHOD_NOT_FOUND",
+    "method": "this-method-does-not-exist"
+  },
+  "passed": false,
+  "error": "Method not found this-method-does-not-exist",
+  "wire": {
+    "httpStatus": 200,
+    "code": -32601,
+    "message": "Method not found",
+    "data": "this-method-does-not-exist"
+  },
+  "producedError": true,
+  "startedAt": "2026-07-30T00:48:14.980Z"
+}

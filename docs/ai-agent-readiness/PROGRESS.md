@@ -310,3 +310,71 @@ FAILs and drags **K1 → 4/5 red and K10 → drift present**. On 2.3.2 both are 
 
 **Scorecard: 8 green / 2 red / 0 pending.** The two reds are K2 (82%) and K3
 (27.7 turns) — both agent-success metrics that only move when the harness re-runs.
+
+### Devcontainers booted + K7 corpus harvested — 2026-07-30
+
+**Correction to two earlier claims in this file:** Docker *is* available here
+(29.4.3, daemon reachable) and `@devcontainers/cli` (0.88.0) installs fine, so
+RB-06 step 2 was always achievable. And the K7 corpus was not fixed at n=4.
+
+#### The bind-mount defect — found by booting, fixed, re-verified
+
+On Docker Desktop for Windows, bind-mounted workspace files present as
+`root:root`; `chown` on them fails and a non-root user cannot `utime` them.
+Every one of these containers writes into the workspace, so `dart test` died with
+`Operation not permitted` on `pubspec.lock` before running a single test.
+
+All six now set `remoteUser: root`, with the reasoning and the Linux/macOS caveat
+in each file. The container remains the isolation boundary — only the workspace is
+mounted and no credentials are baked in. **Dart re-verified after the change: 440
+tests pass.**
+
+| Repo | `devcontainer up` | postCreate | Commands in-container |
+|---|---|---|---|
+| dart | ✅ | ✅ `dart pub get` | ✅ `dart analyze` (755 warnings/infos, 0 errors) · ✅ `dart test` **440 passed** |
+| python | ✅ | ✅ `pip install -e '.[dev]'` | ✅ imports source 2.3.1 · ⚠️ `pytest` 3 failures (below) |
+| javascript | ✅ | ✅ after lockfile fix | ✅ root import 51 exports · ✅ `test:unit` **101 passed**, 1 skipped |
+| rust · csharp · studio | ⬜ not booted | | |
+
+#### Two defects the containers exposed
+
+1. **`npm ci` was broken in the JS repo.** Declaring `@noble/secp256k1` and `rxjs`
+   updated `package.json` but not `package-lock.json`, so `npm ci` — which
+   requires them in sync — refused, failing `postCreateCommand`. Regenerated with
+   `npm install --package-lock-only` (the one npm path that does not hit this
+   host's extraction bug). A plain host workflow never runs `npm ci`, so only the
+   container caught it.
+
+2. **Host Python test runs were not testing the source tree.** On the host,
+   `import accumulate_client` resolves to a *stale* `site-packages` copy
+   (**2.3.0**); in the container it resolves to `/workspaces/unified/src/` (**2.3.1**).
+   Three tests pass on the host and fail in the container
+   (`test_well_known_networks`, `test_transaction_structure`,
+   `test_overall_coverage_meets_minimum`). The container is the correct
+   environment, so these are real signals about the current source that host-green
+   was masking. **Open** — not yet diagnosed further.
+
+#### K7 — corpus doubled, and the harvest corrected the catalog
+
+`tools/agent-harness/negative-cases.mjs` provokes 8 error responses from a live
+Kermit V2 node and records the verbatim wire payloads into
+`results/<date>/negative/` — a directory `loadRuns` does not read for `sdk` mode,
+so K2/K3 are untouched (verified: still 82% and 27.7).
+
+**It found two wrong wire codes in the catalog I had just written:**
+
+| Catalog entry | Was | Actually returned by Kermit |
+|---|---|---|
+| `ACC_ACCOUNT_NOT_FOUND` | `-33404` only | **`-32807`** (`-33404` kept — seen once in a transcript) |
+| `ACC_INVALID_PARAMS` | `-32602` (generic JSON-RPC) | **`-32802`** (`Validation Error`) |
+
+Plus a missing error class, now `ACC_ROUTING_FAILED` (**`-33400`**, "cannot route
+request: nothing to route") — what a hand-assembled envelope with no valid
+`principal` actually gets, and notably *not* the `ACC_NOT_SIGNED` I had assumed.
+Also recorded: on V2 a **malformed URL returns not-found**, not a URL error, so
+that entry must be matched on code rather than text.
+
+**K7 = 100% (8/8 distinct observed errors), catalog now 15 entries.** Still
+modest: the remaining high-value cases (insufficient credits, unauthorized
+signer, insufficient balance) need a funded signing key, so they are not yet
+corpus-confirmed.
