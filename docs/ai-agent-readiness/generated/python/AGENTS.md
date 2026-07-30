@@ -43,6 +43,22 @@ tests/                  test suite (tests/integration needs the network)
 examples/               runnable end-to-end examples
 ```
 
+## CLI
+
+This repo ships the `accumulate` CLI. Run it from the checkout with:
+
+```bash
+python -m accumulate_client.cli --json version
+```
+
+It conforms to `docs/ai-agent-readiness/CLI-SPEC.md` in accumulate-studio: one JSON
+envelope on stdout, `ACC_*` error codes, exit codes 0/1/2/3. **Changing its output shape
+is a contract change** — re-run the shared conformance suite, which gates all five SDKs:
+
+```bash
+node tools/cli-conformance/run.mjs --cmd "python -m accumulate_client.cli" --cwd . --sdk python
+```
+
 ## Gotchas
 
 - This repository root IS the package root: `pyproject.toml` here declares `accumulate-sdk-opendlt`. Do not look for a `unified/` subdirectory — that is an artifact of some local working copies and is not part of this repo.

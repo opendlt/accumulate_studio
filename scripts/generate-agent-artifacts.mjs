@@ -41,6 +41,10 @@ const LANG_META = {
     sign: 'result = SmartSigner(signer).sign_submit_and_wait(principal, body)',
     comment: '#',
     examples: 'examples/v3/',
+    cliInstall: 'pip install accumulate-sdk-opendlt',
+    cliCommand: 'accumulate',
+    cliScoped: 'python -m accumulate_client.cli',
+    cliDev: 'python -m accumulate_client.cli',
     distDir: 'opendlt-python-v2v3-sdk/unified',
   },
   rust: {
@@ -51,6 +55,10 @@ const LANG_META = {
     connect: 'let qs = QuickStart::kermit().await?;   // crate: accumulate-sdk, import path: accumulate_client',
     sign: 'let r = signer.sign_submit_and_wait(principal, body).await?;',
     examples: 'examples/v3/',
+    cliInstall: 'cargo install accumulate-sdk',
+    cliCommand: 'accumulate',
+    cliScoped: 'cargo run --bin accumulate --',
+    cliDev: 'cargo run --bin accumulate --',
     distDir: 'opendlt-rust-v2v3-sdk/unified',
   },
   dart: {
@@ -61,6 +69,10 @@ const LANG_META = {
     connect: 'final client = Accumulate.network(NetworkEndpoint.testnet);   // or QuickStart.testnet()',
     sign: 'final r = await SmartSigner(signer).signSubmitAndWait(principal, body);',
     examples: 'example/v3/',
+    cliInstall: 'dart pub global activate opendlt_accumulate',
+    cliCommand: 'accumulate',
+    cliScoped: 'dart run opendlt_accumulate:accumulate',
+    cliDev: 'dart run bin/accumulate.dart',
     distDir: 'opendlt-dart-v2v3-sdk/unified',
   },
   csharp: {
@@ -71,6 +83,10 @@ const LANG_META = {
     connect: 'var client = Accumulate.Kermit();   // or Accumulate.Testnet()/Mainnet()/Devnet()',
     sign: 'var r = await new SmartSigner(signer).SignSubmitAndWaitAsync(principal, body);',
     examples: 'examples/v3/',
+    cliInstall: 'dotnet tool install -g Acme.Net.Sdk.Cli',
+    cliCommand: 'accumulate',
+    cliScoped: 'dotnet accumulate',
+    cliDev: 'dotnet run --project src/Acme.Net.Sdk.Cli --',
     distDir: 'opendlt-c-sharp-v2v3-sdk',
   },
   javascript: {
@@ -81,6 +97,10 @@ const LANG_META = {
     connect: 'const client = Accumulate.forKermit();   // or forMainnet()/forDevnet()',
     sign: 'const r = await new SmartSigner(signer).signSubmitAndWait(principal, body);',
     examples: 'examples/v3/',
+    cliInstall: 'npm install -g accumulate-sdk-opendlt',
+    cliCommand: 'accumulate',
+    cliScoped: 'npx accumulate-sdk-opendlt',
+    cliDev: 'node lib/src/cli.js',
     distDir: 'opendlt-javascript-v2v3-sdk/javascript',
   },
 };
@@ -351,6 +371,22 @@ function renderLlms(lang, m) {
   );
   L.push('- **One canonical client:** connect with `' + m.entrypoints[0]?.symbol + '`, build with `TxBody`, sign with `SmartSigner`. Do not hand-roll envelopes/signing, and ignore any alternate or legacy client classes — this is the only path you need.');
   L.push('');
+  // RB-04. A terminal-based agent that finds this never writes a program for a
+  // balance check: it is one command instead of create-project/compile/run/delete.
+  L.push('## CLI (no code required)');
+  L.push('```');
+  L.push(meta.cliInstall);
+  L.push(`${meta.cliCommand} query acc://<account>            ${cmt} any account`);
+  L.push(`${meta.cliCommand} balance acc://<lta>              ${cmt} token balance`);
+  L.push(`${meta.cliCommand} faucet acc://<lta>               ${cmt} testnet ACME`);
+  L.push('```');
+  L.push(`Scoped invocation (no global shim): \`${meta.cliScoped}\``);
+  L.push('- **`--json` emits exactly one envelope object on stdout**, nothing else. Logs go to stderr.');
+  L.push('- **Exit codes:** `0` ok · `1` operation failed · `2` usage error · `3` network unreachable. Branch on these without parsing.');
+  L.push('- Failures carry the same `ACC_*` codes and `retryable` flag as the SDK, so the retry decision is identical either way.');
+  L.push('- `' + meta.cliCommand + ' --help --json` returns the whole command tree (verbs, flags, types) in one call.');
+  L.push('- Defaults to testnet. Mainnet needs `--network mainnet` AND `ACCUMULATE_ALLOW_MAINNET=1`.');
+  L.push('');
   L.push('## Resources');
   L.push('- Full API digest: `llms-full.txt`');
   L.push('- Repository guide (build/test/lint, for working ON this SDK): `AGENTS.md`');
@@ -511,6 +547,25 @@ function renderAgents(lang, m) {
   L.push('');
   L.push('```');
   for (const l of repo.layout) L.push(l);
+  L.push('```');
+  L.push('');
+
+  // RB-04. AGENTS.md is the CONTRIBUTOR manifest, so this is how to run and
+  // re-verify the CLI in this checkout — not how to consume it (that is llms.txt).
+  L.push('## CLI');
+  L.push('');
+  L.push('This repo ships the `' + meta.cliCommand + '` CLI. Run it from the checkout with:');
+  L.push('');
+  L.push('```bash');
+  L.push(meta.cliDev + ' --json version');
+  L.push('```');
+  L.push('');
+  L.push('It conforms to `docs/ai-agent-readiness/CLI-SPEC.md` in accumulate-studio: one JSON');
+  L.push('envelope on stdout, `ACC_*` error codes, exit codes 0/1/2/3. **Changing its output shape');
+  L.push('is a contract change** — re-run the shared conformance suite, which gates all five SDKs:');
+  L.push('');
+  L.push('```bash');
+  L.push('node tools/cli-conformance/run.mjs --cmd "' + meta.cliDev + '" --cwd . --sdk ' + lang);
   L.push('```');
   L.push('');
 

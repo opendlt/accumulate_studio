@@ -43,6 +43,22 @@ test/Acme.Net.Sdk.Benchmarks/   benchmarks
 examples/v3/                    runnable examples
 ```
 
+## CLI
+
+This repo ships the `accumulate` CLI. Run it from the checkout with:
+
+```bash
+dotnet run --project src/Acme.Net.Sdk.Cli -- --json version
+```
+
+It conforms to `docs/ai-agent-readiness/CLI-SPEC.md` in accumulate-studio: one JSON
+envelope on stdout, `ACC_*` error codes, exit codes 0/1/2/3. **Changing its output shape
+is a contract change** — re-run the shared conformance suite, which gates all five SDKs:
+
+```bash
+node tools/cli-conformance/run.mjs --cmd "dotnet run --project src/Acme.Net.Sdk.Cli --" --cwd . --sdk csharp
+```
+
 ## Gotchas
 
 - `<GenerateDocumentationFile>true</GenerateDocumentationFile>` must stay on — the nupkg has to ship `lib/<tfm>/*.xml` or IntelliSense and agent tooling lose every signature.

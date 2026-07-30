@@ -46,6 +46,22 @@ examples/v3/    runnable examples
 Makefile        the canonical entry point for every workflow
 ```
 
+## CLI
+
+This repo ships the `accumulate` CLI. Run it from the checkout with:
+
+```bash
+cargo run --bin accumulate -- --json version
+```
+
+It conforms to `docs/ai-agent-readiness/CLI-SPEC.md` in accumulate-studio: one JSON
+envelope on stdout, `ACC_*` error codes, exit codes 0/1/2/3. **Changing its output shape
+is a contract change** — re-run the shared conformance suite, which gates all five SDKs:
+
+```bash
+node tools/cli-conformance/run.mjs --cmd "cargo run --bin accumulate --" --cwd . --sdk rust
+```
+
 ## Gotchas
 
 - Use the `Makefile`, not bare cargo. `make ci-check` (= fmt-check + lint + test + coverage-gate + audit) is what CI runs; bare `cargo test` skips the coverage gate and the audit.
