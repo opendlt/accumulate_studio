@@ -290,3 +290,72 @@ documented in `PROGRESS.md`) — the published `bin` and entry file are correct.
 bumped — the CLI would have reported 2.3.3 while shipping as 2.3.4. It now reads
 `AssemblyInformationalVersion`, so the drift cannot recur. Dart keeps a constant
 (it has no runtime access to `pubspec.yaml`) with a comment tying it to releases.
+
+---
+
+## Signing — closed across all five (2026-07-30)
+
+The measurement in `cli` mode found that no write task was achievable CLI-only:
+`tx build` was a stub, nothing signed, and `tx submit` accepted
+`--key-file`/`--key-env` while never using them — advertising a capability that
+did not exist. All three are now fixed in every SDK.
+
+**`npm run verify:cli` → 5/5 implementations, 75/75 cases.**
+
+| Verb | Before | Now |
+|---|---|---|
+| `tx build` | echoed `{op, params}`; a typo exited 0 | real body via `TxBody`; unknown ops rejected |
+| `tx sign` | did not exist | **the only signing verb**; delegates to the SDK signer |
+| `tx submit` | took key flags, never signed | `signs: false`, no key flags, submits a signed envelope |
+
+Every implementation delegates to its own SDK signer (`SmartSigner` /
+`sign_and_build` / `SignAsync`) rather than hand-rolling signature bytes. Those
+bytes are consensus-visible and this fleet already has a golden-byte harness
+because they have drifted twice before.
+
+### Verified on chain, per SDK — not just conformance
+
+Each CLI built, signed and submitted a real transaction to Kermit, confirmed by
+querying the resulting on-chain state:
+
+| SDK | Transaction | On-chain proof |
+|---|---|---|
+| python | addCredits, then sendTokens | `creditBalance: 20000000`; recipient `balance: 100000000` |
+| rust | addCredits | `creditBalance: 20000000` |
+| csharp | sendTokens | recipient `liteTokenAccount, balance 100000000` |
+| dart | sendTokens | recipient `liteTokenAccount, balance 100000000` |
+| javascript | sendTokens | recipient `liteTokenAccount, balance 100000000` |
+
+### Seven defects this surfaced
+
+Conformance alone would have missed every one of these — they only appear when a
+transaction is actually built, signed, submitted and then read back.
+
+1. **Python `tx submit` used `execute_direct` (V2)** while the signer targets V3;
+   the node returned a bare `-32802 Validation Error`. Now uses `client.submit`.
+2. **Blanket int-coercion corrupted amounts.** `amount` is declared `str`;
+   coercing it produced `cannot unmarshal number ... of type string`. Coercion now
+   follows the builder's own signature.
+3. **The oracle price was guessed.** `add_credits` with a wrong oracle submitted
+   "ok" and silently never delivered — exactly what the `tx build` stub was hiding.
+4. **JS emitted the SDK's internal object graph**, not the wire form. Round-tripping
+   it through a file gave `Invalid scheme: undefined` at sign time. Both body and
+   envelope now go through `asObject()`.
+5. **JS `JSON.stringify` threw on BigInt.** Amounts exceed 2^53 so the SDK models
+   them as BigInt. Worse, `Emitter.ok` set its "emitted" guard *before* serializing,
+   so the real cause surfaced as a misleading "envelope emitted twice". The guard
+   is now set only after serialization succeeds.
+6. **Rust and C# posted the bare envelope**; V3 `submit` takes `{"envelope": ...}`
+   and answered `-33400 envelope is missing`.
+7. **C# leaked SDK chatter onto stdout** (`[SignatureKeyPair] Imported Ed25519
+   seed...`), corrupting the envelope. `Console.Out` is now quarantined for the
+   whole run and forwarded to stderr. The first attempt at this failed subtly: a
+   `static readonly TextWriter RealOut = Console.Out` initializer is evaluated
+   lazily on first access — after the swap — so it captured the buffer and the
+   envelope vanished entirely. It is now assigned eagerly in `Main`.
+
+### Published
+
+crates.io `accumulate-sdk` **2.3.5** · PyPI `accumulate-sdk-opendlt` **2.3.3** ·
+pub.dev `opendlt_accumulate` **2.3.7** · NuGet `Acme.Net.Sdk` + `Acme.Net.Sdk.Cli`
+**2.3.5** · npm `accumulate-sdk-opendlt` **2.3.4**.

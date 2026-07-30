@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "cli",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "key-rotation",
+    "file": "08-key-rotation.yaml",
+    "title": "Key rotation",
+    "specHash": "8650c147a3d2"
+  },
+  "sdkVersion": "2.3.2",
+  "passed": false,
+  "turns": 27,
+  "interventions": 0,
+  "failureClass": "missing-prereq",
+  "assertions": [
+    {
+      "assertion": "key_page_contains_new_key == true",
+      "subject": "key_page_contains_new_key",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "assertion": "key_page_contains_old_key == false",
+      "subject": "key_page_contains_old_key",
+      "op": "==",
+      "passed": false,
+      "actual": true,
+      "expected": false
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://cde83d8a5c39132b6fca5cb0b9ba538ffab7ef28f2277d18",
+    "liteTokenAccountUrl": "acc://cde83d8a5c39132b6fca5cb0b9ba538ffab7ef28f2277d18/ACME",
+    "adiUrl": "acc://harness-d4b3b83e.acme",
+    "keyBookUrl": "acc://harness-d4b3b83e.acme/book",
+    "keyPageUrl": "acc://harness-d4b3b83e.acme/book/1",
+    "oldKeyHash": "660884e91c907c61569ab70cb05dfa48c297fe17656ed204ea4e212266f2ee1a"
+  },
+  "environment": {
+    "liteIdentity": "acc://cde83d8a5c39132b6fca5cb0b9ba538ffab7ef28f2277d18",
+    "liteTokenAccount": "acc://cde83d8a5c39132b6fca5cb0b9ba538ffab7ef28f2277d18/ACME",
+    "publicKeyHex": "6af6b7a712922ee04b0e4fb5e0f2f362b531e4bbc0f8a5f9f00e9c069d20e1bc",
+    "suggestedAdiUrl": "acc://harness-d4b3b83e.acme"
+  },
+  "durationMs": 345647,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-30\\cli\\transcripts\\python--key-rotation.txt",
+  "error": null,
+  "startedAt": "2026-07-30T08:51:52.530Z",
+  "finishedAt": "2026-07-30T09:02:20.098Z"
+}
