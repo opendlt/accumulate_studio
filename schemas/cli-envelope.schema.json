@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://accumulate.studio/schemas/cli-envelope.schema.json",
+  "title": "Accumulate SDK CLI response envelope (RB-04)",
+  "description": "The single response shape every SDK CLI emits under --json. One object on stdout, nothing else.",
+  "type": "object",
+  "required": ["envelope", "ok", "meta"],
+  "properties": {
+    "envelope": {
+      "const": "1",
+      "description": "Envelope version, so a future shape change is detectable."
+    },
+    "ok": { "type": "boolean" },
+    "data": {
+      "description": "Present when ok is true. Verb-specific payload."
+    },
+    "error": {
+      "type": "object",
+      "description": "Present when ok is false. An RB-05 catalog entry plus the raw text.",
+      "required": ["code", "category", "retryable", "hint", "remediation"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^ACC_[A-Z0-9_]+$" },
+        "category": { "type": "string" },
+        "retryable": {
+          "type": "boolean",
+          "description": "The field an agent acts on. Never omitted."
+        },
+        "hint": { "type": "string", "minLength": 1 },
+        "remediation": { "type": "string", "minLength": 1 },
+        "raw": { "type": "string", "description": "Verbatim underlying error text." },
+        "protocolCodes": { "type": "array", "items": { "type": "integer" } }
+      },
+      "additionalProperties": false
+    },
+    "meta": {
+      "type": "object",
+      "required": ["sdk", "version"],
+      "properties": {
+        "network": { "type": ["string", "null"] },
+        "sdk": {
+          "type": "string",
+          "enum": ["python", "rust", "dart", "csharp", "javascript"]
+        },
+        "version": { "type": "string" },
+        "durationMs": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "description": "ok:true requires data and forbids error.",
+      "if": { "properties": { "ok": { "const": true } }, "required": ["ok"] },
+      "then": { "required": ["data"], "not": { "required": ["error"] } }
+    },
+    {
+      "description": "ok:false requires error.",
+      "if": { "properties": { "ok": { "const": false } }, "required": ["ok"] },
+      "then": { "required": ["error"] }
+    }
+  ],
+  "additionalProperties": false
+}

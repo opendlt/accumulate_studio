@@ -1,0 +1,266 @@
+#!/usr/bin/env node
+/**
+ * cli-conformance — RB-04.
+ *
+ * Drives ANY SDK CLI as a black box and holds it to docs/ai-agent-readiness/CLI-SPEC.md.
+ * Language-agnostic on purpose: one suite is the gate for all five implementations,
+ * which is the only thing that actually prevents five dialects.
+ *
+ * Usage:
+ *   node tools/cli-conformance/run.mjs --cmd "python -m accumulate_client.cli"
+ *   node tools/cli-conformance/run.mjs --cmd "..." --cwd <dir> --sdk python [--json] [--offline]
+ *
+ * Exit: 0 if every case passes, 1 otherwise.
+ */
+
+import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const REPO = join(HERE, '..', '..');
+const SCHEMA = JSON.parse(readFileSync(join(REPO, 'schemas', 'cli-envelope.schema.json'), 'utf-8'));
+
+function arg(name, dflt = null) {
+  const i = process.argv.indexOf(`--${name}`);
+  return i > -1 && process.argv[i + 1] ? process.argv[i + 1] : dflt;
+}
+const CMD = arg('cmd');
+const CWD = arg('cwd', process.cwd());
+const SDK = arg('sdk');
+const EMIT_JSON = process.argv.includes('--json');
+// Skip network cases (CI without a testnet). Structural cases still run.
+const OFFLINE = process.argv.includes('--offline');
+
+if (!CMD) {
+  console.error('usage: run.mjs --cmd "<command to invoke the CLI>" [--cwd DIR] [--sdk LANG] [--offline]');
+  process.exit(2);
+}
+
+const EXIT = { OK: 0, FAILED: 1, USAGE: 2, NETWORK: 3 };
+
+/**
+ * Minimal draft-07 validator covering exactly what the envelope schema uses
+ * (type, required, const, enum, pattern, minLength, minimum, additionalProperties,
+ * items, allOf/if/then, not). A dependency-free checker keeps this runnable in any
+ * repo without an install step.
+ */
+function validate(schema, value, path = '$', errors = []) {
+  const t = schema.type;
+  const typeOf = (v) => (Array.isArray(v) ? 'array' : v === null ? 'null' : typeof v);
+  if (t) {
+    const types = Array.isArray(t) ? t : [t];
+    const actual = typeOf(value);
+    const ok = types.some((x) => (x === 'integer' ? Number.isInteger(value) : x === 'number' ? typeof value === 'number' : actual === x));
+    if (!ok) { errors.push(`${path}: expected ${types.join('|')}, got ${actual}`); return errors; }
+  }
+  if (schema.const !== undefined && value !== schema.const) errors.push(`${path}: expected const ${JSON.stringify(schema.const)}, got ${JSON.stringify(value)}`);
+  if (schema.enum && !schema.enum.includes(value)) errors.push(`${path}: ${JSON.stringify(value)} not in ${JSON.stringify(schema.enum)}`);
+  if (schema.pattern && typeof value === 'string' && !new RegExp(schema.pattern).test(value)) errors.push(`${path}: "${value}" does not match ${schema.pattern}`);
+  if (schema.minLength !== undefined && typeof value === 'string' && value.length < schema.minLength) errors.push(`${path}: shorter than minLength ${schema.minLength}`);
+  if (schema.minimum !== undefined && typeof value === 'number' && value < schema.minimum) errors.push(`${path}: below minimum ${schema.minimum}`);
+  if (schema.items && Array.isArray(value)) value.forEach((v, i) => validate(schema.items, v, `${path}[${i}]`, errors));
+
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    for (const r of schema.required || []) {
+      if (!(r in value)) errors.push(`${path}: missing required "${r}"`);
+    }
+    for (const [k, v] of Object.entries(value)) {
+      const sub = schema.properties?.[k];
+      if (sub) validate(sub, v, `${path}.${k}`, errors);
+      else if (schema.additionalProperties === false) errors.push(`${path}: unexpected property "${k}"`);
+      else if (schema.additionalProperties && typeof schema.additionalProperties === 'object') validate(schema.additionalProperties, v, `${path}.${k}`, errors);
+    }
+  }
+  if (schema.not) {
+    const sub = [];
+    validate(schema.not, value, path, sub);
+    if (sub.length === 0) errors.push(`${path}: matched a forbidden ("not") schema`);
+  }
+  for (const s of schema.allOf || []) {
+    if (s.if) {
+      const probe = [];
+      validate(s.if, value, path, probe);
+      if (probe.length === 0 && s.then) validate(s.then, value, path, errors);
+    } else {
+      validate(s, value, path, errors);
+    }
+  }
+  return errors;
+}
+
+function run(args) {
+  const parts = CMD.split(/\s+/);
+  const r = spawnSync(parts[0], [...parts.slice(1), ...args], {
+    cwd: CWD, encoding: 'utf-8', timeout: 180000,
+    shell: process.platform === 'win32',
+    env: { ...process.env, ACCUMULATE_ALLOW_MAINNET: '' },
+  });
+  return { code: r.status, stdout: r.stdout ?? '', stderr: r.stderr ?? '', err: r.error };
+}
+
+const results = [];
+function check(name, fn) {
+  try {
+    const problems = fn() || [];
+    results.push({ name, pass: problems.length === 0, problems });
+  } catch (e) {
+    results.push({ name, pass: false, problems: [`threw: ${e.message}`] });
+  }
+}
+
+/** Parse stdout as exactly one envelope and schema-validate it. */
+function envelopeOf(out, ctx) {
+  const problems = [];
+  const trimmed = out.trim();
+  if (!trimmed) { problems.push(`${ctx}: stdout was empty; expected one envelope object`); return { problems }; }
+  // "Exactly one object, nothing else" — extra lines mean a banner or log leaked.
+  const lines = trimmed.split(/\r?\n/).filter((l) => l.trim());
+  if (lines.length !== 1) problems.push(`${ctx}: stdout had ${lines.length} lines; --json must emit exactly one object`);
+  let env;
+  try { env = JSON.parse(trimmed); }
+  catch (e) { problems.push(`${ctx}: stdout is not valid JSON (${e.message}): ${trimmed.slice(0, 120)}`); return { problems }; }
+  validate(SCHEMA, env, '$', problems).forEach(() => {});
+  return { env, problems };
+}
+
+// ---------------------------------------------------------------------------
+// Structural cases — no network required
+// ---------------------------------------------------------------------------
+check('version: envelope valid, exit 0', () => {
+  const r = run(['--json', 'version']);
+  const { env, problems } = envelopeOf(r.stdout, 'version');
+  if (r.code !== EXIT.OK) problems.push(`expected exit 0, got ${r.code}`);
+  if (env && env.ok !== true) problems.push('expected ok:true');
+  if (env && SDK && env.meta?.sdk !== SDK) problems.push(`meta.sdk should be "${SDK}", got "${env.meta?.sdk}"`);
+  return problems;
+});
+
+check('--help --json: returns the full command tree', () => {
+  const r = run(['--json', '--help']);
+  const { env, problems } = envelopeOf(r.stdout, 'help');
+  if (r.code !== EXIT.OK) problems.push(`expected exit 0, got ${r.code}`);
+  const verbs = env?.data?.verbs;
+  if (!Array.isArray(verbs)) { problems.push('data.verbs must be an array'); return problems; }
+  const names = verbs.map((v) => v.name);
+  for (const required of ['query', 'balance', 'chain', 'faucet', 'credits estimate', 'tx build',
+    'tx submit', 'tx wait', 'tx status', 'keys generate', 'net list', 'net status', 'version']) {
+    if (!names.includes(required)) problems.push(`command tree is missing verb "${required}"`);
+  }
+  for (const v of verbs) {
+    if (typeof v.network !== 'boolean') problems.push(`verb "${v.name}" must declare boolean "network"`);
+    if (typeof v.signs !== 'boolean') problems.push(`verb "${v.name}" must declare boolean "signs"`);
+    if (!v.summary) problems.push(`verb "${v.name}" must have a summary`);
+  }
+  return problems;
+});
+
+check('net list: works offline, exit 0', () => {
+  const r = run(['--json', 'net', 'list']);
+  const { env, problems } = envelopeOf(r.stdout, 'net list');
+  if (r.code !== EXIT.OK) problems.push(`expected exit 0, got ${r.code}`);
+  if (env && !Array.isArray(env.data?.networks)) problems.push('data.networks must be an array');
+  return problems;
+});
+
+check('keys generate: returns a keypair without touching the network', () => {
+  const r = run(['--json', 'keys', 'generate']);
+  const { env, problems } = envelopeOf(r.stdout, 'keys generate');
+  if (r.code !== EXIT.OK) problems.push(`expected exit 0, got ${r.code}`);
+  const d = env?.data || {};
+  if (!d.publicKey) problems.push('data.publicKey missing');
+  if (!d.liteIdentity || !String(d.liteIdentity).startsWith('acc://')) problems.push('data.liteIdentity must be an acc:// URL');
+  return problems;
+});
+
+check('tx build: emits an unsigned body, no network', () => {
+  const r = run(['--json', 'tx', 'build', 'send_tokens', '--param', 'to=acc://x.acme/ACME']);
+  const { env, problems } = envelopeOf(r.stdout, 'tx build');
+  if (r.code !== EXIT.OK) problems.push(`expected exit 0, got ${r.code}`);
+  if (env?.data?.signed !== false) problems.push('data.signed must be false for an unsigned build');
+  return problems;
+});
+
+check('unknown verb: exit 2 with ACC_USAGE', () => {
+  const r = run(['--json', 'definitely-not-a-verb']);
+  const { env, problems } = envelopeOf(r.stdout, 'unknown verb');
+  if (r.code !== EXIT.USAGE) problems.push(`expected exit 2, got ${r.code}`);
+  if (env && env.ok !== false) problems.push('expected ok:false');
+  if (env && env.error?.code !== 'ACC_USAGE') problems.push(`expected ACC_USAGE, got ${env?.error?.code}`);
+  if (env && env.error?.retryable !== false) problems.push('a usage error must not be retryable');
+  return problems;
+});
+
+check('missing required argument: exit 2', () => {
+  const r = run(['--json', 'query']);
+  const { env, problems } = envelopeOf(r.stdout, 'missing arg');
+  if (r.code !== EXIT.USAGE) problems.push(`expected exit 2, got ${r.code}`);
+  if (env && env.error?.code !== 'ACC_USAGE') problems.push(`expected ACC_USAGE, got ${env?.error?.code}`);
+  return problems;
+});
+
+check('mainnet without the env var: refused with exit 2', () => {
+  const r = run(['--json', '--network', 'mainnet', 'query', 'acc://acme']);
+  const { env, problems } = envelopeOf(r.stdout, 'mainnet gate');
+  if (r.code !== EXIT.USAGE) problems.push(`expected exit 2 (refusal), got ${r.code}`);
+  if (env && env.ok !== false) problems.push('mainnet without ACCUMULATE_ALLOW_MAINNET must be refused');
+  return problems;
+});
+
+check('tx submit without a key source: refused with exit 2', () => {
+  const r = run(['--json', 'tx', 'submit', '--envelope', 'nonexistent.json']);
+  const { env, problems } = envelopeOf(r.stdout, 'tx submit key gate');
+  if (r.code !== EXIT.USAGE) problems.push(`expected exit 2, got ${r.code}`);
+  if (env && env.ok !== false) problems.push('signing without an explicit key source must be refused');
+  return problems;
+});
+
+check('never prompts: closed stdin still terminates', () => {
+  const parts = CMD.split(/\s+/);
+  const r = spawnSync(parts[0], [...parts.slice(1), '--json', 'net', 'list'], {
+    cwd: CWD, encoding: 'utf-8', timeout: 60000, input: '',
+    shell: process.platform === 'win32',
+  });
+  return r.status === null ? ['timed out — the CLI may be waiting on input'] : [];
+});
+
+// ---------------------------------------------------------------------------
+// Network cases
+// ---------------------------------------------------------------------------
+if (!OFFLINE) {
+  check('query nonexistent account: exit 1, ACC_ACCOUNT_NOT_FOUND, not retryable', () => {
+    const r = run(['--json', 'query', 'acc://does-not-exist-9f3a2b7c1d.acme']);
+    const { env, problems } = envelopeOf(r.stdout, 'query missing');
+    if (r.code !== EXIT.FAILED) problems.push(`expected exit 1, got ${r.code}`);
+    if (env && env.ok !== false) problems.push('expected ok:false');
+    if (env && env.error?.code !== 'ACC_ACCOUNT_NOT_FOUND') problems.push(`expected ACC_ACCOUNT_NOT_FOUND, got ${env?.error?.code}`);
+    if (env && env.error?.retryable !== false) problems.push('not-found must not be retryable');
+    if (env && !env.error?.remediation) problems.push('error.remediation must be non-empty');
+    return problems;
+  });
+
+  check('unreachable network: exit 3, retryable', () => {
+    const r = run(['--json', '--network', 'local', 'net', 'status']);
+    const { env, problems } = envelopeOf(r.stdout, 'unreachable');
+    if (r.code !== EXIT.NETWORK) problems.push(`expected exit 3, got ${r.code}`);
+    if (env && env.error?.retryable !== true) problems.push('a transport failure must be retryable');
+    return problems;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Report
+// ---------------------------------------------------------------------------
+const passed = results.filter((r) => r.pass).length;
+if (EMIT_JSON) {
+  console.log(JSON.stringify({ cmd: CMD, sdk: SDK, offline: OFFLINE, passed, total: results.length, results }, null, 2));
+} else {
+  console.log(`\nCLI conformance — ${CMD}${SDK ? ` (${SDK})` : ''}${OFFLINE ? ' [offline]' : ''}\n`);
+  for (const r of results) {
+    console.log(`  ${r.pass ? 'PASS' : 'FAIL'}  ${r.name}`);
+    for (const p of r.problems) console.log(`          ${p}`);
+  }
+  console.log(`\n${passed}/${results.length} cases passed\n`);
+}
+process.exit(passed === results.length ? 0 : 1);
