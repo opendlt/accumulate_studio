@@ -24,9 +24,10 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, readFileSync, mkdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, mkdirSync, rmSync, readdirSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, dirname, basename } from 'node:path';
+import { join, dirname, basename, relative } from 'node:path';
+import { isBuiltin } from 'node:module';
 
 // ---------------------------------------------------------------------------
 // Target definitions: what each SDK's README/docs tell an agent, vs reality.
@@ -119,6 +120,46 @@ async function download(url, filename) {
   const path = join(workDir, filename);
   writeFileSync(path, buf);
   return { path, bytes: buf.length };
+}
+
+/**
+ * Extract a .tgz into `dest`. Same cwd/basename dance as listArchive so GNU tar
+ * does not read a Windows `C:\...` path as a remote host spec.
+ * Returns true on success.
+ */
+function extractArchive(path, destName) {
+  const dir = dirname(path);
+  const file = basename(path);
+  const dest = join(dir, destName);
+  mkdirSync(dest, { recursive: true });
+  try {
+    // BOTH paths stay relative to cwd: GNU tar treats an argument containing a
+    // colon (C:\...) as host:path, so an absolute -C silently fails.
+    execFileSync('tar', ['-xzf', file, '-C', destName], {
+      cwd: dir,
+      stdio: ['ignore', 'ignore', 'pipe'],
+      timeout: 120000,
+    });
+    return dest;
+  } catch {
+    return null;
+  }
+}
+
+/** Recursively collect files under `dir` matching `re`. */
+function walkFiles(dir, re, out = []) {
+  let items;
+  try {
+    items = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const e of items) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) walkFiles(p, re, out);
+    else if (re.test(e.name)) out.push(p);
+  }
+  return out;
 }
 
 /**
@@ -259,10 +300,12 @@ async function verifyTarget(t) {
 
   // 3) Type/doc-signal checks that require inspecting the artifact contents
   let entries = null;
+  let artifactPath = null;
   const url = actual.tarball;
   if (url) {
     try {
       const { path, bytes } = await download(url, `${t.lang}-artifact`);
+      artifactPath = path;
       entries = listArchive(path);
       if (!entries) {
         record(t.lang, 'ARTIFACT_INSPECT', 'SKIP', `downloaded ${bytes} bytes but no tar/unzip available to list contents`);
@@ -424,35 +467,143 @@ async function verifyTarget(t) {
   // barrel pulls in @scure/bip32 which is declared as a devDependency. K1
   // ("quickstart-verbatim") read 5/5 green while the published quickstart line
   // was broken. Installing and importing is the only check that catches this.
+  // JS: every bare specifier the published code imports must be a declared
+  // PRODUCTION dependency (or a node builtin).
+  //
+  // This is the npm-CLI-free counterpart to RUNTIME_IMPORT, and it catches the
+  // same defect class: 2.2.0 imported @scure/bip32 while declaring it only under
+  // devDependencies, so `import 'accumulate-sdk-opendlt'` threw
+  // ERR_MODULE_NOT_FOUND for every consumer. Static analysis of the SHIPPED
+  // files needs no install, so it still works on hosts where npm cannot install
+  // — and it covers every module, not only those on the root barrel's path.
+  if (t.expectRuntimeImport && artifactPath) {
+    let dest = null;
+    try {
+      dest = extractArchive(artifactPath, `unpack-${t.lang}`);
+      if (!dest) {
+        record(t.lang, 'DEPS_DECLARED', 'SKIP', 'could not extract the published tarball');
+      } else {
+        const root = join(dest, 'package');
+        const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf-8'));
+        // peer/optional deps are legitimate declarations — the consumer is told
+        // to provide them. devDependencies are NOT: they are absent at install
+        // time, which is precisely the 2.2.0 @scure/bip32 defect.
+        const declared = new Set([
+          ...Object.keys(pkg.dependencies || {}),
+          ...Object.keys(pkg.peerDependencies || {}),
+          ...Object.keys(pkg.optionalDependencies || {}),
+        ]);
+        const files = walkFiles(join(root, 'lib'), /\.js$/);
+        // Static import/export-from and dynamic import() of a literal.
+        const specRe = /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)['"]([^'"]+)['"]/g;
+        const missing = new Map();
+        for (const f of files) {
+          const src = readFileSync(f, 'utf-8');
+          for (const m of src.matchAll(specRe)) {
+            const spec = m[1];
+            if (spec.startsWith('.') || spec.startsWith('/')) continue;    // relative
+            if (spec.startsWith('node:')) continue;                        // builtin
+            if (isBuiltin(spec)) continue;                                 // builtin
+            // Scoped: @scope/name; else first path segment.
+            const bare = spec.startsWith('@') ? spec.split('/').slice(0, 2).join('/') : spec.split('/')[0];
+            if (declared.has(bare)) continue;
+            // A package may reference ITSELF by name — Node's self-reference
+            // feature, valid whenever the package defines `exports`.
+            if (bare === pkg.name && pkg.exports) continue;
+            if (!missing.has(bare)) missing.set(bare, relative(root, f).replace(/\\/g, '/'));
+          }
+        }
+        if (missing.size === 0) {
+          record(
+            t.lang,
+            'DEPS_DECLARED',
+            'PASS',
+            `all bare imports across ${files.length} shipped files resolve to declared dependencies`,
+          );
+        } else {
+          const list = [...missing.entries()].map(([m, f]) => `${m} (${f})`).slice(0, 5).join(', ');
+          record(
+            t.lang,
+            'DEPS_DECLARED',
+            'FAIL',
+            `${missing.size} imported package(s) are NOT declared as runtime dependencies: ${list}` +
+              ` — consumers will get ERR_MODULE_NOT_FOUND`,
+          );
+        }
+      }
+    } catch (e) {
+      record(t.lang, 'DEPS_DECLARED', 'SKIP', `dependency audit could not run: ${e.message}`);
+    } finally {
+      if (dest) { try { rmSync(dest, { recursive: true, force: true, maxRetries: 3 }); } catch { /* windows lock */ } }
+    }
+  }
+
   if (t.expectRuntimeImport) {
     const dir = mkdtempSync(join(tmpdir(), `acc-import-${t.lang}-`));
     try {
       writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'probe', private: true, type: 'module' }));
-      execFileSync('npm', ['install', '--no-audit', '--no-fund', '--silent', t.actualPackage], {
-        cwd: dir, stdio: 'ignore', timeout: 300000, shell: process.platform === 'win32',
-      });
-      const probe = join(dir, 'probe.mjs');
-      writeFileSync(
-        probe,
-        `import * as m from ${JSON.stringify(t.actualPackage)};\n` +
-          `console.log(JSON.stringify({exports: Object.keys(m).length}));\n`,
-      );
-      const out = execFileSync(process.execPath, [probe], {
-        cwd: dir, encoding: 'utf-8', timeout: 120000, stdio: ['ignore', 'pipe', 'pipe'],
-      });
-      const n = JSON.parse(out.trim()).exports;
-      record(t.lang, 'RUNTIME_IMPORT', 'PASS', `root import succeeds in a clean install (${n} exports)`);
-    } catch (e) {
-      const msg = [e.stderr?.toString?.(), e.message].filter(Boolean).join(' ');
-      const missing = msg.match(/Cannot find package '([^']+)'/);
-      record(
-        t.lang,
-        'RUNTIME_IMPORT',
-        'FAIL',
-        missing
-          ? `root import FAILS in a clean install: missing package "${missing[1]}" — likely a runtime dep declared under devDependencies`
-          : `root import FAILS in a clean install: ${msg.slice(0, 220).replace(/\s+/g, ' ')}`,
-      );
+
+      // The install is retried because on hosts with aggressive file locking
+      // (antivirus, indexers) npm extracts PARTIALLY and exits 1 with no
+      // diagnostic, non-deterministically: measured on the maintainer's box, the
+      // same version of the same package yielded 0, then 375, then a tree with
+      // no package.json at all. Retrying rides out transient locks.
+      const installed = () => existsSync(join(dir, 'node_modules', t.actualPackage, 'package.json'));
+      let installErr = null;
+      for (let attempt = 0; attempt < 3 && !installed(); attempt++) {
+        try {
+          execFileSync('npm', ['install', '--no-audit', '--no-fund', '--silent', t.actualPackage], {
+            cwd: dir, stdio: 'ignore', timeout: 300000, shell: process.platform === 'win32',
+          });
+        } catch (e) {
+          installErr = e;
+        }
+      }
+
+      // The discriminator between a HOST problem and a PACKAGE problem: did the
+      // package's own manifest actually land? If it did not, nothing was
+      // installed and the import result would say nothing about the package —
+      // so this is unmeasurable (SKIP), not a defect (FAIL). Reporting it as
+      // FAIL is what turned K1 red for a package whose published tarball
+      // imports cleanly when extracted by hand.
+      if (!installed()) {
+        record(
+          t.lang,
+          'RUNTIME_IMPORT',
+          'SKIP',
+          'npm could not complete a clean install on this host after 3 attempts ' +
+            `(${installErr ? String(installErr.message).slice(0, 90).replace(/\s+/g, ' ') : 'no manifest extracted'}) ` +
+            '— a clean-install import is unmeasurable here; DEPS_DECLARED is the npm-free equivalent',
+        );
+      } else {
+        const probe = join(dir, 'probe.mjs');
+        writeFileSync(
+          probe,
+          `import * as m from ${JSON.stringify(t.actualPackage)};
+` +
+            `console.log(JSON.stringify({exports: Object.keys(m).length}));
+`,
+        );
+        try {
+          const out = execFileSync(process.execPath, [probe], {
+            cwd: dir, encoding: 'utf-8', timeout: 120000, stdio: ['ignore', 'pipe', 'pipe'],
+          });
+          const n = JSON.parse(out.trim()).exports;
+          record(t.lang, 'RUNTIME_IMPORT', 'PASS', `root import succeeds in a clean install (${n} exports)`);
+        } catch (e) {
+          // The package IS installed, so an import failure is a real defect.
+          const msg = [e.stderr?.toString?.(), e.message].filter(Boolean).join(' ');
+          const missing = msg.match(/Cannot find package '([^']+)'/);
+          record(
+            t.lang,
+            'RUNTIME_IMPORT',
+            'FAIL',
+            missing
+              ? `root import FAILS in a clean install: missing package "${missing[1]}" — likely a runtime dep declared under devDependencies`
+              : `root import FAILS in a clean install: ${msg.slice(0, 220).replace(/\s+/g, ' ')}`,
+          );
+        }
+      }
     } finally {
       try { rmSync(dir, { recursive: true, force: true, maxRetries: 3 }); } catch { /* windows lock */ }
     }

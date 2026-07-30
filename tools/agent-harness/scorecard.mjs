@@ -189,21 +189,34 @@ const mcpDescriptor = mcpDescriptorFor();
  * runtime dependency is declared under devDependencies. Counting only name
  * parity reported K1 5/5 green while the published quickstart line did not run.
  *
- * A language passes K1 when its install name matches AND, if an import probe is
- * defined, that probe succeeds.
+ * A language passes K1 when its install name matches AND no import probe has
+ * FAILED. A probe that could not RUN (SKIP) must not read as broken: the npm
+ * install probe cannot complete on hosts with aggressive file locking, and
+ * treating that as a defect reported K1 red for a package whose published
+ * tarball imports cleanly. SKIP is surfaced as `unverified` instead, and the
+ * npm-free DEPS_DECLARED check carries the evidence in that case.
  */
 const k1Pass = LANGS.filter((l) => {
   if (by(l, 'NAME_PARITY')?.status !== 'PASS') return false;
+  // DEPS_DECLARED is the npm-free evidence for the same question and DOES run on
+  // every host, so it gates K1 too. It caught two shipped defects the import
+  // probe could not see: @noble/secp256k1 declared devDependencies-only and rxjs
+  // not declared at all, both imported by modules that ship.
+  if (by(l, 'DEPS_DECLARED')?.status === 'FAIL') return false;
   const imp = by(l, 'RUNTIME_IMPORT');
-  return !imp || imp.status === 'PASS';
+  return !imp || imp.status !== 'FAIL';
 });
 const importChecked = LANGS.filter((l) => by(l, 'RUNTIME_IMPORT'));
-const importBroken = importChecked.filter((l) => by(l, 'RUNTIME_IMPORT').status !== 'PASS');
+const importBroken = importChecked.filter((l) => by(l, 'RUNTIME_IMPORT').status === 'FAIL');
+const importUnverified = importChecked.filter((l) => by(l, 'RUNTIME_IMPORT').status === 'SKIP');
 const k1 =
   `${k1Pass.length}/5 quickstart-runnable (install-name parity` +
   (importChecked.length ? ` + import probe on ${importChecked.join(', ')}` : '') +
   ')' +
-  (importBroken.length ? ` — root import BROKEN: ${importBroken.join(', ')}` : '');
+  (importBroken.length ? ` — root import BROKEN: ${importBroken.join(', ')}` : '') +
+  (importUnverified.length
+    ? ` — import unverified on this host (probe could not run): ${importUnverified.join(', ')}`
+    : '');
 const namePass = k1Pass;
 const llmsPass = LANGS.filter((l) => by(l, 'LLMS_TXT')?.status === 'PASS');
 const versionParity = by('fleet', 'VERSION_PARITY');
@@ -214,7 +227,7 @@ const versionParity = by('fleet', 'VERSION_PARITY');
 // surface is machine-readable, which is K6's job; counting it here too would
 // turn one defect into two red KPIs and misreport a dartdoc gap as "docs drift".
 // Fleet version parity is likewise excluded — that is K8.
-const DRIFT_IDS = ['NAME_PARITY', 'EXPORTS_RESOLVE', 'LLMS_TXT'];
+const DRIFT_IDS = ['NAME_PARITY', 'EXPORTS_RESOLVE', 'LLMS_TXT', 'DEPS_DECLARED'];
 const driftFail = av.results.some((r) => DRIFT_IDS.includes(r.id) && r.status === 'FAIL');
 
 const kpis = [

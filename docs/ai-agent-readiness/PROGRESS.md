@@ -259,3 +259,54 @@ Two consequences, one of which matters beyond publishing:
    and the shipped `llms-full.txt` carries the catalog.** Treat a JS
    `RUNTIME_IMPORT` failure seen on this machine as unproven rather than as a
    defect — and fix the probe to not depend on the npm CLI.
+
+### RUNTIME_IMPORT probe fixed — and it found two shipped defects — 2026-07-30
+
+The JS import probe was reporting FAIL for a host problem. Fixing it properly
+meant answering "would a consumer's import break?" without depending on the npm
+CLI — and the npm-free check immediately found two real defects that had shipped.
+
+**Root cause of the false FAIL.** `npm install` on this box extracts
+*partially* and exits 1 with no diagnostic, **non-deterministically**: the same
+version of the same package yielded 0 files, then 375, then a tree with no
+`package.json` at all (which is why Node then reported `Cannot find package
+.../index.js` — it had fallen back to the default entry). `rm` on the temp dir
+reports `Device or resource busy`, so this is file locking, not a package fault.
+Confirmed environmental because the failure is identical for **2.3.1, 2.3.0,
+2.2.0 and 0.12.3** — including versions published years earlier by a working npm
+CLI — while `is-number` (5 files) and `axios` (333 files) install fine.
+
+**Fix 1 — SKIP is not FAIL.** The probe now retries 3 times and uses the real
+discriminator: *did the package's own `package.json` land?* If not, nothing was
+installed and the import result says nothing about the package → `SKIP`
+("check defined, could not run"). If it did land, an import failure is a genuine
+defect → `FAIL`. K1 now treats `SKIP` as *unverified on this host* rather than
+broken, and says so in the value.
+
+**Fix 2 — a new npm-free check, `DEPS_DECLARED`.** Extracts the published
+tarball and audits every bare import specifier in the shipped `lib/` against the
+declared dependencies (`dependencies` + `peerDependencies` +
+`optionalDependencies`; `devDependencies` deliberately excluded, since that is
+the 2.2.0 `@scure/bip32` defect). Self-reference by package name is allowed when
+`exports` is defined. This runs on any host and covers *every* module, not just
+those on the root barrel's import path.
+
+**What it found — two real defects in the published JS SDK:**
+
+| Package | Declared as | Imported by |
+|---|---|---|
+| `@noble/secp256k1` | **devDependencies only** | `lib/src/crypto/secp256k1_keypair.js` |
+| `rxjs` | **nowhere at all** | `lib/src/ledger/hw/index.js` |
+
+Both modules ship, so any consumer importing them got `ERR_MODULE_NOT_FOUND`.
+Neither sits on the root barrel's path, which is exactly why `EXPORTS_RESOLVE`
+and the root-import probe both passed them. Fixed and published as **npm
+`accumulate-sdk-opendlt` 2.3.2**; `DEPS_DECLARED` now passes across 96 shipped
+files.
+
+**The check gates something.** `DEPS_DECLARED` feeds both K1 and K10 (`DRIFT_IDS`).
+Verified non-vacuous by pinning the verifier at the defective 2.3.1: the check
+FAILs and drags **K1 → 4/5 red and K10 → drift present**. On 2.3.2 both are green.
+
+**Scorecard: 8 green / 2 red / 0 pending.** The two reds are K2 (82%) and K3
+(27.7 turns) — both agent-success metrics that only move when the harness re-runs.

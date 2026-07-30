@@ -1,10 +1,10 @@
 {
-  "baselineDate": "2026-07-29",
+  "baselineDate": "2026-07-30",
   "kpis": [
     {
       "id": "K1",
       "name": "Quickstart-verbatim (install-name parity)",
-      "value": "5/5 quickstart-runnable (install-name parity + import probe on dart, javascript)",
+      "value": "5/5 quickstart-runnable (install-name parity + import probe on dart, javascript) — import unverified on this host (probe could not run): javascript",
       "status": "GREEN",
       "target": "5/5"
     },
@@ -75,7 +75,7 @@
   "perLang": [
     {
       "lang": "rust",
-      "version": "2.3.2",
+      "version": "2.3.3",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "-",
@@ -83,7 +83,7 @@
     },
     {
       "lang": "python",
-      "version": "2.3.0",
+      "version": "2.3.1",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "-",
@@ -91,7 +91,7 @@
     },
     {
       "lang": "dart",
-      "version": "2.3.4",
+      "version": "2.3.5",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "-",
@@ -99,7 +99,7 @@
     },
     {
       "lang": "csharp",
-      "version": "2.3.2",
+      "version": "2.3.3",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "-",
@@ -107,7 +107,7 @@
     },
     {
       "lang": "javascript",
-      "version": "2.3.0",
+      "version": "2.3.2",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "PASS",
@@ -497,7 +497,7 @@
         "lang": "rust",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk @ 2.3.2 (crates)"
+        "detail": "accumulate-sdk @ 2.3.3 (crates)"
       },
       {
         "lang": "rust",
@@ -509,7 +509,7 @@
         "lang": "rust",
         "id": "TYPE_SIGNALS",
         "status": "PASS",
-        "detail": "docs.rs built rustdoc for 2.3.2 (type surface reachable)"
+        "detail": "docs.rs built rustdoc for 2.3.3 (type surface reachable)"
       },
       {
         "lang": "rust",
@@ -521,7 +521,7 @@
         "lang": "python",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk-opendlt @ 2.3.0 (pypi)"
+        "detail": "accumulate-sdk-opendlt @ 2.3.1 (pypi)"
       },
       {
         "lang": "python",
@@ -545,7 +545,7 @@
         "lang": "dart",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "opendlt_accumulate @ 2.3.4 (pub)"
+        "detail": "opendlt_accumulate @ 2.3.5 (pub)"
       },
       {
         "lang": "dart",
@@ -575,7 +575,7 @@
         "lang": "csharp",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "Acme.Net.Sdk @ 2.3.2 (nuget)"
+        "detail": "Acme.Net.Sdk @ 2.3.3 (nuget)"
       },
       {
         "lang": "csharp",
@@ -599,7 +599,7 @@
         "lang": "javascript",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk-opendlt @ 2.3.0 (npm)"
+        "detail": "accumulate-sdk-opendlt @ 2.3.2 (npm)"
       },
       {
         "lang": "javascript",
@@ -609,9 +609,15 @@
       },
       {
         "lang": "javascript",
-        "id": "RUNTIME_IMPORT",
+        "id": "DEPS_DECLARED",
         "status": "PASS",
-        "detail": "root import succeeds in a clean install (51 exports)"
+        "detail": "all bare imports across 96 shipped files resolve to declared dependencies"
+      },
+      {
+        "lang": "javascript",
+        "id": "RUNTIME_IMPORT",
+        "status": "SKIP",
+        "detail": "npm could not complete a clean install on this host after 3 attempts (Command failed: npm install --no-audit --no-fund --silent accumulate-sdk-opendlt) — a clean-install import is unmeasurable here; DEPS_DECLARED is the npm-free equivalent"
       },
       {
         "lang": "javascript",
@@ -640,7 +646,8 @@
     ],
     "counts": {
       "INFO": 5,
-      "PASS": 19
+      "PASS": 19,
+      "SKIP": 1
     }
   }
 }
