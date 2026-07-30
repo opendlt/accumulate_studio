@@ -378,3 +378,42 @@ that entry must be matched on code rather than text.
 modest: the remaining high-value cases (insufficient credits, unauthorized
 signer, insufficient balance) need a funded signing key, so they are not yet
 corpus-confirmed.
+
+### RB-06 complete — all six devcontainers booted — 2026-07-30
+
+| Repo | up | postCreate | Commands verified in-container |
+|---|:--:|:--:|---|
+| dart | ✅ | ✅ | `dart analyze` · **`dart test` 440 passed** |
+| csharp | ✅ | ✅ | `dotnet build` 0 errors · **`dotnet test` 537 passed, 0 failed** |
+| rust | ✅ | ✅ | `cargo build` · **`cargo test --lib` 90 passed, 0 failed** |
+| javascript | ✅ | ✅ | root import 51 exports · **`test:unit` 101 passed** |
+| python | ✅ | ✅ | imports source 2.3.1 · **`pytest` 2351 passed, 17 skipped, 0 failed** |
+| studio | ✅ | ✅ | `npm ci && build:types && install:proxy` |
+
+All six run as `remoteUser: root` (Windows bind mounts refuse non-root metadata
+writes) and default to `ACCUMULATE_NETWORK=kermit` with no baked credentials.
+
+#### Four defects that only a clean container could find
+
+1. **`npm ci` broken in the JS repo** — `package.json` gained two dependencies
+   without a `package-lock.json` update. Fixed via `npm install --package-lock-only`.
+2. **`npm ci` broken in accumulate-studio** — pre-existing: the lockfile was
+   missing `accumulate-studio-mcp@1.1.0` and `esbuild@0.20.2`. `npm ci` is the
+   first command in both AGENTS.md and the devcontainer, so setup failed for
+   anyone starting clean, including CI. Fixed.
+3. **`pytest.ini` pointed at a directory that does not exist** — `testpaths =
+   unified/tests` and `pythonpath = unified/src`, while this repo root *is*
+   `unified/`. So `pythonpath` silently did nothing and host test runs imported a
+   **stale `site-packages` copy (2.3.0)** instead of the source (2.3.1). Same
+   wrapper-layout bug class as the `cd unified` defect in AGENTS.md. Repointed to
+   `tests` / `src`; host runs now test the source.
+4. **Two tests asserted APIs that do not exist**, masked by defect 3:
+   `mainnet.endpoints["mainnet"]` (the client exposes a single `endpoint` string,
+   and the test's comment claimed the opposite) and `envelope["transaction"]`
+   treated as a dict when it is a list. Both fixed.
+
+Also: the coverage gate shelled out to `coverage report` and **failed** when no
+`.coverage` file existed — which is the case in every fresh container and CI job,
+and passed on the maintainer's box only through leftover untracked state. It now
+skips with an actionable reason when there is no data to gate on. Verified in both
+states: 3 skipped without data, 3 passed with it.
