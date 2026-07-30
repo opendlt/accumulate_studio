@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "cli",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "send-tokens",
+    "file": "04-send-tokens.yaml",
+    "title": "Send ACME tokens between accounts",
+    "specHash": "04b11771f6b0"
+  },
+  "sdkVersion": "2.3.2",
+  "passed": false,
+  "turns": 18,
+  "interventions": 0,
+  "failureClass": "missing-prereq",
+  "assertions": [
+    {
+      "assertion": "tx_status == delivered",
+      "subject": "tx_status",
+      "op": "==",
+      "passed": false,
+      "actual": "unknown",
+      "expected": "delivered"
+    },
+    {
+      "assertion": "recipient_balance_increased_by == 5 ACME",
+      "subject": "recipient_balance_increased_by",
+      "op": "==",
+      "passed": false,
+      "actual": "0",
+      "actualAcme": 0,
+      "expected": "5 ACME"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://2f36a531905ae39f2b317e27267fba0e017438f8ecf7eb5b",
+    "liteTokenAccountUrl": "acc://2f36a531905ae39f2b317e27267fba0e017438f8ecf7eb5b/ACME",
+    "txids": []
+  },
+  "environment": {
+    "liteIdentity": "acc://2f36a531905ae39f2b317e27267fba0e017438f8ecf7eb5b",
+    "liteTokenAccount": "acc://2f36a531905ae39f2b317e27267fba0e017438f8ecf7eb5b/ACME",
+    "publicKeyHex": "79df804aa7709719bda131a5449b10374f076d1841fe0d6602fcbb490cbc8be3",
+    "suggestedAdiUrl": "acc://harness-14c01370.acme"
+  },
+  "durationMs": 244433,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-30\\cli\\transcripts\\python--send-tokens.txt",
+  "error": null,
+  "startedAt": "2026-07-30T08:21:40.822Z",
+  "finishedAt": "2026-07-30T08:26:39.706Z"
+}

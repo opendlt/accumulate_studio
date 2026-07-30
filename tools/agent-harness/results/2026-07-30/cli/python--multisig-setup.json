@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "cli",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "multisig-setup",
+    "file": "07-multisig-setup.yaml",
+    "title": "Multi-signature setup",
+    "specHash": "a9a1532bdf4f"
+  },
+  "sdkVersion": "2.3.2",
+  "passed": false,
+  "turns": 15,
+  "interventions": 0,
+  "failureClass": "other",
+  "assertions": [
+    {
+      "assertion": "key_page_threshold == 2",
+      "subject": "key_page_threshold",
+      "op": "==",
+      "passed": false,
+      "actual": 1,
+      "expected": 2
+    },
+    {
+      "assertion": "multisig_tx_status == delivered",
+      "subject": "multisig_tx_status",
+      "op": "==",
+      "passed": false,
+      "actual": "unknown",
+      "expected": "delivered"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://0d7faed78ac52c469c14ac9f7d3eff2823fa5eddeed4eb39",
+    "liteTokenAccountUrl": "acc://0d7faed78ac52c469c14ac9f7d3eff2823fa5eddeed4eb39/ACME",
+    "txids": []
+  },
+  "environment": {
+    "liteIdentity": "acc://0d7faed78ac52c469c14ac9f7d3eff2823fa5eddeed4eb39",
+    "liteTokenAccount": "acc://0d7faed78ac52c469c14ac9f7d3eff2823fa5eddeed4eb39/ACME",
+    "publicKeyHex": "5b79b3613f329964071003f4f7278277b847f71af5e14924c8353cbb762c15bc",
+    "suggestedAdiUrl": "acc://harness-8998c3bd.acme"
+  },
+  "durationMs": 177749,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-30\\cli\\transcripts\\python--multisig-setup.txt",
+  "error": null,
+  "startedAt": "2026-07-30T08:44:14.889Z",
+  "finishedAt": "2026-07-30T08:51:50.975Z"
+}

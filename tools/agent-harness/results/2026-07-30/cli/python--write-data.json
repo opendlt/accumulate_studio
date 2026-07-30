@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "cli",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "write-data",
+    "file": "05-write-data.yaml",
+    "title": "Write data to a data account",
+    "specHash": "9e9c1d819284"
+  },
+  "sdkVersion": "2.3.2",
+  "passed": false,
+  "turns": 25,
+  "interventions": 0,
+  "failureClass": "other",
+  "assertions": [
+    {
+      "assertion": "data_account_exists == true",
+      "subject": "data_account_exists",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "assertion": "retrieved_entry == payload",
+      "subject": "retrieved_entry",
+      "op": "==",
+      "passed": false,
+      "actual": null,
+      "expected": "hello accumulate"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://97bdde6a737e159431e0884183c74d4767b711bac9d21b4a",
+    "liteTokenAccountUrl": "acc://97bdde6a737e159431e0884183c74d4767b711bac9d21b4a/ACME",
+    "adiUrl": "acc://harness-0fe627bf.acme",
+    "keyBookUrl": "acc://harness-0fe627bf.acme/book",
+    "keyPageUrl": "acc://harness-0fe627bf.acme/book/1",
+    "dataAccountUrl": "acc://harness-0fe627bf.acme/data",
+    "txids": []
+  },
+  "environment": {
+    "liteIdentity": "acc://97bdde6a737e159431e0884183c74d4767b711bac9d21b4a",
+    "liteTokenAccount": "acc://97bdde6a737e159431e0884183c74d4767b711bac9d21b4a/ACME",
+    "publicKeyHex": "fc98cc2fb2d1ee3966468e0adceb599baa326ca96247a169787c2e701a4cb1c7",
+    "suggestedAdiUrl": "acc://harness-0fe627bf.acme"
+  },
+  "durationMs": 238870,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-30\\cli\\transcripts\\python--write-data.txt",
+  "error": null,
+  "startedAt": "2026-07-30T08:26:41.076Z",
+  "finishedAt": "2026-07-30T08:35:16.246Z"
+}

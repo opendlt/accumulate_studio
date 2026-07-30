@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "cli",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "custom-token",
+    "file": "06-custom-token.yaml",
+    "title": "Custom token issuance",
+    "specHash": "f9068d5ec05f"
+  },
+  "sdkVersion": "2.3.2",
+  "passed": false,
+  "turns": 21,
+  "interventions": 0,
+  "failureClass": "missing-prereq",
+  "assertions": [
+    {
+      "assertion": "token_issuer_exists == true",
+      "subject": "token_issuer_exists",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "assertion": "token_account_balance == issue_amount",
+      "subject": "token_account_balance",
+      "op": "==",
+      "passed": false,
+      "actual": 0,
+      "expected": 1000
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://5e98e4df72cd025acca71aa94fd07e3dbbf3c4c624cc212d",
+    "liteTokenAccountUrl": "acc://5e98e4df72cd025acca71aa94fd07e3dbbf3c4c624cc212d/ACME",
+    "txids": []
+  },
+  "environment": {
+    "liteIdentity": "acc://5e98e4df72cd025acca71aa94fd07e3dbbf3c4c624cc212d",
+    "liteTokenAccount": "acc://5e98e4df72cd025acca71aa94fd07e3dbbf3c4c624cc212d/ACME",
+    "publicKeyHex": "822b649127e571a05813d69954ec3db8c79b124b55372878b578501dc505a31d",
+    "suggestedAdiUrl": "acc://harness-1480e961.acme"
+  },
+  "durationMs": 262169,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-30\\cli\\transcripts\\python--custom-token.txt",
+  "error": null,
+  "startedAt": "2026-07-30T08:35:17.440Z",
+  "finishedAt": "2026-07-30T08:44:13.446Z"
+}

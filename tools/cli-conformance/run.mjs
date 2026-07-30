@@ -199,10 +199,21 @@ check('keys generate: returns a keypair without touching the network', () => {
 });
 
 check('tx build: emits an unsigned body, no network', () => {
-  const r = run(['--json', 'tx', 'build', 'send_tokens', '--param', 'to=acc://x.acme/ACME']);
+  const r = run(['--json', 'tx', 'build', 'send_tokens_single',
+    '--param', 'to_url=acc://x.acme/ACME', '--param', 'amount=100000000']);
   const { env, problems } = envelopeOf(r.stdout, 'tx build');
   if (r.code !== EXIT.OK) problems.push(`expected exit 0, got ${r.code}`);
   if (env?.data?.signed !== false) problems.push('data.signed must be false for an unsigned build');
+  return problems;
+});
+
+check('tx build rejects an unknown op instead of echoing it', () => {
+  // The stub used to echo any op back with exit 0, so a typo looked like success
+  // and only failed later at submit — or worse, never.
+  const r = run(['--json', 'tx', 'build', 'not_a_real_operation']);
+  const { env, problems } = envelopeOf(r.stdout, 'tx build unknown op');
+  if (r.code !== EXIT.USAGE) problems.push(`expected exit 2, got ${r.code}`);
+  if (env && env.error?.code !== 'ACC_USAGE') problems.push(`expected ACC_USAGE, got ${env?.error?.code}`);
   return problems;
 });
 
@@ -232,11 +243,47 @@ check('mainnet without the env var: refused with exit 2', () => {
   return problems;
 });
 
-check('tx submit without a key source: refused with exit 2', () => {
-  const r = run(['--json', 'tx', 'submit', '--envelope', 'nonexistent.json']);
-  const { env, problems } = envelopeOf(r.stdout, 'tx submit key gate');
+check('tx sign without a key source: refused with exit 2', () => {
+  // tx sign is the ONLY signing verb and must never fall back to an ambient key.
+  const r = run(['--json', 'tx', 'sign', '--body', 'b.json', '--principal', 'acc://x.acme', '--signer', 'acc://x.acme']);
+  const { env, problems } = envelopeOf(r.stdout, 'tx sign key gate');
   if (r.code !== EXIT.USAGE) problems.push(`expected exit 2, got ${r.code}`);
   if (env && env.ok !== false) problems.push('signing without an explicit key source must be refused');
+  return problems;
+});
+
+check('tx submit declares signs:false and takes no key flags', () => {
+  // It never signed; it used to ACCEPT --key-file/--key-env and ignore them,
+  // which advertised a capability that did not exist.
+  const r = run(['--json', '--help']);
+  const { env, problems } = envelopeOf(r.stdout, 'help');
+  const verbs = env?.data?.verbs ?? [];
+  const submit = verbs.find((v) => v.name === 'tx submit');
+  const sign = verbs.find((v) => v.name === 'tx sign');
+  if (!submit) { problems.push('tx submit missing from the command tree'); return problems; }
+  if (!sign) { problems.push('tx sign missing from the command tree'); return problems; }
+  if (submit.signs !== false) problems.push('tx submit must declare signs:false — it does not sign');
+  if (sign.signs !== true) problems.push('tx sign must declare signs:true');
+  const submitFlags = (submit.flags ?? []).map((f) => f.name);
+  for (const bad of ['--key-file', '--key-env']) {
+    if (submitFlags.includes(bad)) problems.push(`tx submit must not take ${bad}: it never uses it`);
+  }
+  const signFlags = (sign.flags ?? []).map((f) => f.name);
+  for (const req of ['--body', '--principal', '--signer']) {
+    if (!signFlags.includes(req)) problems.push(`tx sign must take ${req}`);
+  }
+  return problems;
+});
+
+check('tx build emits a real transaction body', () => {
+  // Emitting {op, params} alone is a stub: nothing downstream can sign it.
+  const r = run(['--json', 'tx', 'build', 'send_tokens_single',
+    '--param', 'to_url=acc://x.acme/ACME', '--param', 'amount=100000000']);
+  const { env, problems } = envelopeOf(r.stdout, 'tx build body');
+  if (r.code !== EXIT.OK) problems.push(`expected exit 0, got ${r.code}`);
+  const body = env?.data?.body;
+  if (!body || typeof body !== 'object') problems.push('data.body must be a real transaction body');
+  else if (!body.type) problems.push('data.body must carry a transaction `type`');
   return problems;
 });
 
