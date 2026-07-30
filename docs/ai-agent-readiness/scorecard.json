@@ -46,8 +46,8 @@
     {
       "id": "K7",
       "name": "Error-actionability",
-      "value": "100% (8/8 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0",
-      "status": "GREEN",
+      "value": "90% (9/10 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0",
+      "status": "RED",
       "target": ">= 95%"
     },
     {
@@ -99,7 +99,7 @@
     },
     {
       "lang": "csharp",
-      "version": "2.3.3",
+      "version": "2.3.4",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "-",
@@ -563,7 +563,7 @@
         "lang": "dart",
         "id": "TYPE_SIGNALS",
         "status": "PASS",
-        "detail": "dartdoc comments in 8/40 sampled lib files; pub.dev clean (score 0/0)"
+        "detail": "dartdoc comments in 8/40 sampled lib files; pub.dev clean (score 130/160)"
       },
       {
         "lang": "dart",
@@ -575,7 +575,7 @@
         "lang": "csharp",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "Acme.Net.Sdk @ 2.3.3 (nuget)"
+        "detail": "Acme.Net.Sdk @ 2.3.4 (nuget)"
       },
       {
         "lang": "csharp",

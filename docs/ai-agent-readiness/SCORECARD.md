@@ -14,7 +14,7 @@
 | K4 | Human interventions per task | 🟢 | 0.00 per task | <= 0.2 |
 | K5 | API-ingestion coverage (llms.txt shipped) | 🟢 | 5/5 | 5/5 (Phase 2) |
 | K6 | Typed-surface ratio | 🟢 | 5/5 languages expose a machine-readable API surface | 100% |
-| K7 | Error-actionability | 🟢 | 100% (8/8 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0 | >= 95% |
+| K7 | Error-actionability | 🔴 | 90% (9/10 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0 | >= 95% |
 | K8 | Fleet version parity | 🟢 | distinct minor lines: 1 (2.3) — target 1 (K8) | 1 minor line |
 | K9 | MCP installable in <= 1 config block | 🟢 | accumulate-studio-mcp@1.1.0 on npm (tools + resources + prompts) | published |
 | K10 | Docs-vs-artifact drift (artifact-verify) | 🟢 | clean | CI-gated, 0 drift |
@@ -26,7 +26,7 @@
 | rust | 2.3.4 | ✅ | ✅ | · | ✅ |
 | python | 2.3.2 | ✅ | ✅ | · | ✅ |
 | dart | 2.3.6 | ✅ | ✅ | · | ✅ |
-| csharp | 2.3.3 | ✅ | ✅ | · | ✅ |
+| csharp | 2.3.4 | ✅ | ✅ | · | ✅ |
 | javascript | 2.3.3 | ✅ | ✅ | ✅ | ✅ |
 
 ## Agent runs — sdk mode (2026-07-29)
@@ -53,13 +53,14 @@ The class is the prioritization input — it says *which runbook* fixes the fail
 
 ## CLI mode vs SDK mode (RB-04) — 2026-07-30
 
-1/2 cli-mode runs passed.
+2/3 cli-mode runs passed.
 
 | Lang | Task | SDK turns | CLI turns | Delta |
 |---|---|--:|--:|--:|
+| python | add-credits | 21 | 18 | -3 |
 | python | lite-account | 16 | 7 | -9 |
 
-**Mean turns: 16.0 (sdk) -> 7.0 (cli) — 56% fewer, n=1 paired runs.**
+**Mean turns: 18.5 (sdk) -> 12.5 (cli) — 32% fewer, n=2 paired runs.**
 
 ## Legend
 
