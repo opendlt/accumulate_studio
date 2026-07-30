@@ -121,7 +121,7 @@ Deleting `.devcontainer/` restores host-based development exactly. No repo code 
 
 ## As-built (2026-07-29)
 
-**Status: authored for all six repos — NOT container-verified.**
+**Status: authored for all six repos. Dart BOOTED and partially verified (2026-07-30); the other five remain unbooted.**
 
 | Repo | Image | postCreateCommand |
 |---|---|---|
@@ -151,10 +151,68 @@ and forwards 5173 (Vite) and 8000 (uvicorn).
 - **C# sets `DOTNET_NOLOGO`, `DOTNET_CLI_TELEMETRY_OPTOUT`, and `TERM=dumb`** so
   `dotnet` stdout is parseable — banner and ANSI colour both corrupt an agent's read.
 
+### Verification — Dart, booted for real (2026-07-30)
+
+Correcting an earlier claim in this file and in `PROGRESS.md`: **Docker is
+available on the maintainer's box** (29.4.3, daemon reachable). The
+`@devcontainers/cli` (0.88.0) installs from npm, so `devcontainer up` works and
+"verify by destruction" is achievable — it was not attempted before.
+
+`devcontainer up --workspace-folder .` on the Dart SDK returns
+`{"outcome":"success","remoteUser":"vscode"}`:
+
+| Check | Result |
+|---|---|
+| Image pulls, container starts | ✅ |
+| `postCreateCommand` (`dart pub get`) | ✅ resolved all dependencies |
+| `remoteUser: vscode` exists | ✅ — created by the `common-utils` feature |
+| `ACCUMULATE_NETWORK=kermit` in the container | ✅ |
+| `dart analyze` | ✅ runs (755 issues — warnings/infos, no errors) |
+| `dart test` | ❌ **FAILS** |
+
+One predicted failure did not materialise: the `dart:stable` base image has no
+`vscode` user, but the `common-utils` feature creates it, so `remoteUser` is fine.
+
+### The real finding: non-root cannot write to a Windows bind mount
+
+`dart test` fails before running a single test:
+
+```
+FileSystemException: Failed to set file modification time,
+path = '/workspaces/unified/pubspec.lock' (OS Error: Operation not permitted, errno = 1)
+  at touch (package:pub/src/io.dart)
+  at Entrypoint.isResolutionUpToDate
+```
+
+Diagnosed: on Docker Desktop for Windows, bind-mounted files are presented as
+`root:root` (verified: `stat -c '%U:%G' pubspec.lock` → `root:root`, while
+`id -un` → `vscode`). The directory is `drwxrwxrwx` so *content* writes succeed,
+but `utime` on a root-owned file is refused for a non-root user — and `dart pub`
+touches `pubspec.lock` to validate resolution freshness. Confirmed causal: the
+same `touch pubspec.lock` succeeds in the same image as `-u root`.
+
+**This is a fleet-wide risk, not a Dart quirk.** Every one of these containers
+writes into the workspace during its documented commands — `pip install -e .`
+(egg-info), `npm ci` (node_modules), `cargo build` (target/), `dotnet restore`
+(obj/). Any of them can hit the same wall on a Windows host.
+
+Deliberately NOT "fixed" by flipping all six to `remoteUser: root`: that is
+untested for the other five, and on Linux/macOS hosts it makes workspace files
+root-owned, which is a worse default for the majority case. The two real options,
+to be decided and then verified per repo:
+
+1. `remoteUser: root` — proven to fix the symptom here; weakens the non-root
+   posture and degrades Linux/macOS ergonomics.
+2. A named-volume workspace (`workspaceMount` with `type=volume`) — gives proper
+   Linux ownership and much better I/O on Windows, at the cost of the live host
+   bind. Arguably the *better* fit for an agent sandbox, since the agent gets an
+   isolated writable workspace.
+
 ### The gap that matters
 
-**Step 2, "verify by destruction", was not performed.** No container in this set has
-been built, attached to, or run through its repo's full `AGENTS.md` command set. The
+**Step 2 is now 1/6 done, not 0/6 — and the first one found a real defect.** Dart
+is booted and its command set partially verified (above). The other five have not
+been built, attached to, or run through their `AGENTS.md` command set. The
 files are authored against verified toolchain facts (each version above was read from
 the repo's own `Cargo.toml` / `pyproject.toml` / `pubspec.yaml` / `.csproj` /
 `package.json`), but authored-and-plausible is not the same as booted-and-green.
