@@ -90,13 +90,37 @@ function validate(schema, value, path = '$', errors = []) {
   return errors;
 }
 
-function run(args) {
-  const parts = CMD.split(/\s+/);
-  const r = spawnSync(parts[0], [...parts.slice(1), ...args], {
+/**
+ * Spawn the CLI under test.
+ *
+ * `--cmd` may be a bare executable ("target/debug/accumulate.exe") or a launcher
+ * plus arguments ("python -m accumulate_client.cli", "dart run bin/accumulate.dart").
+ * Splitting it and passing argv[0] to a shell breaks on Windows as soon as the
+ * path contains forward slashes, so spawn WITHOUT a shell and let the OS resolve
+ * the executable directly. On Windows a relative path also needs normalizing to
+ * backslashes.
+ */
+function spawnCli(extraArgs) {
+  const parts = CMD.split(/\s+/).filter(Boolean);
+  let exe = parts[0];
+  if (process.platform === 'win32' && (exe.includes('/') || exe.includes('\\'))) {
+    exe = join(CWD, exe.replace(/\//g, '\\'));
+  }
+  return { exe, args: [...parts.slice(1), ...extraArgs] };
+}
+
+function run(args, input) {
+  const { exe, args: argv } = spawnCli(args);
+  const opts = {
     cwd: CWD, encoding: 'utf-8', timeout: 180000,
-    shell: process.platform === 'win32',
     env: { ...process.env, ACCUMULATE_ALLOW_MAINNET: '' },
-  });
+  };
+  if (input !== undefined) opts.input = input;
+  let r = spawnSync(exe, argv, opts);
+  // A launcher on PATH (python, dart, node) may still need the shell on Windows.
+  if (r.error && r.error.code === 'ENOENT' && process.platform === 'win32') {
+    r = spawnSync(exe, argv, { ...opts, shell: true });
+  }
   return { code: r.status, stdout: r.stdout ?? '', stderr: r.stderr ?? '', err: r.error };
 }
 
@@ -217,12 +241,8 @@ check('tx submit without a key source: refused with exit 2', () => {
 });
 
 check('never prompts: closed stdin still terminates', () => {
-  const parts = CMD.split(/\s+/);
-  const r = spawnSync(parts[0], [...parts.slice(1), '--json', 'net', 'list'], {
-    cwd: CWD, encoding: 'utf-8', timeout: 60000, input: '',
-    shell: process.platform === 'win32',
-  });
-  return r.status === null ? ['timed out — the CLI may be waiting on input'] : [];
+  const r = run(['--json', 'net', 'list'], '');
+  return r.code === null ? ['timed out — the CLI may be waiting on input'] : [];
 });
 
 // ---------------------------------------------------------------------------
