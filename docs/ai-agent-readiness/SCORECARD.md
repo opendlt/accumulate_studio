@@ -23,11 +23,11 @@
 
 | Lang | Version | Name parity | Type signals | Exports | llms.txt |
 |---|---|:--:|:--:|:--:|:--:|
-| rust | 2.3.3 | ✅ | ✅ | · | ✅ |
-| python | 2.3.1 | ✅ | ✅ | · | ✅ |
-| dart | 2.3.5 | ✅ | ✅ | · | ✅ |
+| rust | 2.3.4 | ✅ | ✅ | · | ✅ |
+| python | 2.3.2 | ✅ | ✅ | · | ✅ |
+| dart | 2.3.6 | ✅ | ✅ | · | ✅ |
 | csharp | 2.3.3 | ✅ | ✅ | · | ✅ |
-| javascript | 2.3.2 | ✅ | ✅ | ✅ | ✅ |
+| javascript | 2.3.3 | ✅ | ✅ | ✅ | ✅ |
 
 ## Agent runs — sdk mode (2026-07-29)
 
@@ -50,6 +50,16 @@ The class is the prioritization input — it says *which runbook* fixes the fail
 | `no-artifacts` | 5 | yes | RB-03 |
 | `timeout` | 2 | yes | — |
 | `harness-setup-failed` | 1 | no | — |
+
+## CLI mode vs SDK mode (RB-04) — 2026-07-30
+
+1/2 cli-mode runs passed.
+
+| Lang | Task | SDK turns | CLI turns | Delta |
+|---|---|--:|--:|--:|
+| python | lite-account | 16 | 7 | -9 |
+
+**Mean turns: 16.0 (sdk) -> 7.0 (cli) — 56% fewer, n=1 paired runs.**
 
 ## Legend
 

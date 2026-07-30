@@ -45,7 +45,7 @@ any claim about whether the task worked — correctness is verified independentl
 against the chain. Report identifiers only.
 `.trim();
 
-function buildPrompt(task, lang, env, inputs) {
+function buildPrompt(task, lang, env, inputs, mode = 'sdk', workspace = null) {
   const spec = task.prompt_to_agent.replace(/<LANG>/g, lang);
   return [
     spec,
@@ -61,9 +61,23 @@ function buildPrompt(task, lang, env, inputs) {
       : '- Task inputs: (none)',
     '',
     '## Rules',
-    `- The SDK is ALREADY INSTALLED in this directory. Use it. Do not clone or vendor any source.`,
-    `- Target ${env.network} only. Never mainnet.`,
-    `- Run your program and confirm it succeeds before finishing.`,
+    ...(mode === 'cli'
+      ? [
+          // RB-04. The whole point of cli mode is to measure the terminal path,
+          // so the agent must NOT fall back to writing a program — that would
+          // silently re-measure sdk mode and make the comparison meaningless.
+          `- Use the \`accumulate\` CLI. It is ALREADY INSTALLED. Invoke it as: ${workspace?.cliCmd ?? 'accumulate'}`,
+          `- **Do NOT write, compile or run a program.** No source files, no ${lang} project. The CLI alone.`,
+          `- Pass \`--json\` to every command: stdout is then exactly one envelope object.`,
+          `- Read \`ok\` and the exit code (0 ok / 1 failed / 2 usage / 3 network). On failure the envelope carries an \`ACC_*\` code and a \`retryable\` flag — only retry when \`retryable\` is true.`,
+          `- Run \`${workspace?.cliCmd ?? 'accumulate'} --help --json\` first to discover every verb and flag.`,
+          `- Target ${env.network} only. Never mainnet.`,
+        ]
+      : [
+          `- The SDK is ALREADY INSTALLED in this directory. Use it. Do not clone or vendor any source.`,
+          `- Target ${env.network} only. Never mainnet.`,
+          `- Run your program and confirm it succeeds before finishing.`,
+        ]),
     '',
     '## Required output',
     ARTIFACT_CONTRACT,
@@ -74,8 +88,8 @@ function buildPrompt(task, lang, env, inputs) {
  * @param {object} ctx { task, lang, env, inputs, workspace, timeoutMs, model }
  */
 export async function run(ctx) {
-  const { task, lang, env, inputs, workspace, timeoutMs = 900000, model } = ctx;
-  const prompt = buildPrompt(task, lang, env, inputs);
+  const { task, lang, env, inputs, workspace, timeoutMs = 900000, model, mode = 'sdk' } = ctx;
+  const prompt = buildPrompt(task, lang, env, inputs, mode, workspace);
 
   // The prompt goes over STDIN, never argv. A multi-thousand-character
   // multi-line prompt passed as an argument gets mangled by the Windows shell
@@ -235,8 +249,8 @@ export function checkAvailable() {
 }
 
 /** Write the prompt to the workspace for post-hoc inspection. */
-export function dumpPrompt(workspaceDir, task, lang, env, inputs) {
-  writeFileSync(join(workspaceDir, 'harness-prompt.txt'), buildPrompt(task, lang, env, inputs));
+export function dumpPrompt(workspaceDir, task, lang, env, inputs, mode = 'sdk') {
+  writeFileSync(join(workspaceDir, 'harness-prompt.txt'), buildPrompt(task, lang, env, inputs, mode, { dir: workspaceDir }));
 }
 
 export { buildPrompt };

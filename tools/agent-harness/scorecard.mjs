@@ -313,6 +313,40 @@ if (agent.measured) {
   md += `\`\`\`bash\nnpm run harness:preflight    # toolchains + backend available?\nnpm run harness:run         # 8 tasks x 5 langs, sdk mode\nnpm run verify:scorecard\n\`\`\`\n`;
 }
 
+// --- RB-04: cli mode vs sdk mode -------------------------------------------
+// The reason the CLI exists is turns-to-first-tx. Reporting cli runs in isolation
+// would not test that claim; only the paired delta on the SAME task does.
+const cliRuns = loadRuns(HERE, 'cli');
+if (cliRuns.runs.length && agent.measured && agent.mode === 'sdk') {
+  const sdkBy = new Map(agent.runs.map((r) => [`${r.lang}/${r.task.id}`, r]));
+  const paired = cliRuns.runs
+    .map((c) => ({ cli: c, sdk: sdkBy.get(`${c.lang}/${c.task.id}`) }))
+    .filter(
+      (p) =>
+        p.sdk && p.cli.passed && p.sdk.passed &&
+        typeof p.cli.turns === 'number' && typeof p.sdk.turns === 'number',
+    );
+
+  md += `\n## CLI mode vs SDK mode (RB-04) — ${cliRuns.date}\n\n`;
+  const cliScored = cliRuns.runs.filter((r) => r.passed || countsTowardK2(r.failureClass));
+  const cliPassed = cliRuns.runs.filter((r) => r.passed).length;
+  md += `${cliPassed}/${cliScored.length} cli-mode runs passed.\n\n`;
+
+  if (paired.length) {
+    const sdkMean = paired.reduce((a, p) => a + p.sdk.turns, 0) / paired.length;
+    const cliMean = paired.reduce((a, p) => a + p.cli.turns, 0) / paired.length;
+    md += `| Lang | Task | SDK turns | CLI turns | Delta |\n|---|---|--:|--:|--:|\n`;
+    for (const p of paired) {
+      md += `| ${p.cli.lang} | ${p.cli.task.id} | ${p.sdk.turns} | ${p.cli.turns} | ${p.cli.turns - p.sdk.turns} |\n`;
+    }
+    md += `\n**Mean turns: ${sdkMean.toFixed(1)} (sdk) -> ${cliMean.toFixed(1)} (cli)`;
+    md += ` — ${Math.round((1 - cliMean / sdkMean) * 100)}% fewer, n=${paired.length} paired runs.**\n`;
+  } else {
+    md += `No task has a passing run in BOTH modes yet, so no paired comparison is possible.\n`;
+  }
+}
+
+
 md += `\n## Legend\n\n`;
 md += `- 🟢 green · 🔴 red · ⚪ pending measurement\n`;
 md += `- ✅ pass · ❌ fail · 🔶 expected-fail (delivered in a later phase) · ⚠️ skip (check defined, could not run) · ℹ️ info\n`;

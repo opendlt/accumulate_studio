@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "cli",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "create-adi",
+    "file": "02-create-adi.yaml",
+    "title": "Create an ADI (Accumulate Digital Identifier)",
+    "specHash": "93a188817a2e"
+  },
+  "sdkVersion": "2.3.2",
+  "passed": false,
+  "turns": 16,
+  "interventions": 0,
+  "failureClass": "missing-prereq",
+  "assertions": [
+    {
+      "assertion": "adi_account_exists == true",
+      "subject": "adi_account_exists",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "assertion": "key_book_exists == true",
+      "subject": "key_book_exists",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://20db23b240676f894acc381d2a5c848c24379c83a0c71b4e",
+    "liteTokenAccountUrl": "acc://20db23b240676f894acc381d2a5c848c24379c83a0c71b4e/ACME"
+  },
+  "environment": {
+    "liteIdentity": "acc://20db23b240676f894acc381d2a5c848c24379c83a0c71b4e",
+    "liteTokenAccount": "acc://20db23b240676f894acc381d2a5c848c24379c83a0c71b4e/ACME",
+    "publicKeyHex": "212af4d1ecd428eb441717e5b1b011338007e5a8ca4eef460f52a265ead9b886",
+    "suggestedAdiUrl": "acc://harness-28fac340.acme"
+  },
+  "durationMs": 156909,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-30\\cli\\transcripts\\python--create-adi.txt",
+  "error": null,
+  "startedAt": "2026-07-30T08:09:35.154Z",
+  "finishedAt": "2026-07-30T08:13:15.647Z"
+}

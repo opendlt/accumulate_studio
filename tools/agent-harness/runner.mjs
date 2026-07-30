@@ -162,7 +162,7 @@ async function executeRun({ lang, task, mode, backendName, backend, model, timeo
 
   // 1. Workspace with the SDK installed from the registry.
   try {
-    workspace = await createWorkspaceWithRetry(lang);
+    workspace = await createWorkspaceWithRetry(lang, { mode });
   } catch (e) {
     if (e instanceof InstallFailure) {
       // Do NOT hardcode `install-fail` here. An install can fail because the
@@ -232,8 +232,8 @@ async function executeRun({ lang, task, mode, backendName, backend, model, timeo
     // 3. Run the agent.
     let result;
     try {
-      backend.dumpPrompt?.(workspace.dir, task, lang, env, inputs);
-      result = await backend.run({ task, lang, env, inputs, workspace, timeoutMs, model });
+      backend.dumpPrompt?.(workspace.dir, task, lang, env, inputs, mode);
+      result = await backend.run({ task, lang, env, inputs, workspace, timeoutMs, model, mode });
     } catch (e) {
       return fail('other', `backend error: ${e.message}`);
     }
@@ -361,10 +361,10 @@ async function main() {
     return;
   }
 
-  if (mode !== 'sdk') {
+  if (mode !== 'sdk' && mode !== 'cli') {
     throw new Error(
-      `mode "${mode}" has no driver yet — only "sdk" is implemented (RB-01). ` +
-        `mcp/codegen/cli modes land with RB-02/RB-07/RB-04.`,
+      `mode "${mode}" has no driver yet — "sdk" (RB-01) and "cli" (RB-04) are implemented. ` +
+        `mcp/codegen modes land with RB-02/RB-07.`,
     );
   }
 

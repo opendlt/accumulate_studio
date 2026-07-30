@@ -75,7 +75,7 @@ function run(cmd, args, cwd, timeoutMs = 300000) {
  * Create and populate a workspace. Returns { dir, lang, sdkVersion, installLog }.
  * Throws InstallFailure so the runner can classify it `install-fail`.
  */
-export async function createWorkspace(lang, { keep = false } = {}) {
+export async function createWorkspace(lang, { keep = false, mode = 'sdk' } = {}) {
   const dir = mkdtempSync(join(tmpdir(), `acc-harness-${lang}-`));
   const log = [];
   let sdkVersion = null;
@@ -158,7 +158,74 @@ export async function createWorkspace(lang, { keep = false } = {}) {
     throw new InstallFailure(lang, (detail || '(no output captured)').slice(0, 4000));
   }
 
-  return { dir, lang, sdkVersion, installLog: log.join('\n').slice(0, 20000) };
+  // RB-04 `cli` mode: the agent drives the published `accumulate` CLI instead of
+  // writing a program, so the workspace needs the EXECUTABLE, not just the
+  // library. Installing a package is not the same as installing its binary in
+  // any of these ecosystems.
+  let cliCmd = null;
+  if (mode === 'cli') {
+    try {
+      cliCmd = await installCli(lang, dir, log);
+    } catch (e) {
+      const detail = [e.message, e.stdout?.toString?.(), e.stderr?.toString?.()]
+        .filter(Boolean).join(String.fromCharCode(10)).trim();
+      if (!keep) safeRemove(dir);
+      throw new InstallFailure(lang, `CLI install failed: ${(detail || '(no output)').slice(0, 4000)}`);
+    }
+  }
+
+  return { dir, lang, sdkVersion, cliCmd, installLog: log.join(String.fromCharCode(10)).slice(0, 20000) };
+}
+
+
+/**
+ * Install the SDK's CLI executable into `dir` and return the command that runs it.
+ *
+ * Each ecosystem separates "add the library" from "install its binary", so this
+ * cannot reuse the sdk-mode install:
+ *   python  pip puts a console script in the venv's Scripts/bin
+ *   js      the package `bin` is linked into node_modules/.bin, but bin-linking
+ *           is unreliable on some hosts, so invoke the entry file directly
+ *   dart    `pub add` does NOT expose executables; `pub global activate` does
+ *   csharp  `dotnet add package` does NOT install a tool; `dotnet tool install` does
+ *   rust    `cargo add` does NOT build a binary; `cargo install` does (and compiles)
+ */
+async function installCli(lang, dir, log) {
+  switch (lang) {
+    case 'python': {
+      const exe = process.platform === 'win32'
+        ? join(dir, '.venv', 'Scripts', 'accumulate.exe')
+        : join(dir, '.venv', 'bin', 'accumulate');
+      if (!existsSync(exe)) throw new Error(`pip did not install a console script at ${exe}`);
+      return exe;
+    }
+    case 'javascript': {
+      const entry = join(dir, 'node_modules', PACKAGES.javascript, 'lib', 'src', 'cli.js');
+      if (!existsSync(entry)) throw new Error(`published package has no CLI entry at ${entry}`);
+      return `node "${entry}"`;
+    }
+    case 'dart': {
+      log.push(await run('dart', ['pub', 'global', 'activate', PACKAGES.dart], dir));
+      return `dart pub global run ${PACKAGES.dart}:accumulate`;
+    }
+    case 'csharp': {
+      // --tool-path keeps the tool inside the workspace: no global state, and
+      // parallel runs of different versions cannot collide.
+      log.push(await run('dotnet', ['tool', 'install', 'Acme.Net.Sdk.Cli', '--tool-path', '.'], dir));
+      const exe = join(dir, process.platform === 'win32' ? 'accumulate.exe' : 'accumulate');
+      if (!existsSync(exe)) throw new Error(`dotnet tool install produced no executable at ${exe}`);
+      return exe;
+    }
+    case 'rust': {
+      // Compiles from source, so it is slow; --root keeps it workspace-local.
+      log.push(await run('cargo', ['install', PACKAGES.rust, '--bin', 'accumulate', '--root', '.'], dir));
+      const exe = join(dir, 'bin', process.platform === 'win32' ? 'accumulate.exe' : 'accumulate');
+      if (!existsSync(exe)) throw new Error(`cargo install produced no binary at ${exe}`);
+      return exe;
+    }
+    default:
+      throw new Error(`unknown language ${lang}`);
+  }
 }
 
 /**
