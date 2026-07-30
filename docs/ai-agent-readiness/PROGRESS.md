@@ -417,3 +417,33 @@ Also: the coverage gate shelled out to `coverage report` and **failed** when no
 and passed on the maintainer's box only through leftover untracked state. It now
 skips with an actionable reason when there is no data to gate on. Verified in both
 states: 3 skipped without data, 3 passed with it.
+
+### RB-04 complete — all four pillars now closed — 2026-07-30
+
+`--json` was the last hole in the code-intelligence pillar. All five SDKs now ship
+a conforming `accumulate` CLI: 13 verbs, one envelope shape, RB-05 error codes,
+exit codes 0/1/2/3, a machine-readable `--help --json` command tree, and a
+mainnet gate that needs both the flag and the env var.
+
+**`npm run verify:cli` → 5/5 implementations, 60/60 cases.** The suite
+(`tools/cli-conformance/run.mjs`) drives each CLI as a black box and validates every
+envelope against `schemas/cli-envelope.schema.json`, so one gate covers all five —
+the only thing that reliably prevents five dialects.
+
+Building it found four defects, each caught by exercising the thing rather than
+reading the signature:
+
+1. **The shipped Dart CLI's `query` verb never worked** — it sent
+   `{"type":"query-account","url":...}` where V3 requires `{"scope": url}`.
+2. **C#'s `SignatureKeyPair` prints to stdout**, corrupting the envelope (same
+   class as Python's `QuickStart`). Quarantined in the CLI; the SDK should stop.
+3. **Python's `get_version_info()` makes no network call**, so a `net status` built
+   on it claimed `reachable: true` against a dead endpoint.
+4. **`query_chain` takes `(url, chain_name, range_options)`**, not `start`/`count`.
+
+Four-pillar status: **MCP ✅ · AGENTS.md ✅ · LSP/code-intelligence ✅ ·
+DevTools+sandboxing ✅** (Studio browser introspection, RB-07·B, remains partial).
+
+Open on RB-04: harness `cli` mode (the K3 measurement), a CLI section in the
+generated `llms.txt`/`AGENTS.md`, and publishing — none of the five CLIs ships until
+the next release is cut.
