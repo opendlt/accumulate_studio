@@ -170,3 +170,89 @@ Both need a CLI section (RB-03 generator work). `llms.txt` should show the one-l
 ## Rollback
 
 Additive per SDK. Removing the entry point declaration (`[project.scripts]`, `bin`, `PackAsTool`, `executables`) un-ships the CLI without touching library code.
+
+---
+
+## As-built (2026-07-30)
+
+**Status: done. 5/5 implementations conform — 60/60 conformance cases pass.**
+
+```
+$ npm run verify:cli
+  PASS  python      12/12 cases passed
+  PASS  javascript  12/12 cases passed
+  PASS  dart        12/12 cases passed
+  PASS  rust        12/12 cases passed
+  PASS  csharp      12/12 cases passed
+5/5 implementations conform
+```
+
+| Piece | Where |
+|---|---|
+| Normative spec | `docs/ai-agent-readiness/CLI-SPEC.md` |
+| Envelope schema | `schemas/cli-envelope.schema.json` |
+| Conformance suite (language-agnostic) | `tools/cli-conformance/run.mjs` |
+| All-five gate | `tools/cli-conformance/all.mjs` · `npm run verify:cli` |
+| Python | `src/accumulate_client/cli.py` + `[project.scripts]` |
+| JavaScript | `src/cli.ts` → `lib/src/cli.js` + `bin` |
+| Dart | `bin/accumulate.dart` + `executables:` |
+| Rust | `src/bin/accumulate.rs` (fills the empty dir) |
+| C# | `src/Acme.Net.Sdk.Cli/` (`PackAsTool`, `ToolCommandName=accumulate`) |
+
+All 13 verbs in all 5 SDKs. Every `--json` response is one envelope on stdout;
+errors carry RB-05 `ACC_*` codes with `retryable`; exit codes 0/1/2/3 behave as
+specified; mainnet needs both the flag and the env var; signing verbs refuse
+without an explicit key source; nothing prompts.
+
+### Deviations from the plan
+
+**C# is a separate project, not flags on `Acme.Net.Sdk`.** The plan said to add
+`PackAsTool` to the library. `PackAsTool` requires `OutputType=Exe`, which would
+turn the published library into an executable and break every consumer that
+references it. `Acme.Net.Sdk.Cli` references the library instead — the only way
+to ship both a library and a tool.
+
+**`clap` was not adopted for Rust.** The surface is 13 verbs with a handful of
+flags and the other four parse argv by hand; hand-rolling kept behaviour
+identical across implementations and the dependency set unchanged.
+
+**Binary naming: `accumulate` everywhere** (decided once, per the plan's
+instruction). The collision risk on a machine with several SDKs installed is
+accepted and documented, with the ecosystem-scoped invocation listed per SDK in
+the spec.
+
+### Four defects the work exposed
+
+1. **The shipped Dart CLI's `query` verb never worked.** `bin/accumulate.dart`
+   called V3 with `{"type": "query-account", "url": ...}`. The V3 API takes
+   `{"scope": <url>}` and rejects the former with `-33502 invalid Type`. Verified
+   against a live node and fixed; the same wrong shape had been inherited by the
+   port before testing caught it.
+
+2. **`SignatureKeyPair` in the C# SDK prints to stdout.** `[SignatureKeyPair]
+   Derived pubkey (hex): ...` went to stdout mid-command, corrupting the envelope.
+   Same defect class as Python's `QuickStart` printing progress. The CLI now
+   captures anything the SDK writes during the call and forwards it to stderr —
+   but the SDK should not be printing at all.
+
+3. **`get_version_info()` in the Python SDK makes no network call.** `net status`
+   built on it reported `reachable: true` with nothing listening. It now does a
+   real round trip, and only a *transport* failure counts as unreachable — a
+   protocol rejection proves the node answered.
+
+4. **`query_chain` does not take `start`/`count` keywords** (it takes
+   `(url, chain_name, range_options)`), so the first Python implementation raised
+   `TypeError`. Caught by exercising every verb against Kermit rather than trusting
+   the signature.
+
+### Still open
+
+- **Step 5, harness `cli` mode.** `runner.mjs` still declares
+  `MODES = ['sdk', 'mcp', 'codegen']`. Adding `'cli'` and re-running the 8 tasks is
+  the measurement that would show turns-to-first-tx dropping for read-heavy tasks —
+  the whole K3 argument for building this. Not done.
+- **Step 6, CLI section in `AGENTS.md`/`llms.txt`.** The generator does not yet emit
+  one, so an agent reading `llms.txt` still will not discover the CLI exists.
+- **Publishing.** None of the five CLIs is published: the Python console script,
+  JS `bin`, Dart `executables`, Rust bin and the new C# tool package all ship on
+  the next release, which has not been cut.

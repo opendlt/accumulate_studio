@@ -41,7 +41,8 @@
     "build:headless": "node scripts/build-headless.mjs",
     "studio:headless": "node tools/studio-headless/dist/studio-headless.mjs",
     "verify:codegen": "node scripts/build-headless.mjs && node tools/studio-headless/dist/studio-headless.mjs --all",
-    "harness:clean": "node tools/agent-harness/runner.mjs --clean-cache"
+    "harness:clean": "node tools/agent-harness/runner.mjs --clean-cache",
+    "verify:cli": "node tools/cli-conformance/all.mjs"
   },
   "devDependencies": {
     "concurrently": "^8.2.0",
