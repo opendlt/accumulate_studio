@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "cli",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "add-credits",
+    "file": "03-add-credits.yaml",
+    "title": "Add credits to a key page",
+    "specHash": "990525ec062a"
+  },
+  "sdkVersion": "2.3.2",
+  "passed": true,
+  "turns": 18,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_credit_balance >= 5000",
+      "subject": "key_page_credit_balance",
+      "op": ">=",
+      "passed": true,
+      "actual": 200000,
+      "expected": 5000
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://d42354031de2e1fb8f573691dcef7e164dab3a39d4ddc3d9",
+    "liteTokenAccountUrl": "acc://d42354031de2e1fb8f573691dcef7e164dab3a39d4ddc3d9/ACME",
+    "adiUrl": "acc://harness-134c6381.acme",
+    "keyBookUrl": "acc://harness-134c6381.acme/book",
+    "keyPageUrl": "acc://harness-134c6381.acme/book/1",
+    "txids": []
+  },
+  "environment": {
+    "liteIdentity": "acc://d42354031de2e1fb8f573691dcef7e164dab3a39d4ddc3d9",
+    "liteTokenAccount": "acc://d42354031de2e1fb8f573691dcef7e164dab3a39d4ddc3d9/ACME",
+    "publicKeyHex": "b5490302ac764013697f5a8fceb40f9bf701e0b1458cc72482cbe62c3a99a986",
+    "suggestedAdiUrl": "acc://harness-134c6381.acme"
+  },
+  "durationMs": 203226,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-30\\cli\\transcripts\\python--add-credits.txt",
+  "error": null,
+  "startedAt": "2026-07-30T08:13:17.584Z",
+  "finishedAt": "2026-07-30T08:21:39.251Z"
+}

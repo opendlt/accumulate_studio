@@ -245,14 +245,48 @@ the spec.
    `TypeError`. Caught by exercising every verb against Kermit rather than trusting
    the signature.
 
-### Still open
+### Steps 5 and 6, and publishing — all closed (2026-07-30)
 
-- **Step 5, harness `cli` mode.** `runner.mjs` still declares
-  `MODES = ['sdk', 'mcp', 'codegen']`. Adding `'cli'` and re-running the 8 tasks is
-  the measurement that would show turns-to-first-tx dropping for read-heavy tasks —
-  the whole K3 argument for building this. Not done.
-- **Step 6, CLI section in `AGENTS.md`/`llms.txt`.** The generator does not yet emit
-  one, so an agent reading `llms.txt` still will not discover the CLI exists.
-- **Publishing.** None of the five CLIs is published: the Python console script,
-  JS `bin`, Dart `executables`, Rust bin and the new C# tool package all ship on
-  the next release, which has not been cut.
+**Step 5 — harness `cli` mode: done.** `runner.mjs` drives it, and the workspace
+installs the CLI *binary* rather than the library, which is a genuinely different
+operation in every ecosystem (`pip` console script · `pub global activate` ·
+`dotnet tool install --tool-path .` · `cargo install --root .` · the package's
+`bin` entry file). The prompt in `cli` mode forbids writing a program — otherwise
+the run silently re-measures `sdk` mode and the comparison means nothing.
+
+The scorecard now emits a **paired** SDK-vs-CLI turns table: same task, both modes,
+passing runs only. An unpaired average would be an unfair comparison.
+
+**Step 6 — CLI documented: done.** `llms.txt` gains a "CLI (no code required)"
+section (consumer genre: install line, the three common reads, the envelope and
+exit-code contract). `AGENTS.md` gains a "CLI" section (contributor genre: how to
+run it from *this checkout* and how to re-run the conformance suite).
+
+`cliScoped` and `cliDev` are deliberately separate fields — they differ for C#,
+Dart and JS, and a manifest that prints `dotnet accumulate` for a checkout is
+telling a contributor to run something that is not installed.
+
+**Published — all five, 2026-07-30:**
+
+| Package | Version | Registry | CLI reaches the user via |
+|---|---|---|---|
+| `accumulate-sdk` | 2.3.4 | crates.io | `cargo install accumulate-sdk` |
+| `accumulate-sdk-opendlt` | 2.3.2 | PyPI | `[project.scripts]` console script |
+| `opendlt_accumulate` | 2.3.6 | pub.dev | `executables:` |
+| `Acme.Net.Sdk` | 2.3.4 | NuGet | (library) |
+| **`Acme.Net.Sdk.Cli`** | **2.3.4** | **NuGet** | `dotnet tool install -g Acme.Net.Sdk.Cli` |
+| `accumulate-sdk-opendlt` | 2.3.3 | npm | `bin` |
+
+Each was verified by installing from the registry into a clean workspace and
+running `--json version`: python, dart, csharp and rust all resolve and execute.
+JavaScript was verified by fetching the published tarball directly, because
+`npm install` cannot complete on this host (a pre-existing environment defect,
+documented in `PROGRESS.md`) — the published `bin` and entry file are correct.
+
+### One more defect this found
+
+**C# hardcoded its own version.** `Program.cs` carried
+`const string SdkVersion = "2.3.3"`, which went stale the moment the csproj was
+bumped — the CLI would have reported 2.3.3 while shipping as 2.3.4. It now reads
+`AssemblyInformationalVersion`, so the drift cannot recur. Dart keeps a constant
+(it has no runtime access to `pubspec.yaml`) with a comment tying it to releases.

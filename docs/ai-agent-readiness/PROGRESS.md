@@ -447,3 +447,51 @@ DevTools+sandboxing ✅** (Studio browser introspection, RB-07·B, remains parti
 Open on RB-04: harness `cli` mode (the K3 measurement), a CLI section in the
 generated `llms.txt`/`AGENTS.md`, and publishing — none of the five CLIs ships until
 the next release is cut.
+
+### RB-04 fully closed — harness `cli` mode, docs, and published — 2026-07-30
+
+The three items left open when the CLIs were written are now done.
+
+**1. Harness `cli` mode.** `runner.mjs` drives it. The workspace installs the CLI
+**binary**, which is a different operation from installing the library in every
+ecosystem — `pip` console script, `pub global activate`, `dotnet tool install
+--tool-path .`, `cargo install --root .`, and the package's `bin` entry file.
+The `cli`-mode prompt forbids writing a program: without that the agent would
+quietly fall back to the SDK and the run would re-measure `sdk` mode.
+
+The scorecard reports a **paired** comparison — same task, both modes, passing
+runs only — because an unpaired average across different tasks would not test the
+claim.
+
+**First paired result (python / lite-account): 16 turns (sdk) → 7-9 turns (cli).**
+This is the RB-04 hypothesis measured rather than asserted.
+
+**2. CLI documented in the generated artifacts.** `llms.txt` gains a
+"CLI (no code required)" section — install line, the three common reads, and the
+envelope/exit-code contract. `AGENTS.md` gains a contributor-genre "CLI" section:
+how to run it from *this checkout* and how to re-run the conformance suite.
+`cliScoped` (consumer) and `cliDev` (from a checkout) are separate fields because
+they differ for C#, Dart and JS — printing `dotnet accumulate` as a checkout
+command would send a contributor to a binary that is not installed.
+
+**3. Published — all five, plus a new package:**
+
+| Package | Version | Registry |
+|---|---|---|
+| `accumulate-sdk` | **2.3.4** | crates.io |
+| `accumulate-sdk-opendlt` | **2.3.2** | PyPI |
+| `opendlt_accumulate` | **2.3.6** | pub.dev |
+| `Acme.Net.Sdk` | **2.3.4** | NuGet |
+| **`Acme.Net.Sdk.Cli`** | **2.3.4** | **NuGet (new — the dotnet tool)** |
+| `accumulate-sdk-opendlt` | **2.3.3** | npm |
+
+`artifact-verify`: **19 pass / 0 fail**, K8 parity holds (single 2.3 minor line).
+
+Each CLI was verified by installing from its registry into a clean workspace and
+running `--json version`. Python, Dart, C# and Rust all resolve and execute.
+JavaScript was verified from the published tarball directly, since `npm install`
+cannot complete on this host — the known environment defect, not a package one.
+
+**Defect found:** the C# CLI hardcoded `SdkVersion = "2.3.3"` and would have
+shipped as 2.3.4 while reporting 2.3.3. It now reads
+`AssemblyInformationalVersion`, so that drift cannot recur.
