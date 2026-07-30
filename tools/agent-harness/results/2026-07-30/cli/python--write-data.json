@@ -10,47 +10,56 @@
     "title": "Write data to a data account",
     "specHash": "9e9c1d819284"
   },
-  "sdkVersion": "2.3.2",
-  "passed": false,
-  "turns": 25,
+  "sdkVersion": "2.3.3",
+  "passed": true,
+  "turns": 43,
   "interventions": 0,
-  "failureClass": "other",
+  "failureClass": null,
   "assertions": [
     {
       "assertion": "data_account_exists == true",
       "subject": "data_account_exists",
       "op": "==",
-      "passed": false,
-      "actual": false,
+      "passed": true,
+      "actual": true,
       "expected": true
     },
     {
       "assertion": "retrieved_entry == payload",
       "subject": "retrieved_entry",
       "op": "==",
-      "passed": false,
-      "actual": null,
+      "passed": true,
+      "actual": "hello accumulate",
       "expected": "hello accumulate"
     }
   ],
   "artifacts": {
-    "liteIdentityUrl": "acc://97bdde6a737e159431e0884183c74d4767b711bac9d21b4a",
-    "liteTokenAccountUrl": "acc://97bdde6a737e159431e0884183c74d4767b711bac9d21b4a/ACME",
-    "adiUrl": "acc://harness-0fe627bf.acme",
-    "keyBookUrl": "acc://harness-0fe627bf.acme/book",
-    "keyPageUrl": "acc://harness-0fe627bf.acme/book/1",
-    "dataAccountUrl": "acc://harness-0fe627bf.acme/data",
-    "txids": []
+    "liteIdentityUrl": "acc://e3682cacf00b3ab7337c415acb2c3442ca7b31eba7e26d7e",
+    "liteTokenAccountUrl": "acc://e3682cacf00b3ab7337c415acb2c3442ca7b31eba7e26d7e/ACME",
+    "adiUrl": "acc://harness-a645836b-agent.acme",
+    "keyBookUrl": "acc://harness-a645836b-agent.acme/book",
+    "keyPageUrl": "acc://harness-a645836b-agent.acme/book/1",
+    "dataAccountUrl": "acc://harness-a645836b-agent.acme/data",
+    "entryHash": "80d921ad4f794fb7a41108b6d06440dc7cd613c7fc3a96aca772bf8a688f1d75",
+    "retrievedEntry": "hello accumulate",
+    "txid": "acc://eaf63115e44e95eb9b0806dbceaf4d68e8ae967d48cd86de0f6aeb7dffa4367a@harness-a645836b-agent.acme/data",
+    "txids": [
+      "acc://429ed4ce8260dd2d9616d12940cc19b88a09c6455d69ea5eaec7dc29c5ec4a8e@e3682cacf00b3ab7337c415acb2c3442ca7b31eba7e26d7e/ACME",
+      "acc://281ebc74f72ea9ecfae80ce3961733182ca60e289974a014cdc5420c44be3137@e3682cacf00b3ab7337c415acb2c3442ca7b31eba7e26d7e/ACME",
+      "acc://d05de194bf82fb7522fbab6fc94e80fb9607e7d729d55e005a1d4ff786c26db4@e3682cacf00b3ab7337c415acb2c3442ca7b31eba7e26d7e/ACME",
+      "acc://fc85ee35098918a3835f34903423b1fac3bcfdd42f0e4cbd1f59f25919b61532@harness-a645836b-agent.acme",
+      "acc://eaf63115e44e95eb9b0806dbceaf4d68e8ae967d48cd86de0f6aeb7dffa4367a@harness-a645836b-agent.acme/data"
+    ]
   },
   "environment": {
-    "liteIdentity": "acc://97bdde6a737e159431e0884183c74d4767b711bac9d21b4a",
-    "liteTokenAccount": "acc://97bdde6a737e159431e0884183c74d4767b711bac9d21b4a/ACME",
-    "publicKeyHex": "fc98cc2fb2d1ee3966468e0adceb599baa326ca96247a169787c2e701a4cb1c7",
-    "suggestedAdiUrl": "acc://harness-0fe627bf.acme"
+    "liteIdentity": "acc://e3682cacf00b3ab7337c415acb2c3442ca7b31eba7e26d7e",
+    "liteTokenAccount": "acc://e3682cacf00b3ab7337c415acb2c3442ca7b31eba7e26d7e/ACME",
+    "publicKeyHex": "105cf29a419cc05b6cb92d38462541906bf5fcb85f348c0b0ec78a821088525d",
+    "suggestedAdiUrl": "acc://harness-a645836b.acme"
   },
-  "durationMs": 238870,
+  "durationMs": 867764,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-30\\cli\\transcripts\\python--write-data.txt",
   "error": null,
-  "startedAt": "2026-07-30T08:26:41.076Z",
-  "finishedAt": "2026-07-30T08:35:16.246Z"
+  "startedAt": "2026-07-30T22:16:55.580Z",
+  "finishedAt": "2026-07-30T22:36:28.277Z"
 }

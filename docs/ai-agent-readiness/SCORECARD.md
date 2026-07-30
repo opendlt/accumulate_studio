@@ -14,7 +14,7 @@
 | K4 | Human interventions per task | 🟢 | 0.00 per task | <= 0.2 |
 | K5 | API-ingestion coverage (llms.txt shipped) | 🟢 | 5/5 | 5/5 (Phase 2) |
 | K6 | Typed-surface ratio | 🟢 | 5/5 languages expose a machine-readable API surface | 100% |
-| K7 | Error-actionability | 🔴 | 90% (9/10 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0 | >= 95% |
+| K7 | Error-actionability | 🟢 | 100% (8/8 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0 | >= 95% |
 | K8 | Fleet version parity | 🟢 | distinct minor lines: 1 (2.3) — target 1 (K8) | 1 minor line |
 | K9 | MCP installable in <= 1 config block | 🟢 | accumulate-studio-mcp@1.1.0 on npm (tools + resources + prompts) | published |
 | K10 | Docs-vs-artifact drift (artifact-verify) | 🟢 | clean | CI-gated, 0 drift |
@@ -23,11 +23,11 @@
 
 | Lang | Version | Name parity | Type signals | Exports | llms.txt |
 |---|---|:--:|:--:|:--:|:--:|
-| rust | 2.3.4 | ✅ | ✅ | · | ✅ |
-| python | 2.3.2 | ✅ | ✅ | · | ✅ |
-| dart | 2.3.6 | ✅ | ✅ | · | ✅ |
+| rust | 2.3.5 | ✅ | ✅ | · | ✅ |
+| python | 2.3.3 | ✅ | ✅ | · | ✅ |
+| dart | 2.3.7 | ✅ | ✅ | · | ✅ |
 | csharp | 2.3.4 | ✅ | ✅ | · | ✅ |
-| javascript | 2.3.3 | ✅ | ✅ | ✅ | ✅ |
+| javascript | 2.3.4 | ✅ | ✅ | ✅ | ✅ |
 
 ## Agent runs — sdk mode (2026-07-29)
 
@@ -53,14 +53,18 @@ The class is the prioritization input — it says *which runbook* fixes the fail
 
 ## CLI mode vs SDK mode (RB-04) — 2026-07-30
 
-2/3 cli-mode runs passed.
+7/8 cli-mode runs passed.
 
 | Lang | Task | SDK turns | CLI turns | Delta |
 |---|---|--:|--:|--:|
-| python | add-credits | 21 | 18 | -3 |
-| python | lite-account | 16 | 7 | -9 |
+| python | add-credits | 21 | 13 | -8 |
+| python | create-adi | 18 | 18 | 0 |
+| python | custom-token | 32 | 25 | -7 |
+| python | lite-account | 16 | 8 | -8 |
+| python | send-tokens | 23 | 22 | -1 |
+| python | write-data | 70 | 43 | -27 |
 
-**Mean turns: 18.5 (sdk) -> 12.5 (cli) — 32% fewer, n=2 paired runs.**
+**Mean turns: 30.0 (sdk) -> 21.5 (cli) — 28% fewer, n=6 paired runs.**
 
 ## Legend
 

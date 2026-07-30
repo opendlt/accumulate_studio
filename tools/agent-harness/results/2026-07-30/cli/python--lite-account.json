@@ -10,9 +10,9 @@
     "title": "Lite account setup",
     "specHash": "6cee357d09fe"
   },
-  "sdkVersion": "2.3.2",
+  "sdkVersion": "2.3.3",
   "passed": true,
-  "turns": 7,
+  "turns": 8,
   "interventions": 0,
   "failureClass": null,
   "assertions": [
@@ -27,22 +27,22 @@
     }
   ],
   "artifacts": {
-    "liteIdentityUrl": "acc://63cd0924464656b381d1dd69530e63b799fd61f0a997b5f8",
-    "liteTokenAccountUrl": "acc://63cd0924464656b381d1dd69530e63b799fd61f0a997b5f8/ACME",
-    "txid": "acc://c0f5a52de1aea59d193c149ad85c07c252e4b01e1c3715d40c48e7125d37967d@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+    "liteIdentityUrl": "acc://08f59e5630a20c3c00309a8cb924f188c574a25ef604bf97",
+    "liteTokenAccountUrl": "acc://08f59e5630a20c3c00309a8cb924f188c574a25ef604bf97/ACME",
+    "txid": "acc://6977053a0c36bede56d39bc887f17668377b6fda9b3561d345c7ea2ff8613e8f@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
     "txids": [
-      "acc://c0f5a52de1aea59d193c149ad85c07c252e4b01e1c3715d40c48e7125d37967d@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
+      "acc://6977053a0c36bede56d39bc887f17668377b6fda9b3561d345c7ea2ff8613e8f@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
     ]
   },
   "environment": {
-    "liteIdentity": "acc://54cc0c94a5073a388584f51d735200c12c779c3939ef049e",
-    "liteTokenAccount": "acc://54cc0c94a5073a388584f51d735200c12c779c3939ef049e/ACME",
-    "publicKeyHex": "e39443511f6fe3c533686f495aeaeb847afd704af312f8310a5d50a8209a66f8",
-    "suggestedAdiUrl": "acc://harness-bcccfe2c.acme"
+    "liteIdentity": "acc://3040849d261989c2bd81a8dafae6b45af5be061c17d7951b",
+    "liteTokenAccount": "acc://3040849d261989c2bd81a8dafae6b45af5be061c17d7951b/ACME",
+    "publicKeyHex": "e0ff73ead3b0ff2158b0390c21ca2d659d088082c32e0c6fe5d9fb07e9e575f6",
+    "suggestedAdiUrl": "acc://harness-a03f57c5.acme"
   },
-  "durationMs": 153628,
+  "durationMs": 151954,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-30\\cli\\transcripts\\python--lite-account.txt",
   "error": null,
-  "startedAt": "2026-07-30T08:06:16.227Z",
-  "finishedAt": "2026-07-30T08:09:33.964Z"
+  "startedAt": "2026-07-30T21:49:00.341Z",
+  "finishedAt": "2026-07-30T21:52:34.241Z"
 }

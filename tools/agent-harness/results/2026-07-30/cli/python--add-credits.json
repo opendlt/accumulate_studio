@@ -10,9 +10,9 @@
     "title": "Add credits to a key page",
     "specHash": "990525ec062a"
   },
-  "sdkVersion": "2.3.2",
+  "sdkVersion": "2.3.3",
   "passed": true,
-  "turns": 18,
+  "turns": 13,
   "interventions": 0,
   "failureClass": null,
   "assertions": [
@@ -21,27 +21,32 @@
       "subject": "key_page_credit_balance",
       "op": ">=",
       "passed": true,
-      "actual": 200000,
+      "actual": 700000,
       "expected": 5000
     }
   ],
   "artifacts": {
-    "liteIdentityUrl": "acc://d42354031de2e1fb8f573691dcef7e164dab3a39d4ddc3d9",
-    "liteTokenAccountUrl": "acc://d42354031de2e1fb8f573691dcef7e164dab3a39d4ddc3d9/ACME",
-    "adiUrl": "acc://harness-134c6381.acme",
-    "keyBookUrl": "acc://harness-134c6381.acme/book",
-    "keyPageUrl": "acc://harness-134c6381.acme/book/1",
-    "txids": []
+    "liteIdentityUrl": "acc://90c0b64c7ac831b905993afe328b78ee107f3c5e6e4a0c4e",
+    "liteTokenAccountUrl": "acc://90c0b64c7ac831b905993afe328b78ee107f3c5e6e4a0c4e/ACME",
+    "adiUrl": "acc://harness-1f3ed67a.acme",
+    "keyBookUrl": "acc://harness-1f3ed67a.acme/book",
+    "keyPageUrl": "acc://harness-1f3ed67a.acme/book/1",
+    "txid": "acc://5c0cd12b3cada692a6e3aa40737a7df464547f6df8fcab47bc6a2237753912de@90c0b64c7ac831b905993afe328b78ee107f3c5e6e4a0c4e/ACME",
+    "txids": [
+      "acc://5c0cd12b3cada692a6e3aa40737a7df464547f6df8fcab47bc6a2237753912de@90c0b64c7ac831b905993afe328b78ee107f3c5e6e4a0c4e/ACME",
+      "acc://d589b853413fe1f37be4399bb340c791eded08b97f4952b322b75138fc4dce49@90c0b64c7ac831b905993afe328b78ee107f3c5e6e4a0c4e",
+      "acc://655000a6eefe93f64e1d4cca3ba9ff6232789bcf9b14cdc4c2483a7bee816bbc@harness-1f3ed67a.acme/book/1"
+    ]
   },
   "environment": {
-    "liteIdentity": "acc://d42354031de2e1fb8f573691dcef7e164dab3a39d4ddc3d9",
-    "liteTokenAccount": "acc://d42354031de2e1fb8f573691dcef7e164dab3a39d4ddc3d9/ACME",
-    "publicKeyHex": "b5490302ac764013697f5a8fceb40f9bf701e0b1458cc72482cbe62c3a99a986",
-    "suggestedAdiUrl": "acc://harness-134c6381.acme"
+    "liteIdentity": "acc://90c0b64c7ac831b905993afe328b78ee107f3c5e6e4a0c4e",
+    "liteTokenAccount": "acc://90c0b64c7ac831b905993afe328b78ee107f3c5e6e4a0c4e/ACME",
+    "publicKeyHex": "8df10a91d4fbc5feac6610712478150bdb5664a12e85804217a3ea8ddf75c2a1",
+    "suggestedAdiUrl": "acc://harness-1f3ed67a.acme"
   },
-  "durationMs": 203226,
+  "durationMs": 292694,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-30\\cli\\transcripts\\python--add-credits.txt",
   "error": null,
-  "startedAt": "2026-07-30T08:13:17.584Z",
-  "finishedAt": "2026-07-30T08:21:39.251Z"
+  "startedAt": "2026-07-30T21:58:45.662Z",
+  "finishedAt": "2026-07-30T22:08:26.130Z"
 }

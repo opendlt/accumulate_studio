@@ -495,3 +495,53 @@ cannot complete on this host — the known environment defect, not a package one
 **Defect found:** the C# CLI hardcoded `SdkVersion = "2.3.3"` and would have
 shipped as 2.3.4 while reporting 2.3.3. It now reads
 `AssemblyInformationalVersion`, so that drift cannot recur.
+
+### CLI mode re-measured against the published signing CLI — 2026-07-30
+
+The earlier cli-mode batch (2/8) predated `tx sign`: every write task failed
+`missing-prereq` because nothing in the CLI could sign. Those records were stale
+evidence and have been replaced by a clean run against the **published** 2.3.3
+package (verified before the run: `tx sign` present with `signs=true`,
+`tx submit` with `signs=false` and `--envelope` as its only flag).
+
+**cli mode: 7/8 passed (was 2/8).** Every write task the CLI previously could not
+attempt now succeeds: create-adi, custom-token, key-rotation, send-tokens,
+write-data.
+
+| Task | SDK turns | CLI turns | Delta |
+|---|--:|--:|--:|
+| add-credits | 21 | 13 | -8 |
+| create-adi | 18 | 18 | 0 |
+| custom-token | 32 | 25 | -7 |
+| lite-account | 16 | 8 | -8 |
+| send-tokens | 23 | 22 | -1 |
+| write-data | 70 | 43 | -27 |
+
+**Mean turns 30.0 (sdk) -> 21.5 (cli) — 28% fewer, n=6 paired runs.**
+
+This is the RB-04 claim measured rather than asserted, and it is more modest than
+the first two-task sample suggested (32%): read-heavy work benefits most
+(lite-account -50%, write-data -39%), while create-adi and send-tokens are
+roughly a wash because the build→sign→submit sequence costs about what writing
+the equivalent program does.
+
+#### Two findings from the run
+
+1. **`key-rotation` passed but recorded `turns=null`.** `durationMs` is 900017 —
+   it hit the 15-minute wall-clock cap, so the agent process was killed before
+   emitting its result JSON and `num_turns` was never read back. The run is
+   genuinely a pass: both assertions verify **on-chain** state
+   (`key_page_contains_new_key`, `!key_page_contains_old_key`) and the work had
+   already landed. It is correctly excluded from the paired mean rather than
+   counted as zero, but it means cli-mode key-rotation is slower than the cap.
+
+2. **`multisig-setup` is the one real capability gap.** The threshold assertion
+   passes (`key_page_threshold == 2`) but `multisig_tx_status == delivered` does
+   not: a 2-of-N transaction needs a **second signature added to an existing
+   pending transaction**, and no verb does that. `tx sign` signs a *body* into a
+   *new* envelope. Closing this needs something like
+   `tx sign --txid <pending-txid>` to co-sign an already-submitted transaction.
+   The harness classes it `other`; it deserves its own failure class.
+
+Neither is a regression — both were invisible before, because the CLI could not
+get far enough to hit them.

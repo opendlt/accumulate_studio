@@ -10,46 +10,56 @@
     "title": "Key rotation",
     "specHash": "8650c147a3d2"
   },
-  "sdkVersion": "2.3.2",
-  "passed": false,
-  "turns": 27,
+  "sdkVersion": "2.3.3",
+  "passed": true,
+  "turns": null,
   "interventions": 0,
-  "failureClass": "missing-prereq",
+  "failureClass": null,
   "assertions": [
     {
       "assertion": "key_page_contains_new_key == true",
       "subject": "key_page_contains_new_key",
       "op": "==",
-      "passed": false,
-      "actual": false,
+      "passed": true,
+      "actual": true,
       "expected": true
     },
     {
       "assertion": "key_page_contains_old_key == false",
       "subject": "key_page_contains_old_key",
       "op": "==",
-      "passed": false,
-      "actual": true,
+      "passed": true,
+      "actual": false,
       "expected": false
     }
   ],
   "artifacts": {
-    "liteIdentityUrl": "acc://cde83d8a5c39132b6fca5cb0b9ba538ffab7ef28f2277d18",
-    "liteTokenAccountUrl": "acc://cde83d8a5c39132b6fca5cb0b9ba538ffab7ef28f2277d18/ACME",
-    "adiUrl": "acc://harness-d4b3b83e.acme",
-    "keyBookUrl": "acc://harness-d4b3b83e.acme/book",
-    "keyPageUrl": "acc://harness-d4b3b83e.acme/book/1",
-    "oldKeyHash": "660884e91c907c61569ab70cb05dfa48c297fe17656ed204ea4e212266f2ee1a"
+    "liteIdentityUrl": "acc://54849907cac08949c5a5264c186d9ea207155d09d7d2ed27",
+    "liteTokenAccountUrl": "acc://54849907cac08949c5a5264c186d9ea207155d09d7d2ed27/ACME",
+    "adiUrl": "acc://keyrot-2b4851bd.acme",
+    "keyBookUrl": "acc://keyrot-2b4851bd.acme/book",
+    "keyPageUrl": "acc://keyrot-2b4851bd.acme/book/1",
+    "txid": "acc://0e6a77a521f40df88077ed93eaee8c8909c53d38c1dcc827ea1184f1e5fd7a19@keyrot-2b4851bd.acme/book/1",
+    "txids": [
+      "acc://191b4a24652096450317b5c4b710ee0c18200eb4ec1a4d932c182d71d0df3977@54849907cac08949c5a5264c186d9ea207155d09d7d2ed27/ACME",
+      "acc://5aa4c1b0278cb38787f25463910c5534fb23e2d87b96defd959ddd350c65eee1@54849907cac08949c5a5264c186d9ea207155d09d7d2ed27/ACME",
+      "acc://393e865c740dab1e8c55d47c2feb822db981edd84df32b08bcd6b8a3ecf6a889@54849907cac08949c5a5264c186d9ea207155d09d7d2ed27/ACME",
+      "acc://0e6a77a521f40df88077ed93eaee8c8909c53d38c1dcc827ea1184f1e5fd7a19@keyrot-2b4851bd.acme/book/1",
+      "acc://e6afa2f28e9405e3ac8d6ab60995c9cbf3140478f22cee48e8486ee27b44c59e@keyrot-2b4851bd.acme/book/1"
+    ],
+    "oldKeyHash": "54849907cac08949c5a5264c186d9ea207155d094ca73d73af4d33b1320b2a94",
+    "newKeyHash": "7f450c306ca7508228c213aa4cbe495142335d11f28762a7eb6736177ff3b142",
+    "providedKeyPageUrl": "acc://harness-0f39d45d.acme/book/1"
   },
   "environment": {
-    "liteIdentity": "acc://cde83d8a5c39132b6fca5cb0b9ba538ffab7ef28f2277d18",
-    "liteTokenAccount": "acc://cde83d8a5c39132b6fca5cb0b9ba538ffab7ef28f2277d18/ACME",
-    "publicKeyHex": "6af6b7a712922ee04b0e4fb5e0f2f362b531e4bbc0f8a5f9f00e9c069d20e1bc",
-    "suggestedAdiUrl": "acc://harness-d4b3b83e.acme"
+    "liteIdentity": "acc://54849907cac08949c5a5264c186d9ea207155d09d7d2ed27",
+    "liteTokenAccount": "acc://54849907cac08949c5a5264c186d9ea207155d09d7d2ed27/ACME",
+    "publicKeyHex": "2b4851bd4b57ae5103d766bd84fad640557b13c51e4e25d6fd487a04653e168b",
+    "suggestedAdiUrl": "acc://harness-0f39d45d.acme"
   },
-  "durationMs": 345647,
+  "durationMs": 900017,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-30\\cli\\transcripts\\python--key-rotation.txt",
   "error": null,
-  "startedAt": "2026-07-30T08:51:52.530Z",
-  "finishedAt": "2026-07-30T09:02:20.098Z"
+  "startedAt": "2026-07-30T23:02:45.092Z",
+  "finishedAt": "2026-07-30T23:22:21.524Z"
 }
