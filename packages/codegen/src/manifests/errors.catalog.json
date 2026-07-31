@@ -310,7 +310,7 @@
         "the key page threshold is greater than 1 and only one signature has been collected",
         "polling stopped before the transaction reached 'delivered'"
       ],
-      "remediation": "This is not a failure. Collect the remaining signatures up to the page threshold, then poll status until 'delivered'. Treating 'pending' as success is the common multisig bug; so is treating it as a hard error.",
+      "remediation": "This is not a failure. Collect the remaining signatures up to the page threshold, then poll status until delivered. Co-sign the EXISTING envelope (SmartSigner.sign_existing / signExisting / SignExistingAsync, or accumulate tx sign --envelope) \u2014 signing the same body again creates a DIFFERENT transaction that never reaches the threshold. Collect every signature before submitting: resubmitting one already on chain trips replay protection. Treating pending as success is the common multisig bug; so is treating it as a hard error.",
       "relatedOps": [
         "update_key_page",
         "send_tokens",

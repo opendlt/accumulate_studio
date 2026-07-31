@@ -545,3 +545,96 @@ the equivalent program does.
 
 Neither is a regression — both were invisible before, because the CLI could not
 get far enough to hit them.
+
+### M-of-N co-signing — implemented across all five SDKs and Studio — 2026-07-31
+
+The `multisig-setup` gap is closed. The mechanism, read out of the SDK signing
+code rather than guessed:
+
+```
+initiator        = SHA256(sig_metadata_binary)   <- the FIRST signer's metadata
+header           = {..., initiator}
+tx_hash          = SHA256(SHA256(header) + SHA256(body))
+signing_preimage = SHA256(that signer's metadata hash + tx_hash)
+```
+
+The initiator is **baked into the header**, so the transaction hash is a function
+of the first signer. Signing the same body again with a second key produces a
+*different transaction*, and neither copy ever reaches the threshold. A co-signer
+must sign a preimage over the EXISTING transaction hash using its own metadata.
+
+**New SDK API** — `SmartSigner.sign_existing` (Python, Rust) / `signExisting`
+(Dart, JS) / `SignExistingAsync` (C#). Each appends a signature to an existing
+envelope, reads the transaction hash from the envelope rather than recomputing it
+(so it is exact for `writeData`, whose body hash differs), and refuses a duplicate
+key — a threshold needs DISTINCT signers.
+
+**New CLI mode** — `accumulate tx sign --envelope <file>`; `--body` and
+`--envelope` are mutually exclusive.
+
+```bash
+accumulate tx build create_data_account --param url=acc://adi.acme/x --out body.json
+accumulate tx sign --body body.json --principal acc://adi.acme --signer <page> --key-env K1 --out env1.json
+accumulate tx sign --envelope env1.json --signer <page> --key-env K2 --out env2.json
+accumulate tx submit --envelope env2.json
+```
+
+**Verified on chain, per SDK.** A real 2-of-2 key page on Kermit; each CLI built,
+signed, co-signed and delivered a transaction:
+
+| SDK | Result |
+|---|---|
+| rust | `acc://harness-be9c8633.acme/ms3` created |
+| python | `…/pyms` created |
+| dart | `…/dartms` created |
+| javascript | `…/jsms` created |
+| csharp | `…/csms` created |
+
+`npm run verify:cli`: **5/5 implementations, 85/85 cases** (two new cases gate the
+co-sign flag and the both-modes-rejected rule).
+
+#### Five defects this surfaced
+
+1. **`tx submit` reported success for rejected transactions.** A 200 with no
+   JSON-RPC error does not mean acceptance — V3 returns a per-message status and a
+   rejected envelope carries `failed: true` inside it. This is the same
+   "submitted != delivered" trap that made `add_credits` look like it worked while
+   never delivering. All five CLIs now inspect those statuses.
+2. **The harness handed agents an unusable key.** `adi-setup.py` returned the
+   *wallet* key, but `QuickStart.setup_adi` generates its OWN keypair for the ADI
+   and puts that hash on the key page. Verified: page held `130bbe90…` while
+   sha256(returned pub) was `f13d293f…`. Any key-page operation would fail as
+   unauthorized. It now returns the ADI key, with the lite key under
+   `litePrivateKeyHex`.
+3. **Studio told agents to rotate keys the slow way.** The `key-hierarchy` concept
+   said "add the new key, then remove the old one" — two transactions, two settles,
+   and if the threshold is above 1 each of those itself needs multiple signatures.
+   `updateKey` does it atomically in one transaction signed by the key being
+   replaced. This is what drove the 15-minute key-rotation runs. (The Studio *flow
+   template* already used `UpdateKey` correctly; only the guidance was wrong.)
+4. **Dart could serialise an envelope but not read one back**, so a multi-party
+   flow could not round-trip through a file. Added `Envelope.fromJson` /
+   `SignatureDoc.fromJson`, plus `UnifiedKeyPair.signRaw`/`publicKeyBytes`.
+5. **JS required every builder parameter**, including optional trailing ones like
+   `createDataAccount`'s `authorities` — reflection cannot tell them apart, so valid
+   calls were impossible. Missing values are now passed as `undefined`.
+
+Also documented: collect every signature BEFORE submitting. Once a signature is on
+chain, resubmitting it trips replay protection (`invalid timestamp: have … got …`).
+
+#### Studio
+
+The multi-sig template now states plainly that configuring a threshold is not the
+same as satisfying it, and points at the co-sign flow. The MCP `key-hierarchy`
+concept documents atomic rotation and the M-of-N procedure, and the
+`ACC_TX_PENDING` catalog entry explains co-signing rather than just saying "collect
+more signatures".
+
+**Published:** crates.io **2.3.6** · PyPI **2.3.4** · pub.dev **2.3.8** ·
+NuGet `Acme.Net.Sdk` + `Acme.Net.Sdk.Cli` **2.3.6** · npm **2.3.5**.
+
+#### Still open
+
+The Studio visual editor has no co-sign *block*, so a multi-sig spend cannot yet be
+composed on the canvas — only in code or via the CLI. Adding one means a new block
+type plus codegen in five languages; it is a feature, not a patch.

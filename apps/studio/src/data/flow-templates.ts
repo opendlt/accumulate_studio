@@ -1142,7 +1142,7 @@ export const GOLDEN_PATH_TEMPLATES: FlowTemplate[] = [
     id: 'multi-sig-setup',
     name: 'Multi-Signature Setup',
     description:
-      'Complete multi-sig flow from scratch. Sets up keys, creates an ADI, then creates a key book with 3 signers and a 2-of-3 threshold.',
+      'Complete multi-sig SETUP from scratch. Sets up keys, creates an ADI, then creates a key book with 3 signers and a 2-of-3 threshold. Configuring the threshold is not the same as satisfying it — see the last step.',
     category: 'advanced',
     estimatedTime: '15 min',
     tags: ['security', 'advanced', 'multi-sig'],
@@ -1155,6 +1155,7 @@ export const GOLDEN_PATH_TEMPLATES: FlowTemplate[] = [
       'Generate signer 2 keys and add to key page',
       'Generate signer 3 keys and add to key page',
       'Set the signature threshold (2 of 3)',
+      'To then SPEND under that threshold, two distinct keys must sign the SAME transaction: sign once, then co-sign the resulting envelope (SmartSigner.sign_existing / signExisting / SignExistingAsync, or `accumulate tx sign --envelope`). Signing the same body twice produces two different transactions and neither reaches the threshold.',
     ],
     prerequisites: ['None - fully self-contained!'],
   },

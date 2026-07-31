@@ -151,11 +151,44 @@ When updating a key page that has its own book (e.g. \`multisig-book/1\`), sign
 with **that page's own book**, not the ADI's default \`book\`. Signing with the
 page's own book satisfies both the ADI authority and the page's own authority.
 
-## Key rotation
+## Key rotation is ONE atomic transaction
 
-Rotate by updating the page: add the new key, then remove the old one. Keys are
-stored as \`sha256(publicKey)\` hashes, not raw public keys — compare hashes when
-verifying a rotation took effect.`,
+Use **\`updateKey\`** (\`TxBody.update_key(new_key_hash)\`). It replaces the signing
+key in a single transaction, **signed by the key being replaced**:
+
+\`\`\`
+body = TxBody.update_key(sha256(new_public_key))
+sign with the OLD key, signer = the key page
+\`\`\`
+
+Do **not** rotate with add-key-then-remove-key. That is two \`updateKeyPage\`
+transactions, two settles, and a window where the page holds both keys — and if
+the page threshold is above 1, each of those transactions itself needs multiple
+signatures. \`updateKey\` avoids all of it.
+
+Keys are stored as \`sha256(publicKey)\` hashes, not raw public keys — compare
+hashes when verifying a rotation took effect.
+
+## Satisfying a threshold (M-of-N)
+
+A threshold above 1 needs **distinct keys signing the SAME transaction**. Signing
+the same body twice does not work: the first signature's metadata becomes the
+transaction's \`initiator\` and is baked into the header, so a second independent
+signature produces a *different transaction hash* and neither reaches threshold.
+
+Co-sign the existing envelope instead:
+
+\`\`\`
+accumulate tx build <op> --param ... --out body.json
+accumulate tx sign --body body.json --principal <acct> --signer <page> --key-env K1 --out env1.json
+accumulate tx sign --envelope env1.json --signer <page> --key-env K2 --out env2.json   # co-sign
+accumulate tx submit --envelope env2.json
+\`\`\`
+
+In the SDKs this is \`SmartSigner.sign_existing\` / \`signExisting\` /
+\`SignExistingAsync\`. Collect all signatures BEFORE submitting: once a signature
+is on chain, resubmitting it trips replay protection
+(\`invalid timestamp: have … got …\`).`,
   },
 
   networks: {

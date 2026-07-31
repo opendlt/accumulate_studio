@@ -69,7 +69,7 @@ export const CONCEPTS: Record<string, ConceptDoc> = {
   "key-hierarchy": {
     "id": "key-hierarchy",
     "title": "Key books, key pages, and authorities",
-    "body": "# Key books, key pages, and authorities\n\n- **Key book** (`acc://you.acme/book`) — the authority set for an ADI.\n- **Key page** (`acc://you.acme/book/1`) — an ordered set of keys plus a\n  signature threshold. Pages hold credits and are what actually sign.\n- **Threshold** — how many distinct keys on the page must sign. Threshold 2 with\n  2 keys is a 2-of-2 multisig.\n\n## The rule that surprises people\n\nAccumulate requires **all** authorities on an account to approve a transaction.\nWhen updating a key page that has its own book (e.g. `multisig-book/1`), sign\nwith **that page's own book**, not the ADI's default `book`. Signing with the\npage's own book satisfies both the ADI authority and the page's own authority.\n\n## Key rotation\n\nRotate by updating the page: add the new key, then remove the old one. Keys are\nstored as `sha256(publicKey)` hashes, not raw public keys — compare hashes when\nverifying a rotation took effect."
+    "body": "# Key books, key pages, and authorities\n\n- **Key book** (`acc://you.acme/book`) — the authority set for an ADI.\n- **Key page** (`acc://you.acme/book/1`) — an ordered set of keys plus a\n  signature threshold. Pages hold credits and are what actually sign.\n- **Threshold** — how many distinct keys on the page must sign. Threshold 2 with\n  2 keys is a 2-of-2 multisig.\n\n## The rule that surprises people\n\nAccumulate requires **all** authorities on an account to approve a transaction.\nWhen updating a key page that has its own book (e.g. `multisig-book/1`), sign\nwith **that page's own book**, not the ADI's default `book`. Signing with the\npage's own book satisfies both the ADI authority and the page's own authority.\n\n## Key rotation is ONE atomic transaction\n\nUse **`updateKey`** (`TxBody.update_key(new_key_hash)`). It replaces the signing\nkey in a single transaction, **signed by the key being replaced**:\n\n```\nbody = TxBody.update_key(sha256(new_public_key))\nsign with the OLD key, signer = the key page\n```\n\nDo **not** rotate with add-key-then-remove-key. That is two `updateKeyPage`\ntransactions, two settles, and a window where the page holds both keys — and if\nthe page threshold is above 1, each of those transactions itself needs multiple\nsignatures. `updateKey` avoids all of it.\n\nKeys are stored as `sha256(publicKey)` hashes, not raw public keys — compare\nhashes when verifying a rotation took effect.\n\n## Satisfying a threshold (M-of-N)\n\nA threshold above 1 needs **distinct keys signing the SAME transaction**. Signing\nthe same body twice does not work: the first signature's metadata becomes the\ntransaction's `initiator` and is baked into the header, so a second independent\nsignature produces a *different transaction hash* and neither reaches threshold.\n\nCo-sign the existing envelope instead:\n\n```\naccumulate tx build <op> --param ... --out body.json\naccumulate tx sign --body body.json --principal <acct> --signer <page> --key-env K1 --out env1.json\naccumulate tx sign --envelope env1.json --signer <page> --key-env K2 --out env2.json   # co-sign\naccumulate tx submit --envelope env2.json\n```\n\nIn the SDKs this is `SmartSigner.sign_existing` / `signExisting` /\n`SignExistingAsync`. Collect all signatures BEFORE submitting: once a signature\nis on chain, resubmitting it trips replay protection\n(`invalid timestamp: have … got …`)."
   },
   "networks": {
     "id": "networks",
@@ -4639,7 +4639,7 @@ export const GOLDEN_PATHS: GoldenPathTemplate[] = [
   {
     "id": "multi-sig-setup",
     "name": "Multi-Signature Setup",
-    "description": "Complete multi-sig flow from scratch. Sets up keys, creates an ADI, then creates a key book with 3 signers and a 2-of-3 threshold.",
+    "description": "Complete multi-sig SETUP from scratch. Sets up keys, creates an ADI, then creates a key book with 3 signers and a 2-of-3 threshold. Configuring the threshold is not the same as satisfying it — see the last step.",
     "category": "advanced",
     "estimatedTime": "15 min",
     "tags": [
@@ -4654,7 +4654,8 @@ export const GOLDEN_PATHS: GoldenPathTemplate[] = [
       "Create a dedicated multi-sig key book",
       "Generate signer 2 keys and add to key page",
       "Generate signer 3 keys and add to key page",
-      "Set the signature threshold (2 of 3)"
+      "Set the signature threshold (2 of 3)",
+      "To then SPEND under that threshold, two distinct keys must sign the SAME transaction: sign once, then co-sign the resulting envelope (SmartSigner.sign_existing / signExisting / SignExistingAsync, or `accumulate tx sign --envelope`). Signing the same body twice produces two different transactions and neither reaches the threshold."
     ],
     "prerequisites": [
       "None - fully self-contained!"
@@ -5005,7 +5006,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "the key page threshold is greater than 1 and only one signature has been collected",
         "polling stopped before the transaction reached 'delivered'"
       ],
-      "remediation": "This is not a failure. Collect the remaining signatures up to the page threshold, then poll status until 'delivered'. Treating 'pending' as success is the common multisig bug; so is treating it as a hard error.",
+      "remediation": "This is not a failure. Collect the remaining signatures up to the page threshold, then poll status until delivered. Co-sign the EXISTING envelope (SmartSigner.sign_existing / signExisting / SignExistingAsync, or accumulate tx sign --envelope) — signing the same body again creates a DIFFERENT transaction that never reaches the threshold. Collect every signature before submitting: resubmitting one already on chain trips replay protection. Treating pending as success is the common multisig bug; so is treating it as a hard error.",
       "relatedOps": [
         "update_key_page",
         "send_tokens",
