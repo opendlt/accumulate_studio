@@ -165,18 +165,48 @@ const k7 = deriveK7(
  * K9 descriptor, read from the MCP package rather than hardcoded — a literal
  * here silently goes stale the moment the server is versioned.
  */
-function mcpDescriptorFor() {
+async function mcpDescriptorFor() {
+  const primitives = ['tools', 'resources', 'prompts'];
+  let pkg;
   try {
-    const pkg = JSON.parse(
+    pkg = JSON.parse(
       readFileSync(join(REPO, 'apps', 'mcp-server', 'package.json'), 'utf-8'),
     );
-    const primitives = ['tools', 'resources', 'prompts'];
-    return `${pkg.name}@${pkg.version} on npm (${primitives.join(' + ')})`;
   } catch {
-    return 'accumulate-studio-mcp on npm';
+    return { value: 'accumulate-studio-mcp on npm', status: 'RED' };
   }
+
+  // Reading the local version and asserting it is "on npm" is the same
+  // docs-vs-artifact drift this scorecard exists to catch. What an agent can
+  // actually install is what the registry serves, so ask the registry.
+  let published = null;
+  try {
+    const res = await fetch(`https://registry.npmjs.org/${pkg.name}`, {
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (res.ok) published = (await res.json())?.['dist-tags']?.latest ?? null;
+  } catch {
+    // Offline or blocked — fall through to "unverified" rather than claim green.
+  }
+
+  if (published === null) {
+    return {
+      value: `${pkg.name}@${pkg.version} local — registry unreachable, publication unverified`,
+      status: 'AMBER',
+    };
+  }
+  if (published !== pkg.version) {
+    return {
+      value: `${pkg.name}@${published} on npm, but repo is at ${pkg.version} — agents install the OLDER server`,
+      status: 'RED',
+    };
+  }
+  return {
+    value: `${pkg.name}@${published} on npm (${primitives.join(' + ')})`,
+    status: 'GREEN',
+  };
 }
-const mcpDescriptor = mcpDescriptorFor();
+const mcpDescriptor = await mcpDescriptorFor();
 
 // 2) Derive KPIs
 /**
@@ -242,8 +272,8 @@ const kpis = [
   { id: 'K7', name: 'Error-actionability', value: k7.value, status: k7.status, target: '>= 95%' },
   { id: 'K8', name: 'Fleet version parity', value: versionParity?.detail || '?',
     status: versionParity?.status === 'PASS' ? 'GREEN' : 'RED', target: '1 minor line' },
-  { id: 'K9', name: 'MCP installable in <= 1 config block', value: mcpDescriptor,
-    status: 'GREEN', target: 'published' },
+  { id: 'K9', name: 'MCP installable in <= 1 config block', value: mcpDescriptor.value,
+    status: mcpDescriptor.status, target: 'published, matching repo' },
   { id: 'K10', name: 'Docs-vs-artifact drift (artifact-verify)', value: driftFail ? 'drift present' : 'clean',
     status: driftFail ? 'RED' : 'GREEN', target: 'CI-gated, 0 drift' },
 ];
@@ -260,7 +290,9 @@ const perLang = LANGS.map((l) => ({
 
 // 4) Emit
 const stamp = new Date().toISOString().slice(0, 10);
-const icon = { GREEN: '🟢', RED: '🔴', PENDING: '⚪' };
+// AMBER is "could not verify", which is distinct from both pass and fail — an
+// unreachable registry must not read as either.
+const icon = { GREEN: '🟢', RED: '🔴', AMBER: '🟡', PENDING: '⚪' };
 const sIcon = { PASS: '✅', FAIL: '❌', EXPECTED_FAIL: '🔶', SKIP: '⚠️', INFO: 'ℹ️', '-': '·' };
 
 let md = `# Accumulate AI-Agent Readiness — Scorecard\n\n`;

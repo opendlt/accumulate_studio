@@ -7,7 +7,7 @@
       "lang": "rust",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "accumulate-sdk @ 2.3.6 (crates)"
+      "detail": "accumulate-sdk @ 2.3.8 (crates)"
     },
     {
       "lang": "rust",
@@ -18,8 +18,8 @@
     {
       "lang": "rust",
       "id": "TYPE_SIGNALS",
-      "status": "SKIP",
-      "detail": "could not reach docs.rs: HTTP 404 for https://docs.rs/crate/accumulate-sdk/2.3.6/status.json"
+      "status": "PASS",
+      "detail": "docs.rs built rustdoc for 2.3.8 (type surface reachable)"
     },
     {
       "lang": "rust",
@@ -31,7 +31,7 @@
       "lang": "python",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "accumulate-sdk-opendlt @ 2.3.4 (pypi)"
+      "detail": "accumulate-sdk-opendlt @ 2.3.6 (pypi)"
     },
     {
       "lang": "python",
@@ -55,7 +55,7 @@
       "lang": "dart",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "opendlt_accumulate @ 2.3.8 (pub)"
+      "detail": "opendlt_accumulate @ 2.3.10 (pub)"
     },
     {
       "lang": "dart",
@@ -73,7 +73,7 @@
       "lang": "dart",
       "id": "TYPE_SIGNALS",
       "status": "PASS",
-      "detail": "dartdoc comments in 8/40 sampled lib files; pub.dev clean (score 0/0)"
+      "detail": "dartdoc comments in 8/40 sampled lib files; pub.dev clean (score 125/160)"
     },
     {
       "lang": "dart",
@@ -85,7 +85,7 @@
       "lang": "csharp",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "Acme.Net.Sdk @ 2.3.5 (nuget)"
+      "detail": "Acme.Net.Sdk @ 2.3.8 (nuget)"
     },
     {
       "lang": "csharp",
@@ -109,7 +109,7 @@
       "lang": "javascript",
       "id": "VERSION",
       "status": "INFO",
-      "detail": "accumulate-sdk-opendlt @ 2.3.5 (npm)"
+      "detail": "accumulate-sdk-opendlt @ 2.3.7 (npm)"
     },
     {
       "lang": "javascript",
@@ -121,7 +121,7 @@
       "lang": "javascript",
       "id": "DEPS_DECLARED",
       "status": "PASS",
-      "detail": "all bare imports across 97 shipped files resolve to declared dependencies"
+      "detail": "all bare imports across 98 shipped files resolve to declared dependencies"
     },
     {
       "lang": "javascript",
@@ -156,7 +156,7 @@
   ],
   "counts": {
     "INFO": 5,
-    "PASS": 18,
-    "SKIP": 2
+    "PASS": 19,
+    "SKIP": 1
   }
 }

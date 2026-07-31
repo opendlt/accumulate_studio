@@ -1,5 +1,5 @@
 {
-  "baselineDate": "2026-07-30",
+  "baselineDate": "2026-07-31",
   "kpis": [
     {
       "id": "K1",
@@ -60,9 +60,9 @@
     {
       "id": "K9",
       "name": "MCP installable in <= 1 config block",
-      "value": "accumulate-studio-mcp@1.1.0 on npm (tools + resources + prompts)",
-      "status": "GREEN",
-      "target": "published"
+      "value": "accumulate-studio-mcp@1.0.0 on npm, but repo is at 1.1.0 — agents install the OLDER server",
+      "status": "RED",
+      "target": "published, matching repo"
     },
     {
       "id": "K10",
@@ -75,7 +75,7 @@
   "perLang": [
     {
       "lang": "rust",
-      "version": "2.3.5",
+      "version": "2.3.8",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "-",
@@ -83,7 +83,7 @@
     },
     {
       "lang": "python",
-      "version": "2.3.3",
+      "version": "2.3.6",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "-",
@@ -91,7 +91,7 @@
     },
     {
       "lang": "dart",
-      "version": "2.3.7",
+      "version": "2.3.10",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "-",
@@ -99,7 +99,7 @@
     },
     {
       "lang": "csharp",
-      "version": "2.3.4",
+      "version": "2.3.8",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "-",
@@ -107,7 +107,7 @@
     },
     {
       "lang": "javascript",
-      "version": "2.3.4",
+      "version": "2.3.7",
       "name_parity": "PASS",
       "type_signals": "PASS",
       "exports": "PASS",
@@ -497,7 +497,7 @@
         "lang": "rust",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk @ 2.3.5 (crates)"
+        "detail": "accumulate-sdk @ 2.3.8 (crates)"
       },
       {
         "lang": "rust",
@@ -509,7 +509,7 @@
         "lang": "rust",
         "id": "TYPE_SIGNALS",
         "status": "PASS",
-        "detail": "docs.rs built rustdoc for 2.3.5 (type surface reachable)"
+        "detail": "docs.rs built rustdoc for 2.3.8 (type surface reachable)"
       },
       {
         "lang": "rust",
@@ -521,7 +521,7 @@
         "lang": "python",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk-opendlt @ 2.3.3 (pypi)"
+        "detail": "accumulate-sdk-opendlt @ 2.3.6 (pypi)"
       },
       {
         "lang": "python",
@@ -545,7 +545,7 @@
         "lang": "dart",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "opendlt_accumulate @ 2.3.7 (pub)"
+        "detail": "opendlt_accumulate @ 2.3.10 (pub)"
       },
       {
         "lang": "dart",
@@ -563,7 +563,7 @@
         "lang": "dart",
         "id": "TYPE_SIGNALS",
         "status": "PASS",
-        "detail": "dartdoc comments in 8/40 sampled lib files; pub.dev clean (score 0/0)"
+        "detail": "dartdoc comments in 8/40 sampled lib files; pub.dev clean (score 125/160)"
       },
       {
         "lang": "dart",
@@ -575,7 +575,7 @@
         "lang": "csharp",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "Acme.Net.Sdk @ 2.3.4 (nuget)"
+        "detail": "Acme.Net.Sdk @ 2.3.8 (nuget)"
       },
       {
         "lang": "csharp",
@@ -599,7 +599,7 @@
         "lang": "javascript",
         "id": "VERSION",
         "status": "INFO",
-        "detail": "accumulate-sdk-opendlt @ 2.3.4 (npm)"
+        "detail": "accumulate-sdk-opendlt @ 2.3.7 (npm)"
       },
       {
         "lang": "javascript",
@@ -611,7 +611,7 @@
         "lang": "javascript",
         "id": "DEPS_DECLARED",
         "status": "PASS",
-        "detail": "all bare imports across 97 shipped files resolve to declared dependencies"
+        "detail": "all bare imports across 98 shipped files resolve to declared dependencies"
       },
       {
         "lang": "javascript",

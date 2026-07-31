@@ -1,0 +1,53 @@
+{
+  "name": "accumulate-studio-mcp",
+  "version": "1.1.0",
+  "description": "Model Context Protocol server for the Accumulate blockchain — 14 typed tools, 8 golden-path prompts, and readable context resources (concepts, network registry, per-SDK operation catalogs) with a READ_ONLY/BUILD_ONLY/SIGN_AND_SUBMIT permission model.",
+  "license": "MIT",
+  "repository": "github:opendlt/accumulate_studio",
+  "keywords": [
+    "accumulate",
+    "blockchain",
+    "mcp",
+    "model-context-protocol",
+    "ai-agent"
+  ],
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "accumulate-studio-mcp": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "node ../../scripts/generate-mcp-content.mjs",
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --external:@modelcontextprotocol/sdk",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/protocol.test.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "esbuild": "^0.20.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
