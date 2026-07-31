@@ -951,7 +951,7 @@
         "Collect every signature before submitting \u2014 resubmitting a signature already on chain trips replay protection."
       ],
       "examples": [
-        "examples/co_sign.rs"
+        "examples/v3/example_15_co_signing.rs"
       ]
     }
   ],

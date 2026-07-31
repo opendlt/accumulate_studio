@@ -2,7 +2,7 @@
   "example": "example_03",
   "jsExample": "example_03_token_accounts.ts",
   "templateMapping": "zero-to-hero,token-transfer",
-  "call_count": 34,
+  "call_count": 33,
   "calls": [
     {
       "method": "faucet"
@@ -18,9 +18,6 @@
     },
     {
       "method": "faucet"
-    },
-    {
-      "method": "query"
     },
     {
       "method": "query"

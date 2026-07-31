@@ -2,7 +2,7 @@
   "example": "example_02",
   "jsExample": "example_02_adi_creation.ts",
   "templateMapping": "adi-creation",
-  "call_count": 34,
+  "call_count": 33,
   "calls": [
     {
       "method": "faucet"
@@ -18,9 +18,6 @@
     },
     {
       "method": "faucet"
-    },
-    {
-      "method": "query"
     },
     {
       "method": "query"

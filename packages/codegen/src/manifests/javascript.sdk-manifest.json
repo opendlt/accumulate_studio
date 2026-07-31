@@ -1060,7 +1060,7 @@
         "Collect every signature before submitting \u2014 resubmitting a signature already on chain trips replay protection."
       ],
       "examples": [
-        "examples/v3/co_sign.ts"
+        "examples/v3/example_15_co_signing.ts"
       ]
     }
   ],

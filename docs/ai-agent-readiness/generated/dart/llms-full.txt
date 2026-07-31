@@ -447,4 +447,4 @@ Outputs:
   - `txHash` (str)
 Requires: keypair, credits
 Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
-Examples: example/v3/co_sign.dart
+Examples: example/v3/SDK_Examples_file_15_Co_Signing_v3.dart

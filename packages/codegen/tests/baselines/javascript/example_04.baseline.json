@@ -2,7 +2,7 @@
   "example": "example_04",
   "jsExample": "example_04_data_accounts.ts",
   "templateMapping": "data-writing",
-  "call_count": 34,
+  "call_count": 33,
   "calls": [
     {
       "method": "faucet"
@@ -18,9 +18,6 @@
     },
     {
       "method": "faucet"
-    },
-    {
-      "method": "query"
     },
     {
       "method": "query"

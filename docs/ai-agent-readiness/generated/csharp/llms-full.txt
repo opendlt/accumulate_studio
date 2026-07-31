@@ -466,4 +466,4 @@ Outputs:
   - `txHash` (str)
 Requires: keypair, credits
 Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
-Examples: examples/v3/CoSign.cs
+Examples: examples/v3/Example15_CoSigning/Program.cs

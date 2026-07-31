@@ -936,7 +936,7 @@
         "Collect every signature before submitting \u2014 resubmitting a signature already on chain trips replay protection."
       ],
       "examples": [
-        "example/v3/co_sign.dart"
+        "example/v3/SDK_Examples_file_15_Co_Signing_v3.dart"
       ]
     }
   ],

@@ -450,4 +450,4 @@ Outputs:
   - `txHash` (str)
 Requires: keypair, credits
 Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
-Examples: examples/co_sign.rs
+Examples: examples/v3/example_15_co_signing.rs
