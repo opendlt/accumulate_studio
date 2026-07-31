@@ -24,9 +24,52 @@
     // is already on chain trips replay protection.
     let {{varName}}_submit = client
         .v3_client
-        .call_v3("submit", serde_json::json!({ "envelope": {{varName}}_envelope }))
+        .call_v3::<serde_json::Value>("submit", serde_json::json!({ "envelope": {{varName}}_envelope }))
         .await;
     match {{varName}}_submit {
-        Ok(v) => println!("CoSign {{coSignOperation}} SUBMITTED with {{coSignSignerCount}} signature(s): {:?}", v),
         Err(e) => println!("CoSign {{coSignOperation}} FAILED: {:?}", e),
+        Ok(v) => {
+            // The transaction's own txID is the first one reported; the rest belong
+            // to the signature messages.
+            let {{varName}}_txid = v
+                .as_array()
+                .and_then(|a| a.iter().find_map(|m| m.get("status")?.get("txID")?.as_str()))
+                .unwrap_or("")
+                .to_string();
+            let {{varName}}_rejected = v
+                .as_array()
+                .map(|a| a.iter().any(|m| {
+                    m.get("status").and_then(|s| s.get("error")).is_some()
+                        || m.get("status").and_then(|s| s.get("failed")).and_then(|f| f.as_bool()).unwrap_or(false)
+                }))
+                .unwrap_or(false);
+            if {{varName}}_rejected {
+                println!("CoSign {{coSignOperation}} FAILED: {:?}", v);
+            } else {
+                // Acceptance is not execution. A transaction that has not reached
+                // its threshold is accepted with code "ok" and then sits pending,
+                // so the only honest confirmation is the delivered status.
+                let mut {{varName}}_status = String::from("unknown");
+                for _ in 0..30 {
+                    if let Ok(q) = client
+                        .v3_client
+                        .call_v3::<serde_json::Value>("query", serde_json::json!({ "scope": &{{varName}}_txid }))
+                        .await
+                    {
+                        if let Some(s) = q.get("status").and_then(|s| s.as_str()) {
+                            {{varName}}_status = s.to_string();
+                            if {{varName}}_status != "pending" {
+                                break;
+                            }
+                        }
+                    }
+                    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                }
+                if {{varName}}_status == "delivered" {
+                    println!("CoSign {{coSignOperation}} DELIVERED with {{coSignSignerCount}} signature(s) - TxID: {}", {{varName}}_txid);
+                } else {
+                    println!("CoSign {{coSignOperation}} NOT DELIVERED (status={}) - TxID: {}", {{varName}}_status, {{varName}}_txid);
+                }
+            }
+        }
     }

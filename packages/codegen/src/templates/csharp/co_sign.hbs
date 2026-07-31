@@ -19,4 +19,56 @@
             // Submit only once every signature is collected: resubmitting a
             // signature that is already on chain trips replay protection.
             var {{varName}}Result = await client.V3.SubmitAsync({{varName}}Envelope);
-            Console.WriteLine($"CoSign {{coSignOperation}} submitted with {{coSignSignerCount}} signature(s): { {{~varName}}Result}");
+            static (bool Rejected, string TxId) {{varName}}Read(List<JsonElement> messages)
+            {
+                var rejected = false;
+                var txid = "";
+                foreach (var m in messages)
+                {
+                    if (!m.TryGetProperty("status", out var status)) continue;
+                    if (status.TryGetProperty("error", out _)) rejected = true;
+                    if (status.TryGetProperty("failed", out var f) && f.ValueKind == JsonValueKind.True) rejected = true;
+                    // The transaction's own txID is the first one reported; the
+                    // rest belong to the signature messages.
+                    if (txid.Length == 0 && status.TryGetProperty("txID", out var t))
+                        txid = t.GetString() ?? "";
+                }
+                return (rejected, txid);
+            }
+            var ({{varName}}Rejected, {{varName}}Txid) = {{varName}}Read({{varName}}Result);
+            if ({{varName}}Rejected)
+            {
+                Console.WriteLine($"CoSign {{coSignOperation}} FAILED: { {{~varName}}Result}");
+            }
+            else
+            {
+                // Acceptance is not execution. A transaction that has not reached
+                // its threshold is accepted with code "ok" and then sits pending,
+                // so the only honest confirmation is the delivered status.
+                var {{varName}}Status = "unknown";
+                for (var i = 0; i < 30; i++)
+                {
+                    try
+                    {
+                        var q = await client.V3.CallAsync("query", new { scope = {{varName}}Txid });
+                        if (q.TryGetProperty("status", out var s) && s.ValueKind == JsonValueKind.String)
+                        {
+                            {{varName}}Status = s.GetString() ?? "unknown";
+                            if ({{varName}}Status != "pending") break;
+                        }
+                    }
+                    catch
+                    {
+                        // not indexed yet
+                    }
+                    await Task.Delay(2000);
+                }
+                if ({{varName}}Status == "delivered")
+                {
+                    Console.WriteLine($"CoSign {{coSignOperation}} DELIVERED with {{coSignSignerCount}} signature(s) - TxID: { {{~varName}}Txid}");
+                }
+                else
+                {
+                    Console.WriteLine($"CoSign {{coSignOperation}} NOT DELIVERED (status={ {{~varName}}Status}) - TxID: { {{~varName}}Txid}");
+                }
+            }

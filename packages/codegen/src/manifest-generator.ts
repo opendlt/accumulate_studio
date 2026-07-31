@@ -600,6 +600,62 @@ function resolveRef(value: string, language: SDKLanguage, varNameMap: Map<string
 }
 
 /**
+ * Build the TxBody call for an `update_key_page` run under a CoSign block.
+ *
+ * Key-page operations are a list of objects, so they cannot go through CoSign's
+ * generic by-name argument path, which stringifies each param. Only literal
+ * operations are supported here: a co-signed page update is a policy change
+ * (raise the threshold, add or drop a key) whose values are known when the flow
+ * is authored, and admitting variable references would require replaying the
+ * per-language reference substitution the UpdateKeyPage block does.
+ */
+function coSignUpdateKeyPageExpr(
+  opsArray: Array<Record<string, unknown>>,
+  language: SDKLanguage,
+): string {
+  // The JS SDK cannot round-trip plain operation objects — they must be built
+  // through typed factory methods — so a single op maps to its typed method.
+  if (language === 'javascript' && opsArray.length === 1) {
+    const op = opsArray[0];
+    const type = String(op.type || '');
+    if (type === 'setThreshold') return `TxBody.updateKeyPageSetThreshold(${Number(op.threshold) || 1})`;
+    const entry = (op.entry || {}) as Record<string, unknown>;
+    const keyHash = String(entry.keyHash || '');
+    if (type === 'add') return `TxBody.updateKeyPageAddKey("${keyHash}")`;
+    if (type === 'remove') return `TxBody.updateKeyPageRemoveKey("${keyHash}")`;
+  }
+
+  if (language === 'csharp') {
+    const entryFor = (op: Record<string, unknown>): string => {
+      const parts = Object.entries(op).map(([k, v]) => {
+        if (v && typeof v === 'object' && !Array.isArray(v)) {
+          const inner = Object.entries(v as Record<string, unknown>)
+            .map(([ik, iv]) => `["${ik}"] = "${String(iv)}"`)
+            .join(', ');
+          return `["${k}"] = new Dictionary<string, object?> { ${inner} }`;
+        }
+        return typeof v === 'number' ? `["${k}"] = ${v}` : `["${k}"] = "${String(v)}"`;
+      });
+      return `new Dictionary<string, object?> { ${parts.join(', ')} }`;
+    };
+    return `TxBody.UpdateKeyPage(new List<Dictionary<string, object?>> { ${opsArray.map(entryFor).join(', ')} })`;
+  }
+
+  const json = JSON.stringify(opsArray);
+  // The Rust builder takes the operations by reference.
+  if (language === 'rust') return `TxBody::update_key_page(&serde_json::json!(${json}))`;
+  // The Dart builder takes typed operations, so raw maps go through fromJson —
+  // the same shape the UpdateKeyPage block emits.
+  if (language === 'dart') {
+    return `TxBody.updateKeyPage(operations: (${json} as List)`
+      + `.map((op) => KeyPageOperation.fromJson(Map<String, dynamic>.from(op)))`
+      + `.toList())`;
+  }
+  if (language === 'javascript') return `TxBody.updateKeyPage(${json})`;
+  return `TxBody.update_key_page(${json})`;
+}
+
+/**
  * Deep-resolve all {{blockId.outputName}} references in config values.
  * Uses varNameMap to resolve block IDs to their computed variable names.
  */
@@ -1540,6 +1596,16 @@ function computeNodeVars(
       ? operation
       : isCSharp ? toPascal(operation) : toCamel(operation);
 
+    // `update_key_page` takes a list of operation objects rather than scalars, so
+    // the generic by-name argument path below (which stringifies each param) would
+    // emit "[object Object]". Key-page operations are also the realistic target for
+    // co-signing: a page's own book is its authority, so a threshold on that page
+    // can actually be satisfied by co-signers, whereas a sub-account's principal
+    // resolves to the parent ADI's book instead.
+    const structuredOps = operation === 'update_key_page'
+      ? (Array.isArray(params.operation) ? (params.operation as Array<Record<string, unknown>>) : [])
+      : null;
+
     const argEntries = Object.entries(params).map(([k, v]) => {
       const raw = String(v);
       return { key: k, value: isVarRef(raw) ? raw : quoteLiteral(raw) };
@@ -1558,7 +1624,9 @@ function computeNodeVars(
     }
 
     vars.coSignBodyMethod = method;
-    vars.coSignBodyExpr = `TxBody${isCSharp || isDart || !isRust ? '.' : '::'}${method}(${argList})`;
+    vars.coSignBodyExpr = structuredOps
+      ? coSignUpdateKeyPageExpr(structuredOps, language)
+      : `TxBody${isCSharp || isDart || !isRust ? '.' : '::'}${method}(${argList})`;
 
     // Every additional signer must be a DISTINCT key: co-signing with the same
     // key twice does not advance the threshold and the node rejects the envelope.

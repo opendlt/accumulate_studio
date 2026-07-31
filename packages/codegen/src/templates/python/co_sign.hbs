@@ -21,13 +21,49 @@
         # Submit only once every signature is collected: resubmitting a signature
         # that is already on chain trips replay protection.
         {{varName}}_result = client.submit({{varName}}_envelope)
+        {{varName}}_messages = {{varName}}_result if isinstance({{varName}}_result, list) else [{{varName}}_result]
         {{varName}}_failed = [
-            (s.get("status") or {}).get("error", {}).get("message", "unknown")
-            for s in ({{varName}}_result if isinstance({{varName}}_result, list) else [])
-            if (s.get("status") or {}).get("failed")
+            ((s.get("status") or {}).get("error") or {}).get("message", "unknown")
+            for s in {{varName}}_messages
+            if isinstance(s, dict) and (
+                (s.get("status") or {}).get("failed")
+                or ((s.get("status") or {}).get("error") is not None)
+            )
         ]
+        # The transaction's own txID is the one whose principal is the target
+        # account; the others belong to the signature messages.
+        {{varName}}_txid = next(
+            (
+                (s.get("status") or {}).get("txID", "")
+                for s in {{varName}}_messages
+                if isinstance(s, dict) and (s.get("status") or {}).get("txID")
+            ),
+            "",
+        )
         if {{varName}}_failed:
             print(f"CoSign {{coSignOperation}} FAILED: { {{~varName}}_failed}")
         else:
-            print(f"CoSign {{coSignOperation}} SUBMITTED with {{coSignSignerCount}} signature(s)")
-            tx_ids.append(("CoSign:{{coSignOperation}}", str({{varName}}_envelope.get("signatures", [{}])[0].get("transactionHash", ""))))
+            # Acceptance is not execution. A transaction that has not reached its
+            # threshold is accepted with code "ok" and then sits pending, so the
+            # only honest confirmation is the delivered status.
+            {{varName}}_status = "unknown"
+            for _ in range(30):
+                try:
+                    {{varName}}_q = client.query({{varName}}_txid)
+                    # V3 reports status as a string; V2 as a dict with a flag.
+                    {{varName}}_raw = ({{varName}}_q or {}).get("status")
+                    {{varName}}_status = (
+                        {{varName}}_raw
+                        if isinstance({{varName}}_raw, str)
+                        else ("delivered" if ({{varName}}_raw or {}).get("delivered") else "pending")
+                    )
+                    if {{varName}}_status not in ("pending", "unknown"):
+                        break
+                except Exception:
+                    pass
+                time.sleep(2)
+            if {{varName}}_status == "delivered":
+                print(f"CoSign {{coSignOperation}} DELIVERED with {{coSignSignerCount}} signature(s) - TxID: { {{~varName}}_txid}")
+                tx_ids.append(("CoSign:{{coSignOperation}}", {{varName}}_txid))
+            else:
+                print(f"CoSign {{coSignOperation}} NOT DELIVERED (status={ {{~varName}}_status}) - TxID: { {{~varName}}_txid}")

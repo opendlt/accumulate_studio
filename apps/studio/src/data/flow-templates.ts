@@ -877,14 +877,20 @@ const multiSigSetupFlow: Flow = {
     // the 2-of-3 works: signer 1 signs, signer 2 co-signs the SAME envelope, and
     // only then is it submitted. Signing the body twice would produce two
     // different transactions and neither would reach the threshold.
+    //
+    // The transaction targets the multisig page itself. A page's own book is its
+    // authority, so two signatures from that page satisfy it outright. Targeting
+    // a sub-account instead (say a data account under the ADI) would make the
+    // principal the ADI, whose authority is the DEFAULT book — the co-signatures
+    // would be valid but irrelevant, and the transaction would sit pending.
     {
       id: 'cosign_spend',
       type: 'CoSign',
-      label: 'Create Data Account (2-of-3 signatures)',
+      label: 'Raise Threshold to 3 (2-of-3 signatures)',
       config: {
-        operation: 'create_data_account',
-        params: { url: '{{create_identity.adiUrl}}/multisig-data' },
-        principal: '{{create_identity.adiUrl}}',
+        operation: 'update_key_page',
+        params: { operation: [{ type: 'setThreshold', threshold: 3 }] },
+        principal: '{{create_identity.adiUrl}}/multisig-book/1',
         signerUrl: '{{create_identity.adiUrl}}/multisig-book/1',
         keyVarName: '{{generate_keys.varName}}',
         additionalSigners: ['generate_keys_2'],

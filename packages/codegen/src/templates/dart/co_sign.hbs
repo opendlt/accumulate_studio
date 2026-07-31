@@ -27,4 +27,40 @@
     // Submit only once every signature is collected: resubmitting a signature that
     // is already on chain trips replay protection.
     final {{varName}}Result = await client.v3.submit({{varName}}Envelope.toJson());
-    print('CoSign {{coSignOperation}} submitted with {{coSignSignerCount}} signature(s): ${ {{~varName}}Result}');
+    final {{varName}}Messages =
+        {{varName}}Result is List ? {{varName}}Result : [{{varName}}Result];
+    final {{varName}}Rejected = {{varName}}Messages.any((m) {
+      final status = (m is Map) ? m['status'] : null;
+      return status is Map && (status['failed'] == true || status['error'] != null);
+    });
+    // The transaction's own txID is the first one reported; the rest belong to
+    // the signature messages.
+    final {{varName}}Txid = {{varName}}Messages
+        .map((m) => (m is Map && m['status'] is Map) ? m['status']['txID'] : null)
+        .firstWhere((t) => t != null, orElse: () => '') as String;
+    if ({{varName}}Rejected) {
+      print('CoSign {{coSignOperation}} FAILED: ${ {{~varName}}Result}');
+    } else {
+      // Acceptance is not execution. A transaction that has not reached its
+      // threshold is accepted with code "ok" and then sits pending, so the only
+      // honest confirmation is the delivered status.
+      var {{varName}}Status = 'unknown';
+      for (var i = 0; i < 30; i++) {
+        try {
+          final q = await client.v3.query({'scope': {{varName}}Txid});
+          final raw = (q is Map) ? q['status'] : null;
+          if (raw is String) {
+            {{varName}}Status = raw;
+            if ({{varName}}Status != 'pending') break;
+          }
+        } catch (_) {
+          // not indexed yet
+        }
+        await Future<void>.delayed(const Duration(seconds: 2));
+      }
+      if ({{varName}}Status == 'delivered') {
+        print('CoSign {{coSignOperation}} DELIVERED with {{coSignSignerCount}} signature(s) - TxID: ${ {{~varName}}Txid}');
+      } else {
+        print('CoSign {{coSignOperation}} NOT DELIVERED (status=${ {{~varName}}Status}) - TxID: ${ {{~varName}}Txid}');
+      }
+    }

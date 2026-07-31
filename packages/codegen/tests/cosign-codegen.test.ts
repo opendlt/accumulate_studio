@@ -113,6 +113,66 @@ describe.each(LANGS)('CoSign codegen — %s', (lang) => {
 });
 
 // =============================================================================
+// `update_key_page` takes a list of operation objects rather than scalars. The
+// generic CoSign argument path stringifies each param, which silently produced
+// `[object Object]` — code that generates, compiles in some languages, and then
+// fails on chain.
+// =============================================================================
+describe.each(LANGS)('CoSign with structured operations — %s', (lang) => {
+  function thresholdFlow(): Flow {
+    const f = coSignFlow(['k2']);
+    const cs = f.nodes.find((n) => n.id === 'cs')!;
+    cs.config = {
+      operation: 'update_key_page',
+      params: { operation: [{ type: 'setThreshold', threshold: 3 }] },
+      principal: 'acc://my-adi.acme/book/1',
+      signerUrl: 'acc://my-adi.acme/book/1',
+      additionalSigners: ['k2'],
+    };
+    return f;
+  }
+
+  it('emits the operation list, never a stringified object', () => {
+    const code = gen(thresholdFlow(), lang);
+    expect(code).not.toContain('[object Object]');
+    expect(code).toContain('3');
+    expect(code).toContain(COSIGN_CALL[lang]);
+  });
+
+  it('routes through the key-page builder for that language', () => {
+    const code = gen(thresholdFlow(), lang);
+    // The JS SDK cannot round-trip plain operation objects, so a single op must
+    // go through the typed factory rather than the generic updateKeyPage().
+    const expected: Record<SDKLanguage, string> = {
+      python: 'TxBody.update_key_page(',
+      rust: 'TxBody::update_key_page(',
+      dart: 'TxBody.updateKeyPage(',
+      javascript: 'TxBody.updateKeyPageSetThreshold(3)',
+      csharp: 'TxBody.UpdateKeyPage(',
+    };
+    expect(code).toContain(expected[lang]);
+  });
+});
+
+// =============================================================================
+// Submitting is not executing. A co-signed transaction that has not reached its
+// threshold is accepted with code "ok" and then sits pending forever, so a
+// template that reports acceptance as success is reporting a result it does not
+// have.
+// =============================================================================
+describe.each(LANGS)('CoSign confirms delivery — %s', (lang) => {
+  it('waits for delivered status rather than claiming success on submit', () => {
+    const code = gen(coSignFlow(['k2']), lang);
+    const section = code.slice(code.indexOf('CoSign'));
+    expect(section).toContain('delivered');
+    expect(section).toContain('DELIVERED');
+    // The pending state must be distinguishable in the output, not collapsed
+    // into the success branch.
+    expect(section).toContain('NOT DELIVERED');
+  });
+});
+
+// =============================================================================
 // The multi-sig golden path must actually SPEND under its threshold.
 // Configuring a threshold and satisfying one are different things; the template
 // previously stopped at configuration, which is why the harness task could never
