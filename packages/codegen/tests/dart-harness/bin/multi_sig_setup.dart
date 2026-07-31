@@ -398,67 +398,73 @@ Future<void> main() async {
 
 
     // =========================================================
-    // Raise Threshold to 3 (2-of-3 signatures) (Action: CoSign — update_key_page under an M-of-N threshold)
+    // Create Data Account Governed by the Multi-Sig Book (Action: CoSign — create_data_account under an M-of-N threshold)
     // =========================================================
     // A threshold needs DISTINCT keys signing the SAME transaction. Signing the
     // body twice does not work: the first signature's metadata becomes the
     // transaction's `initiator` and is baked into the header, so a second
     // independent signature is over a different transaction hash and neither copy
     // reaches the threshold. Co-sign the existing envelope instead.
-    final raiseThresholdTo_3_2Of_3SignaturesBody = TxBody.updateKeyPage(operations: ([{"type":"setThreshold","threshold":3}] as List).map((op) => KeyPageOperation.fromJson(Map<String, dynamic>.from(op))).toList());
-    final raiseThresholdTo_3_2Of_3SignaturesSigner = SmartSigner(
+    final createDataAccountGovernedByTheMultiSigBookBody = TxBody.createDataAccount(url: '${createAdiUrl}/ms-data', authorities: ['${createAdiUrl}/multisig-book']);
+    final createDataAccountGovernedByTheMultiSigBookSigner = SmartSigner(
+      client: client.v3,
+      keypair: generateKeysSigner_1Key,
+      signerUrl: '${createAdiUrl}/book/1',
+    );
+    var createDataAccountGovernedByTheMultiSigBookEnvelope = await createDataAccountGovernedByTheMultiSigBookSigner.sign(
+      principal: createAdiUrl.toString(),
+      body: createDataAccountGovernedByTheMultiSigBookBody,
+    );
+    // Co-signer 0: appends a signature to the SAME transaction hash.
+    createDataAccountGovernedByTheMultiSigBookEnvelope = await SmartSigner(
       client: client.v3,
       keypair: generateKeysSigner_1Key,
       signerUrl: '${createAdiUrl}/multisig-book/1',
-    );
-    var raiseThresholdTo_3_2Of_3SignaturesEnvelope = await raiseThresholdTo_3_2Of_3SignaturesSigner.sign(
-      principal: '${createAdiUrl}/multisig-book/1',
-      body: raiseThresholdTo_3_2Of_3SignaturesBody,
-    );
-    // Co-signer 0: appends a signature to the SAME transaction hash.
-    raiseThresholdTo_3_2Of_3SignaturesEnvelope = await SmartSigner(
+    ).signExisting(createDataAccountGovernedByTheMultiSigBookEnvelope);
+    // Co-signer 1: appends a signature to the SAME transaction hash.
+    createDataAccountGovernedByTheMultiSigBookEnvelope = await SmartSigner(
       client: client.v3,
       keypair: generateKeysSigner_2Key,
       signerUrl: '${createAdiUrl}/multisig-book/1',
-    ).signExisting(raiseThresholdTo_3_2Of_3SignaturesEnvelope);
+    ).signExisting(createDataAccountGovernedByTheMultiSigBookEnvelope);
     // Submit only once every signature is collected: resubmitting a signature that
     // is already on chain trips replay protection.
-    final raiseThresholdTo_3_2Of_3SignaturesResult = await client.v3.submit(raiseThresholdTo_3_2Of_3SignaturesEnvelope.toJson());
-    final raiseThresholdTo_3_2Of_3SignaturesMessages =
-        raiseThresholdTo_3_2Of_3SignaturesResult is List ? raiseThresholdTo_3_2Of_3SignaturesResult : [raiseThresholdTo_3_2Of_3SignaturesResult];
-    final raiseThresholdTo_3_2Of_3SignaturesRejected = raiseThresholdTo_3_2Of_3SignaturesMessages.any((m) {
+    final createDataAccountGovernedByTheMultiSigBookResult = await client.v3.submit(createDataAccountGovernedByTheMultiSigBookEnvelope.toJson());
+    final createDataAccountGovernedByTheMultiSigBookMessages =
+        createDataAccountGovernedByTheMultiSigBookResult is List ? createDataAccountGovernedByTheMultiSigBookResult : [createDataAccountGovernedByTheMultiSigBookResult];
+    final createDataAccountGovernedByTheMultiSigBookRejected = createDataAccountGovernedByTheMultiSigBookMessages.any((m) {
       final status = (m is Map) ? m['status'] : null;
       return status is Map && (status['failed'] == true || status['error'] != null);
     });
     // The transaction's own txID is the first one reported; the rest belong to
     // the signature messages.
-    final raiseThresholdTo_3_2Of_3SignaturesTxid = raiseThresholdTo_3_2Of_3SignaturesMessages
+    final createDataAccountGovernedByTheMultiSigBookTxid = createDataAccountGovernedByTheMultiSigBookMessages
         .map((m) => (m is Map && m['status'] is Map) ? m['status']['txID'] : null)
         .firstWhere((t) => t != null, orElse: () => '') as String;
-    if (raiseThresholdTo_3_2Of_3SignaturesRejected) {
-      print('CoSign update_key_page FAILED: ${raiseThresholdTo_3_2Of_3SignaturesResult}');
+    if (createDataAccountGovernedByTheMultiSigBookRejected) {
+      print('CoSign create_data_account FAILED: ${createDataAccountGovernedByTheMultiSigBookResult}');
     } else {
       // Acceptance is not execution. A transaction that has not reached its
       // threshold is accepted with code "ok" and then sits pending, so the only
       // honest confirmation is the delivered status.
-      var raiseThresholdTo_3_2Of_3SignaturesStatus = 'unknown';
+      var createDataAccountGovernedByTheMultiSigBookStatus = 'unknown';
       for (var i = 0; i < 30; i++) {
         try {
-          final q = await client.v3.query({'scope': raiseThresholdTo_3_2Of_3SignaturesTxid});
+          final q = await client.v3.query({'scope': createDataAccountGovernedByTheMultiSigBookTxid});
           final raw = (q is Map) ? q['status'] : null;
           if (raw is String) {
-            raiseThresholdTo_3_2Of_3SignaturesStatus = raw;
-            if (raiseThresholdTo_3_2Of_3SignaturesStatus != 'pending') break;
+            createDataAccountGovernedByTheMultiSigBookStatus = raw;
+            if (createDataAccountGovernedByTheMultiSigBookStatus != 'pending') break;
           }
         } catch (_) {
           // not indexed yet
         }
         await Future<void>.delayed(const Duration(seconds: 2));
       }
-      if (raiseThresholdTo_3_2Of_3SignaturesStatus == 'delivered') {
-        print('CoSign update_key_page DELIVERED with 2 signature(s) - TxID: ${raiseThresholdTo_3_2Of_3SignaturesTxid}');
+      if (createDataAccountGovernedByTheMultiSigBookStatus == 'delivered') {
+        print('CoSign create_data_account DELIVERED with 3 signature(s) - TxID: ${createDataAccountGovernedByTheMultiSigBookTxid}');
       } else {
-        print('CoSign update_key_page NOT DELIVERED (status=${raiseThresholdTo_3_2Of_3SignaturesStatus}) - TxID: ${raiseThresholdTo_3_2Of_3SignaturesTxid}');
+        print('CoSign create_data_account NOT DELIVERED (status=${createDataAccountGovernedByTheMultiSigBookStatus}) - TxID: ${createDataAccountGovernedByTheMultiSigBookTxid}');
       }
     }
 

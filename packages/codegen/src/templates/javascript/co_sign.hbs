@@ -11,7 +11,7 @@
         let {{varName}}Envelope = (await {{varName}}Signer.sign({{{coSignPrincipal}}}, {{varName}}Body)).envelope;
 {{#each coSignExtraSigners}}
         // Co-signer {{@index}}: appends a signature to the SAME transaction hash.
-        {{../varName}}Envelope = await new SmartSigner(client, {{this}}Kp.toKey(), {{../signerUrl}})
+        {{../varName}}Envelope = await new SmartSigner(client, {{this.key}}Kp.toKey(), {{this.signerUrl}})
             .signExisting({{../varName}}Envelope);
 {{/each}}
         // Submit only once every signature is collected: resubmitting a signature

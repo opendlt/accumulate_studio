@@ -878,22 +878,33 @@ const multiSigSetupFlow: Flow = {
     // only then is it submitted. Signing the body twice would produce two
     // different transactions and neither would reach the threshold.
     //
-    // The transaction targets the multisig page itself. A page's own book is its
-    // authority, so two signatures from that page satisfy it outright. Targeting
-    // a sub-account instead (say a data account under the ADI) would make the
-    // principal the ADI, whose authority is the DEFAULT book — the co-signatures
-    // would be valid but irrelevant, and the transaction would sit pending.
+    // Creating an account with an explicit `authorities` needs BOTH authorities
+    // to approve: the parent ADI's own book (it owns the namespace) and the book
+    // being installed. Signing with only the ADI book leaves the transaction
+    // pending — accepted, never executed. Once created, the account is governed
+    // by multisig-book alone, so later writes need only its 2-of-3.
     {
       id: 'cosign_spend',
       type: 'CoSign',
-      label: 'Raise Threshold to 3 (2-of-3 signatures)',
+      label: 'Create Data Account Governed by the Multi-Sig Book',
       config: {
-        operation: 'update_key_page',
-        params: { operation: [{ type: 'setThreshold', threshold: 3 }] },
-        principal: '{{create_identity.adiUrl}}/multisig-book/1',
-        signerUrl: '{{create_identity.adiUrl}}/multisig-book/1',
+        operation: 'create_data_account',
+        params: {
+          url: '{{create_identity.adiUrl}}/ms-data',
+          authorities: ['{{create_identity.adiUrl}}/multisig-book'],
+        },
+        principal: '{{create_identity.adiUrl}}',
+        // The ADI's own book authorises the namespace...
+        signerUrl: '{{create_identity.adiUrl}}/book/1',
         keyVarName: '{{generate_keys.varName}}',
-        additionalSigners: ['generate_keys_2'],
+        // ...and multisig-book must approve being installed as the new account's
+        // authority, which takes two of its three keys. Note signer 1 appears on
+        // both pages: the same key signing under two different signer URLs is a
+        // distinct signature, satisfying two separate authorities.
+        additionalSigners: [
+          { key: 'generate_keys', signerUrl: '{{create_identity.adiUrl}}/multisig-book/1' },
+          { key: 'generate_keys_2', signerUrl: '{{create_identity.adiUrl}}/multisig-book/1' },
+        ],
       },
       position: pos(16),
     },

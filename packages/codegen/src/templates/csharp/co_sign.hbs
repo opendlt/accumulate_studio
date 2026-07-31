@@ -13,7 +13,7 @@
                 {{varName}}Body);
 {{#each coSignExtraSigners}}
             // Co-signer {{@index}}: appends a signature to the SAME transaction hash.
-            {{../varName}}Envelope = await new SmartSigner(client.V3, {{this}}Kp, {{../signerUrl}})
+            {{../varName}}Envelope = await new SmartSigner(client.V3, {{this.key}}Kp, {{this.signerUrl}})
                 .SignExistingAsync({{../varName}}Envelope);
 {{/each}}
             // Submit only once every signature is collected: resubmitting a

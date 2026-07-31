@@ -354,74 +354,80 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // =========================================================
-    // Raise Threshold to 3 (2-of-3 signatures) (Action: CoSign — update_key_page under an M-of-N threshold)
+    // Create Data Account Governed by the Multi-Sig Book (Action: CoSign — create_data_account under an M-of-N threshold)
     // =========================================================
     // A threshold needs DISTINCT keys signing the SAME transaction. Signing the
     // body twice does not work: the first signature's metadata becomes the
     // transaction's `initiator` and is baked into the header, so a second
     // independent signature is over a different transaction hash and neither copy
     // reaches the threshold. Co-sign the existing envelope instead.
-    let raise_threshold_to_3_2_of_3_signatures_body = TxBody::update_key_page(&serde_json::json!([{"type":"setThreshold","threshold":3}]));
-    let mut raise_threshold_to_3_2_of_3_signatures_signer = SmartSigner::new(&client, generate_keys_signer_1_signer.clone(), &format!("{}/multisig-book/1", create_adi_url));
-    let _ = raise_threshold_to_3_2_of_3_signatures_signer.refresh_version().await;
-    let mut raise_threshold_to_3_2_of_3_signatures_envelope = raise_threshold_to_3_2_of_3_signatures_signer
-        .sign(&format!("{}/multisig-book/1", create_adi_url), &raise_threshold_to_3_2_of_3_signatures_body, None)
+    let create_data_account_governed_by_the_multi_sig_book_body = TxBody::create_data_account_with_authorities(&format!("{}/ms-data", create_adi_url), &[format!("{}/multisig-book", create_adi_url).to_string()]);
+    let mut create_data_account_governed_by_the_multi_sig_book_signer = SmartSigner::new(&client, generate_keys_signer_1_signer.clone(), &format!("{}/book/1", create_adi_url));
+    let _ = create_data_account_governed_by_the_multi_sig_book_signer.refresh_version().await;
+    let mut create_data_account_governed_by_the_multi_sig_book_envelope = create_data_account_governed_by_the_multi_sig_book_signer
+        .sign(&create_adi_url, &create_data_account_governed_by_the_multi_sig_book_body, None)
         .expect("sign failed");
     // Co-signer 0: appends a signature to the SAME transaction hash.
-    let mut raise_threshold_to_3_2_of_3_signatures_cosigner0 = SmartSigner::new(&client, generate_keys_signer_2_signer.clone(), &format!("{}/multisig-book/1", create_adi_url));
-    let _ = raise_threshold_to_3_2_of_3_signatures_cosigner0.refresh_version().await;
-    raise_threshold_to_3_2_of_3_signatures_envelope = raise_threshold_to_3_2_of_3_signatures_cosigner0
-        .sign_existing(&raise_threshold_to_3_2_of_3_signatures_envelope)
+    let mut create_data_account_governed_by_the_multi_sig_book_cosigner0 = SmartSigner::new(&client, generate_keys_signer_1_signer.clone(), &format!("{}/multisig-book/1", create_adi_url));
+    let _ = create_data_account_governed_by_the_multi_sig_book_cosigner0.refresh_version().await;
+    create_data_account_governed_by_the_multi_sig_book_envelope = create_data_account_governed_by_the_multi_sig_book_cosigner0
+        .sign_existing(&create_data_account_governed_by_the_multi_sig_book_envelope)
+        .expect("co-sign failed");
+    // Co-signer 1: appends a signature to the SAME transaction hash.
+    let mut create_data_account_governed_by_the_multi_sig_book_cosigner1 = SmartSigner::new(&client, generate_keys_signer_2_signer.clone(), &format!("{}/multisig-book/1", create_adi_url));
+    let _ = create_data_account_governed_by_the_multi_sig_book_cosigner1.refresh_version().await;
+    create_data_account_governed_by_the_multi_sig_book_envelope = create_data_account_governed_by_the_multi_sig_book_cosigner1
+        .sign_existing(&create_data_account_governed_by_the_multi_sig_book_envelope)
         .expect("co-sign failed");
     // Submit only once every signature is collected: resubmitting a signature that
     // is already on chain trips replay protection.
-    let raise_threshold_to_3_2_of_3_signatures_submit = client
+    let create_data_account_governed_by_the_multi_sig_book_submit = client
         .v3_client
-        .call_v3::<serde_json::Value>("submit", serde_json::json!({ "envelope": raise_threshold_to_3_2_of_3_signatures_envelope }))
+        .call_v3::<serde_json::Value>("submit", serde_json::json!({ "envelope": create_data_account_governed_by_the_multi_sig_book_envelope }))
         .await;
-    match raise_threshold_to_3_2_of_3_signatures_submit {
-        Err(e) => println!("CoSign update_key_page FAILED: {:?}", e),
+    match create_data_account_governed_by_the_multi_sig_book_submit {
+        Err(e) => println!("CoSign create_data_account FAILED: {:?}", e),
         Ok(v) => {
             // The transaction's own txID is the first one reported; the rest belong
             // to the signature messages.
-            let raise_threshold_to_3_2_of_3_signatures_txid = v
+            let create_data_account_governed_by_the_multi_sig_book_txid = v
                 .as_array()
                 .and_then(|a| a.iter().find_map(|m| m.get("status")?.get("txID")?.as_str()))
                 .unwrap_or("")
                 .to_string();
-            let raise_threshold_to_3_2_of_3_signatures_rejected = v
+            let create_data_account_governed_by_the_multi_sig_book_rejected = v
                 .as_array()
                 .map(|a| a.iter().any(|m| {
                     m.get("status").and_then(|s| s.get("error")).is_some()
                         || m.get("status").and_then(|s| s.get("failed")).and_then(|f| f.as_bool()).unwrap_or(false)
                 }))
                 .unwrap_or(false);
-            if raise_threshold_to_3_2_of_3_signatures_rejected {
-                println!("CoSign update_key_page FAILED: {:?}", v);
+            if create_data_account_governed_by_the_multi_sig_book_rejected {
+                println!("CoSign create_data_account FAILED: {:?}", v);
             } else {
                 // Acceptance is not execution. A transaction that has not reached
                 // its threshold is accepted with code "ok" and then sits pending,
                 // so the only honest confirmation is the delivered status.
-                let mut raise_threshold_to_3_2_of_3_signatures_status = String::from("unknown");
+                let mut create_data_account_governed_by_the_multi_sig_book_status = String::from("unknown");
                 for _ in 0..30 {
                     if let Ok(q) = client
                         .v3_client
-                        .call_v3::<serde_json::Value>("query", serde_json::json!({ "scope": &raise_threshold_to_3_2_of_3_signatures_txid }))
+                        .call_v3::<serde_json::Value>("query", serde_json::json!({ "scope": &create_data_account_governed_by_the_multi_sig_book_txid }))
                         .await
                     {
                         if let Some(s) = q.get("status").and_then(|s| s.as_str()) {
-                            raise_threshold_to_3_2_of_3_signatures_status = s.to_string();
-                            if raise_threshold_to_3_2_of_3_signatures_status != "pending" {
+                            create_data_account_governed_by_the_multi_sig_book_status = s.to_string();
+                            if create_data_account_governed_by_the_multi_sig_book_status != "pending" {
                                 break;
                             }
                         }
                     }
                     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
                 }
-                if raise_threshold_to_3_2_of_3_signatures_status == "delivered" {
-                    println!("CoSign update_key_page DELIVERED with 2 signature(s) - TxID: {}", raise_threshold_to_3_2_of_3_signatures_txid);
+                if create_data_account_governed_by_the_multi_sig_book_status == "delivered" {
+                    println!("CoSign create_data_account DELIVERED with 3 signature(s) - TxID: {}", create_data_account_governed_by_the_multi_sig_book_txid);
                 } else {
-                    println!("CoSign update_key_page NOT DELIVERED (status={}) - TxID: {}", raise_threshold_to_3_2_of_3_signatures_status, raise_threshold_to_3_2_of_3_signatures_txid);
+                    println!("CoSign create_data_account NOT DELIVERED (status={}) - TxID: {}", create_data_account_governed_by_the_multi_sig_book_status, create_data_account_governed_by_the_multi_sig_book_txid);
                 }
             }
         }

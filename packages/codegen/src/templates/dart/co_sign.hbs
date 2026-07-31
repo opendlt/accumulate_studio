@@ -20,8 +20,8 @@
     // Co-signer {{@index}}: appends a signature to the SAME transaction hash.
     {{../varName}}Envelope = await SmartSigner(
       client: client.v3,
-      keypair: {{this}}Key,
-      signerUrl: {{../signerUrl}},
+      keypair: {{this.key}}Key,
+      signerUrl: {{this.signerUrl}},
     ).signExisting({{../varName}}Envelope);
 {{/each}}
     // Submit only once every signature is collected: resubmitting a signature that

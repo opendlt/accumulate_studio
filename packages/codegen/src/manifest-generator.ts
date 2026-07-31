@@ -271,10 +271,20 @@ export function generateCodeFromManifest(
     // unresolved node id would emit an undefined variable — e.g. `k2_kp` when the
     // keypair is actually `two_kp`. Resolve through the same map used for refs.
     if (node.type === 'CoSign' && Array.isArray(config.additionalSigners)) {
-      config.additionalSigners = (config.additionalSigners as unknown[]).map((s) => {
+      const toVarName = (s: unknown): string => {
         const raw = String(s);
         const bare = raw.replace(/^\{\{/, '').replace(/\}\}$/, '').split('.')[0];
         return varNameMap.get(bare) ?? varNameMap.get(raw) ?? raw;
+      };
+      // An entry may also be `{ key, signerUrl }`, which names the page that key
+      // signs as. Stringifying the whole object here would emit `[object Object]`
+      // as the keypair variable, so resolve the key and keep the rest intact.
+      config.additionalSigners = (config.additionalSigners as unknown[]).map((s) => {
+        if (s && typeof s === 'object' && !Array.isArray(s)) {
+          const obj = s as Record<string, unknown>;
+          return { ...obj, key: toVarName(obj.key ?? obj.keyVarName) };
+        }
+        return toVarName(s);
       });
     }
 
@@ -1606,10 +1616,23 @@ function computeNodeVars(
       ? (Array.isArray(params.operation) ? (params.operation as Array<Record<string, unknown>>) : [])
       : null;
 
-    const argEntries = Object.entries(params).map(([k, v]) => {
+    // A list param (an account's `authorities`) has to become a list literal in
+    // the target language, not a stringified array.
+    const scalarLiteral = (v: unknown): string => {
       const raw = String(v);
-      return { key: k, value: isVarRef(raw) ? raw : quoteLiteral(raw) };
-    });
+      return isVarRef(raw) ? raw : quoteLiteral(raw);
+    };
+    const listLiteral = (items: unknown[]): string => {
+      const parts = items.map(scalarLiteral);
+      if (isCSharp) return `new List<string> { ${parts.join(', ')} }`;
+      if (isRust) return `&[${parts.map((p) => `${p}.to_string()`).join(', ')}]`;
+      return `[${parts.join(', ')}]`;
+    };
+
+    const argEntries = Object.entries(params).map(([k, v]) => ({
+      key: k,
+      value: Array.isArray(v) ? listLiteral(v as unknown[]) : scalarLiteral(v),
+    }));
 
     let argList: string;
     if (language === 'python') {
@@ -1617,32 +1640,36 @@ function computeNodeVars(
     } else if (isDart) {
       argList = argEntries.map((a) => `${toCamel(a.key)}: ${a.value}`).join(', ');
     } else if (isRust) {
-      // Rust builders take &str; a quoted literal is already a &str.
-      argList = argEntries.map((a) => a.value).join(', ');
+      // Rust builders take &str. A quoted literal already is one, but a resolved
+      // reference is a `format!(..)` String and has to be borrowed.
+      argList = argEntries
+        .map((a) => (a.value.startsWith('format!(') ? `&${a.value}` : a.value))
+        .join(', ');
     } else {
       argList = argEntries.map((a) => a.value).join(', ');
+    }
+
+    // Rust cannot take an optional trailing argument, so the authorities variant
+    // is a separate constructor. Changing `create_data_account`'s own signature
+    // would break every existing caller.
+    let rustMethod = method;
+    if (isRust && Object.prototype.hasOwnProperty.call(params, 'authorities')) {
+      rustMethod = `${method}_with_authorities`;
     }
 
     vars.coSignBodyMethod = method;
     vars.coSignBodyExpr = structuredOps
       ? coSignUpdateKeyPageExpr(structuredOps, language)
-      : `TxBody${isCSharp || isDart || !isRust ? '.' : '::'}${method}(${argList})`;
+      : `TxBody${isRust ? '::' : '.'}${isRust ? rustMethod : method}(${argList})`;
 
-    // Every additional signer must be a DISTINCT key: co-signing with the same
-    // key twice does not advance the threshold and the node rejects the envelope.
-    const extra = Array.isArray(config.additionalSigners)
-      ? (config.additionalSigners as unknown[]).map((s) => String(s)).filter(Boolean)
+    // An additional signer is either a bare keypair variable (signing as the
+    // block's own page) or `{ key, signerUrl }`. The second form exists because
+    // some transactions need SEVERAL authorities to approve — creating an
+    // account governed by another key book needs the parent ADI's book AND that
+    // book — and there one key legitimately signs twice under different pages.
+    const rawExtra = Array.isArray(config.additionalSigners)
+      ? (config.additionalSigners as unknown[])
       : [];
-    // Exclude the primary signer as well as duplicates: a key that has already
-    // signed cannot advance the threshold, and the node rejects the envelope.
-    const seen = new Set<string>([kv]);
-    vars.coSignExtraSigners = extra.filter((s) => {
-      if (seen.has(s)) return false;
-      seen.add(s);
-      return true;
-    });
-    vars.coSignHasExtra = (vars.coSignExtraSigners as string[]).length > 0;
-    vars.coSignSignerCount = (vars.coSignExtraSigners as string[]).length + 1;
 
     const rawSignerUrl = config.signerUrl;
     if (rawSignerUrl && typeof rawSignerUrl === 'string' && isVarRef(String(rawSignerUrl))) {
@@ -1657,6 +1684,36 @@ function computeNodeVars(
         : `${kv}${lidSuffix}`;
     }
     vars.signerUrlIsRef = true;
+
+    // Reject only a repeat of the SAME key on the SAME page: that does not
+    // advance the page's threshold and the node rejects the envelope. The pair
+    // is the identity, so the same key on a different page is kept.
+    const primarySignerUrl = String(vars.signerUrl);
+    const seen = new Set<string>([`${kv} ${primarySignerUrl}`]);
+    const extraSigners: Array<{ key: string; signerUrl: string }> = [];
+    for (const entry of rawExtra) {
+      let key: string;
+      let signerUrl: string;
+      if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+        const obj = entry as Record<string, unknown>;
+        key = String(obj.key ?? obj.keyVarName ?? '');
+        const raw = obj.signerUrl;
+        signerUrl = typeof raw === 'string' && raw
+          ? (isVarRef(raw) ? raw : quoteLiteral(raw))
+          : primarySignerUrl;
+      } else {
+        key = String(entry ?? '');
+        signerUrl = primarySignerUrl;
+      }
+      if (!key) continue;
+      const id = `${key} ${signerUrl}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      extraSigners.push({ key, signerUrl });
+    }
+    vars.coSignExtraSigners = extraSigners;
+    vars.coSignHasExtra = extraSigners.length > 0;
+    vars.coSignSignerCount = extraSigners.length + 1;
 
     const rawPrincipal = String(config.principal || '');
     if (rawPrincipal) {

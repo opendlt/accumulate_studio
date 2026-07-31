@@ -14,7 +14,7 @@
         )
 {{#each coSignExtraSigners}}
         # Co-signer {{@index}}: appends a signature to the SAME transaction hash.
-        {{../varName}}_envelope = SmartSigner(client.v3, {{this}}_kp, {{../signerUrl}}).sign_existing(
+        {{../varName}}_envelope = SmartSigner(client.v3, {{this.key}}_kp, {{this.signerUrl}}).sign_existing(
             {{../varName}}_envelope
         )
 {{/each}}

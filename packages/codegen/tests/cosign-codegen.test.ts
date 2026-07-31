@@ -173,6 +173,59 @@ describe.each(LANGS)('CoSign confirms delivery — %s', (lang) => {
 });
 
 // =============================================================================
+// Some transactions need SEVERAL authorities to approve — creating an account
+// governed by another key book needs the parent ADI's book AND that book. There
+// one key legitimately signs the same envelope twice under different pages, so
+// the duplicate check keys on (key, signerUrl) rather than the key alone.
+// =============================================================================
+describe.each(LANGS)('CoSign across multiple authorities — %s', (lang) => {
+  function multiAuthorityFlow(): Flow {
+    const f = coSignFlow([]);
+    const cs = f.nodes.find((n) => n.id === 'cs')!;
+    cs.config = {
+      operation: 'create_data_account',
+      params: { url: 'acc://my-adi.acme/shared', authorities: ['acc://my-adi.acme/book2'] },
+      principal: 'acc://my-adi.acme',
+      signerUrl: 'acc://my-adi.acme/book/1',
+      additionalSigners: [
+        { key: 'k1', signerUrl: 'acc://my-adi.acme/book2/1' },
+        { key: 'k2', signerUrl: 'acc://my-adi.acme/book2/1' },
+      ],
+    };
+    return f;
+  }
+
+  it('lets one key co-sign under a different page', () => {
+    const code = gen(multiAuthorityFlow(), lang);
+    // Three signatures: the ADI book, plus two on the second book.
+    expect(code.split(COSIGN_CALL[lang]).length - 1).toBe(2);
+    expect(code).toContain('book2/1');
+  });
+
+  it('emits the authorities list, never a stringified array', () => {
+    const code = gen(multiAuthorityFlow(), lang);
+    expect(code).not.toContain('[object Object]');
+    expect(code).toContain('book2');
+  });
+
+  it('still rejects the same key repeating on the same page', () => {
+    const f = coSignFlow([]);
+    const cs = f.nodes.find((n) => n.id === 'cs')!;
+    cs.config = {
+      operation: 'create_data_account',
+      params: { url: 'acc://my-adi.acme/shared' },
+      principal: 'acc://my-adi.acme',
+      signerUrl: 'acc://my-adi.acme/book/1',
+      additionalSigners: [
+        { key: 'k2', signerUrl: 'acc://my-adi.acme/book/1' },
+        { key: 'k2', signerUrl: 'acc://my-adi.acme/book/1' },
+      ],
+    };
+    expect(gen(f, lang).split(COSIGN_CALL[lang]).length - 1).toBe(1);
+  });
+});
+
+// =============================================================================
 // The multi-sig golden path must actually SPEND under its threshold.
 // Configuring a threshold and satisfying one are different things; the template
 // previously stopped at configuration, which is why the harness task could never

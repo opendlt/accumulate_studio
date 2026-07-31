@@ -14,7 +14,7 @@
         .expect("sign failed");
 {{#each coSignExtraSigners}}
     // Co-signer {{@index}}: appends a signature to the SAME transaction hash.
-    let mut {{../varName}}_cosigner{{@index}} = SmartSigner::new(&client, {{this}}_signer.clone(), {{#if ../signerUrlIsRef}}&{{../signerUrl}}{{else}}{{../signerUrl}}{{/if}});
+    let mut {{../varName}}_cosigner{{@index}} = SmartSigner::new(&client, {{this.key}}_signer.clone(), &{{this.signerUrl}});
     let _ = {{../varName}}_cosigner{{@index}}.refresh_version().await;
     {{../varName}}_envelope = {{../varName}}_cosigner{{@index}}
         .sign_existing(&{{../varName}}_envelope)
