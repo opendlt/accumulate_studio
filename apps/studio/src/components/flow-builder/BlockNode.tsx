@@ -21,6 +21,7 @@ import {
   Shield,
   Droplets,
   Search,
+  Users,
   Clock,
   MessageSquare,
   type LucideIcon,
@@ -59,6 +60,7 @@ const BLOCK_ICONS: Record<string, LucideIcon> = {
   shield: Shield,
   droplets: Droplets,
   search: Search,
+  users: Users,
   clock: Clock,
   'message-square': MessageSquare,
 };

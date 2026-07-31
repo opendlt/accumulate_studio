@@ -36,6 +36,9 @@ export const BLOCK_TO_OP: Record<BlockType, string> = {
   LockAccount: 'lock_account',
   UpdateAccountAuth: 'update_account_auth',
   QueryAccount: 'query_account',
+  // CoSign is not a transaction of its own: it RUNS another operation under a
+  // signature threshold. The operation it runs comes from its `operation` config.
+  CoSign: 'co_sign',
   Comment: 'comment',
 };
 

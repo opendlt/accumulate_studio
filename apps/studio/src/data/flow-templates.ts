@@ -872,8 +872,28 @@ const multiSigSetupFlow: Flow = {
       },
       position: pos(15),
     },
+    // ── Actually SPEND under the threshold ──
+    // Configuring a threshold is not the same as satisfying it. This step proves
+    // the 2-of-3 works: signer 1 signs, signer 2 co-signs the SAME envelope, and
+    // only then is it submitted. Signing the body twice would produce two
+    // different transactions and neither would reach the threshold.
+    {
+      id: 'cosign_spend',
+      type: 'CoSign',
+      label: 'Create Data Account (2-of-3 signatures)',
+      config: {
+        operation: 'create_data_account',
+        params: { url: '{{create_identity.adiUrl}}/multisig-data' },
+        principal: '{{create_identity.adiUrl}}',
+        signerUrl: '{{create_identity.adiUrl}}/multisig-book/1',
+        keyVarName: '{{generate_keys.varName}}',
+        additionalSigners: ['generate_keys_2'],
+      },
+      position: pos(16),
+    },
   ],
   connections: [
+    { id: 'conn_threshold_cosign', sourceNodeId: 'set_threshold', sourcePortId: 'output', targetNodeId: 'cosign_spend', targetPortId: 'input' },
     { id: 'conn_gk_faucet', sourceNodeId: 'generate_keys', sourcePortId: 'output', targetNodeId: 'faucet', targetPortId: 'input' },
     { id: 'conn_faucet_wait', sourceNodeId: 'faucet', sourcePortId: 'output', targetNodeId: 'wait_for_balance', targetPortId: 'input' },
     { id: 'conn_wait_credits', sourceNodeId: 'wait_for_balance', sourcePortId: 'output', targetNodeId: 'add_credits', targetPortId: 'input' },
@@ -898,6 +918,7 @@ const multiSigSetupFlow: Flow = {
     { type: 'tx.status.equals', sourceStep: 'add_signer_2', status: 'success', message: 'Adding signer 2 should succeed' },
     { type: 'tx.status.equals', sourceStep: 'add_signer_3', status: 'success', message: 'Adding signer 3 should succeed' },
     { type: 'tx.status.equals', sourceStep: 'set_threshold', status: 'success', message: 'Setting threshold should succeed' },
+    { type: 'account.exists', url: '{{create_identity.adiUrl}}/multisig-data', message: 'The 2-of-3 co-signed transaction should have created the data account' },
   ],
 };
 
@@ -1155,6 +1176,7 @@ export const GOLDEN_PATH_TEMPLATES: FlowTemplate[] = [
       'Generate signer 2 keys and add to key page',
       'Generate signer 3 keys and add to key page',
       'Set the signature threshold (2 of 3)',
+      'Spend under the threshold: the Co-Sign block signs with signer 1, co-signs with signer 2, then submits — all on the SAME transaction',
       'To then SPEND under that threshold, two distinct keys must sign the SAME transaction: sign once, then co-sign the resulting envelope (SmartSigner.sign_existing / signExisting / SignExistingAsync, or `accumulate tx sign --envelope`). Signing the same body twice produces two different transactions and neither reaches the threshold.',
     ],
     prerequisites: ['None - fully self-contained!'],

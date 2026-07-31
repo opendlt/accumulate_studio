@@ -659,6 +659,46 @@ export const PREREQUISITE_GRAPH: Record<BlockType, PrerequisiteRule> = {
     ],
   },
 
+  CoSign: {
+    requires: [
+      {
+        resource: 'keypair',
+        severity: 'error',
+        label: 'Keypair (First Signer)',
+        satisfiedBy: ['GenerateKeys'],
+      },
+      {
+        // A threshold is satisfied by DISTINCT keys, so a second GenerateKeys is
+        // genuinely required — co-signing with the same key twice does not
+        // advance the count and the node rejects the envelope.
+        resource: 'keypair',
+        severity: 'error',
+        label: 'Keypair (Additional Signer)',
+        satisfiedBy: ['GenerateKeys'],
+      },
+      {
+        resource: 'key-page',
+        severity: 'error',
+        label: 'Key Page with a threshold above 1',
+        satisfiedBy: ['CreateIdentity', 'CreateKeyPage', 'UpdateKeyPage'],
+      },
+      {
+        resource: 'credits',
+        severity: 'error',
+        label: 'Credits',
+        satisfiedBy: ['AddCredits', 'WaitForCredits'],
+      },
+    ],
+    produces: [],
+    creditCost: 1,
+    explanation:
+      'Runs a transaction that needs a signature threshold: signs once, co-signs with each additional key, then submits. All signatures land on the SAME transaction — signing the body twice would create two different transactions and neither would reach the threshold.',
+    defaultRecipe: [
+      'GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'GenerateKeys', 'UpdateKeyPage',
+    ],
+  },
+
   LockAccount: {
     requires: [
       {

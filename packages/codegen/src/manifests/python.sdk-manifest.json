@@ -1015,6 +1015,59 @@
       "outputs": [],
       "requires": [],
       "examples": []
+    },
+    {
+      "op": "co_sign",
+      "category": "authority",
+      "symbols": [
+        {
+          "symbol": "SmartSigner.sign_and_build",
+          "path": "accumulate_client.convenience",
+          "signature": "build a signed envelope WITHOUT submitting"
+        },
+        {
+          "symbol": "SmartSigner.sign_existing",
+          "path": "accumulate_client.convenience",
+          "signature": "(self, envelope: dict) -> dict"
+        },
+        {
+          "symbol": "Accumulate.submit",
+          "path": "accumulate_client.convenience",
+          "signature": "submit the fully-signed envelope"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "operation",
+          "type": "str",
+          "required": true,
+          "description": "Transaction to run under the threshold, e.g. create_data_account"
+        },
+        {
+          "name": "additionalSigners",
+          "type": "list",
+          "required": true,
+          "description": "Distinct keys that must ALSO sign the SAME transaction"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "txHash",
+          "type": "str"
+        }
+      ],
+      "requires": [
+        "keypair",
+        "credits"
+      ],
+      "notes": [
+        "Satisfies an M-of-N signature threshold. Sign once, then co-sign the resulting envelope with each additional key, then submit ONCE.",
+        "Signing the same body twice does NOT work: the first signature metadata becomes the transaction initiator and is baked into the header, so a second independent signature is over a different transaction hash and neither copy reaches the threshold.",
+        "Collect every signature before submitting \u2014 resubmitting a signature already on chain trips replay protection."
+      ],
+      "examples": [
+        "examples/co_sign.py"
+      ]
     }
   ],
   "notes": "Python SDK uses snake_case conventions. TxBody methods are static. SmartSigner handles signing, submission and waiting."

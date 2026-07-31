@@ -1009,6 +1009,51 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
           "keypair",
           "credits"
         ]
+      },
+      {
+        "op": "co_sign",
+        "category": "authority",
+        "symbols": [
+          {
+            "symbol": "SmartSigner.sign_and_build",
+            "path": "accumulate_client.convenience",
+            "signature": "build a signed envelope WITHOUT submitting"
+          },
+          {
+            "symbol": "SmartSigner.sign_existing",
+            "path": "accumulate_client.convenience",
+            "signature": "(self, envelope: dict) -> dict"
+          },
+          {
+            "symbol": "Accumulate.submit",
+            "path": "accumulate_client.convenience",
+            "signature": "submit the fully-signed envelope"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "operation",
+            "type": "str",
+            "required": true,
+            "description": "Transaction to run under the threshold, e.g. create_data_account"
+          },
+          {
+            "name": "additionalSigners",
+            "type": "list",
+            "required": true,
+            "description": "Distinct keys that must ALSO sign the SAME transaction"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "txHash",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair",
+          "credits"
+        ]
       }
     ]
   },
@@ -1828,6 +1873,51 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
           "keypair",
           "credits"
         ]
+      },
+      {
+        "op": "co_sign",
+        "category": "authority",
+        "symbols": [
+          {
+            "symbol": "SmartSigner::sign",
+            "path": "accumulate_client::helpers",
+            "signature": "build a signed envelope WITHOUT submitting"
+          },
+          {
+            "symbol": "SmartSigner::sign_existing",
+            "path": "accumulate_client::helpers",
+            "signature": "(&self, envelope: &Value) -> Result<Value>"
+          },
+          {
+            "symbol": "AccumulateClient::v3 submit",
+            "path": "accumulate_client::helpers",
+            "signature": "submit the fully-signed envelope"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "operation",
+            "type": "str",
+            "required": true,
+            "description": "Transaction to run under the threshold, e.g. create_data_account"
+          },
+          {
+            "name": "additionalSigners",
+            "type": "list",
+            "required": true,
+            "description": "Distinct keys that must ALSO sign the SAME transaction"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "txHash",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair",
+          "credits"
+        ]
       }
     ]
   },
@@ -2626,6 +2716,51 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
           {
             "name": "txHash",
             "type": "String"
+          }
+        ],
+        "requires": [
+          "keypair",
+          "credits"
+        ]
+      },
+      {
+        "op": "co_sign",
+        "category": "authority",
+        "symbols": [
+          {
+            "symbol": "SmartSigner.sign",
+            "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+            "signature": "build a signed envelope WITHOUT submitting"
+          },
+          {
+            "symbol": "SmartSigner.signExisting",
+            "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+            "signature": "(Envelope envelope) -> Future<Envelope>"
+          },
+          {
+            "symbol": "AccumulateV3.submit",
+            "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+            "signature": "submit the fully-signed envelope"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "operation",
+            "type": "str",
+            "required": true,
+            "description": "Transaction to run under the threshold, e.g. create_data_account"
+          },
+          {
+            "name": "additionalSigners",
+            "type": "list",
+            "required": true,
+            "description": "Distinct keys that must ALSO sign the SAME transaction"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "txHash",
+            "type": "str"
           }
         ],
         "requires": [
@@ -3566,6 +3701,51 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
           "keypair",
           "credits"
         ]
+      },
+      {
+        "op": "co_sign",
+        "category": "authority",
+        "symbols": [
+          {
+            "symbol": "SmartSigner.SignAsync",
+            "path": "Acme.Net.Sdk.Signing",
+            "signature": "build a signed envelope WITHOUT submitting"
+          },
+          {
+            "symbol": "SmartSigner.SignExistingAsync",
+            "path": "Acme.Net.Sdk.Signing",
+            "signature": "(Dictionary<string, object?> envelope) -> Task<Dictionary<string, object?>>"
+          },
+          {
+            "symbol": "AccumulateV3Client.SubmitAsync",
+            "path": "Acme.Net.Sdk.Signing",
+            "signature": "submit the fully-signed envelope"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "operation",
+            "type": "str",
+            "required": true,
+            "description": "Transaction to run under the threshold, e.g. create_data_account"
+          },
+          {
+            "name": "additionalSigners",
+            "type": "list",
+            "required": true,
+            "description": "Distinct keys that must ALSO sign the SAME transaction"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "txHash",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair",
+          "credits"
+        ]
       }
     ]
   },
@@ -4493,6 +4673,51 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
           "keypair",
           "credits"
         ]
+      },
+      {
+        "op": "co_sign",
+        "category": "authority",
+        "symbols": [
+          {
+            "symbol": "SmartSigner.sign",
+            "path": "accumulate-sdk-opendlt",
+            "signature": "build a signed envelope WITHOUT submitting"
+          },
+          {
+            "symbol": "SmartSigner.signExisting",
+            "path": "accumulate-sdk-opendlt",
+            "signature": "(envelope: Envelope) => Promise<Envelope>"
+          },
+          {
+            "symbol": "Accumulate.v2.execute",
+            "path": "accumulate-sdk-opendlt",
+            "signature": "submit the fully-signed envelope"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "operation",
+            "type": "str",
+            "required": true,
+            "description": "Transaction to run under the threshold, e.g. create_data_account"
+          },
+          {
+            "name": "additionalSigners",
+            "type": "list",
+            "required": true,
+            "description": "Distinct keys that must ALSO sign the SAME transaction"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "txHash",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair",
+          "credits"
+        ]
       }
     ]
   }
@@ -4655,6 +4880,7 @@ export const GOLDEN_PATHS: GoldenPathTemplate[] = [
       "Generate signer 2 keys and add to key page",
       "Generate signer 3 keys and add to key page",
       "Set the signature threshold (2 of 3)",
+      "Spend under the threshold: the Co-Sign block signs with signer 1, co-signs with signer 2, then submits — all on the SAME transaction",
       "To then SPEND under that threshold, two distinct keys must sign the SAME transaction: sign once, then co-sign the resulting envelope (SmartSigner.sign_existing / signExisting / SignExistingAsync, or `accumulate tx sign --envelope`). Signing the same body twice produces two different transactions and neither reaches the threshold."
     ],
     "prerequisites": [

@@ -31,6 +31,7 @@ import pythonBurnTokens from './templates/python/burn_tokens.hbs?raw';
 import pythonWriteData from './templates/python/write_data.hbs?raw';
 import pythonQueryAccount from './templates/python/query_account.hbs?raw';
 import pythonComment from './templates/python/comment.hbs?raw';
+import pythonCoSign from './templates/python/co_sign.hbs?raw';
 import pythonUpdateKeyPage from './templates/python/update_key_page.hbs?raw';
 import pythonCreateLiteTokenAccount from './templates/python/create_lite_token_account.hbs?raw';
 import pythonTransferCredits from './templates/python/transfer_credits.hbs?raw';
@@ -64,6 +65,7 @@ import rustBurnTokens from './templates/rust/burn_tokens.hbs?raw';
 import rustWriteData from './templates/rust/write_data.hbs?raw';
 import rustQueryAccount from './templates/rust/query_account.hbs?raw';
 import rustComment from './templates/rust/comment.hbs?raw';
+import rustCoSign from './templates/rust/co_sign.hbs?raw';
 import rustUpdateKeyPage from './templates/rust/update_key_page.hbs?raw';
 import rustCreateLiteTokenAccount from './templates/rust/create_lite_token_account.hbs?raw';
 import rustTransferCredits from './templates/rust/transfer_credits.hbs?raw';
@@ -97,6 +99,7 @@ import dartBurnTokens from './templates/dart/burn_tokens.hbs?raw';
 import dartWriteData from './templates/dart/write_data.hbs?raw';
 import dartQueryAccount from './templates/dart/query_account.hbs?raw';
 import dartComment from './templates/dart/comment.hbs?raw';
+import dartCoSign from './templates/dart/co_sign.hbs?raw';
 import dartUpdateKeyPage from './templates/dart/update_key_page.hbs?raw';
 import dartCreateLiteTokenAccount from './templates/dart/create_lite_token_account.hbs?raw';
 import dartTransferCredits from './templates/dart/transfer_credits.hbs?raw';
@@ -130,6 +133,7 @@ import csharpBurnTokens from './templates/csharp/burn_tokens.hbs?raw';
 import csharpWriteData from './templates/csharp/write_data.hbs?raw';
 import csharpQueryAccount from './templates/csharp/query_account.hbs?raw';
 import csharpComment from './templates/csharp/comment.hbs?raw';
+import csharpCoSign from './templates/csharp/co_sign.hbs?raw';
 import csharpUpdateKeyPage from './templates/csharp/update_key_page.hbs?raw';
 import csharpCreateLiteTokenAccount from './templates/csharp/create_lite_token_account.hbs?raw';
 import csharpTransferCredits from './templates/csharp/transfer_credits.hbs?raw';
@@ -163,6 +167,7 @@ import jsBurnTokens from './templates/javascript/burn_tokens.hbs?raw';
 import jsWriteData from './templates/javascript/write_data.hbs?raw';
 import jsQueryAccount from './templates/javascript/query_account.hbs?raw';
 import jsComment from './templates/javascript/comment.hbs?raw';
+import jsCoSign from './templates/javascript/co_sign.hbs?raw';
 import jsUpdateKeyPage from './templates/javascript/update_key_page.hbs?raw';
 import jsCreateLiteTokenAccount from './templates/javascript/create_lite_token_account.hbs?raw';
 import jsTransferCredits from './templates/javascript/transfer_credits.hbs?raw';
@@ -209,6 +214,7 @@ const PYTHON_TEMPLATES = buildTemplateMap(
   ['write_data', pythonWriteData],
   ['query_account', pythonQueryAccount],
   ['comment', pythonComment],
+  ['co_sign', pythonCoSign],
   ['update_key_page', pythonUpdateKeyPage],
   ['create_lite_token_account', pythonCreateLiteTokenAccount],
   ['transfer_credits', pythonTransferCredits],
@@ -240,6 +246,7 @@ const RUST_TEMPLATES = buildTemplateMap(
   ['write_data', rustWriteData],
   ['query_account', rustQueryAccount],
   ['comment', rustComment],
+  ['co_sign', rustCoSign],
   ['update_key_page', rustUpdateKeyPage],
   ['create_lite_token_account', rustCreateLiteTokenAccount],
   ['transfer_credits', rustTransferCredits],
@@ -271,6 +278,7 @@ const DART_TEMPLATES = buildTemplateMap(
   ['write_data', dartWriteData],
   ['query_account', dartQueryAccount],
   ['comment', dartComment],
+  ['co_sign', dartCoSign],
   ['update_key_page', dartUpdateKeyPage],
   ['create_lite_token_account', dartCreateLiteTokenAccount],
   ['transfer_credits', dartTransferCredits],
@@ -302,6 +310,7 @@ const CSHARP_TEMPLATES = buildTemplateMap(
   ['write_data', csharpWriteData],
   ['query_account', csharpQueryAccount],
   ['comment', csharpComment],
+  ['co_sign', csharpCoSign],
   ['update_key_page', csharpUpdateKeyPage],
   ['create_lite_token_account', csharpCreateLiteTokenAccount],
   ['transfer_credits', csharpTransferCredits],
@@ -333,6 +342,7 @@ const JAVASCRIPT_TEMPLATES = buildTemplateMap(
   ['write_data', jsWriteData],
   ['query_account', jsQueryAccount],
   ['comment', jsComment],
+  ['co_sign', jsCoSign],
   ['update_key_page', jsUpdateKeyPage],
   ['create_lite_token_account', jsCreateLiteTokenAccount],
   ['transfer_credits', jsTransferCredits],

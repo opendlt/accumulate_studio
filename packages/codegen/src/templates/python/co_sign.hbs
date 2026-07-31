@@ -1,0 +1,33 @@
+        # =========================================================
+        # {{label}} (Action: CoSign — {{coSignOperation}} under an M-of-N threshold)
+        # =========================================================
+        # A threshold needs DISTINCT keys signing the SAME transaction. Signing the
+        # body twice does not work: the first signature's metadata becomes the
+        # transaction's `initiator` and is baked into the header, so a second
+        # independent signature is over a different transaction hash and neither
+        # copy reaches the threshold. Co-sign the existing envelope instead.
+        {{varName}}_body = {{{coSignBodyExpr}}}
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_envelope = {{varName}}_signer.sign_and_build(
+            principal={{{coSignPrincipal}}},
+            body={{varName}}_body,
+        )
+{{#each coSignExtraSigners}}
+        # Co-signer {{@index}}: appends a signature to the SAME transaction hash.
+        {{../varName}}_envelope = SmartSigner(client.v3, {{this}}_kp, {{../signerUrl}}).sign_existing(
+            {{../varName}}_envelope
+        )
+{{/each}}
+        # Submit only once every signature is collected: resubmitting a signature
+        # that is already on chain trips replay protection.
+        {{varName}}_result = client.submit({{varName}}_envelope)
+        {{varName}}_failed = [
+            (s.get("status") or {}).get("error", {}).get("message", "unknown")
+            for s in ({{varName}}_result if isinstance({{varName}}_result, list) else [])
+            if (s.get("status") or {}).get("failed")
+        ]
+        if {{varName}}_failed:
+            print(f"CoSign {{coSignOperation}} FAILED: { {{~varName}}_failed}")
+        else:
+            print(f"CoSign {{coSignOperation}} SUBMITTED with {{coSignSignerCount}} signature(s)")
+            tx_ids.append(("CoSign:{{coSignOperation}}", str({{varName}}_envelope.get("signatures", [{}])[0].get("transactionHash", ""))))

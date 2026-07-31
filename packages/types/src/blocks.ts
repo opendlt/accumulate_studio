@@ -59,6 +59,7 @@ export type UtilityBlockType =
   | 'WaitForBalance'
   | 'WaitForCredits'
   | 'GenerateKeys'
+  | 'CoSign'
   | 'Comment';
 
 // =============================================================================
@@ -941,6 +942,50 @@ export const BLOCK_CATALOG: Record<BlockType, BlockDefinition> = {
       properties: {
         algorithm: { type: 'string', enum: ['Ed25519', 'RCD1', 'BTC', 'ETH'], default: 'Ed25519' },
       },
+    },
+  },
+
+  CoSign: {
+    type: 'CoSign',
+    category: 'key-management',
+    name: 'Co-Sign (M-of-N)',
+    description:
+      'Run a transaction that needs a signature threshold. Signs once, co-signs with each additional key, then submits — all signatures on the SAME transaction.',
+    icon: 'users',
+    color: '#6366F1',
+    inputs: [
+      { id: 'principal', name: 'Principal', type: 'url', required: true },
+      { id: 'signer', name: 'First Signer', type: 'keypair', required: true },
+    ],
+    outputs: [{ id: 'txHash', name: 'Transaction Hash', type: 'string', required: true }],
+    configSchema: {
+      type: 'object',
+      properties: {
+        operation: {
+          type: 'string',
+          description:
+            'Transaction to run, e.g. create_data_account, send_tokens, add_credits. Any TxBody builder.',
+        },
+        params: {
+          type: 'object',
+          description: 'Parameters for the operation, as key/value pairs.',
+        },
+        // Why a threshold cannot be met by signing twice: the first signature's
+        // metadata becomes the transaction's `initiator` and is baked into the
+        // header, so a second independent signature is over a DIFFERENT
+        // transaction hash and neither copy reaches the threshold. Every key
+        // here co-signs the SAME envelope instead.
+        additionalSigners: {
+          type: 'array',
+          description:
+            'Keypair variables that must ALSO sign, e.g. the second GenerateKeys block. Must be distinct from the first signer.',
+        },
+        signerUrl: {
+          type: 'string',
+          description: 'Key page that authorises the transaction (auto-resolved from upstream)',
+        },
+      },
+      required: ['operation'],
     },
   },
 

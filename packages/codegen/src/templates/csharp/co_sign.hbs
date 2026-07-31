@@ -1,0 +1,22 @@
+            // =========================================================
+            // {{label}} (Action: CoSign — {{coSignOperation}} under an M-of-N threshold)
+            // =========================================================
+            // A threshold needs DISTINCT keys signing the SAME transaction. Signing
+            // the body twice does not work: the first signature's metadata becomes
+            // the transaction's `initiator` and is baked into the header, so a
+            // second independent signature is over a different transaction hash and
+            // neither copy reaches the threshold. Co-sign the envelope instead.
+            var {{varName}}Body = {{{coSignBodyExpr}}};
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Envelope = await {{varName}}Signer.SignAsync(
+                {{{coSignPrincipal}}},
+                {{varName}}Body);
+{{#each coSignExtraSigners}}
+            // Co-signer {{@index}}: appends a signature to the SAME transaction hash.
+            {{../varName}}Envelope = await new SmartSigner(client.V3, {{this}}Kp, {{../signerUrl}})
+                .SignExistingAsync({{../varName}}Envelope);
+{{/each}}
+            // Submit only once every signature is collected: resubmitting a
+            // signature that is already on chain trips replay protection.
+            var {{varName}}Result = await client.V3.SubmitAsync({{varName}}Envelope);
+            Console.WriteLine($"CoSign {{coSignOperation}} submitted with {{coSignSignerCount}} signature(s): { {{~varName}}Result}");

@@ -239,19 +239,19 @@ describe('MCP protocol — built bundle', () => {
     assert.equal(mainnet.faucetAvailable, false);
   });
 
-  test('every SDK operation catalog resolves with 24 operations', async () => {
+  test('every SDK operation catalog resolves with 25 operations', async () => {
     for (const lang of ['python', 'rust', 'dart', 'csharp', 'javascript']) {
       const r = await client.send('resources/read', {
         uri: `accumulate://sdk/${lang}/operations`,
       });
       const cat = JSON.parse(r.result.contents[0].text);
       assert.equal(cat.language, lang);
-      assert.equal(cat.operations.length, 24, `${lang} operation count`);
+      assert.equal(cat.operations.length, 25, `${lang} operation count`);
       assert.ok(cat.package, `${lang} package name`);
       assert.ok(cat.install, `${lang} install command`);
       // Signatures are what make the catalog useful over prose.
       const withSymbols = cat.operations.filter((o) => o.symbols?.length);
-      assert.equal(withSymbols.length, 24, `${lang} ops all carry symbols`);
+      assert.equal(withSymbols.length, 25, `${lang} ops all carry symbols`);
     }
   });
 

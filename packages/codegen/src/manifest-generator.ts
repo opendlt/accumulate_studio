@@ -265,6 +265,19 @@ export function generateCodeFromManifest(
     }
 
     const config = resolveConfigRefs(rawConfig, language, varNameMap);
+
+    // CoSign's `additionalSigners` names other NODES. The generated code refers to
+    // keypairs by their variable name (derived from the node label), so an
+    // unresolved node id would emit an undefined variable — e.g. `k2_kp` when the
+    // keypair is actually `two_kp`. Resolve through the same map used for refs.
+    if (node.type === 'CoSign' && Array.isArray(config.additionalSigners)) {
+      config.additionalSigners = (config.additionalSigners as unknown[]).map((s) => {
+        const raw = String(s);
+        const bare = raw.replace(/^\{\{/, '').replace(/\}\}$/, '').split('.')[0];
+        return varNameMap.get(bare) ?? varNameMap.get(raw) ?? raw;
+      });
+    }
+
     const operation = lookupOperation(manifest, opId);
 
     // Track GenerateKeys nodes for keypair references
@@ -282,6 +295,12 @@ export function generateCodeFromManifest(
     } else if (config.keyVarName && typeof config.keyVarName === 'string') {
       // Explicit override: resolved reference to a specific GenerateKeys node
       keyVarName = String(config.keyVarName);
+    } else if (node.type === 'CoSign' && firstKeyGenVarName) {
+      // The FIRST signer defaults to the first GenerateKeys, not the last: the
+      // additional signers are normally the later keys, and defaulting to the
+      // last would make the primary and a co-signer the SAME key — which does not
+      // advance the threshold and is rejected by the node.
+      keyVarName = firstKeyGenVarName;
     } else if ((node.type === 'SendTokens' || node.type === 'WriteDataTo' || node.type === 'UpdateKeyPage' || node.type === 'UpdateKey' || node.type === 'CreateKeyPage') && firstKeyGenVarName && firstKeyGenVarName !== lastKeyGenVarName) {
       // These actions with multiple GenerateKeys: use first keypair (the funded/authorized one)
       keyVarName = firstKeyGenVarName;
@@ -1494,6 +1513,92 @@ function computeNodeVars(
       }
       break;
     }
+  }
+
+  // CoSign runs another operation under a signature threshold. It is a utility
+  // block, so it computes its own signer URL and body expression rather than
+  // going through the transaction path below.
+  if (node.type === 'CoSign') {
+    const operation = String(config.operation || 'create_data_account');
+    vars.coSignOperation = operation;
+
+    // Build the TxBody call for the chosen operation from its params. This is the
+    // same by-name dispatch the CLI's `tx build` uses, so the two front doors stay
+    // consistent. The whole call is assembled here rather than in the templates:
+    // method casing and argument style (named vs positional) differ per language,
+    // and branching on that five ways inside Handlebars is unreadable.
+    const params = (config.params && typeof config.params === 'object')
+      ? (config.params as Record<string, unknown>)
+      : {};
+    const toCamel = (x: string) => x.replace(/_([a-z])/g, (_m, c: string) => c.toUpperCase());
+    const toPascal = (x: string) => {
+      const c = toCamel(x);
+      return c.charAt(0).toUpperCase() + c.slice(1);
+    };
+
+    const method = isRust || language === 'python'
+      ? operation
+      : isCSharp ? toPascal(operation) : toCamel(operation);
+
+    const argEntries = Object.entries(params).map(([k, v]) => {
+      const raw = String(v);
+      return { key: k, value: isVarRef(raw) ? raw : quoteLiteral(raw) };
+    });
+
+    let argList: string;
+    if (language === 'python') {
+      argList = argEntries.map((a) => `${a.key}=${a.value}`).join(', ');
+    } else if (isDart) {
+      argList = argEntries.map((a) => `${toCamel(a.key)}: ${a.value}`).join(', ');
+    } else if (isRust) {
+      // Rust builders take &str; a quoted literal is already a &str.
+      argList = argEntries.map((a) => a.value).join(', ');
+    } else {
+      argList = argEntries.map((a) => a.value).join(', ');
+    }
+
+    vars.coSignBodyMethod = method;
+    vars.coSignBodyExpr = `TxBody${isCSharp || isDart || !isRust ? '.' : '::'}${method}(${argList})`;
+
+    // Every additional signer must be a DISTINCT key: co-signing with the same
+    // key twice does not advance the threshold and the node rejects the envelope.
+    const extra = Array.isArray(config.additionalSigners)
+      ? (config.additionalSigners as unknown[]).map((s) => String(s)).filter(Boolean)
+      : [];
+    // Exclude the primary signer as well as duplicates: a key that has already
+    // signed cannot advance the threshold, and the node rejects the envelope.
+    const seen = new Set<string>([kv]);
+    vars.coSignExtraSigners = extra.filter((s) => {
+      if (seen.has(s)) return false;
+      seen.add(s);
+      return true;
+    });
+    vars.coSignHasExtra = (vars.coSignExtraSigners as string[]).length > 0;
+    vars.coSignSignerCount = (vars.coSignExtraSigners as string[]).length + 1;
+
+    const rawSignerUrl = config.signerUrl;
+    if (rawSignerUrl && typeof rawSignerUrl === 'string' && isVarRef(String(rawSignerUrl))) {
+      vars.signerUrl = rawSignerUrl;
+    } else if (rawSignerUrl && typeof rawSignerUrl === 'string') {
+      vars.signerUrl = quoteLiteral(String(rawSignerUrl));
+    } else if (createIdentityVarName) {
+      vars.signerUrl = subPathUrlExpr(createIdentityVarName, 'book/1');
+    } else {
+      vars.signerUrl = isCSharp ? `${kv}${lidSuffix}.String()`
+        : isDart ? `${kv}${lidSuffix}.toString()`
+        : `${kv}${lidSuffix}`;
+    }
+    vars.signerUrlIsRef = true;
+
+    const rawPrincipal = String(config.principal || '');
+    if (rawPrincipal) {
+      vars.coSignPrincipal = isVarRef(rawPrincipal) ? rawPrincipal : quoteLiteral(rawPrincipal);
+    } else if (createIdentityVarName) {
+      vars.coSignPrincipal = `${createIdentityVarName}${isCSharp || isDart ? 'Url' : '_url'}`;
+    } else {
+      vars.coSignPrincipal = vars.signerUrl;
+    }
+    vars.coSignPrincipalIsRef = true;
   }
 
   // Common: compute signerUrl for transaction templates

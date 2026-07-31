@@ -1,0 +1,20 @@
+        // =========================================================
+        // {{label}} (Action: CoSign — {{coSignOperation}} under an M-of-N threshold)
+        // =========================================================
+        // A threshold needs DISTINCT keys signing the SAME transaction. Signing the
+        // body twice does not work: the first signature's metadata becomes the
+        // transaction's `initiator` and is baked into the header, so a second
+        // independent signature is over a different transaction hash and neither
+        // copy reaches the threshold. Co-sign the existing envelope instead.
+        const {{varName}}Body = {{{coSignBodyExpr}}};
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        let {{varName}}Envelope = (await {{varName}}Signer.sign({{{coSignPrincipal}}}, {{varName}}Body)).envelope;
+{{#each coSignExtraSigners}}
+        // Co-signer {{@index}}: appends a signature to the SAME transaction hash.
+        {{../varName}}Envelope = await new SmartSigner(client, {{this}}Kp.toKey(), {{../signerUrl}})
+            .signExisting({{../varName}}Envelope);
+{{/each}}
+        // Submit only once every signature is collected: resubmitting a signature
+        // that is already on chain trips replay protection.
+        const {{varName}}Result = await client.v2.execute({{varName}}Envelope.asObject());
+        console.log(`CoSign {{coSignOperation}} submitted with {{coSignSignerCount}} signature(s):`, {{varName}}Result);

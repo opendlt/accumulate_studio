@@ -3,11 +3,11 @@
 > Machine-readable interface for building on the Accumulate blockchain. One SDK per language; each ships an `llms.txt`, a full `llms-full.txt` API digest, and an `AGENTS.md` guide, all generated from a single manifest source of truth.
 
 ## SDKs
-- **Python** — `pip install accumulate-sdk-opendlt` — 24 operations — see `python/llms.txt`
-- **Rust** — `cargo add accumulate-sdk` — 24 operations — see `rust/llms.txt`
-- **Dart** — `dart pub add opendlt_accumulate` — 24 operations — see `dart/llms.txt`
-- **C#** — `dotnet add package Acme.Net.Sdk` — 24 operations — see `csharp/llms.txt`
-- **JavaScript / TypeScript** — `npm install accumulate-sdk-opendlt` — 24 operations — see `javascript/llms.txt`
+- **Python** — `pip install accumulate-sdk-opendlt` — 25 operations — see `python/llms.txt`
+- **Rust** — `cargo add accumulate-sdk` — 25 operations — see `rust/llms.txt`
+- **Dart** — `dart pub add opendlt_accumulate` — 25 operations — see `dart/llms.txt`
+- **C#** — `dotnet add package Acme.Net.Sdk` — 25 operations — see `csharp/llms.txt`
+- **JavaScript / TypeScript** — `npm install accumulate-sdk-opendlt` — 25 operations — see `javascript/llms.txt`
 
 ## Conventions (all SDKs)
 - Networks: Kermit testnet (used by the examples; fund via faucet), plus mainnet and local devnet.

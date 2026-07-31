@@ -1,0 +1,32 @@
+    // =========================================================
+    // {{label}} (Action: CoSign — {{coSignOperation}} under an M-of-N threshold)
+    // =========================================================
+    // A threshold needs DISTINCT keys signing the SAME transaction. Signing the
+    // body twice does not work: the first signature's metadata becomes the
+    // transaction's `initiator` and is baked into the header, so a second
+    // independent signature is over a different transaction hash and neither copy
+    // reaches the threshold. Co-sign the existing envelope instead.
+    let {{varName}}_body = {{{coSignBodyExpr}}};
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let _ = {{varName}}_signer.refresh_version().await;
+    let mut {{varName}}_envelope = {{varName}}_signer
+        .sign({{#if coSignPrincipalIsRef}}&{{coSignPrincipal}}{{else}}{{coSignPrincipal}}{{/if}}, &{{varName}}_body, None)
+        .expect("sign failed");
+{{#each coSignExtraSigners}}
+    // Co-signer {{@index}}: appends a signature to the SAME transaction hash.
+    let mut {{../varName}}_cosigner{{@index}} = SmartSigner::new(&client, {{this}}_signer.clone(), {{#if ../signerUrlIsRef}}&{{../signerUrl}}{{else}}{{../signerUrl}}{{/if}});
+    let _ = {{../varName}}_cosigner{{@index}}.refresh_version().await;
+    {{../varName}}_envelope = {{../varName}}_cosigner{{@index}}
+        .sign_existing(&{{../varName}}_envelope)
+        .expect("co-sign failed");
+{{/each}}
+    // Submit only once every signature is collected: resubmitting a signature that
+    // is already on chain trips replay protection.
+    let {{varName}}_submit = client
+        .v3_client
+        .call_v3("submit", serde_json::json!({ "envelope": {{varName}}_envelope }))
+        .await;
+    match {{varName}}_submit {
+        Ok(v) => println!("CoSign {{coSignOperation}} SUBMITTED with {{coSignSignerCount}} signature(s): {:?}", v),
+        Err(e) => println!("CoSign {{coSignOperation}} FAILED: {:?}", e),
+    }
