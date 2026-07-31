@@ -92,3 +92,5 @@ apps/studio/.env.development
 # Transcripts are large and contain full agent output; keep them local.
 tools/agent-harness/results/**/transcripts/
 tools/studio-headless/dist/
+apps/mcp-server/stage/
+apps/mcp-server/*.tgz
