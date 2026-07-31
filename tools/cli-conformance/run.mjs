@@ -243,6 +243,32 @@ check('mainnet without the env var: refused with exit 2', () => {
   return problems;
 });
 
+check('tx sign supports co-signing an existing envelope (M-of-N)', () => {
+  // A threshold needs a SECOND signature on the SAME transaction. Signing the
+  // body twice produces two different transactions (the initiator is baked into
+  // the header), so neither reaches the threshold — which is why multisig tasks
+  // failed before this existed.
+  const r = run(['--json', '--help']);
+  const { env, problems } = envelopeOf(r.stdout, 'help');
+  const sign = (env?.data?.verbs ?? []).find((v) => v.name === 'tx sign');
+  if (!sign) { problems.push('tx sign missing'); return problems; }
+  const flags = (sign.flags ?? []).map((f) => f.name);
+  if (!flags.includes('--envelope')) {
+    problems.push('tx sign must accept --envelope to co-sign an existing transaction');
+  }
+  if (!flags.includes('--body')) problems.push('tx sign must still accept --body');
+  return problems;
+});
+
+check('tx sign rejects both --body and --envelope together', () => {
+  const r = run(['--json', 'tx', 'sign', '--body', 'b.json', '--envelope', 'e.json',
+    '--signer', 'acc://x.acme/book/1', '--key-env', 'NOPE']);
+  const { env, problems } = envelopeOf(r.stdout, 'tx sign both modes');
+  if (r.code !== EXIT.USAGE) problems.push(`expected exit 2, got ${r.code}`);
+  if (env && env.error?.code !== 'ACC_USAGE') problems.push(`expected ACC_USAGE, got ${env?.error?.code}`);
+  return problems;
+});
+
 check('tx sign without a key source: refused with exit 2', () => {
   // tx sign is the ONLY signing verb and must never fall back to an ambient key.
   const r = run(['--json', 'tx', 'sign', '--body', 'b.json', '--principal', 'acc://x.acme', '--signer', 'acc://x.acme']);

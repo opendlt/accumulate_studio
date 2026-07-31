@@ -74,8 +74,20 @@ def main() -> int:
             "keyPageCreditBalance": credit_balance,
             "liteIdentityUrl": getattr(wallet, "lite_identity_url", None),
             "liteTokenAccountUrl": getattr(wallet, "lite_token_account_url", None),
-            "privateKeyHex": _wallet_private_hex(wallet),
-            "publicKeyHex": _wallet_public_hex(wallet),
+            # The ADI KEY PAGE key, not the wallet key.
+            #
+            # QuickStart.setup_adi generates its OWN keypair for the ADI and puts
+            # sha256(that public key) on the key page. Returning the wallet key
+            # here handed the agent a key that CANNOT sign for the key page it was
+            # also handed — every key-page operation (add credits to the page,
+            # rotate a key, satisfy a threshold) would fail as unauthorized.
+            # Verified: page held 130bbe90… while sha256(wallet pub) was f13d293f….
+            "privateKeyHex": _keypair_private_hex(getattr(adi, "keypair", None)),
+            "publicKeyHex": _keypair_public_hex(getattr(adi, "keypair", None)),
+            # The wallet (lite) key is still needed to fund and buy credits, so it
+            # is returned under its own names rather than silently replaced.
+            "litePrivateKeyHex": _wallet_private_hex(wallet),
+            "litePublicKeyHex": _wallet_public_hex(wallet),
         }
         json.dump(out, sys.stdout)
         return 0
@@ -97,6 +109,21 @@ def _wallet_private_hex(wallet):
 
 def _wallet_public_hex(wallet):
     kp = getattr(wallet, "keypair", None) or getattr(wallet, "key_pair", None)
+    if kp is None:
+        return None
+    b = kp.public_key_bytes() if hasattr(kp, "public_key_bytes") else None
+    return b.hex() if b else None
+
+
+def _keypair_private_hex(kp):
+    """Private key of a raw keypair (the ADI's own), not a wallet wrapper."""
+    if kp is None:
+        return None
+    b = kp.private_key_bytes() if hasattr(kp, "private_key_bytes") else None
+    return b.hex() if b else None
+
+
+def _keypair_public_hex(kp):
     if kp is None:
         return None
     b = kp.public_key_bytes() if hasattr(kp, "public_key_bytes") else None
