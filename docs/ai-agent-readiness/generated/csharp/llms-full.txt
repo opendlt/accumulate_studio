@@ -29,8 +29,8 @@ Branch on `code`. **`retryable` decides whether a retry is productive** — retr
 validation or auth error only burns turns; the condition will not change on its own.
 
 ```
-using Acme.Net.Sdk;
-catch (AccumulateException e) {
+using Acme.Net.Sdk.Exceptions;
+catch (AccumulateApiException e) {
     e.Code
 ```
 
@@ -39,7 +39,7 @@ The account URL does not exist on this network.
 
 - category: `not_found` · wire -32807, -33404
 - retryable: **no**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Verify the URL and the network. If you just created the account, wait for its creating transaction to reach 'delivered' first — use wait_for_balance / wait_for_credits rather than querying straight away.
 
 ### `ACC_UNAUTHORIZED_SIGNER`
@@ -47,7 +47,7 @@ The signing key is not on the key page that authorizes this principal.
 
 - category: `auth` · wire 403
 - retryable: **no**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Sign with a key that is on the principal's authorizing key page. After create_identity, ADI-owned principals are signed by `<adi>/book/1`. A key page owned by a second book (e.g. `multisig-book/1`) must be signed by that page's OWN book — Accumulate requires every authority to approve.
 
 ### `ACC_INSUFFICIENT_CREDITS`
@@ -55,7 +55,7 @@ The signing key page does not hold enough credits to pay for this transaction.
 
 - category: `insufficient_credits`
 - retryable: **no**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Call add_credits for the SIGNING key page, then wait_for_credits on that same page before retrying. Credits are separate from token balance — an account can hold ACME and still be unable to sign. Note add_credits itself must be signed by an account that already has credits (typically the funded lite identity).
 
 ### `ACC_NOT_SIGNED`
@@ -63,7 +63,7 @@ The envelope reached the network without a valid signature over the transaction 
 
 - category: `auth`
 - retryable: **no**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Build and sign through the canonical path — TxBody to construct, SmartSigner to sign and submit. Do not hand-roll envelopes. If you are working ON an SDK and see this for one specific transaction type, its marshaler is missing or its type code is wrong.
 
 ### `ACC_ALREADY_EXISTS`
@@ -71,7 +71,7 @@ The account or identity being created already exists on chain.
 
 - category: `conflict`
 - retryable: **no**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Query the URL first — if it exists and you own it, skip creation and continue. For repeatable scripts, derive a unique URL (e.g. a timestamp suffix) rather than a fixed name.
 
 ### `ACC_INVALID_PRINCIPAL`
@@ -79,7 +79,7 @@ The principal URL is not a valid target for this transaction type.
 
 - category: `validation`
 - retryable: **no**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Match the principal to the transaction type. Token transfers use the token account URL (`<lite>/ACME`), credit purchases and key operations use the identity or key page URL.
 
 ### `ACC_INSUFFICIENT_BALANCE`
@@ -87,7 +87,7 @@ The source account does not hold enough tokens for this transfer.
 
 - category: `insufficient_balance`
 - retryable: **no**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Confirm the balance with wait_for_balance before transferring. Build amounts with the Amount helper — 1 ACME = 1e8 base units, and custom tokens carry their OWN precision set at creation.
 
 ### `ACC_TX_PENDING`
@@ -95,7 +95,7 @@ The transaction was accepted but is not final — it is awaiting additional sign
 
 - category: `pending`
 - retryable: **yes**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: This is not a failure. Collect the remaining signatures up to the page threshold, then poll status until delivered. Co-sign the EXISTING envelope (SmartSigner.sign_existing / signExisting / SignExistingAsync, or accumulate tx sign --envelope) — signing the same body again creates a DIFFERENT transaction that never reaches the threshold. Collect every signature before submitting: resubmitting one already on chain trips replay protection. Treating pending as success is the common multisig bug; so is treating it as a hard error.
 
 ### `ACC_TX_NOT_SETTLED`
@@ -103,7 +103,7 @@ The transaction was submitted and accepted, but did not reach a final state befo
 
 - category: `pending`
 - retryable: **yes**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Do NOT resubmit — a resubmit risks a duplicate or an ACC_ALREADY_EXISTS. Keep polling the transaction status until 'delivered', with a longer timeout. Synthetic deposits (faucet, cross-account transfers) routinely need more time than a single block.
 
 ### `ACC_INVALID_URL`
@@ -111,7 +111,7 @@ The string is not a well-formed Accumulate URL.
 
 - category: `validation` · wire 1002
 - retryable: **no**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Accumulate URLs are `acc://<authority>[/<path>]`. Lite token accounts end in the token symbol, e.g. `acc://<keyhash>/ACME`.
 
 ### `ACC_INVALID_PARAMS`
@@ -119,7 +119,7 @@ The JSON-RPC parameters were rejected by the node.
 
 - category: `validation` · wire -32802, -32602
 - retryable: **no**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Check the operation's declared inputs in llms-full.txt. Hashes are 32-byte hex; amounts are base-unit integers, not decimals.
 
 ### `ACC_METHOD_NOT_FOUND`
@@ -127,7 +127,7 @@ The node does not expose the RPC method that was called.
 
 - category: `validation` · wire -32601
 - retryable: **no**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Use the SDK's canonical client rather than raw RPC — it targets the correct API version for the endpoint.
 
 ### `ACC_NETWORK_UNAVAILABLE`
@@ -135,7 +135,7 @@ The endpoint could not be reached, or the request timed out.
 
 - category: `network`
 - retryable: **yes**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Retry with exponential backoff. This is the ONLY class of error where a bare retry is productive — retrying a validation or auth error just burns turns.
 
 ### `ACC_INTERNAL`
@@ -143,7 +143,7 @@ The node reported an internal error.
 
 - category: `internal` · wire -32603
 - retryable: **yes**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Retry once with backoff. If it persists, the request is likely malformed in a way the node did not classify — re-check the transaction body against llms-full.txt.
 
 ### `ACC_ROUTING_FAILED`
@@ -151,7 +151,7 @@ The node could not determine which partition should handle the request.
 
 - category: `validation` · wire -33400
 - retryable: **no**
-- C# type: `AccumulateException`
+- C# type: `AccumulateApiException`
 - fix: Build the envelope through TxBody + SmartSigner rather than by hand. Every transaction needs a header with a valid `principal` — that URL is the routing key, and without it the node rejects the request before validating anything else.
 
 ## Operations (25)

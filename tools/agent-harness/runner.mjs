@@ -235,7 +235,11 @@ async function executeRun({ lang, task, mode, backendName, backend, model, timeo
       backend.dumpPrompt?.(workspace.dir, task, lang, env, inputs, mode);
       result = await backend.run({ task, lang, env, inputs, workspace, timeoutMs, model, mode });
     } catch (e) {
-      return fail('other', `backend error: ${e.message}`);
+      // Hardcoding `other` here charged every backend-invocation failure to the
+      // SDK, including ones where the harness lost its own workspace. Let the
+      // classifier decide so infrastructure faults land in an excluded class.
+      const msg = `backend error: ${e.message}`;
+      return fail(classifyFailure({ transcript: msg, stderr: msg, artifacts: {} }), msg);
     }
 
     // 4. Verify against chain state — independent of anything the agent claimed.

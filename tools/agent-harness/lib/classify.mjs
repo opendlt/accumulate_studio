@@ -36,6 +36,15 @@ export const CLASS_NAMES = Object.keys(FAILURE_CLASSES);
  */
 const RULES = [
   {
+    // The harness lost its own scaffolding — the workspace or the prompt file it
+    // just wrote is gone, usually because a killed run's cleanup raced a live
+    // one. The SDK was never exercised, so scoring it as `other` (which counts)
+    // charges a harness fault to the package. Observed as
+    // "backend error: ENOENT ... harness-prompt.txt" against C#.
+    cls: 'harness-setup-failed',
+    test: (t) => /ENOENT.*(harness-prompt|acc-harness-)/i.test(t),
+  },
+  {
     cls: 'agent-unavailable',
     test: (t) =>
       /(hit your session limit|usage limit reached|rate limit exceeded|quota exceeded|too many requests.*anthropic|invalid api key|authentication_error|credit balance is too low)/i.test(t),

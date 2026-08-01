@@ -46,10 +46,10 @@
       "import": "import 'package:opendlt_accumulate/opendlt_accumulate.dart';"
     },
     "csharp": {
-      "base": "AccumulateException",
-      "catch": "catch (AccumulateException e) {",
+      "base": "AccumulateApiException",
+      "catch": "catch (AccumulateApiException e) {",
       "codeAccess": "e.Code",
-      "import": "using Acme.Net.Sdk;"
+      "import": "using Acme.Net.Sdk.Exceptions;"
     },
     "javascript": {
       "base": "AccumulateError",
@@ -95,7 +95,7 @@
         "python": "AccountNotFoundError",
         "dart": "ApiError",
         "rust": "Error::NotFound",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -130,7 +130,7 @@
         "python": "AccumulateError",
         "dart": "AuthError",
         "rust": "Error::Unauthorized",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -164,7 +164,7 @@
         "python": "InsufficientCreditsError",
         "dart": "TransactionError",
         "rust": "Error::InsufficientCredits",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -196,7 +196,7 @@
         "python": "MissingSignatureError",
         "dart": "SignatureError",
         "rust": "Error::InvalidSignature",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -228,7 +228,7 @@
         "python": "AccumulateError",
         "dart": "TransactionError",
         "rust": "Error::Conflict",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -258,7 +258,7 @@
         "python": "ValidationError",
         "dart": "ValidationError",
         "rust": "Error::InvalidPrincipal",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -291,7 +291,7 @@
         "python": "InsufficientBalanceError",
         "dart": "TransactionError",
         "rust": "Error::InsufficientBalance",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -320,7 +320,7 @@
         "python": "AccumulateError",
         "dart": "TransactionError",
         "rust": "Error::Pending",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -355,7 +355,7 @@
         "python": "AccumulateError",
         "dart": "TransactionError",
         "rust": "Error::Pending",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -387,7 +387,7 @@
         "python": "ValidationError",
         "dart": "ValidationError",
         "rust": "Error::InvalidUrl",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -421,7 +421,7 @@
         "python": "ValidationError",
         "dart": "ValidationError",
         "rust": "Error::InvalidParams",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -449,7 +449,7 @@
         "python": "AccumulateError",
         "dart": "ApiError",
         "rust": "Error::MethodNotFound",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -486,7 +486,7 @@
         "python": "NetworkError",
         "dart": "NetworkError",
         "rust": "Error::Network",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -512,7 +512,7 @@
         "python": "AccumulateError",
         "dart": "ApiError",
         "rust": "Error::Internal",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -546,7 +546,7 @@
         "python": "ValidationError",
         "dart": "ApiError",
         "rust": "Error::Routing",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     }
