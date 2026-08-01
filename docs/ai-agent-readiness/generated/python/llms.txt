@@ -13,7 +13,8 @@ Connect, build a transaction body with `TxBody`, then sign + submit + wait with 
 ```
 client = QuickStart.kermit()   # or Accumulate.testnet()/mainnet()/devnet()
 # body = TxBody.<operation>(...)
-result = SmartSigner(signer).sign_submit_and_wait(principal, body)
+signer = SmartSigner(client.v3, keypair, signer_url)
+result = signer.sign_submit_and_wait(principal=principal, body=body, max_attempts=30)
 ```
 
 ## Rules

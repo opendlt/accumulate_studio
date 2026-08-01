@@ -29,6 +29,68 @@ stdout — the harness parses it.
 import contextlib
 import json
 import sys
+import time
+import urllib.request
+
+
+_ENDPOINTS = {
+    "kermit": "https://kermit.accumulatenetwork.io/v3",
+    "testnet": "https://testnet.accumulatenetwork.io/v3",
+    "devnet": "http://127.0.0.1:26660/v3",
+}
+
+
+def _as_url(value):
+    """Accept a str or a Url-like object and return a plain string."""
+    if value is None:
+        return None
+    return value if isinstance(value, str) else str(value)
+
+
+def _query(network: str, scope: str):
+    """Query an account over plain JSON-RPC, independent of the SDK."""
+    url = _ENDPOINTS.get(network, _ENDPOINTS["kermit"])
+    body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "query",
+                       "params": {"scope": scope}}).encode()
+    req = urllib.request.Request(url, data=body,
+                                 headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.load(r)
+
+
+def _account_exists(network: str, scope: str) -> bool:
+    try:
+        return "error" not in _query(network, scope)
+    except Exception:
+        return False
+
+
+def _wait_for_credits(network: str, scope: str, timeout_s: int = 240):
+    """Wait for a key page to report a positive credit balance."""
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        try:
+            acct = (_query(network, scope).get("result") or {}).get("account") or {}
+            bal = int(acct.get("creditBalance") or 0)
+            if bal > 0:
+                return bal
+        except Exception:
+            pass
+        time.sleep(5)
+    return None
+
+
+def _wait_for_balance(network: str, scope: str, timeout_s: int = 240) -> bool:
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        try:
+            acct = (_query(network, scope).get("result") or {}).get("account") or {}
+            if int(acct.get("balance") or 0) > 0:
+                return True
+        except Exception:
+            pass
+        time.sleep(5)
+    return False
 
 
 def main() -> int:
@@ -54,7 +116,21 @@ def main() -> int:
         # library that writes to stdout breaks any machine-readable caller.)
         with contextlib.redirect_stdout(sys.stderr):
             wallet = qs.create_wallet()
-            qs.fund_wallet(wallet, times=3, wait_seconds=15)
+            # A fixed post-faucet sleep is a guess about testnet latency. It was
+            # 15s against deposits measured settling in 21-85s, so AddCredits ran
+            # against a lite identity that did not exist yet
+            # ("load signer: Account...Main not found"), the ADI was never
+            # created, and this script still returned ok. Wait for the funds to
+            # actually arrive instead of assuming a duration.
+            qs.fund_wallet(wallet, times=3, wait_seconds=5)
+            # The Wallet exposes `lite_token_account` / `lite_identity`; the
+            # `_url`-suffixed names never existed, which is why every record
+            # reported liteTokenAccountUrl: null and the wait below never ran.
+            lta = _as_url(getattr(wallet, "lite_token_account", None))
+            if lta and not _wait_for_balance(network, lta):
+                raise RuntimeError(
+                    f"faucet funds for {lta} did not settle; cannot provision an ADI"
+                )
 
             adi = qs.setup_adi(wallet, adi_name)
             qs.buy_credits_for_adi(wallet, adi, credits=credits)
@@ -63,8 +139,26 @@ def main() -> int:
             key_page_url = getattr(adi, "key_page_url", None) or f"{adi_url}/book/1"
             key_book_url = getattr(adi, "key_book_url", None) or f"{adi_url}/book"
 
-            page = qs.get_key_page_info(key_page_url)
-            credit_balance = getattr(page, "credit_balance", None) if page else None
+            # Credits are bought with a transaction, so they are not visible the
+            # instant the call returns. Reading immediately reported a page with
+            # no credits and aborted a provisioning run that had in fact worked.
+            credit_balance = _wait_for_credits(network, key_page_url)
+            if credit_balance is None:
+                page = qs.get_key_page_info(key_page_url)
+                credit_balance = getattr(page, "credit_balance", None) if page else None
+
+            # QuickStart downgrades a failed AddCredits to a printed warning, so
+            # reaching this point proves nothing. Reporting ok here made the
+            # harness wait 240s for an ADI that was never submitted, then blame
+            # the SDK under test. Verify on chain before claiming success.
+            if not _account_exists(network, adi_url):
+                raise RuntimeError(
+                    f"ADI {adi_url} was not created on chain (a prerequisite step failed silently)"
+                )
+            if not credit_balance:
+                raise RuntimeError(
+                    f"key page {key_page_url} has no credits; it could not sign anything"
+                )
 
         out = {
             "ok": True,
@@ -72,8 +166,8 @@ def main() -> int:
             "keyBookUrl": key_book_url,
             "keyPageUrl": key_page_url,
             "keyPageCreditBalance": credit_balance,
-            "liteIdentityUrl": getattr(wallet, "lite_identity_url", None),
-            "liteTokenAccountUrl": getattr(wallet, "lite_token_account_url", None),
+            "liteIdentityUrl": _as_url(getattr(wallet, "lite_identity", None)),
+            "liteTokenAccountUrl": _as_url(getattr(wallet, "lite_token_account", None)),
             # The ADI KEY PAGE key, not the wallet key.
             #
             # QuickStart.setup_adi generates its OWN keypair for the ADI and puts

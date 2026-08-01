@@ -10,40 +10,55 @@
     "title": "Send ACME tokens between accounts",
     "specHash": "04b11771f6b0"
   },
-  "sdkVersion": "2.3.8",
-  "passed": false,
-  "turns": null,
+  "sdkVersion": "2.3.11",
+  "passed": true,
+  "turns": 26,
   "interventions": 0,
-  "failureClass": "timeout",
+  "failureClass": null,
   "assertions": [
     {
       "assertion": "tx_status == delivered",
       "subject": "tx_status",
       "op": "==",
-      "passed": false,
-      "actual": "unknown",
+      "passed": true,
+      "actual": "delivered",
       "expected": "delivered"
     },
     {
       "assertion": "recipient_balance_increased_by == 5 ACME",
       "subject": "recipient_balance_increased_by",
       "op": "==",
-      "passed": false,
-      "actual": "0",
-      "actualAcme": 0,
+      "passed": true,
+      "actual": "500000000",
+      "actualAcme": 5,
       "expected": "5 ACME"
     }
   ],
-  "artifacts": {},
-  "environment": {
-    "liteIdentity": "acc://0e0c413897fae6f352185a14b2fa23a32d6633cf0b63bd8b",
-    "liteTokenAccount": "acc://0e0c413897fae6f352185a14b2fa23a32d6633cf0b63bd8b/ACME",
-    "publicKeyHex": "ae1baaf22af6c4e89d129fd34a5ed4ef4ac2128c4cd582374718dc3fe142f875",
-    "suggestedAdiUrl": "acc://harness-8817c99e.acme"
+  "artifacts": {
+    "liteIdentityUrl": "acc://1be99330a6c2adc69ef05818bcb70368959edfc84569cac4",
+    "liteTokenAccountUrl": "acc://1be99330a6c2adc69ef05818bcb70368959edfc84569cac4/ACME",
+    "adiUrl": "acc://harness-71f05923.acme",
+    "keyBookUrl": "acc://harness-71f05923.acme/book",
+    "keyPageUrl": "acc://harness-71f05923.acme/book/1",
+    "recipientUrl": "acc://harness-71f05923.acme/tokens",
+    "txid": "acc://53b99f807b13d5fa67b5c69c35ffe665282396e5ba88805273bbfc6d065763b5@1be99330a6c2adc69ef05818bcb70368959edfc84569cac4/ACME",
+    "txids": [
+      "acc://d571b82ba98d9f9a66c4db10b2b6d71cfc7aca6b479e234625adc2b491641c15@1be99330a6c2adc69ef05818bcb70368959edfc84569cac4/ACME",
+      "acc://852a837dc6173a6917658ad6d776fb81e0055539acd3c92ff2519696cbabf924@harness-71f05923.acme",
+      "acc://b170b75f5e348d1359cf8210c646a345d5b40831a9479ec2474eea5d1ede6f31@1be99330a6c2adc69ef05818bcb70368959edfc84569cac4/ACME",
+      "acc://33fafa08c4d346682f4ca57d7c70142db86957d3e34da44fcf932b3f8e134216@harness-71f05923.acme",
+      "acc://53b99f807b13d5fa67b5c69c35ffe665282396e5ba88805273bbfc6d065763b5@1be99330a6c2adc69ef05818bcb70368959edfc84569cac4/ACME"
+    ]
   },
-  "durationMs": 900017,
+  "environment": {
+    "liteIdentity": "acc://1be99330a6c2adc69ef05818bcb70368959edfc84569cac4",
+    "liteTokenAccount": "acc://1be99330a6c2adc69ef05818bcb70368959edfc84569cac4/ACME",
+    "publicKeyHex": "3a944537aae8aa5fa976cb6b0ee233859a5ce6b0081b8c36bac1135d27c84eeb",
+    "suggestedAdiUrl": "acc://harness-d1fb983b.acme"
+  },
+  "durationMs": 1063047,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\csharp--send-tokens.txt",
   "error": null,
-  "startedAt": "2026-08-01T02:16:16.097Z",
-  "finishedAt": "2026-08-01T02:31:39.193Z"
+  "startedAt": "2026-08-01T12:49:45.559Z",
+  "finishedAt": "2026-08-01T13:07:53.649Z"
 }

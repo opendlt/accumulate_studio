@@ -13,7 +13,8 @@ Connect, build a transaction body with `TxBody`, then sign + submit + wait with 
 ```
 var client = Accumulate.Kermit();   // or Accumulate.Testnet()/Mainnet()/Devnet()
 // body = TxBody.<operation>(...)
-var r = await new SmartSigner(signer).SignSubmitAndWaitAsync(principal, body);
+var signer = new SmartSigner(client.V3, keypair, signerUrl);
+var r = await signer.SignSubmitAndWaitAsync(principal, body);
 ```
 
 ## Rules

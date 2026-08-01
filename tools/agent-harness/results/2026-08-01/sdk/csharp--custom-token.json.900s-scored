@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "lang": "csharp",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "custom-token",
+    "file": "06-custom-token.yaml",
+    "title": "Custom token issuance",
+    "specHash": "f9068d5ec05f"
+  },
+  "sdkVersion": "2.3.8",
+  "passed": false,
+  "turns": null,
+  "interventions": 0,
+  "failureClass": "timeout",
+  "assertions": [
+    {
+      "assertion": "token_issuer_exists == true",
+      "subject": "token_issuer_exists",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "assertion": "token_account_balance == issue_amount",
+      "subject": "token_account_balance",
+      "op": "==",
+      "passed": false,
+      "actual": 0,
+      "expected": 1000
+    }
+  ],
+  "artifacts": {},
+  "environment": {
+    "liteIdentity": "acc://74ec3d71e03527a0f8f9e1946ceb84aa07ff7940211582d0",
+    "liteTokenAccount": "acc://74ec3d71e03527a0f8f9e1946ceb84aa07ff7940211582d0/ACME",
+    "publicKeyHex": "58e1771cb0452a902f869cc7f6ffd596c3aae850fe5c96c3e5eb1931fdd3fe1f",
+    "suggestedAdiUrl": "acc://harness-0b169410.acme"
+  },
+  "durationMs": 900025,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\csharp--custom-token.txt",
+  "error": null,
+  "startedAt": "2026-08-01T02:35:17.261Z",
+  "finishedAt": "2026-08-01T02:54:25.786Z"
+}

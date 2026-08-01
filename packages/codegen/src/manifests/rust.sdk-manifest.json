@@ -384,6 +384,9 @@
       ],
       "examples": [
         "examples/create_token_account.rs"
+      ],
+      "notes": [
+        "The transaction principal is the PARENT ADI, not the account being created. Signing with the new account URL as principal fails \u2014 the account does not exist yet, so nothing can authorize it."
       ]
     },
     {
@@ -415,6 +418,9 @@
       ],
       "examples": [
         "examples/create_data_account.rs"
+      ],
+      "notes": [
+        "The transaction principal is the PARENT ADI, not the account being created."
       ]
     },
     {
@@ -497,6 +503,10 @@
       ],
       "examples": [
         "examples/send_tokens.rs"
+      ],
+      "notes": [
+        "The recipient token account must already exist. A send to a missing ADI token account is ACCEPTED at submit and then bounces: the synthetic deposit fails and the amount is refunded to the sender. The submit looks successful, so verify the recipient balance rather than the submit response.",
+        "Wait for the recipient balance to settle. The deposit is a synthetic transaction that lands after the send is delivered, so a balance read immediately after submit shows the old value."
       ]
     },
     {

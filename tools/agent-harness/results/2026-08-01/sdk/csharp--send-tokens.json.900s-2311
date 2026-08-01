@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "lang": "csharp",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "send-tokens",
+    "file": "04-send-tokens.yaml",
+    "title": "Send ACME tokens between accounts",
+    "specHash": "04b11771f6b0"
+  },
+  "sdkVersion": "2.3.11",
+  "passed": false,
+  "turns": null,
+  "interventions": 0,
+  "failureClass": "timeout",
+  "assertions": [
+    {
+      "assertion": "tx_status == delivered",
+      "subject": "tx_status",
+      "op": "==",
+      "passed": false,
+      "actual": "unknown",
+      "expected": "delivered"
+    },
+    {
+      "assertion": "recipient_balance_increased_by == 5 ACME",
+      "subject": "recipient_balance_increased_by",
+      "op": "==",
+      "passed": false,
+      "actual": "0",
+      "actualAcme": 0,
+      "expected": "5 ACME"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://24f95288a03e6004bca49eae7758e915f83f7cd5a70544a2",
+    "liteTokenAccountUrl": "acc://24f95288a03e6004bca49eae7758e915f83f7cd5a70544a2/acme",
+    "adiUrl": "acc://harness1785587961.acme",
+    "keyBookUrl": "acc://harness1785587961.acme/book",
+    "keyPageUrl": "acc://harness1785587961.acme/book/1",
+    "recipientUrl": "acc://harness1785587961.acme/tokens",
+    "txid": null,
+    "txids": []
+  },
+  "environment": {
+    "liteIdentity": "acc://24f95288a03e6004bca49eae7758e915f83f7cd5a70544a2",
+    "liteTokenAccount": "acc://24f95288a03e6004bca49eae7758e915f83f7cd5a70544a2/ACME",
+    "publicKeyHex": "126f239ad381847d3c280e11d6d129cbf1d377033ce80b167a5ee0f6c07279c4",
+    "suggestedAdiUrl": "acc://harness-5c33f707.acme"
+  },
+  "durationMs": 900038,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\csharp--send-tokens.txt",
+  "error": null,
+  "startedAt": "2026-08-01T12:33:30.321Z",
+  "finishedAt": "2026-08-01T12:48:55.590Z"
+}

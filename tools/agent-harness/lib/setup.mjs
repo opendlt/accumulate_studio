@@ -10,7 +10,7 @@
  */
 
 import { execFile } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -71,7 +71,21 @@ const pythonExe = (dir) =>
 export async function ensureSetupEnv() {
   if (cachedPython && existsSync(cachedPython)) return cachedPython;
 
-  const key = `acc-harness-setupenv-${PACKAGES.python}`;
+  // Key the cache on the RESOLVED version, not just the package name. Keyed on
+  // name alone the venv is built once and never updated, so provisioning keeps
+  // running whatever was current the first time — observed still pinned at
+  // 2.3.0 six releases later, creating ADIs that never landed on chain and
+  // failing every ADI-tier run as `harness-setup-failed`.
+  let pinned = 'unknown';
+  try {
+    const res = await fetch(`https://pypi.org/pypi/${PACKAGES.python}/json`, {
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (res.ok) pinned = (await res.json())?.info?.version ?? 'unknown';
+  } catch {
+    // Offline: fall back to the shared key rather than rebuilding every run.
+  }
+  const key = `acc-harness-setupenv-${PACKAGES.python}-${pinned}`;
   const dir = join(tmpdir(), key);
   const stamp = join(dir, '.ready');
   const exe = pythonExe(dir);
@@ -92,7 +106,8 @@ export async function ensureSetupEnv() {
   try {
     await runAsync('python', ['-m', 'venv', '.venv'], { cwd: dir, timeout: 180000, shell: process.platform === 'win32' });
     const pip = process.platform === 'win32' ? '.venv\\Scripts\\pip' : '.venv/bin/pip';
-    await runAsync(pip, ['install', '--disable-pip-version-check', PACKAGES.python], {
+    const spec = pinned === 'unknown' ? PACKAGES.python : `${PACKAGES.python}==${pinned}`;
+    await runAsync(pip, ['install', '--disable-pip-version-check', '--upgrade', spec], {
       cwd: dir, timeout: 300000, shell: process.platform === 'win32',
     });
     writeFileSync(stamp, new Date().toISOString());
@@ -106,6 +121,24 @@ export async function ensureSetupEnv() {
 
 /** Remove the on-disk setup venv. Exposed for `--clean-cache`. */
 export function clearSetupEnvCache() {
+  // Version-keyed directories mean there can be several; clear them all, or
+  // `--clean-cache` silently leaves the stale one it was invoked to remove.
+  let removed = false;
+  try {
+    for (const name of readdirSync(tmpdir())) {
+      if (!name.startsWith(`acc-harness-setupenv-${PACKAGES.python}`)) continue;
+      try {
+        rmSync(join(tmpdir(), name), { recursive: true, force: true, maxRetries: 3 });
+        removed = true;
+      } catch { /* locked */ }
+    }
+  } catch { /* unreadable tmpdir */ }
+  cachedPython = null;
+  return removed;
+}
+
+/** Legacy single-directory clear, kept for callers that expect it. */
+function clearSetupEnvCacheLegacy() {
   const dir = join(tmpdir(), `acc-harness-setupenv-${PACKAGES.python}`);
   if (!existsSync(dir)) return false;
   try {
@@ -179,13 +212,22 @@ export async function verifyAdiSetup(net, setupArtifacts) {
   // submitted is not yet queryable. Poll rather than querying once — a single
   // immediate query reports "not on chain" for an ADI that appears seconds
   // later, which would spuriously fail every ADI-tier run.
+  // 90s was not enough: a Kermit faucet deposit alone was measured settling in
+  // ~85s, and an ADI plus its credited key page is several synthetic
+  // transactions more. Runs aborted here are classed `harness-setup-failed` and
+  // excluded from K2, so too tight a budget quietly shrinks the sample instead
+  // of failing visibly. Budget for several times the observed settle time.
+  const SETTLE_ATTEMPTS = 80;
+  const SETTLE_DELAY_MS = 3000;
+  const settleSeconds = Math.round((SETTLE_ATTEMPTS * SETTLE_DELAY_MS) / 1000);
+
   const adi = await waitForAccount(net, setupArtifacts.adiUrl, () => true, {
-    attempts: 30,
-    delayMs: 3000,
+    attempts: SETTLE_ATTEMPTS,
+    delayMs: SETTLE_DELAY_MS,
   });
   if (!adi) {
     throw new SetupFailure(
-      `setup reported ${setupArtifacts.adiUrl} but it did not appear on chain within 90s`,
+      `setup reported ${setupArtifacts.adiUrl} but it did not appear on chain within ${settleSeconds}s`,
     );
   }
 
@@ -193,11 +235,11 @@ export async function verifyAdiSetup(net, setupArtifacts) {
     net,
     setupArtifacts.keyPageUrl,
     (a) => Number(a.creditBalance ?? 0) > 0,
-    { attempts: 30, delayMs: 3000 },
+    { attempts: SETTLE_ATTEMPTS, delayMs: SETTLE_DELAY_MS },
   );
   if (!page) {
     throw new SetupFailure(
-      `key page ${setupArtifacts.keyPageUrl} did not reach a positive credit balance within 90s — ` +
+      `key page ${setupArtifacts.keyPageUrl} did not reach a positive credit balance within ${settleSeconds}s — ` +
         `it could not sign, so the task would fail for a harness reason`,
     );
   }

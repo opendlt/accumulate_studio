@@ -13,7 +13,8 @@ Connect, build a transaction body with `TxBody`, then sign + submit + wait with 
 ```
 let qs = QuickStart::kermit().await?;   // crate: accumulate-sdk, import path: accumulate_client
 // body = TxBody.<operation>(...)
-let r = signer.sign_submit_and_wait(principal, body).await?;
+let mut signer = SmartSigner::new(&client, keypair, &signer_url);
+let r = signer.sign_submit_and_wait(&principal, &body, None, 30).await;
 ```
 
 ## Rules

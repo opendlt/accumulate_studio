@@ -71,16 +71,25 @@ export async function provisionLiteAccount({
   }
 
   const minBase = BigInt(Math.round(minAcme * 1e8));
+  // A Kermit faucet deposit was measured settling in ~85s, against a former
+  // 120s budget that also had to absorb the faucet calls themselves. That left
+  // ~35s of headroom, so ordinary testnet contention aborted provisioning
+  // before the agent ever started — reported as `network-flake`, which is
+  // excluded from K2 and therefore silently shrinks the sample rather than
+  // failing loudly. Budget for several times the observed settle time.
+  const FAUCET_SETTLE_ATTEMPTS = 80;
+  const FAUCET_SETTLE_DELAY_MS = 3000;
   const settled = await waitForAccount(
     net,
     acct.liteTokenAccount,
     (a) => a.balance !== undefined && BigInt(a.balance) >= minBase,
-    { attempts: 40, delayMs: 3000 },
+    { attempts: FAUCET_SETTLE_ATTEMPTS, delayMs: FAUCET_SETTLE_DELAY_MS },
   );
 
   if (!settled) {
+    const waited = Math.round((FAUCET_SETTLE_ATTEMPTS * FAUCET_SETTLE_DELAY_MS) / 1000);
     throw new NetworkUnreachable(
-      `faucet funds for ${acct.liteTokenAccount} did not settle to >= ${minAcme} ACME within 120s`,
+      `faucet funds for ${acct.liteTokenAccount} did not settle to >= ${minAcme} ACME within ${waited}s`,
     );
   }
 

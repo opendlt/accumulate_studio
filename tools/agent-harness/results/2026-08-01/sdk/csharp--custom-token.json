@@ -10,39 +10,22 @@
     "title": "Custom token issuance",
     "specHash": "f9068d5ec05f"
   },
-  "sdkVersion": "2.3.8",
+  "sdkVersion": "2.3.12",
   "passed": false,
   "turns": null,
   "interventions": 0,
-  "failureClass": "timeout",
-  "assertions": [
-    {
-      "assertion": "token_issuer_exists == true",
-      "subject": "token_issuer_exists",
-      "op": "==",
-      "passed": false,
-      "actual": false,
-      "expected": true
-    },
-    {
-      "assertion": "token_account_balance == issue_amount",
-      "subject": "token_account_balance",
-      "op": "==",
-      "passed": false,
-      "actual": 0,
-      "expected": 1000
-    }
-  ],
+  "failureClass": "harness-setup-failed",
+  "assertions": [],
   "artifacts": {},
   "environment": {
-    "liteIdentity": "acc://74ec3d71e03527a0f8f9e1946ceb84aa07ff7940211582d0",
-    "liteTokenAccount": "acc://74ec3d71e03527a0f8f9e1946ceb84aa07ff7940211582d0/ACME",
-    "publicKeyHex": "58e1771cb0452a902f869cc7f6ffd596c3aae850fe5c96c3e5eb1931fdd3fe1f",
-    "suggestedAdiUrl": "acc://harness-0b169410.acme"
+    "liteIdentity": "acc://bf65164134d15da5b0574ef448aa648c66fd85dd7889bc18",
+    "liteTokenAccount": "acc://bf65164134d15da5b0574ef448aa648c66fd85dd7889bc18/ACME",
+    "publicKeyHex": "4415dae29abb06a9c4e4dd97f55eb9a8d17646c51a7e66e235376ab820235e34",
+    "suggestedAdiUrl": "acc://harness-fd91d31d.acme"
   },
-  "durationMs": 900025,
-  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\csharp--custom-token.txt",
-  "error": null,
-  "startedAt": "2026-08-01T02:35:17.261Z",
-  "finishedAt": "2026-08-01T02:54:25.786Z"
+  "durationMs": null,
+  "transcriptPath": null,
+  "error": "setup reported acc://harness-fd91d31d.acme but it did not appear on chain within 240s",
+  "startedAt": "2026-08-01T22:14:25.279Z",
+  "finishedAt": "2026-08-01T22:19:35.084Z"
 }

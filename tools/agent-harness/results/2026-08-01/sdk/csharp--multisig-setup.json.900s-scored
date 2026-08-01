@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "lang": "csharp",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "multisig-setup",
+    "file": "07-multisig-setup.yaml",
+    "title": "Multi-signature setup",
+    "specHash": "a9a1532bdf4f"
+  },
+  "sdkVersion": "2.3.8",
+  "passed": false,
+  "turns": null,
+  "interventions": 0,
+  "failureClass": "timeout",
+  "assertions": [
+    {
+      "assertion": "key_page_threshold == 2",
+      "subject": "key_page_threshold",
+      "op": "==",
+      "passed": false,
+      "actual": 1,
+      "expected": 2
+    },
+    {
+      "assertion": "multisig_tx_status == delivered",
+      "subject": "multisig_tx_status",
+      "op": "==",
+      "passed": false,
+      "actual": "unknown",
+      "expected": "delivered"
+    }
+  ],
+  "artifacts": {},
+  "environment": {
+    "liteIdentity": "acc://eb0890e3dd9e4eeb97ef374d2137bce25e59d12de5b48988",
+    "liteTokenAccount": "acc://eb0890e3dd9e4eeb97ef374d2137bce25e59d12de5b48988/ACME",
+    "publicKeyHex": "f427296f157a82d0f07fa1d94e7ea2fa9c4887e365a968af7a71d538708391a2",
+    "suggestedAdiUrl": "acc://harness-d86eeaba.acme"
+  },
+  "durationMs": 900030,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\csharp--multisig-setup.txt",
+  "error": null,
+  "startedAt": "2026-08-01T02:54:26.611Z",
+  "finishedAt": "2026-08-01T03:13:40.359Z"
+}
