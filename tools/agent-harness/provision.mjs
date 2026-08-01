@@ -71,6 +71,7 @@ export async function provisionLiteAccount({
   }
 
   const minBase = BigInt(Math.round(minAcme * 1e8));
+
   // A Kermit faucet deposit was measured settling in ~85s, against a former
   // 120s budget that also had to absorb the faucet calls themselves. That left
   // ~35s of headroom, so ordinary testnet contention aborted provisioning
@@ -79,12 +80,31 @@ export async function provisionLiteAccount({
   // failing loudly. Budget for several times the observed settle time.
   const FAUCET_SETTLE_ATTEMPTS = 80;
   const FAUCET_SETTLE_DELAY_MS = 3000;
-  const settled = await waitForAccount(
-    net,
-    acct.liteTokenAccount,
-    (a) => a.balance !== undefined && BigInt(a.balance) >= minBase,
-    { attempts: FAUCET_SETTLE_ATTEMPTS, delayMs: FAUCET_SETTLE_DELAY_MS },
-  );
+  // Re-issue the faucet instead of waiting out the whole budget on one request.
+  // Kermit's faucet was observed accepting a call and never delivering — waiting
+  // longer cannot rescue a dropped transaction, but asking again can. Each round
+  // waits, then re-faucets, so a single lost request costs a round rather than
+  // the run.
+  const ROUNDS = 4;
+  const perRound = Math.ceil(FAUCET_SETTLE_ATTEMPTS / ROUNDS);
+  // Hold the ACCOUNT, not a boolean: the caller below reads settled.balance.
+  let settled = null;
+  for (let round = 0; round < ROUNDS && !settled; round++) {
+    if (round > 0) {
+      log(`faucet did not deliver within ${Math.round((perRound * FAUCET_SETTLE_DELAY_MS) / 1000)}s — re-requesting`);
+      try {
+        await faucet(net, acct.liteTokenAccount);
+      } catch {
+        // A failed re-request is not fatal; the next round tries again.
+      }
+    }
+    settled = await waitForAccount(
+      net,
+      acct.liteTokenAccount,
+      (a) => a.balance !== undefined && BigInt(a.balance) >= minBase,
+      { attempts: perRound, delayMs: FAUCET_SETTLE_DELAY_MS },
+    );
+  }
 
   if (!settled) {
     const waited = Math.round((FAUCET_SETTLE_ATTEMPTS * FAUCET_SETTLE_DELAY_MS) / 1000);

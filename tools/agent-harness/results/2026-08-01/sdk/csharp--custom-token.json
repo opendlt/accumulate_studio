@@ -14,18 +14,13 @@
   "passed": false,
   "turns": null,
   "interventions": 0,
-  "failureClass": "harness-setup-failed",
+  "failureClass": "other",
   "assertions": [],
   "artifacts": {},
-  "environment": {
-    "liteIdentity": "acc://bf65164134d15da5b0574ef448aa648c66fd85dd7889bc18",
-    "liteTokenAccount": "acc://bf65164134d15da5b0574ef448aa648c66fd85dd7889bc18/ACME",
-    "publicKeyHex": "4415dae29abb06a9c4e4dd97f55eb9a8d17646c51a7e66e235376ab820235e34",
-    "suggestedAdiUrl": "acc://harness-fd91d31d.acme"
-  },
+  "environment": null,
   "durationMs": null,
   "transcriptPath": null,
-  "error": "setup reported acc://harness-fd91d31d.acme but it did not appear on chain within 240s",
-  "startedAt": "2026-08-01T22:14:25.279Z",
-  "finishedAt": "2026-08-01T22:19:35.084Z"
+  "error": "Cannot convert undefined to a BigInt",
+  "startedAt": "2026-08-01T23:48:32.910Z",
+  "finishedAt": "2026-08-01T23:49:01.949Z"
 }
