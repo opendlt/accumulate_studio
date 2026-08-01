@@ -11,31 +11,38 @@
     "specHash": "6cee357d09fe"
   },
   "sdkVersion": "2.3.7",
-  "passed": false,
-  "turns": 1,
+  "passed": true,
+  "turns": 17,
   "interventions": 0,
-  "failureClass": "agent-unavailable",
+  "failureClass": null,
   "assertions": [
     {
       "assertion": "lite_token_account_balance > 0",
       "subject": "lite_token_account_balance",
       "op": ">",
-      "passed": false,
-      "actual": "0",
-      "actualAcme": 0,
+      "passed": true,
+      "actual": "1000000000",
+      "actualAcme": 10,
       "expected": 0
     }
   ],
-  "artifacts": {},
-  "environment": {
-    "liteIdentity": "acc://dad6d1e4f633d7f7a75cfa14bfe6f5ba4fd37a49f0015278",
-    "liteTokenAccount": "acc://dad6d1e4f633d7f7a75cfa14bfe6f5ba4fd37a49f0015278/ACME",
-    "publicKeyHex": "d2ae67ab171ac2f20f92815d02dd4ef95129f2d0944afac79beaded278b229d5",
-    "suggestedAdiUrl": "acc://harness-f8e49e80.acme"
+  "artifacts": {
+    "liteIdentityUrl": "acc://5459f92888e4c92c11708028d5245b4f26dee3908a35373d",
+    "liteTokenAccountUrl": "acc://5459f92888e4c92c11708028d5245b4f26dee3908a35373d/ACME",
+    "txid": "acc://2ae4d5e2ea2e26d4d499e1825de1f08266952f35ac0b5a6d838b6c941a89a70a@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+    "txids": [
+      "acc://2ae4d5e2ea2e26d4d499e1825de1f08266952f35ac0b5a6d838b6c941a89a70a@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME"
+    ]
   },
-  "durationMs": 3792,
+  "environment": {
+    "liteIdentity": "acc://81637fc2f9d9de471aa707a16fac6c57f0478ea3c2f55ac5",
+    "liteTokenAccount": "acc://81637fc2f9d9de471aa707a16fac6c57f0478ea3c2f55ac5/ACME",
+    "publicKeyHex": "1ad46dc061b597ee1ff2f45b5b18319e3d71b995e881e8e6c76d350ffab42b14",
+    "suggestedAdiUrl": "acc://harness-3e14b8e1.acme"
+  },
+  "durationMs": 140487,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\javascript--lite-account.txt",
   "error": null,
-  "startedAt": "2026-08-01T03:18:07.569Z",
-  "finishedAt": "2026-08-01T03:18:23.979Z"
+  "startedAt": "2026-08-01T10:08:30.588Z",
+  "finishedAt": "2026-08-01T10:11:05.374Z"
 }

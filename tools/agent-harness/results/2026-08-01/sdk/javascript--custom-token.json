@@ -11,38 +11,55 @@
     "specHash": "f9068d5ec05f"
   },
   "sdkVersion": "2.3.7",
-  "passed": false,
-  "turns": 1,
+  "passed": true,
+  "turns": 24,
   "interventions": 0,
-  "failureClass": "agent-unavailable",
+  "failureClass": null,
   "assertions": [
     {
       "assertion": "token_issuer_exists == true",
       "subject": "token_issuer_exists",
       "op": "==",
-      "passed": false,
-      "actual": false,
+      "passed": true,
+      "actual": true,
       "expected": true
     },
     {
       "assertion": "token_account_balance == issue_amount",
       "subject": "token_account_balance",
       "op": "==",
-      "passed": false,
-      "actual": 0,
+      "passed": true,
+      "actual": 1000,
       "expected": 1000
     }
   ],
-  "artifacts": {},
-  "environment": {
-    "liteIdentity": "acc://8d2a92751ff666d4c1269d5f2279d39b286d3eb0202e337b",
-    "liteTokenAccount": "acc://8d2a92751ff666d4c1269d5f2279d39b286d3eb0202e337b/ACME",
-    "publicKeyHex": "0cdc4eee551d4b5fc84bab97e71b4b700e9ab1a4bfd8cefd3d9187c811aa332d",
-    "suggestedAdiUrl": "acc://harness-dbeed308.acme"
+  "artifacts": {
+    "liteIdentityUrl": "acc://b2250da5cd9c9ec9006d0127079d59b3ae00f394e3212db7",
+    "liteTokenAccountUrl": "acc://b2250da5cd9c9ec9006d0127079d59b3ae00f394e3212db7/ACME",
+    "adiUrl": "acc://testtkn-bce8def8.acme",
+    "keyBookUrl": "acc://testtkn-bce8def8.acme/book",
+    "keyPageUrl": "acc://testtkn-bce8def8.acme/book/1",
+    "tokenIssuerUrl": "acc://testtkn-bce8def8.acme/TESTTKN",
+    "tokenAccountUrl": "acc://testtkn-bce8def8.acme/token-account",
+    "txid": "acc://258179efca0c946136af05713e3c33bbb7c648370d1549d2bf9b854f0dddf388@testtkn-bce8def8.acme/TESTTKN",
+    "txids": [
+      "acc://f5f12204ee8bfbfd811741a0dcf14ed82904e89f33c6db1d19456cefe189fb7d@b2250da5cd9c9ec9006d0127079d59b3ae00f394e3212db7/ACME",
+      "acc://4b1f0f7c57a94fef5468da2071147afd6ffe1f2df9cd163b9f3a96117f595555@testtkn-bce8def8.acme",
+      "acc://e3e250bd14e96d5c1c6ad8deba77e3ad44145a2a7045ed3bb5f559e8f54d89f4@b2250da5cd9c9ec9006d0127079d59b3ae00f394e3212db7/ACME",
+      "acc://50c12d6029827c1e93d4dfdf28131320770f51874a88a5a67b7cd5ee7900b900@testtkn-bce8def8.acme",
+      "acc://d4074c267e6c1b2b9e030e76c980c150ed7c125463594997da76abcf861221c5@testtkn-bce8def8.acme",
+      "acc://258179efca0c946136af05713e3c33bbb7c648370d1549d2bf9b854f0dddf388@testtkn-bce8def8.acme/TESTTKN"
+    ]
   },
-  "durationMs": 3246,
+  "environment": {
+    "liteIdentity": "acc://b2250da5cd9c9ec9006d0127079d59b3ae00f394e3212db7",
+    "liteTokenAccount": "acc://b2250da5cd9c9ec9006d0127079d59b3ae00f394e3212db7/ACME",
+    "publicKeyHex": "4ae82b60312933122680dc8eaaca87ceb8f72333a3e15ac168a231ab21a91f67",
+    "suggestedAdiUrl": "acc://harness-0f6d52e4.acme"
+  },
+  "durationMs": 304556,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\javascript--custom-token.txt",
   "error": null,
-  "startedAt": "2026-08-01T03:28:20.487Z",
-  "finishedAt": "2026-08-01T03:32:38.740Z"
+  "startedAt": "2026-08-01T10:32:03.406Z",
+  "finishedAt": "2026-08-01T10:41:31.229Z"
 }

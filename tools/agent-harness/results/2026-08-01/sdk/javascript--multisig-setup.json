@@ -11,38 +11,54 @@
     "specHash": "a9a1532bdf4f"
   },
   "sdkVersion": "2.3.7",
-  "passed": false,
-  "turns": 1,
+  "passed": true,
+  "turns": 21,
   "interventions": 0,
-  "failureClass": "agent-unavailable",
+  "failureClass": null,
   "assertions": [
     {
       "assertion": "key_page_threshold == 2",
       "subject": "key_page_threshold",
       "op": "==",
-      "passed": false,
-      "actual": 1,
+      "passed": true,
+      "actual": 2,
       "expected": 2
     },
     {
       "assertion": "multisig_tx_status == delivered",
       "subject": "multisig_tx_status",
       "op": "==",
-      "passed": false,
-      "actual": "unknown",
+      "passed": true,
+      "actual": "delivered",
       "expected": "delivered"
     }
   ],
-  "artifacts": {},
-  "environment": {
-    "liteIdentity": "acc://181f120488f68ff8540f8ff588ec3670aa69e3b8a087af0d",
-    "liteTokenAccount": "acc://181f120488f68ff8540f8ff588ec3670aa69e3b8a087af0d/ACME",
-    "publicKeyHex": "173c9fc236e24c03bd92098a7b893afde8439438d56b38af9eca1b33e7cf9c35",
-    "suggestedAdiUrl": "acc://harness-9b9af369.acme"
+  "artifacts": {
+    "liteIdentityUrl": "acc://37e8166612dc23e7f0534abc8609bd1e2c39518a21a18929",
+    "liteTokenAccountUrl": "acc://37e8166612dc23e7f0534abc8609bd1e2c39518a21a18929/ACME",
+    "adiUrl": "acc://msig-1785581730.acme",
+    "keyBookUrl": "acc://msig-1785581730.acme/book",
+    "keyPageUrl": "acc://msig-1785581730.acme/book/1",
+    "dataAccountUrl": "acc://msig-1785581730.acme/msdata",
+    "txid": "acc://749c897cd9855d0d4496b7d8eba585f42b8d2c8b7f511cb7fa39595aac819bf0@msig-1785581730.acme",
+    "txids": [
+      "acc://97ebd3afa3630f18fdf2a61c76e3f39e0f2cb67231b5d73adffcd3ad26b48433@37e8166612dc23e7f0534abc8609bd1e2c39518a21a18929/ACME",
+      "acc://be763f94b9de1fb6ff7dac275720b6423deb7170e9bdc9a01134eeb6cd7a7e0f@37e8166612dc23e7f0534abc8609bd1e2c39518a21a18929/ACME",
+      "acc://eb46bf558ff0c9d830b7abad41c503fae978b37bb15b2ab5aae85437f055ad0a@37e8166612dc23e7f0534abc8609bd1e2c39518a21a18929/ACME",
+      "acc://4754c1eca87739754b4b14a0b35fb0feec857e395522064d41278e909ddc6894@msig-1785581730.acme/book/1",
+      "acc://1c4b95dc5816557efaa3bc942333948aeb7e938c8e46461b47398cfbb2c6b554@msig-1785581730.acme/book/1",
+      "acc://749c897cd9855d0d4496b7d8eba585f42b8d2c8b7f511cb7fa39595aac819bf0@msig-1785581730.acme"
+    ]
   },
-  "durationMs": 3191,
+  "environment": {
+    "liteIdentity": "acc://37e8166612dc23e7f0534abc8609bd1e2c39518a21a18929",
+    "liteTokenAccount": "acc://37e8166612dc23e7f0534abc8609bd1e2c39518a21a18929/ACME",
+    "publicKeyHex": "e3553dfbea91c12df128d3be2f5974ee97f00eabc4adc0a9430511ab78346089",
+    "suggestedAdiUrl": "acc://harness-e1e7b1ab.acme"
+  },
+  "durationMs": 296362,
   "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\javascript--multisig-setup.txt",
   "error": null,
-  "startedAt": "2026-08-01T03:32:41.739Z",
-  "finishedAt": "2026-08-01T03:37:02.103Z"
+  "startedAt": "2026-08-01T10:47:39.121Z",
+  "finishedAt": "2026-08-01T10:57:01.152Z"
 }

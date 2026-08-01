@@ -11,14 +11,14 @@
     {
       "id": "K2",
       "name": "Task first-try pass rate",
-      "value": "90% (28/31) — 9 flake excluded",
+      "value": "92% (36/39)",
       "status": "GREEN",
       "target": ">= 90%"
     },
     {
       "id": "K3",
       "name": "Turns-to-first-tx",
-      "value": "22.5 mean turns (n=28)",
+      "value": "22.1 mean turns (n=36)",
       "status": "RED",
       "target": "<= 6"
     },
@@ -46,7 +46,7 @@
     {
       "id": "K7",
       "name": "Error-actionability",
-      "value": "100% (9/9 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0",
+      "value": "100% (8/8 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0",
       "status": "GREEN",
       "target": ">= 95%"
     },
@@ -117,13 +117,11 @@
   "agentRuns": {
     "mode": "sdk",
     "date": "2026-08-01",
-    "scoredCount": 31,
-    "passedCount": 28,
-    "excludedFlake": 9,
+    "scoredCount": 39,
+    "passedCount": 36,
+    "excludedFlake": 0,
     "failureClasses": {
-      "timeout": 3,
-      "agent-unavailable": 8,
-      "harness-setup-failed": 1
+      "timeout": 3
     },
     "runs": [
       {
@@ -354,10 +352,10 @@
       {
         "lang": "csharp",
         "task": "key-rotation",
-        "passed": false,
-        "turns": 1,
+        "passed": true,
+        "turns": 36,
         "interventions": 0,
-        "failureClass": "agent-unavailable",
+        "failureClass": null,
         "sdkVersion": "2.3.8"
       },
       {
@@ -388,15 +386,6 @@
         "sdkVersion": "2.3.8"
       },
       {
-        "lang": "csharp",
-        "task": "write-data",
-        "passed": false,
-        "turns": null,
-        "interventions": 0,
-        "failureClass": "harness-setup-failed",
-        "sdkVersion": "2.3.8"
-      },
-      {
         "lang": "dart",
         "task": "key-rotation",
         "passed": true,
@@ -417,64 +406,64 @@
       {
         "lang": "javascript",
         "task": "create-adi",
-        "passed": false,
-        "turns": 1,
+        "passed": true,
+        "turns": 9,
         "interventions": 0,
-        "failureClass": "agent-unavailable",
+        "failureClass": null,
         "sdkVersion": "2.3.7"
       },
       {
         "lang": "javascript",
         "task": "custom-token",
-        "passed": false,
-        "turns": 1,
+        "passed": true,
+        "turns": 24,
         "interventions": 0,
-        "failureClass": "agent-unavailable",
+        "failureClass": null,
         "sdkVersion": "2.3.7"
       },
       {
         "lang": "javascript",
         "task": "key-rotation",
-        "passed": false,
-        "turns": 1,
+        "passed": true,
+        "turns": 19,
         "interventions": 0,
-        "failureClass": "agent-unavailable",
+        "failureClass": null,
         "sdkVersion": "2.3.7"
       },
       {
         "lang": "javascript",
         "task": "lite-account",
-        "passed": false,
-        "turns": 1,
+        "passed": true,
+        "turns": 17,
         "interventions": 0,
-        "failureClass": "agent-unavailable",
+        "failureClass": null,
         "sdkVersion": "2.3.7"
       },
       {
         "lang": "javascript",
         "task": "multisig-setup",
-        "passed": false,
-        "turns": 1,
+        "passed": true,
+        "turns": 21,
         "interventions": 0,
-        "failureClass": "agent-unavailable",
+        "failureClass": null,
         "sdkVersion": "2.3.7"
       },
       {
         "lang": "javascript",
         "task": "send-tokens",
-        "passed": false,
-        "turns": 1,
+        "passed": true,
+        "turns": 21,
         "interventions": 0,
-        "failureClass": "agent-unavailable",
+        "failureClass": null,
         "sdkVersion": "2.3.7"
       },
       {
         "lang": "javascript",
         "task": "write-data",
-        "passed": false,
-        "turns": 1,
+        "passed": true,
+        "turns": 17,
         "interventions": 0,
-        "failureClass": "agent-unavailable",
+        "failureClass": null,
         "sdkVersion": "2.3.7"
       },
       {

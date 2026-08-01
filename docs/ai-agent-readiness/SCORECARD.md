@@ -9,12 +9,12 @@
 | KPI | Metric | Status | Value | Target |
 |---|---|:--:|---|---|
 | K1 | Quickstart-verbatim (install-name parity) | 🟢 | 5/5 quickstart-runnable (install-name parity + import probe on dart, javascript) — import unverified on this host (probe could not run): javascript | 5/5 |
-| K2 | Task first-try pass rate | 🟢 | 90% (28/31) — 9 flake excluded | >= 90% |
-| K3 | Turns-to-first-tx | 🔴 | 22.5 mean turns (n=28) | <= 6 |
+| K2 | Task first-try pass rate | 🟢 | 92% (36/39) | >= 90% |
+| K3 | Turns-to-first-tx | 🔴 | 22.1 mean turns (n=36) | <= 6 |
 | K4 | Human interventions per task | 🟢 | 0.00 per task | <= 0.2 |
 | K5 | API-ingestion coverage (llms.txt shipped) | 🟢 | 5/5 | 5/5 (Phase 2) |
 | K6 | Typed-surface ratio | 🟢 | 5/5 languages expose a machine-readable API surface | 100% |
-| K7 | Error-actionability | 🟢 | 100% (9/9 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0 | >= 95% |
+| K7 | Error-actionability | 🟢 | 100% (8/8 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0 | >= 95% |
 | K8 | Fleet version parity | 🟢 | distinct minor lines: 1 (2.3) — target 1 (K8) | 1 minor line |
 | K9 | MCP installable in <= 1 config block | 🔴 | accumulate-studio-mcp@1.0.0 on npm, but repo is at 1.1.0 — agents install the OLDER server | published, matching repo |
 | K10 | Docs-vs-artifact drift (artifact-verify) | 🟢 | clean | CI-gated, 0 drift |
@@ -31,15 +31,15 @@
 
 ## Agent runs — sdk mode (2026-08-01)
 
-28/31 scored runs passed · 9 excluded as `network-flake`
+36/39 scored runs passed
 
 | Lang | add-credits | create-adi | custom-token | lite-account | multisig-setup | send-tokens | write-data | key-rotation |
 |---|---|---|---|---|---|---|---|---|
 | rust | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | python | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | dart | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| csharp | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| javascript | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| csharp | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | · | ✅ |
+| javascript | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ### Failure classes
 
@@ -47,9 +47,7 @@ The class is the prioritization input — it says *which runbook* fixes the fail
 
 | Class | Count | Counts toward K2 | Addressed by |
 |---|--:|:--:|---|
-| `agent-unavailable` | 8 | no | — |
 | `timeout` | 3 | yes | — |
-| `harness-setup-failed` | 1 | no | — |
 
 ## CLI mode vs SDK mode (RB-04) — 2026-07-30
 
