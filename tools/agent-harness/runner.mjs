@@ -264,6 +264,8 @@ async function executeRun({ lang, task, mode, backendName, backend, model, timeo
           assertionResults: evaluation.results,
           timedOut: result.timedOut,
           artifacts: result.artifacts,
+          turns: result.turns,
+          durationMs: result.durationMs,
         });
 
     const record = buildRecord({

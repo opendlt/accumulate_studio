@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "add-credits",
+    "file": "03-add-credits.yaml",
+    "title": "Add credits to a key page",
+    "specHash": "990525ec062a"
+  },
+  "sdkVersion": "2.3.6",
+  "passed": true,
+  "turns": 19,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_credit_balance >= 5000",
+      "subject": "key_page_credit_balance",
+      "op": ">=",
+      "passed": true,
+      "actual": 700000,
+      "expected": 5000
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://f129a820a44cfcecf3af88c013a43f1c1bde5c1276eb89be",
+    "liteTokenAccountUrl": "acc://f129a820a44cfcecf3af88c013a43f1c1bde5c1276eb89be/ACME",
+    "adiUrl": "acc://harness-1317c4fb.acme",
+    "keyBookUrl": "acc://harness-1317c4fb.acme/book",
+    "keyPageUrl": "acc://harness-1317c4fb.acme/book/1",
+    "txid": "acc://c6b8c897d0dec88078ab1f234c836965b01e2119010ca74dcd87efad5dc268f7@f129a820a44cfcecf3af88c013a43f1c1bde5c1276eb89be/ACME",
+    "txids": [
+      "acc://c6b8c897d0dec88078ab1f234c836965b01e2119010ca74dcd87efad5dc268f7@f129a820a44cfcecf3af88c013a43f1c1bde5c1276eb89be/ACME"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://f129a820a44cfcecf3af88c013a43f1c1bde5c1276eb89be",
+    "liteTokenAccount": "acc://f129a820a44cfcecf3af88c013a43f1c1bde5c1276eb89be/ACME",
+    "publicKeyHex": "29dc31585aeb30487e2ad1866ddb64f2e3ab58447dfbbd05332ec3c031e5db2e",
+    "suggestedAdiUrl": "acc://harness-1317c4fb.acme"
+  },
+  "durationMs": 358657,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-31\\sdk\\transcripts\\python--add-credits.txt",
+  "error": null,
+  "startedAt": "2026-07-31T21:52:21.203Z",
+  "finishedAt": "2026-07-31T22:02:58.362Z"
+}

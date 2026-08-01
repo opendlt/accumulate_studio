@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "lang": "dart",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "add-credits",
+    "file": "03-add-credits.yaml",
+    "title": "Add credits to a key page",
+    "specHash": "990525ec062a"
+  },
+  "sdkVersion": "2.3.10",
+  "passed": true,
+  "turns": 40,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_credit_balance >= 5000",
+      "subject": "key_page_credit_balance",
+      "op": ">=",
+      "passed": true,
+      "actual": 700000,
+      "expected": 5000
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://d3c40c6a41746fdb9fcee65d99b106963cfd7aa24cd443c7",
+    "liteTokenAccountUrl": "acc://d3c40c6a41746fdb9fcee65d99b106963cfd7aa24cd443c7/ACME",
+    "keyPageUrl": "acc://harness-5ca12347.acme/book/1",
+    "keyBookUrl": "acc://harness-5ca12347.acme/book",
+    "adiUrl": "acc://harness-5ca12347.acme",
+    "txid": "acc://9ac1137b4daf9e2bb43e2f1ee5e59b2ba269fb619b4ad59c989d2b398085af43@d3c40c6a41746fdb9fcee65d99b106963cfd7aa24cd443c7",
+    "txids": [
+      "acc://9ac1137b4daf9e2bb43e2f1ee5e59b2ba269fb619b4ad59c989d2b398085af43@d3c40c6a41746fdb9fcee65d99b106963cfd7aa24cd443c7"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://d3c40c6a41746fdb9fcee65d99b106963cfd7aa24cd443c7",
+    "liteTokenAccount": "acc://d3c40c6a41746fdb9fcee65d99b106963cfd7aa24cd443c7/ACME",
+    "publicKeyHex": "4bd065bbbba574ff1baa446bc49fc350c6150dbb615eecbff5dd4042641804da",
+    "suggestedAdiUrl": "acc://harness-5ca12347.acme"
+  },
+  "durationMs": 689088,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-31\\sdk\\transcripts\\dart--add-credits.txt",
+  "error": null,
+  "startedAt": "2026-07-31T23:17:07.588Z",
+  "finishedAt": "2026-07-31T23:32:45.709Z"
+}

@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "lang": "javascript",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "add-credits",
+    "file": "03-add-credits.yaml",
+    "title": "Add credits to a key page",
+    "specHash": "990525ec062a"
+  },
+  "sdkVersion": "2.3.7",
+  "passed": true,
+  "turns": 1,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_credit_balance >= 5000",
+      "subject": "key_page_credit_balance",
+      "op": ">=",
+      "passed": true,
+      "actual": 200000,
+      "expected": 5000
+    }
+  ],
+  "artifacts": {},
+  "environment": {
+    "liteIdentity": "acc://a68630efef44d902bb0e37dddae49a8a15f1e88014624a13",
+    "liteTokenAccount": "acc://a68630efef44d902bb0e37dddae49a8a15f1e88014624a13/ACME",
+    "publicKeyHex": "908d13085aab8c29cdcd14cfcf6e5d3b2f07d1ec2ca40974a02021fa679e1b44",
+    "suggestedAdiUrl": "acc://harness-e11286db.acme"
+  },
+  "durationMs": 2987,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\javascript--add-credits.txt",
+  "error": null,
+  "startedAt": "2026-08-01T03:19:04.515Z",
+  "finishedAt": "2026-08-01T03:23:18.095Z"
+}

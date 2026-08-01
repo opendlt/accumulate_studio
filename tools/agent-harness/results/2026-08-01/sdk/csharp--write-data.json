@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "lang": "csharp",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "write-data",
+    "file": "05-write-data.yaml",
+    "title": "Write data to a data account",
+    "specHash": "9e9c1d819284"
+  },
+  "sdkVersion": "2.3.8",
+  "passed": false,
+  "turns": null,
+  "interventions": 0,
+  "failureClass": "harness-setup-failed",
+  "assertions": [],
+  "artifacts": {},
+  "environment": {
+    "liteIdentity": "acc://5e7aae750eb25938d7c0983625d7579e639b9ac3d2f1b8be",
+    "liteTokenAccount": "acc://5e7aae750eb25938d7c0983625d7579e639b9ac3d2f1b8be/ACME",
+    "publicKeyHex": "f358e0c6900b176826d1f2dfd3b6606d4cbbee4d44f8afd3a9399feca74d32fe",
+    "suggestedAdiUrl": "acc://harness-96d28a0b.acme"
+  },
+  "durationMs": null,
+  "transcriptPath": null,
+  "error": "setup reported acc://harness-96d28a0b.acme but it did not appear on chain within 90s",
+  "startedAt": "2026-08-01T02:31:39.980Z",
+  "finishedAt": "2026-08-01T02:35:16.543Z"
+}

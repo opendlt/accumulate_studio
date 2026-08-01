@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "lang": "rust",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "create-adi",
+    "file": "02-create-adi.yaml",
+    "title": "Create an ADI (Accumulate Digital Identifier)",
+    "specHash": "93a188817a2e"
+  },
+  "sdkVersion": "2.3.8",
+  "passed": true,
+  "turns": 17,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "adi_account_exists == true",
+      "subject": "adi_account_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "key_book_exists == true",
+      "subject": "key_book_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    }
+  ],
+  "artifacts": {
+    "adiUrl": "acc://harness-b729a702.acme",
+    "keyBookUrl": "acc://harness-b729a702.acme/book",
+    "keyPageUrl": "acc://harness-b729a702.acme/book/1",
+    "liteIdentityUrl": "acc://6bc0878a876ad22dcf5522c531e43fd241a0ddbc9ca9a10c",
+    "liteTokenAccountUrl": "acc://6bc0878a876ad22dcf5522c531e43fd241a0ddbc9ca9a10c/ACME",
+    "txid": "acc://7b6d734756df845c3edeeedd514d01f57c005de593e8bc2eb27c981aa197a52d@6bc0878a876ad22dcf5522c531e43fd241a0ddbc9ca9a10c",
+    "txids": [
+      "acc://810dbf99d6cd83b03c53c79afd59fd1530d714870cfbf84c28b6ca5f02bf86e2@6bc0878a876ad22dcf5522c531e43fd241a0ddbc9ca9a10c",
+      "acc://7b6d734756df845c3edeeedd514d01f57c005de593e8bc2eb27c981aa197a52d@6bc0878a876ad22dcf5522c531e43fd241a0ddbc9ca9a10c"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://6bc0878a876ad22dcf5522c531e43fd241a0ddbc9ca9a10c",
+    "liteTokenAccount": "acc://6bc0878a876ad22dcf5522c531e43fd241a0ddbc9ca9a10c/ACME",
+    "publicKeyHex": "97093668e989b9fefcf4380e1d2611b4adf6d70538fa7072a033314471077748",
+    "suggestedAdiUrl": "acc://harness-b729a702.acme"
+  },
+  "durationMs": 282159,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-31\\sdk\\transcripts\\rust--create-adi.txt",
+  "error": null,
+  "startedAt": "2026-07-31T20:21:33.921Z",
+  "finishedAt": "2026-07-31T20:26:36.310Z"
+}

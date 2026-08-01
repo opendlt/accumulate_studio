@@ -51,12 +51,13 @@
         "install-fail",
         "network-flake",
         "harness-setup-failed",
+        "agent-unavailable",
         "timeout",
         "no-artifacts",
         "other",
         null
       ],
-      "description": "Null when passed. 'network-flake' is excluded from the K2 denominator."
+      "description": "Null when passed. 'network-flake', 'harness-setup-failed' and 'agent-unavailable' are excluded from the K2 denominator: none of them exercised the SDK."
     },
     "assertions": {
       "type": "array",

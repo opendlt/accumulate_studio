@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "lang": "dart",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "key-rotation",
+    "file": "08-key-rotation.yaml",
+    "title": "Key rotation",
+    "specHash": "8650c147a3d2"
+  },
+  "sdkVersion": "2.3.10",
+  "passed": true,
+  "turns": 20,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_contains_new_key == true",
+      "subject": "key_page_contains_new_key",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "key_page_contains_old_key == false",
+      "subject": "key_page_contains_old_key",
+      "op": "==",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://b45fefdb2bf2e763d89ac6cd6553e5561fe6f79676c4a48f",
+    "liteTokenAccountUrl": "acc://b45fefdb2bf2e763d89ac6cd6553e5561fe6f79676c4a48f/ACME",
+    "adiUrl": "acc://harness-e3cdc026.acme",
+    "keyBookUrl": "acc://harness-e3cdc026.acme/book",
+    "keyPageUrl": "acc://harness-e3cdc026.acme/book/1",
+    "txid": "acc://dde8e89ed93f52d4d80a95a345f2ec1f83409c1589614282d7f3c3bfd19d04b0@harness-e3cdc026.acme/book/1",
+    "txids": [
+      "acc://dde8e89ed93f52d4d80a95a345f2ec1f83409c1589614282d7f3c3bfd19d04b0@harness-e3cdc026.acme/book/1",
+      "acc://ea03036e835994bd992f98fd83a3cf31b291c4f1e846812c18c1ca51cb5a612f@harness-e3cdc026.acme/book/1"
+    ],
+    "newKeyHash": "9f264e2ad33d371e7ea2de6bf2764b7236d5b416ee696c38f0c34a3759552248",
+    "oldKeyHash": "b45fefdb2bf2e763d89ac6cd6553e5561fe6f796279d4ebc0fa069510a8119ab"
+  },
+  "environment": {
+    "liteIdentity": "acc://b45fefdb2bf2e763d89ac6cd6553e5561fe6f79676c4a48f",
+    "liteTokenAccount": "acc://b45fefdb2bf2e763d89ac6cd6553e5561fe6f79676c4a48f/ACME",
+    "publicKeyHex": "687b7ec4c7dcbef6e9941b2cb29814b749a33f0150b5408287f6244e50f35e22",
+    "suggestedAdiUrl": "acc://harness-e3cdc026.acme"
+  },
+  "durationMs": 307931,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\dart--key-rotation.txt",
+  "error": null,
+  "startedAt": "2026-08-01T02:18:15.071Z",
+  "finishedAt": "2026-08-01T02:27:30.333Z"
+}

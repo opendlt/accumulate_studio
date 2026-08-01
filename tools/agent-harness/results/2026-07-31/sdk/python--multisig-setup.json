@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "multisig-setup",
+    "file": "07-multisig-setup.yaml",
+    "title": "Multi-signature setup",
+    "specHash": "a9a1532bdf4f"
+  },
+  "sdkVersion": "2.3.6",
+  "passed": true,
+  "turns": 28,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_threshold == 2",
+      "subject": "key_page_threshold",
+      "op": "==",
+      "passed": true,
+      "actual": 2,
+      "expected": 2
+    },
+    {
+      "assertion": "multisig_tx_status == delivered",
+      "subject": "multisig_tx_status",
+      "op": "==",
+      "passed": true,
+      "actual": "delivered",
+      "expected": "delivered"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://c4eecfad7cb558efd03671f95fb9901451ef27584a63f3f1",
+    "liteTokenAccountUrl": "acc://c4eecfad7cb558efd03671f95fb9901451ef27584a63f3f1/ACME",
+    "adiUrl": "acc://multisig-8f687e50.acme",
+    "keyBookUrl": "acc://multisig-8f687e50.acme/book",
+    "keyPageUrl": "acc://multisig-8f687e50.acme/book/1",
+    "recipientUrl": "acc://multisig-8f687e50.acme/tokens",
+    "txid": "acc://d8cfc13edbdc320cbf84fcad4a3786afd2c46a60ad85c2e5192d0f4fdf4eca35@multisig-8f687e50.acme",
+    "txids": [
+      "acc://a884c841dc261f6c822886b330a143f66fabce41c46e60bf85fd1560628ad894@c4eecfad7cb558efd03671f95fb9901451ef27584a63f3f1/ACME",
+      "acc://7836671cadd7f790dae52b83173be7ac6f295fcdde2ec0e73dd7d3dfe4641159@c4eecfad7cb558efd03671f95fb9901451ef27584a63f3f1/ACME",
+      "acc://b112022be0a747c77f2634e4a3a0c44201a82b3c9aa422d99eb3907775c842a8@c4eecfad7cb558efd03671f95fb9901451ef27584a63f3f1/ACME",
+      "acc://8e7e40c9591d1dee9626f68d5ffdc3374866c8860cca5f4826c6501082ae68f5@multisig-8f687e50.acme/book/1",
+      "acc://c63382054e87130e2935f079547690135246a2247552a0b9dd3d1d0bf37fd539@multisig-8f687e50.acme/book/1",
+      "acc://d8cfc13edbdc320cbf84fcad4a3786afd2c46a60ad85c2e5192d0f4fdf4eca35@multisig-8f687e50.acme"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://c4eecfad7cb558efd03671f95fb9901451ef27584a63f3f1",
+    "liteTokenAccount": "acc://c4eecfad7cb558efd03671f95fb9901451ef27584a63f3f1/ACME",
+    "publicKeyHex": "5707d41eb417bb637af3e8a420ec5f6dc72ea471bf48ffbdc52c43d4a16b3a58",
+    "suggestedAdiUrl": "acc://harness-8463b5a1.acme"
+  },
+  "durationMs": 691844,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-31\\sdk\\transcripts\\python--multisig-setup.txt",
+  "error": null,
+  "startedAt": "2026-07-31T22:54:00.319Z",
+  "finishedAt": "2026-07-31T23:10:04.521Z"
+}

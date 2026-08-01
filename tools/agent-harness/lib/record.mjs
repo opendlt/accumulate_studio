@@ -134,9 +134,26 @@ export function loadRuns(harnessDir, mode = 'sdk', dateStamp = null) {
     .sort()
     .reverse();
 
-  for (const date of dates) {
-    const runs = readRunsAt(harnessDir, date, mode);
-    if (runs.length) return { date, runs };
+  for (let i = 0; i < dates.length; i++) {
+    const runs = readRunsAt(harnessDir, dates[i], mode);
+    if (!runs.length) continue;
+
+    // A fleet run takes hours, so it can cross midnight and land in two
+    // directories. Reading only the newest then scores the tail of the sweep as
+    // if it were the whole fleet — a 40-run sweep reported as 9. Merge the
+    // immediately preceding day when it exists, which is exactly the span a
+    // single sweep can cover, and keep the newest record per task so a re-run
+    // supersedes rather than duplicates. Older sweeps are NOT merged: filling
+    // gaps from last week's data would present stale results as current.
+    const prev = dates[i + 1];
+    const isAdjacent = prev && (Date.parse(dates[i]) - Date.parse(prev)) === 86_400_000;
+    if (!isAdjacent) return { date: dates[i], runs };
+
+    const merged = new Map();
+    for (const r of [...readRunsAt(harnessDir, prev, mode), ...runs]) {
+      merged.set(`${r.lang}/${r.task?.id ?? r.task}`, r);
+    }
+    return { date: dates[i], runs: [...merged.values()] };
   }
   return { date: dates[0] ?? null, runs: [] };
 }

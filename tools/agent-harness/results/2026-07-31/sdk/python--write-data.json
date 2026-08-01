@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "write-data",
+    "file": "05-write-data.yaml",
+    "title": "Write data to a data account",
+    "specHash": "9e9c1d819284"
+  },
+  "sdkVersion": "2.3.6",
+  "passed": true,
+  "turns": 23,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "data_account_exists == true",
+      "subject": "data_account_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "retrieved_entry == payload",
+      "subject": "retrieved_entry",
+      "op": "==",
+      "passed": true,
+      "actual": "hello accumulate",
+      "expected": "hello accumulate"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://57e7366ff2d7cd1acb15169016f60cf7eb66a74aa90eb839",
+    "liteTokenAccountUrl": "acc://57e7366ff2d7cd1acb15169016f60cf7eb66a74aa90eb839/ACME",
+    "adiUrl": "acc://harness-9d5059c8.acme",
+    "keyBookUrl": "acc://harness-9d5059c8.acme/book",
+    "keyPageUrl": "acc://harness-9d5059c8.acme/book/1",
+    "dataAccountUrl": "acc://harness-9d5059c8.acme/data",
+    "txid": "acc://a9c4461d40ca3e5409da4ce718316390281ae1977f76c163f84061e5789afd0e@harness-9d5059c8.acme/data",
+    "txids": [
+      "acc://b7171eda147253390ac1c6c9cc96eb7882f45df796bd7c4019e198c9b4b309c1@harness-9d5059c8.acme",
+      "acc://a9c4461d40ca3e5409da4ce718316390281ae1977f76c163f84061e5789afd0e@harness-9d5059c8.acme/data"
+    ],
+    "entryHash": "80d921ad4f794fb7a41108b6d06440dc7cd613c7fc3a96aca772bf8a688f1d75",
+    "retrievedEntry": "hello accumulate"
+  },
+  "environment": {
+    "liteIdentity": "acc://57e7366ff2d7cd1acb15169016f60cf7eb66a74aa90eb839",
+    "liteTokenAccount": "acc://57e7366ff2d7cd1acb15169016f60cf7eb66a74aa90eb839/ACME",
+    "publicKeyHex": "d9d77a11ac74b89fd225b6169c6bdc45a1d3e052f14d41220e10701e72eb90ce",
+    "suggestedAdiUrl": "acc://harness-9d5059c8.acme"
+  },
+  "durationMs": 367413,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-31\\sdk\\transcripts\\python--write-data.txt",
+  "error": null,
+  "startedAt": "2026-07-31T22:12:42.687Z",
+  "finishedAt": "2026-07-31T22:23:25.421Z"
+}

@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "lang": "javascript",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "create-adi",
+    "file": "02-create-adi.yaml",
+    "title": "Create an ADI (Accumulate Digital Identifier)",
+    "specHash": "93a188817a2e"
+  },
+  "sdkVersion": "2.3.7",
+  "passed": false,
+  "turns": 1,
+  "interventions": 0,
+  "failureClass": "agent-unavailable",
+  "assertions": [
+    {
+      "assertion": "adi_account_exists == true",
+      "subject": "adi_account_exists",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "assertion": "key_book_exists == true",
+      "subject": "key_book_exists",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    }
+  ],
+  "artifacts": {},
+  "environment": {
+    "liteIdentity": "acc://568d4dcbc90829ca8d07b55be024dec9543804126d5f2ae8",
+    "liteTokenAccount": "acc://568d4dcbc90829ca8d07b55be024dec9543804126d5f2ae8/ACME",
+    "publicKeyHex": "592b08c36219cd8bb38d3a9deaefe76c2cd0c15f45818cb7ff85253040c21dce",
+    "suggestedAdiUrl": "acc://harness-75e1ce9f.acme"
+  },
+  "durationMs": 3134,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\javascript--create-adi.txt",
+  "error": null,
+  "startedAt": "2026-08-01T03:18:28.707Z",
+  "finishedAt": "2026-08-01T03:19:00.463Z"
+}

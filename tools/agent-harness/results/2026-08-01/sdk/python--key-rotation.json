@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "key-rotation",
+    "file": "08-key-rotation.yaml",
+    "title": "Key rotation",
+    "specHash": "8650c147a3d2"
+  },
+  "sdkVersion": "2.3.6",
+  "passed": true,
+  "turns": 13,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "key_page_contains_new_key == true",
+      "subject": "key_page_contains_new_key",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "key_page_contains_old_key == false",
+      "subject": "key_page_contains_old_key",
+      "op": "==",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://0717e517020ca409ce5a64cb73d1ec1c6cb48bb240dd6423",
+    "liteTokenAccountUrl": "acc://0717e517020ca409ce5a64cb73d1ec1c6cb48bb240dd6423/ACME",
+    "adiUrl": "acc://harness-9dd3c994.acme",
+    "keyBookUrl": "acc://harness-9dd3c994.acme/book",
+    "keyPageUrl": "acc://harness-9dd3c994.acme/book/1",
+    "txid": "acc://0854e19df6fdbc04e4939b610f48036d3665a717087985d49b4c506e03839904@harness-9dd3c994.acme/book/1",
+    "txids": [
+      "acc://0854e19df6fdbc04e4939b610f48036d3665a717087985d49b4c506e03839904@harness-9dd3c994.acme/book/1",
+      "acc://ba8b2a72453bf44b8a245e5dee15bd1009c05a02aa62be1977670be264dfe917@harness-9dd3c994.acme/book/1"
+    ],
+    "newKeyHash": "c460ac39bec89a17921f5e61b78ccccc886e0499fbb52462450469a925c80039",
+    "oldKeyHash": "0717e517020ca409ce5a64cb73d1ec1c6cb48bb275a33d6d9539dca83e57514d"
+  },
+  "environment": {
+    "liteIdentity": "acc://0717e517020ca409ce5a64cb73d1ec1c6cb48bb240dd6423",
+    "liteTokenAccount": "acc://0717e517020ca409ce5a64cb73d1ec1c6cb48bb240dd6423/ACME",
+    "publicKeyHex": "0b6e1afcdaf5bc0665a75225be461ca36727b2f45d9930bfeac121e4317c5288",
+    "suggestedAdiUrl": "acc://harness-9dd3c994.acme"
+  },
+  "durationMs": 290302,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\python--key-rotation.txt",
+  "error": null,
+  "startedAt": "2026-08-01T02:08:25.224Z",
+  "finishedAt": "2026-08-01T02:18:11.748Z"
+}

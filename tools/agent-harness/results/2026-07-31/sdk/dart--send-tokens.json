@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "lang": "dart",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "send-tokens",
+    "file": "04-send-tokens.yaml",
+    "title": "Send ACME tokens between accounts",
+    "specHash": "04b11771f6b0"
+  },
+  "sdkVersion": "2.3.10",
+  "passed": true,
+  "turns": 23,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "tx_status == delivered",
+      "subject": "tx_status",
+      "op": "==",
+      "passed": true,
+      "actual": "delivered",
+      "expected": "delivered"
+    },
+    {
+      "assertion": "recipient_balance_increased_by == 5 ACME",
+      "subject": "recipient_balance_increased_by",
+      "op": "==",
+      "passed": true,
+      "actual": "500000000",
+      "actualAcme": 5,
+      "expected": "5 ACME"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://e5b1279bc8353069bfbed5efae0e7761e3a054c0f9d27304",
+    "liteTokenAccountUrl": "acc://e5b1279bc8353069bfbed5efae0e7761e3a054c0f9d27304/ACME",
+    "adiUrl": "acc://dart-harness-1785540630333.acme",
+    "keyBookUrl": "acc://dart-harness-1785540630333.acme/book",
+    "keyPageUrl": "acc://dart-harness-1785540630333.acme/book/1",
+    "recipientUrl": "acc://dart-harness-1785540630333.acme/tokens",
+    "tokenAccountUrl": "acc://dart-harness-1785540630333.acme/tokens",
+    "txid": "acc://5bcc6496e5c873887b8fb01f9705ff5d399c478bf52f872617782c38915b5a24@e5b1279bc8353069bfbed5efae0e7761e3a054c0f9d27304",
+    "txids": [
+      "acc://1327151ed58f0d545a0ff3527574f7fbd81d89b3a9b9086ebeb5a6bdfeea9ed0@e5b1279bc8353069bfbed5efae0e7761e3a054c0f9d27304",
+      "acc://4cee083129b0da9d76fec1ad2810eb569afd2181eec7b4eeed7a69a31e7e5a0f@e5b1279bc8353069bfbed5efae0e7761e3a054c0f9d27304",
+      "acc://c7f4a7d3df0c85b3d8eb7f210dbb8fe1e2317fdd2f8dc077c08e0b3477533da2@e5b1279bc8353069bfbed5efae0e7761e3a054c0f9d27304",
+      "acc://2cf563d41989fb4aaa9cbeb3f5a29537a284779941c248742985e23c3e11590a@dart-harness-1785540630333.acme/book/1",
+      "acc://5bcc6496e5c873887b8fb01f9705ff5d399c478bf52f872617782c38915b5a24@e5b1279bc8353069bfbed5efae0e7761e3a054c0f9d27304"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://e5b1279bc8353069bfbed5efae0e7761e3a054c0f9d27304",
+    "liteTokenAccount": "acc://e5b1279bc8353069bfbed5efae0e7761e3a054c0f9d27304/ACME",
+    "publicKeyHex": "19a698f03c9501fcb00e1b2ba64e4c4689778e708c8cd5ed8d3aee1b298d8b1b",
+    "suggestedAdiUrl": "acc://harness-7859e3b2.acme"
+  },
+  "durationMs": 508306,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-31\\sdk\\transcripts\\dart--send-tokens.txt",
+  "error": null,
+  "startedAt": "2026-07-31T23:23:12.246Z",
+  "finishedAt": "2026-07-31T23:32:01.329Z"
+}

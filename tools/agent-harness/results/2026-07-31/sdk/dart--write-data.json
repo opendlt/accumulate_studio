@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "lang": "dart",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "write-data",
+    "file": "05-write-data.yaml",
+    "title": "Write data to a data account",
+    "specHash": "9e9c1d819284"
+  },
+  "sdkVersion": "2.3.10",
+  "passed": true,
+  "turns": 20,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "data_account_exists == true",
+      "subject": "data_account_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "retrieved_entry == payload",
+      "subject": "retrieved_entry",
+      "op": "==",
+      "passed": true,
+      "actual": "hello accumulate",
+      "expected": "hello accumulate"
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://a4ba5f6a5dc2dff0bc2caae4a96d0e60ac956db671eb05b6",
+    "liteTokenAccountUrl": "acc://a4ba5f6a5dc2dff0bc2caae4a96d0e60ac956db671eb05b6/ACME",
+    "adiUrl": "acc://harness-38e4c0c0.acme",
+    "keyBookUrl": "acc://harness-38e4c0c0.acme/book",
+    "keyPageUrl": "acc://harness-38e4c0c0.acme/book/1",
+    "dataAccountUrl": "acc://harness-38e4c0c0.acme/data",
+    "txid": "acc://7eb232e97890cec91b696183a4d48b8924f34dff8d8678ae6da510b1e3f42cbe@harness-38e4c0c0.acme/data",
+    "txids": [
+      "acc://d153a1a08e40ff116b2e7af19358e613cec06c8165938014583bd6b5b64fda54@harness-38e4c0c0.acme",
+      "acc://7eb232e97890cec91b696183a4d48b8924f34dff8d8678ae6da510b1e3f42cbe@harness-38e4c0c0.acme/data"
+    ],
+    "entryHash": "80d921ad4f794fb7a41108b6d06440dc7cd613c7fc3a96aca772bf8a688f1d75",
+    "retrievedEntry": "hello accumulate"
+  },
+  "environment": {
+    "liteIdentity": "acc://a4ba5f6a5dc2dff0bc2caae4a96d0e60ac956db671eb05b6",
+    "liteTokenAccount": "acc://a4ba5f6a5dc2dff0bc2caae4a96d0e60ac956db671eb05b6/ACME",
+    "publicKeyHex": "84036697c1eecef3c6f5c7952b78b067d21f2276ce38ff7e4f27450d3493f10d",
+    "suggestedAdiUrl": "acc://harness-38e4c0c0.acme"
+  },
+  "durationMs": 277891,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-31\\sdk\\transcripts\\dart--write-data.txt",
+  "error": null,
+  "startedAt": "2026-07-31T23:32:47.449Z",
+  "finishedAt": "2026-07-31T23:41:38.278Z"
+}

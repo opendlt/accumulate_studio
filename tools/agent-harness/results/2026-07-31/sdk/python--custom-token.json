@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "lang": "python",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "custom-token",
+    "file": "06-custom-token.yaml",
+    "title": "Custom token issuance",
+    "specHash": "f9068d5ec05f"
+  },
+  "sdkVersion": "2.3.6",
+  "passed": true,
+  "turns": 26,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "token_issuer_exists == true",
+      "subject": "token_issuer_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "token_account_balance == issue_amount",
+      "subject": "token_account_balance",
+      "op": "==",
+      "passed": true,
+      "actual": 1000,
+      "expected": 1000
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://6cb68657cc0af39e247a2b6e6cf3f11733f7e691016fb958",
+    "liteTokenAccountUrl": "acc://6cb68657cc0af39e247a2b6e6cf3f11733f7e691016fb958/ACME",
+    "adiUrl": "acc://testtkn-issuer-8f31c2.acme",
+    "keyBookUrl": "acc://testtkn-issuer-8f31c2.acme/book",
+    "keyPageUrl": "acc://testtkn-issuer-8f31c2.acme/book/1",
+    "tokenIssuerUrl": "acc://testtkn-issuer-8f31c2.acme/TESTTKN",
+    "tokenAccountUrl": "acc://testtkn-issuer-8f31c2.acme/token-account",
+    "txid": "acc://95bc0a5bc8db9e900e1cd0f2aaf1a5be3132d460630dd1fe400c35bc72a60ef5@testtkn-issuer-8f31c2.acme/TESTTKN",
+    "txids": [
+      "acc://a6256a1ef7a087067fef404275117113ac4c6a80e311585c2ae57ef9c1b4d407@6cb68657cc0af39e247a2b6e6cf3f11733f7e691016fb958/ACME",
+      "acc://cd453d092a26cb89cd8f8b86b8755764f8147eadacdd7049ec9c1bf4ccbd18cf@6cb68657cc0af39e247a2b6e6cf3f11733f7e691016fb958/ACME",
+      "acc://51a92cbb5bd4775402dc4b0c175c40aff26c4589d9131f79db39142668968588@6cb68657cc0af39e247a2b6e6cf3f11733f7e691016fb958/ACME",
+      "acc://b4189995ef7c4ddc943849d3c88bb2ab437e2a09208235fdf398e7ea45167f17@testtkn-issuer-8f31c2.acme",
+      "acc://5c03fd794b8a5c15b7fd287335f22e5d7ef53bdf732113c71507de5dfbfd752a@testtkn-issuer-8f31c2.acme",
+      "acc://95bc0a5bc8db9e900e1cd0f2aaf1a5be3132d460630dd1fe400c35bc72a60ef5@testtkn-issuer-8f31c2.acme/TESTTKN"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://6cb68657cc0af39e247a2b6e6cf3f11733f7e691016fb958",
+    "liteTokenAccount": "acc://6cb68657cc0af39e247a2b6e6cf3f11733f7e691016fb958/ACME",
+    "publicKeyHex": "4a693d9fca6777ec72b995af06614c52d08923edbf45d119ca889e2cc99fce0d",
+    "suggestedAdiUrl": "acc://harness-2eb29e2b.acme"
+  },
+  "durationMs": 717516,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-31\\sdk\\transcripts\\python--custom-token.txt",
+  "error": null,
+  "startedAt": "2026-07-31T22:37:12.229Z",
+  "finishedAt": "2026-07-31T22:53:58.853Z"
+}

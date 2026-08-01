@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "lang": "javascript",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "lite-account",
+    "file": "01-lite-account.yaml",
+    "title": "Lite account setup",
+    "specHash": "6cee357d09fe"
+  },
+  "sdkVersion": "2.3.7",
+  "passed": false,
+  "turns": 1,
+  "interventions": 0,
+  "failureClass": "agent-unavailable",
+  "assertions": [
+    {
+      "assertion": "lite_token_account_balance > 0",
+      "subject": "lite_token_account_balance",
+      "op": ">",
+      "passed": false,
+      "actual": "0",
+      "actualAcme": 0,
+      "expected": 0
+    }
+  ],
+  "artifacts": {},
+  "environment": {
+    "liteIdentity": "acc://dad6d1e4f633d7f7a75cfa14bfe6f5ba4fd37a49f0015278",
+    "liteTokenAccount": "acc://dad6d1e4f633d7f7a75cfa14bfe6f5ba4fd37a49f0015278/ACME",
+    "publicKeyHex": "d2ae67ab171ac2f20f92815d02dd4ef95129f2d0944afac79beaded278b229d5",
+    "suggestedAdiUrl": "acc://harness-f8e49e80.acme"
+  },
+  "durationMs": 3792,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\javascript--lite-account.txt",
+  "error": null,
+  "startedAt": "2026-08-01T03:18:07.569Z",
+  "finishedAt": "2026-08-01T03:18:23.979Z"
+}

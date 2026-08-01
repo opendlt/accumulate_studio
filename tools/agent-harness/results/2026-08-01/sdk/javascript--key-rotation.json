@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "lang": "javascript",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "key-rotation",
+    "file": "08-key-rotation.yaml",
+    "title": "Key rotation",
+    "specHash": "8650c147a3d2"
+  },
+  "sdkVersion": "2.3.7",
+  "passed": false,
+  "turns": 1,
+  "interventions": 0,
+  "failureClass": "agent-unavailable",
+  "assertions": [
+    {
+      "assertion": "key_page_contains_new_key == true",
+      "subject": "key_page_contains_new_key",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "assertion": "key_page_contains_old_key == false",
+      "subject": "key_page_contains_old_key",
+      "op": "==",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    }
+  ],
+  "artifacts": {},
+  "environment": {
+    "liteIdentity": "acc://763cbdd7d9889fac1ba588de2ea636ce66c0d310ab190ff7",
+    "liteTokenAccount": "acc://763cbdd7d9889fac1ba588de2ea636ce66c0d310ab190ff7/ACME",
+    "publicKeyHex": "2cb74ccd3cf5da277ca94984eb4554265ff93c975644adabd56f0d5f9c211294",
+    "suggestedAdiUrl": "acc://harness-b3a88a73.acme"
+  },
+  "durationMs": 2983,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\javascript--key-rotation.txt",
+  "error": null,
+  "startedAt": "2026-08-01T03:37:09.474Z",
+  "finishedAt": "2026-08-01T03:41:28.448Z"
+}

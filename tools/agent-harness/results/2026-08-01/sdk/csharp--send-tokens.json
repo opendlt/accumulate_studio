@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "lang": "csharp",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "send-tokens",
+    "file": "04-send-tokens.yaml",
+    "title": "Send ACME tokens between accounts",
+    "specHash": "04b11771f6b0"
+  },
+  "sdkVersion": "2.3.8",
+  "passed": false,
+  "turns": null,
+  "interventions": 0,
+  "failureClass": "timeout",
+  "assertions": [
+    {
+      "assertion": "tx_status == delivered",
+      "subject": "tx_status",
+      "op": "==",
+      "passed": false,
+      "actual": "unknown",
+      "expected": "delivered"
+    },
+    {
+      "assertion": "recipient_balance_increased_by == 5 ACME",
+      "subject": "recipient_balance_increased_by",
+      "op": "==",
+      "passed": false,
+      "actual": "0",
+      "actualAcme": 0,
+      "expected": "5 ACME"
+    }
+  ],
+  "artifacts": {},
+  "environment": {
+    "liteIdentity": "acc://0e0c413897fae6f352185a14b2fa23a32d6633cf0b63bd8b",
+    "liteTokenAccount": "acc://0e0c413897fae6f352185a14b2fa23a32d6633cf0b63bd8b/ACME",
+    "publicKeyHex": "ae1baaf22af6c4e89d129fd34a5ed4ef4ac2128c4cd582374718dc3fe142f875",
+    "suggestedAdiUrl": "acc://harness-8817c99e.acme"
+  },
+  "durationMs": 900017,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\csharp--send-tokens.txt",
+  "error": null,
+  "startedAt": "2026-08-01T02:16:16.097Z",
+  "finishedAt": "2026-08-01T02:31:39.193Z"
+}

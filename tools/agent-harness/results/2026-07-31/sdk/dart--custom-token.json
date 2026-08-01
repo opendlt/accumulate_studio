@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "lang": "dart",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "custom-token",
+    "file": "06-custom-token.yaml",
+    "title": "Custom token issuance",
+    "specHash": "f9068d5ec05f"
+  },
+  "sdkVersion": "2.3.10",
+  "passed": true,
+  "turns": 20,
+  "interventions": 0,
+  "failureClass": null,
+  "assertions": [
+    {
+      "assertion": "token_issuer_exists == true",
+      "subject": "token_issuer_exists",
+      "op": "==",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "assertion": "token_account_balance == issue_amount",
+      "subject": "token_account_balance",
+      "op": "==",
+      "passed": true,
+      "actual": 1000,
+      "expected": 1000
+    }
+  ],
+  "artifacts": {
+    "liteIdentityUrl": "acc://71173e40194111bceedee99baf5d376b6aa2ab80d7eff755",
+    "liteTokenAccountUrl": "acc://71173e40194111bceedee99baf5d376b6aa2ab80d7eff755/ACME",
+    "adiUrl": "acc://sdk-tokens-1785541755132.acme",
+    "keyBookUrl": "acc://sdk-tokens-1785541755132.acme/book",
+    "keyPageUrl": "acc://sdk-tokens-1785541755132.acme/book/1",
+    "tokenIssuerUrl": "acc://sdk-tokens-1785541755132.acme/TESTTKN",
+    "tokenAccountUrl": "acc://sdk-tokens-1785541755132.acme/token-account",
+    "txid": "acc://aa15361076be3be97bce93c476b46279aa4fb51af103c7f41cb3742e57741912@sdk-tokens-1785541755132.acme/book/1",
+    "txids": [
+      "acc://22395002808d7ea0b7cd40b9a9897e2d910484187ddd0301c71ee452a3d887be@71173e40194111bceedee99baf5d376b6aa2ab80d7eff755",
+      "acc://5b786f9714cecd66967553428e53eda700a217e2bded5d44cab89f4532b1ec18@71173e40194111bceedee99baf5d376b6aa2ab80d7eff755",
+      "acc://dab5a7c1ec68d92846562d1413251fafb9926b48934a796191b44b68b9bfab47@71173e40194111bceedee99baf5d376b6aa2ab80d7eff755",
+      "acc://bad9284f9ac979006021bdf2dd7625df704ccb5bbebdb4adaf33aa48c37d706d@sdk-tokens-1785541755132.acme/book/1",
+      "acc://2ead905f11040e3961ef0a1c48ba86ca511b667b018491f481d60d4a37d26d57@sdk-tokens-1785541755132.acme/book/1",
+      "acc://aa15361076be3be97bce93c476b46279aa4fb51af103c7f41cb3742e57741912@sdk-tokens-1785541755132.acme/book/1"
+    ]
+  },
+  "environment": {
+    "liteIdentity": "acc://71173e40194111bceedee99baf5d376b6aa2ab80d7eff755",
+    "liteTokenAccount": "acc://71173e40194111bceedee99baf5d376b6aa2ab80d7eff755/ACME",
+    "publicKeyHex": "048f3e96f880481cd1e0c247b8a7f1a91fad346a36d802928190a92099ad2777",
+    "suggestedAdiUrl": "acc://harness-b9f2c78f.acme"
+  },
+  "durationMs": 299293,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-07-31\\sdk\\transcripts\\dart--custom-token.txt",
+  "error": null,
+  "startedAt": "2026-07-31T23:41:39.807Z",
+  "finishedAt": "2026-07-31T23:50:43.014Z"
+}

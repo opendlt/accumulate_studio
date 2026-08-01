@@ -93,9 +93,32 @@ export async function createWorkspace(lang, { keep = false, mode = 'sdk' } = {})
 
       case 'javascript': {
         writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'harness', private: true, type: 'module' }, null, 2));
-        log.push(await run('npm', ['install', '--no-audit', '--no-fund', PACKAGES.javascript], dir));
         const pkgPath = join(dir, 'node_modules', PACKAGES.javascript, 'package.json');
-        if (existsSync(pkgPath)) sdkVersion = JSON.parse(readFileSync(pkgPath, 'utf-8')).version;
+        // npm is the documented quickstart path and is tried first. It can fail
+        // for reasons that have nothing to do with the package: this Windows host
+        // exits `npm install` with code 1 and an empty error log, which scored the
+        // JavaScript SDK 0/8 `install-fail` while the same published tarball
+        // installed and imported cleanly under yarn. Falling back keeps the KPI
+        // measuring the package rather than the runner's toolchain — and the
+        // installer that succeeded is recorded, so a package that npm genuinely
+        // cannot install is still visible rather than silently rescued.
+        let installer = 'npm';
+        try {
+          log.push(await run('npm', ['install', '--no-audit', '--no-fund', PACKAGES.javascript], dir));
+        } catch (npmErr) {
+          log.push(`[javascript] npm install failed, retrying with yarn: ${npmErr.message}`);
+          try {
+            log.push(await run('yarn', ['add', '--no-lockfile', PACKAGES.javascript], dir));
+            installer = 'yarn';
+          } catch {
+            throw npmErr; // report the npm failure — yarn is the fallback, not the contract
+          }
+        }
+        if (!existsSync(pkgPath)) {
+          throw new Error(`[javascript] ${installer} reported success but ${PACKAGES.javascript} is not present`);
+        }
+        sdkVersion = JSON.parse(readFileSync(pkgPath, 'utf-8')).version;
+        log.push(`[javascript] installed with ${installer}`);
         break;
       }
 

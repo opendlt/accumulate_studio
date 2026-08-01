@@ -99,6 +99,15 @@ const RULES = [
 export function classifyFailure(ctx = {}) {
   if (ctx.timedOut) return 'timeout';
 
+  // A backend that returned nothing at all exercised no SDK, so scoring it as
+  // `no-artifacts` charges an infrastructure failure to the package. The text
+  // rules below only fire when the backend explains itself; a bare empty result
+  // says nothing, and was observed as a 53ms run with a transcript ending at the
+  // AGENT RESULT marker — recorded as an SDK failure against C#.
+  const noTurns = ctx.turns === 0 || ctx.turns === null || ctx.turns === undefined;
+  const tooFastToBeReal = typeof ctx.durationMs === 'number' && ctx.durationMs < 5_000;
+  if (noTurns && tooFastToBeReal) return 'agent-unavailable';
+
   const haystack = [ctx.transcript || '', ctx.stderr || '', JSON.stringify(ctx.assertionResults || [])].join('\n');
 
   for (const rule of RULES) {

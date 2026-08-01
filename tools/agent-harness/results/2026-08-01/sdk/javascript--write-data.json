@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "lang": "javascript",
+  "mode": "sdk",
+  "backend": "claude-code",
+  "network": "kermit",
+  "task": {
+    "id": "write-data",
+    "file": "05-write-data.yaml",
+    "title": "Write data to a data account",
+    "specHash": "9e9c1d819284"
+  },
+  "sdkVersion": "2.3.7",
+  "passed": false,
+  "turns": 1,
+  "interventions": 0,
+  "failureClass": "agent-unavailable",
+  "assertions": [
+    {
+      "assertion": "data_account_exists == true",
+      "subject": "data_account_exists",
+      "op": "==",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "assertion": "retrieved_entry == payload",
+      "subject": "retrieved_entry",
+      "op": "==",
+      "passed": false,
+      "actual": null,
+      "expected": "hello accumulate"
+    }
+  ],
+  "artifacts": {},
+  "environment": {
+    "liteIdentity": "acc://85653b4bbd742d97e4e2e2040d4ab891b72d49ce08b8313e",
+    "liteTokenAccount": "acc://85653b4bbd742d97e4e2e2040d4ab891b72d49ce08b8313e/ACME",
+    "publicKeyHex": "4fb9d314636530ff3ce8c2a364332e3b6070cc677c5c26ef730f59e110c247f3",
+    "suggestedAdiUrl": "acc://harness-0efe8801.acme"
+  },
+  "durationMs": 3519,
+  "transcriptPath": "C:\\Accumulate_Stuff\\on-boarding-platform\\accumulate-studio\\tools\\agent-harness\\results\\2026-08-01\\sdk\\transcripts\\javascript--write-data.txt",
+  "error": null,
+  "startedAt": "2026-08-01T03:24:01.660Z",
+  "finishedAt": "2026-08-01T03:28:16.224Z"
+}
