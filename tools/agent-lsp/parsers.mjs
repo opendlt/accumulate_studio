@@ -81,3 +81,35 @@ export function parsePyCompile(stderr) {
   return out;
 }
 
+
+/**
+ * pyright --outputjson. Preferred over `compileall`, which only finds syntax
+ * errors: a type mismatch is exactly what an agent needs told, and was
+ * previously invisible for Python while every other language reported it.
+ *
+ * Diagnostics are filtered to files under `root` — pyright also reports on the
+ * standard library and third-party stubs, which is noise an agent cannot act on.
+ */
+export function parsePyright(stdout, root) {
+  let doc;
+  try {
+    doc = JSON.parse(stdout);
+  } catch {
+    return null; // not JSON — caller falls back
+  }
+  const norm = (p) => String(p).split('\\').join('/').toLowerCase();
+  const rootNorm = norm(root);
+  const out = [];
+  for (const g of doc.generalDiagnostics ?? []) {
+    if (root && !norm(g.file).startsWith(rootNorm)) continue;
+    out.push({
+      file: g.file,
+      line: (g.range?.start?.line ?? 0) + 1,
+      column: (g.range?.start?.character ?? 0) + 1,
+      severity: sev(g.severity ?? 'error'),
+      code: g.rule ?? null,
+      message: String(g.message ?? '').split(String.fromCharCode(10))[0],
+    });
+  }
+  return out;
+}

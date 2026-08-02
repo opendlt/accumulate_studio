@@ -93,4 +93,85 @@ export const diagnoseTool = {
   handler: diagnose,
 };
 
-export const diagnosticsTools = [diagnoseTool];
+/** Locate the navigate CLI the same way as the diagnostics one. */
+function navigateScript(): string {
+  let dir = HERE;
+  for (let i = 0; i < 8; i++) {
+    const candidate = join(dir, 'tools', 'agent-lsp', 'navigate.mjs');
+    if (existsSync(candidate)) return candidate;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error('agent-lsp navigate.mjs not found relative to the MCP server');
+}
+
+export type NavigateArgs = {
+  action: 'definition' | 'references' | 'symbol';
+  language: 'python' | 'rust' | 'dart' | 'csharp' | 'javascript';
+  path: string;
+  file?: string;
+  line?: number;
+  column?: number;
+  query?: string;
+};
+
+export async function navigate(args: NavigateArgs): Promise<unknown> {
+  const { action, language, path, file, line, column, query } = args;
+  if (!action || !language || !path) {
+    return { ok: false, error: '"action", "language" and "path" are required' };
+  }
+
+  const argv = [navigateScript(), action, '--lang', language, '--path', path];
+  if (action === 'symbol') {
+    if (!query) return { ok: false, error: '"query" is required for action "symbol"' };
+    argv.push('--query', query);
+  } else {
+    if (!file || !line || !column) {
+      return { ok: false, error: '"file", "line" and "column" are required for definition/references' };
+    }
+    argv.push('--file', file, '--line', String(line), '--col', String(column));
+  }
+
+  return new Promise((resolve) => {
+    execFile(process.execPath, argv, { maxBuffer: 64 * 1024 * 1024 }, (err, stdout) => {
+      // Exit 1 means "no results", which is an answer, not a failure.
+      try {
+        resolve(JSON.parse(stdout));
+      } catch {
+        resolve({ ok: false, action, language, error: err ? err.message : 'no parsable output' });
+      }
+    });
+  });
+}
+
+export const navigateTool = {
+  name: 'acc.navigate',
+  description:
+    'Resolve code navigation questions with a real language server: jump to a definition, find every reference to a symbol, or search the workspace for a symbol by name. Returns file/line/column locations as JSON. Use this instead of grepping when you need to know where something is defined or used.',
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      action: {
+        type: 'string',
+        enum: ['definition', 'references', 'symbol'],
+        description:
+          '"definition" and "references" take a position; "symbol" searches the workspace by name.',
+      },
+      language: {
+        type: 'string',
+        enum: ['python', 'rust', 'dart', 'csharp', 'javascript'],
+        description: 'Which language server to drive.',
+      },
+      path: { type: 'string', description: 'Absolute path to the project root.' },
+      file: { type: 'string', description: 'Absolute path to the file (definition/references).' },
+      line: { type: 'number', description: '1-based line number (definition/references).' },
+      column: { type: 'number', description: '1-based column number (definition/references).' },
+      query: { type: 'string', description: 'Symbol name to search for (symbol).' },
+    },
+    required: ['action', 'language', 'path'] as string[],
+  },
+  handler: navigate,
+};
+
+export const diagnosticsTools = [diagnoseTool, navigateTool];

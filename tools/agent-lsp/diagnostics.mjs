@@ -46,6 +46,16 @@ function run(cmd, args, cwd) {
   });
 }
 
+/** Locate pyright's CLI, preferring one installed in the project. */
+function findPyright(root) {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    join(root, 'node_modules', 'pyright', 'index.js'),
+    join(here, '..', '..', 'node_modules', 'pyright', 'index.js'),
+  ];
+  return candidates.find((c) => existsSync(c)) ?? null;
+}
+
 /** Locate typescript's CLI without relying on shell shims. */
 function findTsc(root) {
   const here = dirname(fileURLToPath(import.meta.url));
@@ -58,7 +68,7 @@ function findTsc(root) {
 
 
 /** cargo emits newline-delimited JSON diagnostics — the same ones rust-analyzer surfaces. */
-import { splitLines, parseCargo, parseDart, parseCompilerText, parsePyCompile } from './parsers.mjs';
+import { splitLines, parseCargo, parseDart, parseCompilerText, parsePyCompile, parsePyright } from './parsers.mjs';
 
 async function diagnose(lang, root) {
   switch (lang) {
@@ -86,8 +96,21 @@ async function diagnose(lang, root) {
       return { tool: 'dotnet build', diagnostics: parseCompilerText(r.stdout, r.stderr) };
     }
     case 'python': {
+      // pyright is a real type checker; compileall only finds syntax errors, so
+      // Python was the one language where a type mismatch went unreported while
+      // every other toolchain flagged it. Fall back only if pyright is absent.
+      const pyright = findPyright(root);
+      if (pyright) {
+        const pr = await run(process.execPath, [pyright, '--outputjson', root], root);
+        const parsed = parsePyright(pr.stdout, root);
+        if (parsed) return { tool: 'pyright', diagnostics: parsed };
+      }
       const r = await run('python', ['-m', 'compileall', '-q', root], root);
-      return { tool: 'python -m compileall', diagnostics: parsePyCompile(`${r.stdout}\n${r.stderr}`) };
+      return {
+        tool: 'python -m compileall (pyright not installed - syntax errors only)',
+        diagnostics: parsePyCompile(`${r.stdout}
+${r.stderr}`),
+      };
     }
     default:
       throw new Error(`unknown language ${lang}`);

@@ -41,6 +41,7 @@ import {
   // Error tools
   explainError,
   diagnose,
+  navigate,
 } from './tools/index.js';
 
 import {
@@ -107,6 +108,7 @@ const toolHandlers: Record<string, ToolHandler> = {
 
   // Diagnostics (LSP-equivalent: structured compiler feedback)
   'acc.diagnose': asHandler(diagnose),
+  'acc.navigate': asHandler(navigate),
 };
 
 // `allTools` is what we ADVERTISE; `toolHandlers` is what we can DISPATCH. If
