@@ -4968,10 +4968,10 @@ export const ERROR_CATALOG: ErrorCatalog = {
       "import": "import 'package:opendlt_accumulate/opendlt_accumulate.dart';"
     },
     "csharp": {
-      "base": "AccumulateException",
-      "catch": "catch (AccumulateException e) {",
+      "base": "AccumulateApiException",
+      "catch": "catch (AccumulateApiException e) {",
       "codeAccess": "e.Code",
-      "import": "using Acme.Net.Sdk;"
+      "import": "using Acme.Net.Sdk.Exceptions;"
     },
     "javascript": {
       "base": "AccumulateError",
@@ -5017,7 +5017,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "AccountNotFoundError",
         "dart": "ApiError",
         "rust": "Error::NotFound",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5052,7 +5052,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "AccumulateError",
         "dart": "AuthError",
         "rust": "Error::Unauthorized",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5086,7 +5086,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "InsufficientCreditsError",
         "dart": "TransactionError",
         "rust": "Error::InsufficientCredits",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5118,7 +5118,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "MissingSignatureError",
         "dart": "SignatureError",
         "rust": "Error::InvalidSignature",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5150,7 +5150,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "AccumulateError",
         "dart": "TransactionError",
         "rust": "Error::Conflict",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5180,7 +5180,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "ValidationError",
         "dart": "ValidationError",
         "rust": "Error::InvalidPrincipal",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5213,7 +5213,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "InsufficientBalanceError",
         "dart": "TransactionError",
         "rust": "Error::InsufficientBalance",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5242,7 +5242,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "AccumulateError",
         "dart": "TransactionError",
         "rust": "Error::Pending",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5277,7 +5277,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "AccumulateError",
         "dart": "TransactionError",
         "rust": "Error::Pending",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5309,7 +5309,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "ValidationError",
         "dart": "ValidationError",
         "rust": "Error::InvalidUrl",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5343,7 +5343,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "ValidationError",
         "dart": "ValidationError",
         "rust": "Error::InvalidParams",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5371,7 +5371,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "AccumulateError",
         "dart": "ApiError",
         "rust": "Error::MethodNotFound",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5408,7 +5408,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "NetworkError",
         "dart": "NetworkError",
         "rust": "Error::Network",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5434,7 +5434,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "AccumulateError",
         "dart": "ApiError",
         "rust": "Error::Internal",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     },
@@ -5468,7 +5468,7 @@ export const ERROR_CATALOG: ErrorCatalog = {
         "python": "ValidationError",
         "dart": "ApiError",
         "rust": "Error::Routing",
-        "csharp": "AccumulateException",
+        "csharp": "AccumulateApiException",
         "javascript": "AccumulateError"
       }
     }

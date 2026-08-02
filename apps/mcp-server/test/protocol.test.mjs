@@ -116,9 +116,9 @@ describe('MCP protocol — built bundle', () => {
   });
 
   // --- tools ---------------------------------------------------------------
-  test('lists 15 tools', async () => {
+  test('lists 16 tools', async () => {
     const r = await client.send('tools/list');
-    assert.equal(r.result.tools.length, 15);
+    assert.equal(r.result.tools.length, 16);
     for (const t of r.result.tools) {
       assert.ok(t.name && t.description && t.inputSchema, `${t.name} is fully described`);
     }

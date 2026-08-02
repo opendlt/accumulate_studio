@@ -40,6 +40,7 @@ import {
   traceSynthetics,
   // Error tools
   explainError,
+  diagnose,
 } from './tools/index.js';
 
 import {
@@ -103,6 +104,9 @@ const toolHandlers: Record<string, ToolHandler> = {
 
   // Error tools
   'acc.explain_error': asHandler(explainError),
+
+  // Diagnostics (LSP-equivalent: structured compiler feedback)
+  'acc.diagnose': asHandler(diagnose),
 };
 
 // `allTools` is what we ADVERTISE; `toolHandlers` is what we can DISPATCH. If

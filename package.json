@@ -38,6 +38,7 @@
     "harness:run": "node tools/agent-harness/runner.mjs --lang all --tasks all --mode sdk --backend claude-code --concurrency 4 --provision-concurrency 1",
     "gen:mcp": "node scripts/generate-mcp-content.mjs",
     "test:mcp": "node --test apps/mcp-server/test/protocol.test.mjs",
+    "test:lsp": "node --test tools/agent-lsp/test/parsers.test.mjs",
     "build:headless": "node scripts/build-headless.mjs",
     "studio:headless": "node tools/studio-headless/dist/studio-headless.mjs",
     "verify:codegen": "node scripts/build-headless.mjs && node tools/studio-headless/dist/studio-headless.mjs --all",
