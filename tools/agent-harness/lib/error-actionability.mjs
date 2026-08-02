@@ -72,7 +72,18 @@ export function collectObservedErrors(resultsDir) {
       } catch {
         continue;
       }
-      if (j && j.task && j.error) add(j.error, 'run-record');
+      // K7 asks whether ACCUMULATE errors are actionable. A run that failed
+      // before the SDK was exercised contributes a harness or infrastructure
+      // message instead — a crash in the harness's own faucet retry
+      // ("cannot convert undefined to a BigInt") was counted as an unresolved
+      // protocol error and pushed K7 below target. Those classes are already
+      // excluded from K2 for the same reason.
+      const NOT_SDK_ERRORS = new Set([
+        'network-flake', 'harness-setup-failed', 'agent-unavailable', 'other',
+      ]);
+      if (j && j.task && j.error && !NOT_SDK_ERRORS.has(j.failureClass)) {
+        add(j.error, 'run-record');
+      }
     }
   }
   return [...seen.values()];

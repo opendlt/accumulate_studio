@@ -14,8 +14,8 @@
 | K4 | Human interventions per task | 🟢 | 0.00 per task | <= 0.2 |
 | K5 | API-ingestion coverage (llms.txt shipped) | 🟢 | 5/5 | 5/5 (Phase 2) |
 | K6 | Typed-surface ratio | 🟢 | 5/5 languages expose a machine-readable API surface | 100% |
-| K7 | Error-actionability | 🔴 | 89% (8/9 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0 | >= 95% |
-| K8 | Fleet version parity | 🟢 | distinct minor lines: 1 (2.3) — target 1 (K8) | 1 minor line |
+| K7 | Error-actionability | 🟢 | 100% (7/7 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0 | >= 95% |
+| K8 | Fleet version parity | 🟢 | distinct minor lines: 1 (2.4) — target 1 (K8) | 1 minor line |
 | K9 | MCP installable in <= 1 config block | 🟢 | accumulate-studio-mcp@1.1.0 on npm (tools + resources + prompts) | published, matching repo |
 | K10 | Docs-vs-artifact drift (artifact-verify) | 🟢 | clean | CI-gated, 0 drift |
 
@@ -23,11 +23,11 @@
 
 | Lang | Version | Name parity | Type signals | Exports | llms.txt |
 |---|---|:--:|:--:|:--:|:--:|
-| rust | 2.3.8 | ✅ | ✅ | · | ✅ |
-| python | 2.3.6 | ✅ | ✅ | · | ✅ |
-| dart | 2.3.10 | ✅ | ✅ | · | ✅ |
-| csharp | 2.3.8 | ✅ | ✅ | · | ✅ |
-| javascript | 2.3.7 | ✅ | ✅ | ✅ | ✅ |
+| rust | 2.4.0 | ✅ | ✅ | · | ✅ |
+| python | 2.4.0 | ✅ | ✅ | · | ✅ |
+| dart | 2.4.0 | ✅ | ✅ | · | ✅ |
+| csharp | 2.4.0 | ✅ | ✅ | · | ✅ |
+| javascript | 2.4.0 | ✅ | ✅ | ✅ | ✅ |
 
 ## Agent runs — sdk mode (2026-08-01)
 
