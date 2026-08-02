@@ -1,5 +1,5 @@
 {
-  "baselineDate": "2026-08-01",
+  "baselineDate": "2026-08-02",
   "kpis": [
     {
       "id": "K1",
@@ -11,14 +11,14 @@
     {
       "id": "K2",
       "name": "Task first-try pass rate",
-      "value": "92% (36/39)",
+      "value": "98% (39/40)",
       "status": "GREEN",
       "target": ">= 90%"
     },
     {
       "id": "K3",
       "name": "Turns-to-first-tx",
-      "value": "22.1 mean turns (n=36)",
+      "value": "22.5 mean turns (n=38)",
       "status": "RED",
       "target": "<= 6"
     },
@@ -46,8 +46,8 @@
     {
       "id": "K7",
       "name": "Error-actionability",
-      "value": "100% (8/8 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0",
-      "status": "GREEN",
+      "value": "89% (8/9 distinct observed errors resolve to an actionable catalog entry) — catalog v1.0",
+      "status": "RED",
       "target": ">= 95%"
     },
     {
@@ -60,8 +60,8 @@
     {
       "id": "K9",
       "name": "MCP installable in <= 1 config block",
-      "value": "accumulate-studio-mcp@1.0.0 on npm, but repo is at 1.1.0 — agents install the OLDER server",
-      "status": "RED",
+      "value": "accumulate-studio-mcp@1.1.0 on npm (tools + resources + prompts)",
+      "status": "GREEN",
       "target": "published, matching repo"
     },
     {
@@ -117,11 +117,11 @@
   "agentRuns": {
     "mode": "sdk",
     "date": "2026-08-01",
-    "scoredCount": 39,
-    "passedCount": 36,
+    "scoredCount": 40,
+    "passedCount": 39,
     "excludedFlake": 0,
     "failureClasses": {
-      "timeout": 3
+      "other": 1
     },
     "runs": [
       {
@@ -346,8 +346,8 @@
         "passed": false,
         "turns": null,
         "interventions": 0,
-        "failureClass": "timeout",
-        "sdkVersion": "2.3.8"
+        "failureClass": "other",
+        "sdkVersion": "2.3.12"
       },
       {
         "lang": "csharp",
@@ -370,19 +370,28 @@
       {
         "lang": "csharp",
         "task": "multisig-setup",
-        "passed": false,
+        "passed": true,
         "turns": null,
         "interventions": 0,
-        "failureClass": "timeout",
-        "sdkVersion": "2.3.8"
+        "failureClass": null,
+        "sdkVersion": "2.3.11"
       },
       {
         "lang": "csharp",
         "task": "send-tokens",
-        "passed": false,
-        "turns": null,
+        "passed": true,
+        "turns": 26,
         "interventions": 0,
-        "failureClass": "timeout",
+        "failureClass": null,
+        "sdkVersion": "2.3.11"
+      },
+      {
+        "lang": "csharp",
+        "task": "write-data",
+        "passed": true,
+        "turns": 33,
+        "interventions": 0,
+        "failureClass": null,
         "sdkVersion": "2.3.8"
       },
       {
