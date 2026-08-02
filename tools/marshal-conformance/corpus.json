@@ -1,0 +1,20 @@
+[
+ {"n":"addCredits","b":{"type":"addCredits","recipient":"acc://x.acme/book/1","amount":"1000000","oracle":5000}},
+ {"n":"sendTokens","b":{"type":"sendTokens","to":[{"url":"acc://y.acme/tokens","amount":"500000000"}]}},
+ {"n":"createIdentity","b":{"type":"createIdentity","url":"acc://x.acme","keyHash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","keyBookUrl":"acc://x.acme/book"}},
+ {"n":"createTokenAccount","b":{"type":"createTokenAccount","url":"acc://x.acme/tok","tokenUrl":"acc://ACME"}},
+ {"n":"createDataAccount","b":{"type":"createDataAccount","url":"acc://x.acme/d"}},
+ {"n":"createToken","b":{"type":"createToken","url":"acc://x.acme/t","symbol":"TST","precision":8}},
+ {"n":"createKeyBook","b":{"type":"createKeyBook","url":"acc://x.acme/b2","publicKeyHash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}},
+ {"n":"createKeyPage","b":{"type":"createKeyPage","keys":[{"keyHash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}]}},
+ {"n":"issueTokens","b":{"type":"issueTokens","to":[{"url":"acc://y.acme/tokens","amount":"100"}]}},
+ {"n":"burnTokens","b":{"type":"burnTokens","amount":"250"}},
+ {"n":"updateKeyPage_add","b":{"type":"updateKeyPage","operation":[{"type":"add","entry":{"keyHash":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}}]}},
+ {"n":"updateKeyPage_remove","b":{"type":"updateKeyPage","operation":[{"type":"remove","entry":{"keyHash":"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}}]}},
+ {"n":"updateKeyPage_threshold","b":{"type":"updateKeyPage","operation":[{"type":"setThreshold","threshold":2}]}},
+ {"n":"updateKey","b":{"type":"updateKey","newKeyHash":"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"}},
+ {"n":"burnCredits","b":{"type":"burnCredits","amount":100}},
+ {"n":"transferCredits","b":{"type":"transferCredits","to":[{"url":"acc://y.acme/book/1","amount":100}]}},
+ {"n":"lockAccount","b":{"type":"lockAccount","height":42}},
+ {"n":"updateAccountAuth","b":{"type":"updateAccountAuth","operations":[{"type":"addAuthority","authority":"acc://x.acme/book2"}]}}
+]

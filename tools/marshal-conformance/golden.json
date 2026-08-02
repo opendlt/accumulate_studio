@@ -1,0 +1,20 @@
+{
+ "addCredits": "010e02136163633a2f2f782e61636d652f626f6f6b2f3103030f4240048827",
+ "sendTokens": "0103041b01136163633a2f2f792e61636d652f746f6b656e7302041dcd6500",
+ "createIdentity": "0101020c6163633a2f2f782e61636d650320aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa04116163633a2f2f782e61636d652f626f6f6b",
+ "createTokenAccount": "010202106163633a2f2f782e61636d652f746f6b030a6163633a2f2f41434d45",
+ "createDataAccount": "0104020e6163633a2f2f782e61636d652f64",
+ "createToken": "0108020e6163633a2f2f782e61636d652f7404035453540508",
+ "createKeyBook": "010d020f6163633a2f2f782e61636d652f62320320bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+ "createKeyPage": "010c02220120cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+ "issueTokens": "0109041801136163633a2f2f792e61636d652f746f6b656e73020164",
+ "burnTokens": "010a0201fa",
+ "updateKeyPage_add": "010f0226010302220120dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+ "updateKeyPage_remove": "010f0226010202220120eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+ "updateKeyPage_threshold": "010f020401040202",
+ "updateKey": "01160220ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+ "burnCredits": "01110264",
+ "transferCredits": "0112021701136163633a2f2f792e61636d652f626f6f6b2f310264",
+ "lockAccount": "0110022a",
+ "updateAccountAuth": "01150216010302126163633a2f2f782e61636d652f626f6f6b32"
+}
