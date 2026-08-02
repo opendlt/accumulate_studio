@@ -77,6 +77,9 @@
       "requires": [],
       "examples": [
         "examples/generate_keys.js"
+      ],
+      "notes": [
+        "To use a PROVIDED 32-byte private key, construct the keypair from the raw seed bytes. A helper that hashes its input yields a different key and the node rejects the signature with 'key does not belong to signer'."
       ]
     },
     {

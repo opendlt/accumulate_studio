@@ -77,6 +77,9 @@
       "requires": [],
       "examples": [
         "examples/generate_keys.py"
+      ],
+      "notes": [
+        "To use a PROVIDED 32-byte private key, use `Ed25519KeyPair.from_private_hex(hex)`. Do NOT use `from_seed()` \u2014 it SHA-256-hashes its input even for a raw 32-byte seed, so it derives a DIFFERENT key and the node rejects the signature with 'key does not belong to signer'."
       ]
     },
     {

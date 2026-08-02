@@ -38,7 +38,7 @@ import {
   provisionAdi, verifyAdiSetup, ensureSetupEnv, clearSetupEnvCache, SetupFailure,
 } from './lib/setup.mjs';
 import {
-  resolveNetwork, NetworkUnreachable, createSemaphore, withRetry,
+  resolveNetwork, NetworkUnreachable, createSemaphore, withRetry, queryAccount,
 } from './lib/accumulate.mjs';
 import * as claudeCode from './backends/claude-code.mjs';
 
@@ -219,6 +219,20 @@ async function executeRun({ lang, task, mode, backendName, backend, model, timeo
           liteIdentity: setupArtifacts.liteIdentityUrl ?? env.liteIdentity,
           liteTokenAccount: setupArtifacts.liteTokenAccountUrl ?? env.liteTokenAccount,
         };
+        // The prompt states this balance as fact. It was still the FIRST
+        // wallet's figure while the account named beside it belonged to the
+        // setup wallet, so every agent queried an account whose balance did not
+        // match the brief, decided the environment was wrong, and spent turns
+        // re-funding it. Every language flagged this. Re-read the real balance.
+        try {
+          const acct = await queryAccount(net, env.liteTokenAccount);
+          const base = acct?.balance !== undefined ? BigInt(acct.balance) : 0n;
+          env.balanceBase = String(base);
+          env.balanceAcme = Number(base) / 1e8;
+          env.funded = base > 0n;
+        } catch {
+          // Leave the prior figure rather than invent one.
+        }
       } catch (e) {
         if (e instanceof SetupFailure) return fail('harness-setup-failed', e.message);
         if (e instanceof NetworkUnreachable) return fail('network-flake', e.message);

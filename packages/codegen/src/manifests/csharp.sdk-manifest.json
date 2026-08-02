@@ -84,6 +84,9 @@
       "requires": [],
       "examples": [
         "examples/GenerateKeys.cs"
+      ],
+      "notes": [
+        "To use a PROVIDED 32-byte private key, use `SignatureKeyPair.TryImportFromSecretKeyBytes(bytes, out var kp)` and assert the derived public key matches the one you were given before signing anything."
       ]
     },
     {

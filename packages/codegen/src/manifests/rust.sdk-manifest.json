@@ -78,6 +78,9 @@
       "requires": [],
       "examples": [
         "examples/generate_keys.rs"
+      ],
+      "notes": [
+        "To use a PROVIDED 32-byte private key, use `AccumulateClient::keypair_from_seed(&seed)`, which treats the bytes as the raw Ed25519 seed. `generate_keypair()` is for NEW keys and draws from the OS CSPRNG."
       ]
     },
     {

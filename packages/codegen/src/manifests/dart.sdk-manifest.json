@@ -80,6 +80,9 @@
       "requires": [],
       "examples": [
         "examples/generate_keys.dart"
+      ],
+      "notes": [
+        "To use a PROVIDED 32-byte private key, import the raw seed bytes rather than passing the hex through any hashing helper \u2014 a hashed seed yields a different key and the node rejects the signature with 'key does not belong to signer'."
       ]
     },
     {
