@@ -34,7 +34,11 @@ one answered.
 | python | `pyright-langserver` | ✅ (bundled with pyright) |
 | dart | `dart language-server` | ✅ (ships with the Dart SDK) |
 | javascript / typescript | `typescript-language-server` | ✅ |
-| csharp | — | ❌ reported as unavailable, not silently empty |
+| csharp | `OmniSharp` | ✅ (`node tools/agent-lsp/servers/install-omnisharp.mjs`) |
+
+All five languages support `definition`, `references` and `symbol`. Where a
+server is genuinely missing the tool reports `available: false` with the install
+command, rather than an empty list an agent would read as "no results".
 
 ## Use
 
@@ -78,11 +82,15 @@ project size instead of guessing with a fixed sleep.
 installed, the tool says so (`available: false` with the install command) rather
 than returning an empty list an agent would read as fact.
 
-## Honest limits
+## Notes and limits
 
-- **C# has no language server here.** Diagnostics work via `dotnet build`;
-  navigation reports unavailable. `dotnet tool install -g csharp-ls` would close
-  it, and the server registry has a slot ready.
+- **C# uses OmniSharp, not csharp-ls.** Every csharp-ls release from 0.21.0
+  onward ships a malformed `DotnetToolSettings.xml` and refuses to install;
+  0.17.0 (the newest that installs) initializes and then never loads a project
+  under .NET 9. OmniSharp is ~165 MB so it is fetched on demand rather than
+  committed — run the installer once, or point `OMNISHARP_PATH` at an existing
+  copy. It also resolves its workspace from the **working directory**, not
+  `rootUri`, so it is launched with `cwd` set to the project.
 - **Navigation is position-based** (`--file --line --col`) for definition and
   references. `symbol` searches by name and is usually the better entry point for
   an agent that knows *what* it is looking for but not *where*.

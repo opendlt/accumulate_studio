@@ -50,8 +50,25 @@ function serverFor(lang, root) {
         ? { command: process.execPath, args: [ls, '--stdio'], languageId: 'typescript' }
         : { unavailable: 'typescript-language-server is not installed (npm i typescript-language-server)' };
     }
-    case 'csharp':
-      return { unavailable: 'no C# language server installed (try `dotnet tool install -g csharp-ls`)' };
+    case 'csharp': {
+      // OmniSharp, not csharp-ls: every csharp-ls release from 0.21.0 ships a
+      // malformed DotnetToolSettings.xml and will not install, and 0.17.0 (the
+      // newest that does) initializes and then never loads a project under
+      // .NET 9. OmniSharp resolves the workspace from its WORKING DIRECTORY, not
+      // rootUri, so it must be launched with cwd set to the project.
+      const exe = process.platform === 'win32' ? 'OmniSharp.exe' : 'OmniSharp';
+      const bundled = join(HERE, 'servers', 'omnisharp', exe);
+      const fromEnv = process.env.OMNISHARP_PATH;
+      const found = [fromEnv, bundled].find((c) => c && existsSync(c));
+      if (found) {
+        return { command: found, args: ['-lsp', '-s', root], languageId: 'csharp', cwd: root };
+      }
+      return {
+        unavailable:
+          'OmniSharp not found — run `node tools/agent-lsp/servers/install-omnisharp.mjs` ' +
+          'or set OMNISHARP_PATH',
+      };
+    }
     default:
       return { unavailable: `unknown language ${lang}` };
   }
@@ -103,7 +120,7 @@ async function main() {
   }
 
   const started = Date.now();
-  const client = new LspClient({ command: spec.command, args: spec.args, rootPath: root });
+  const client = new LspClient({ command: spec.command, args: spec.args, rootPath: root, cwd: spec.cwd });
   let payload;
   try {
     await client.initialize();

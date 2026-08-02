@@ -94,3 +94,6 @@ tools/agent-harness/results/**/transcripts/
 tools/studio-headless/dist/
 apps/mcp-server/stage/
 apps/mcp-server/*.tgz
+
+# OmniSharp is ~165 MB; fetched on demand by install-omnisharp.mjs
+tools/agent-lsp/servers/omnisharp/

@@ -17,13 +17,15 @@ function frame(msg) {
 }
 
 export class LspClient {
-  constructor({ command, args = [], rootPath, env = {} }) {
+  constructor({ command, args = [], rootPath, env = {}, cwd = undefined }) {
     this.rootPath = rootPath;
     this.nextId = 1;
     this.pending = new Map();
     this.buffer = Buffer.alloc(0);
     this.proc = spawn(command, args, {
       stdio: ['pipe', 'pipe', 'pipe'],
+      // OmniSharp resolves the workspace from cwd, not rootUri.
+      cwd: cwd ?? rootPath,
       env: { ...process.env, ...env },
       // A shell mangles absolute paths; real executables are spawned directly.
       shell: process.platform === 'win32' && command !== process.execPath && !command.endsWith('.exe'),
@@ -48,6 +50,18 @@ export class LspClient {
       this.buffer = this.buffer.slice(start + len);
       let msg;
       try { msg = JSON.parse(body); } catch { continue; }
+      // A message carrying `method` is a request FROM the server, even when it
+      // has an id — servers number their own requests, so ids collide with ours.
+      // Treating `client/registerCapability` (id 2) as the answer to our request
+      // id 2 made csharp-ls look like it had no definitions at all.
+      if (msg.method) {
+        // Answer server requests so it does not block waiting on us. An empty
+        // result is the correct reply to registration requests we do not act on.
+        if (msg.id !== undefined) {
+          this.proc.stdin.write(frame({ jsonrpc: '2.0', id: msg.id, result: null }));
+        }
+        continue;
+      }
       if (msg.id !== undefined && this.pending.has(msg.id)) {
         const { resolve } = this.pending.get(msg.id);
         this.pending.delete(msg.id);
