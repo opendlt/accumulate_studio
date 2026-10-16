@@ -1,8 +1,11 @@
 """Token operation routes (SendTokens, CreateTokenAccount)."""
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, Request
 
 from accumulate_client.convenience import SmartSigner, TxBody
+from accumulate_client.tx.header import HashLockOptions
 
 from ..auth import auth_header, require_signing
 from ..net import request_network
@@ -44,9 +47,21 @@ async def send_tokens(
                 recipients=[{"url": r.url, "amount": r.amount} for r in req.recipients],
             )
 
+        send_kwargs = {}
+        if req.hash is not None:
+            lock = HashLockOptions(
+                hashAlgorithm=req.hash_algorithm,
+                hash=req.hash,
+                expiration=datetime.fromtimestamp(req.expiration, tz=timezone.utc),
+            )
+            # The node's own limits (hash length, 10 min..30 days), before signing.
+            lock.validate_for_submit()
+            send_kwargs["hash_lock"] = lock
+
         result = signer.sign_submit_and_wait(
             principal=req.principal,
             body=body,
+            **send_kwargs,
         )
 
         if result.success:

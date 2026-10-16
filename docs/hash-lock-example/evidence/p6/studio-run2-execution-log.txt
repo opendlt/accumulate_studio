@@ -1,0 +1,44 @@
+In-Studio run 2 of the "Hash Lock (HTLC) Payment" template on Kermit (TestNet), via the real proxy + Vite dev server.
+Extracted from the Studio Execution panel (get_page_text) right after the run. ADI_NAME = htlc-p6-1792185332, LOCK_AMOUNT = 1.00000000.
+Panel status: "Completed (17/17 successful)"; Assertions tab "7/7"; toast "All 7 assertions passed".
+
+Transaction Log (node, status, time, duration)
+Generate Keys              success 5:15:44 PM 204ms
+Request Tokens             success 5:15:44 PM 2.18s
+Wait for ACME              success 5:15:46 PM 5.47s
+Add Credits                success 5:15:52 PM 2.28s
+Wait for Credits           success 5:15:54 PM 68ms
+Create ADI                 success 5:15:54 PM 2.23s
+Credit Key Page            success 5:15:57 PM 2.27s
+Wait for Key Page Credits  success 5:15:59 PM 5.88s
+Create Sender Account      success 5:16:05 PM 2.22s
+Create Receiver Account    success 5:16:07 PM 2.24s
+Fund Sender Account        success 5:16:10 PM 2.26s
+Wait for Sender Balance    success 5:16:12 PM 5.94s
+Create Hash Lock           success 5:16:18 PM 85ms
+Locked Send                success 5:16:18 PM 2.24s
+Wait for Locked Deposit    success 5:16:20 PM 125ms
+Release Locked Deposit     success 5:16:21 PM 2.28s
+Wait for Receiver Balance  success 5:16:23 PM 239ms
+
+Transaction ids shown by Studio (full values read from the page DOM)
+Locked Send (TxHash)       acc://63445d54840492e24f870a99c221aaa9ba72a76d429dff4dd39d8ac0daa80fa9@htlc-p6-1792185332.acme/htlc-sender
+Release Locked Deposit     acc://5e5e49676cdd1ed5a737c58523e5880f779f374e469b2a565503b4cab096bef1@htlc-p6-1792185332.acme/htlc-receiver
+Fund Sender Account        acc://63044f8ac029153e20ec18cfd162b31bc3beadd9800a38a693ff740d61af1fb7@htlc-p6-1792185332.acme/htlc-sender  (produced by the funding send)
+Locked deposit (produced by the Locked Send, found by Wait for Locked Deposit)
+                           acc://6e5047264e6d8af68f9c5eadef0119980274f194b1cfa50501a4d4fe35b33b7a@htlc-p6-1792185332.acme/htlc-receiver
+
+Selected EXECUTION LOGS (post-run enrichment; nothing hung or failed on the locked deposit / release)
+[Locked Send] Tx query result: success=true, hasData=true, keys=recordType,id,message,status,statusNo,result,produced,cause,signatures,sequence,lastBlockTime
+[Locked Send] Produced (1): ["acc://6e5047264e6d8af68f9c5eadef0119980274f194b1cfa50501a4d4fe35b33b7a@htlc-p6-1792185332.acme/htlc-receiver"]
+[Release Locked Deposit] Tx query result: success=true, hasData=true, keys=recordType,id,message,status,statusNo,result,produced,cause,signatures,sequence,lastBlockTime
+[Release Locked Deposit] Produced (0): []
+[Locked Send] Receipt verification: VERIFIED (Merkle root matches anchor)
+[Release Locked Deposit] Receipt has no proof/anchor yet - awaiting major-block anchoring   (honest "not yet", not a failure)
+Flow execution completed successfully
+
+Independent verification of this run (stdlib-only, queries Kermit itself): verify-studio-run2.json = PASS 14/14.
+
+Run 1 (same template, ADI htlc-p6-1792185210) was ABORTED BY THE EXECUTOR OF THIS EFFORT, not by the flow: Vite hot-reloaded the page when a test file under
+apps/studio/src was edited mid-run, which discards the in-browser run. The proxy log shows it had completed generate-keys, faucet, add-credits x2,
+create-identity, create-token-account x2 and the funding send-tokens (proxy-access-log-runs1-2.txt). Nothing else was done with that ADI (orphan on the testnet).

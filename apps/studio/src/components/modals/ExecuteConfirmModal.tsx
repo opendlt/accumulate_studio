@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Play, AlertTriangle, Zap, Layers, CreditCard, Globe } from 'lucide-react';
 import { cn, Button } from '../ui';
 import { useFlowStore, useUIStore } from '../../store';
 import { NETWORKS, isTransactionBlock, type NetworkId } from '@accumulate-studio/types';
+import { initialVariableValues, variableErrors, type VariableValues } from '../../services/flow-variables';
 
 // =============================================================================
 // Types
@@ -12,7 +13,8 @@ import { NETWORKS, isTransactionBlock, type NetworkId } from '@accumulate-studio
 interface ExecuteConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  /** Called with the flow variable values to run with (defaults plus what was entered) */
+  onConfirm: (variables: VariableValues) => void;
 }
 
 interface ExecutionSummary {
@@ -108,6 +110,28 @@ export const ExecuteConfirmModal: React.FC<ExecuteConfirmModalProps> = ({
   const flow = useFlowStore((state) => state.flow);
   const selectedNetwork = useUIStore((state) => state.selectedNetwork);
 
+  // Flow variables: required ones without a default must be filled in before the flow can run
+  const fieldId = useId();
+  const firstInvalidRef = useRef<HTMLInputElement | null>(null);
+  const [values, setValues] = useState<VariableValues>(() => initialVariableValues(flow.variables));
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // Every opening starts from the flow's defaults: a name used for the last run must not linger
+  useEffect(() => {
+    if (isOpen) {
+      setValues(initialVariableValues(flow.variables));
+      setTouched({});
+    }
+  }, [isOpen, flow.variables]);
+
+  const orderedVariables = useMemo(
+    () => [...flow.variables].sort((a, b) => Number(!!b.required) - Number(!!a.required)),
+    [flow.variables]
+  );
+  const errors = useMemo(() => variableErrors(flow.variables, values), [flow.variables, values]);
+  const invalidNames = Object.keys(errors);
+  const firstInvalidName = orderedVariables.find((v) => errors[v.name])?.name;
+
   // Calculate execution summary
   const summary = useMemo((): ExecutionSummary => {
     let transactionBlocks = 0;
@@ -135,9 +159,15 @@ export const ExecuteConfirmModal: React.FC<ExecuteConfirmModalProps> = ({
 
   const networkConfig = NETWORKS[summary.network];
 
-  // Handle confirm
+  const canExecute = summary.totalBlocks > 0 && !networkConfig.readOnly && invalidNames.length === 0;
+
+  // Handle confirm. On an incomplete form (Enter in a field) show what is missing instead.
   const handleConfirm = () => {
-    onConfirm();
+    if (!canExecute) {
+      setTouched(Object.fromEntries(flow.variables.map((v) => [v.name, true])));
+      return;
+    }
+    onConfirm(values);
     onClose();
   };
 
@@ -152,6 +182,13 @@ export const ExecuteConfirmModal: React.FC<ExecuteConfirmModalProps> = ({
           )}
         />
         <Dialog.Content
+          onOpenAutoFocus={(event) => {
+            // Land on the first field that still needs a value rather than on the close button
+            if (firstInvalidRef.current) {
+              event.preventDefault();
+              firstInvalidRef.current.focus();
+            }
+          }}
           className={cn(
             'fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]',
             'w-full max-w-md overflow-hidden',
@@ -205,7 +242,7 @@ export const ExecuteConfirmModal: React.FC<ExecuteConfirmModalProps> = ({
           </div>
 
           {/* Body */}
-          <div className="px-6 py-4 space-y-4">
+          <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
             {/* Mainnet Warning */}
             {summary.hasMainnetWarning && (
               <div className="flex items-start gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
@@ -265,6 +302,81 @@ export const ExecuteConfirmModal: React.FC<ExecuteConfirmModalProps> = ({
               />
             </div>
 
+            {/* Flow variables */}
+            {orderedVariables.length > 0 && (
+              <fieldset className="space-y-3">
+                <legend className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+                  Flow variables
+                </legend>
+                {orderedVariables.map((variable) => {
+                  const id = `${fieldId}-${variable.name}`;
+                  const error = errors[variable.name];
+                  const showError = !!error && !!touched[variable.name];
+                  return (
+                    <div key={variable.name}>
+                      <label
+                        htmlFor={id}
+                        className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        <code className="font-mono">{variable.name}</code>
+                        {variable.required && (
+                          <span className="px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs rounded">
+                            required
+                          </span>
+                        )}
+                      </label>
+                      <input
+                        id={id}
+                        ref={variable.name === firstInvalidName ? firstInvalidRef : undefined}
+                        type={variable.secret ? 'password' : 'text'}
+                        value={values[variable.name] ?? ''}
+                        onChange={(e) => setValues((prev) => ({ ...prev, [variable.name]: e.target.value }))}
+                        onBlur={() => setTouched((prev) => ({ ...prev, [variable.name]: true }))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleConfirm();
+                          }
+                        }}
+                        aria-required={variable.required || undefined}
+                        aria-invalid={showError || undefined}
+                        aria-describedby={
+                          [variable.description ? `${id}-help` : null, showError ? `${id}-error` : null]
+                            .filter(Boolean)
+                            .join(' ') || undefined
+                        }
+                        autoComplete="off"
+                        spellCheck={false}
+                        className={cn(
+                          'mt-1 w-full px-3 py-2 text-sm rounded-lg border bg-white dark:bg-gray-800',
+                          'text-gray-900 dark:text-gray-100 placeholder-gray-400',
+                          'focus:outline-none focus:ring-2 focus:ring-accumulate-500',
+                          showError
+                            ? 'border-red-400 dark:border-red-600'
+                            : 'border-gray-300 dark:border-gray-600'
+                        )}
+                      />
+                      {variable.description && (
+                        <p id={`${id}-help`} className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {variable.description}
+                        </p>
+                      )}
+                      {showError && (
+                        <p id={`${id}-error`} role="alert" className="mt-1 text-xs text-red-600 dark:text-red-400">
+                          {error}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+                {invalidNames.length > 0 && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400" aria-live="polite">
+                    Enter a value for {invalidNames.join(', ')} to enable Execute.
+                  </p>
+                )}
+              </fieldset>
+            )}
+
             {/* Empty flow warning */}
             {summary.totalBlocks === 0 && (
               <div className="flex items-center gap-3 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
@@ -292,7 +404,7 @@ export const ExecuteConfirmModal: React.FC<ExecuteConfirmModalProps> = ({
               <Button
                 variant={summary.hasMainnetWarning ? 'destructive' : 'primary'}
                 onClick={handleConfirm}
-                disabled={summary.totalBlocks === 0 || networkConfig.readOnly}
+                disabled={!canExecute}
               >
                 <Play className="w-4 h-4 mr-2" />
                 {summary.hasMainnetWarning ? 'Execute on MainNet' : 'Execute Flow'}

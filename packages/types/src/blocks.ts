@@ -128,6 +128,10 @@ export interface CreateTokenConfig {
 
 export interface SendTokensConfig {
   from?: string;
+  /** Alias of `from` (the source account); the golden-path flows use this name */
+  principal?: string;
+  /** Signer (key page or lite identity); derived from the source account when empty */
+  signerUrl?: string;
   to?: string;
   amount?: string;
   recipients?: Array<{
@@ -525,11 +529,14 @@ export const BLOCK_CATALOG: Record<BlockType, BlockDefinition> = {
     ],
     outputs: [
       { id: 'txHash', name: 'Transaction Hash', type: 'string', required: true },
+      { id: 'txId', name: 'Transaction ID', type: 'string', required: false },
     ],
     configSchema: {
       type: 'object',
       properties: {
         from: { type: 'string', description: 'Source token account URL (defaults to lite token account from GenerateKeys)' },
+        principal: { type: 'string', description: 'Same as From (the golden-path flows use this name); set one of the two' },
+        signerUrl: { type: 'string', description: 'Account that signs the send: an ADI key page, or the lite identity for a lite source (derived from the source account when empty)' },
         to: { type: 'string', description: 'Destination account URL (auto-resolved from upstream CreateTokenAccount if empty)' },
         amount: { type: 'string', description: 'Amount to send in whole tokens, e.g. "1.5" (defaults to 1)' },
         recipients: {

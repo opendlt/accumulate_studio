@@ -1,6 +1,6 @@
 """Pydantic request/response models for the SDK proxy API."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -82,6 +82,26 @@ class SendTokensRequest(SessionRequest):
     principal: str
     recipients: list[TokenRecipient]
     signer_url: str | None = None
+    # Optional hash lock (HTLC), all three or none. The recipient then gets a
+    # SyntheticLockedDeposit that only a ReleaseLockedOperation can unlock.
+    hash_algorithm: str | None = None   # "sha256" | "sha256d"
+    hash: str | None = None             # hex of the hash (32 bytes)
+    expiration: int | None = None       # absolute unix SECONDS (node: 10 min .. 30 days ahead)
+
+    @model_validator(mode="after")
+    def _hash_lock_is_complete(self):
+        given = [self.hash_algorithm, self.hash, self.expiration]
+        if all(v is None for v in given):
+            return self
+        if any(v is None for v in given):
+            raise ValueError("hash_algorithm, hash and expiration must be given together")
+        if self.hash_algorithm.strip().lower() not in ("sha256", "sha256d"):
+            raise ValueError("hash_algorithm must be 'sha256' or 'sha256d'")
+        try:
+            bytes.fromhex(self.hash)
+        except ValueError:
+            raise ValueError("hash must be a hex string") from None
+        return self
 
 
 class CreateTokenAccountRequest(SessionRequest):

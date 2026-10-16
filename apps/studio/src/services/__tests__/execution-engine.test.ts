@@ -155,6 +155,33 @@ describe('ExecutionEngine', () => {
       expect(mockStore.startExecution).toHaveBeenCalled();
     });
 
+    describe('required flow variables', () => {
+      const flowWithAdiName = () => ({
+        ...makeFlow([makeNode('n1', 'GenerateKeys')]),
+        variables: [{ name: 'ADI_NAME', type: 'string' as const, required: true }],
+      });
+
+      it('refuses to start when a required variable has no value, before anything touches the network', async () => {
+        mockConnected();
+        await expect(engine.executeFlow(flowWithAdiName())).rejects.toThrow(/ADI_NAME \(Required\)/);
+
+        expect(mockStore.startExecution).not.toHaveBeenCalled();
+        expect(mockNodeExecutorExecute).not.toHaveBeenCalled();
+        expect(engine.getStatus()).toBe('idle');
+      });
+
+      it('runs with the supplied value and hands it to the store and to the nodes', async () => {
+        mockConnected();
+        mockStore.execution.nodeStates = { n1: { status: 'success' } };
+
+        await engine.executeFlow(flowWithAdiName(), { ADI_NAME: 'htlc-p6-1' });
+
+        expect(mockStore.startExecution).toHaveBeenCalledWith({ ADI_NAME: 'htlc-p6-1' });
+        const inputs = mockNodeExecutorExecute.mock.calls[0][1] as Record<string, unknown>;
+        expect(inputs['var:ADI_NAME']).toBe('htlc-p6-1');
+      });
+    });
+
     it('logs flow name on start', async () => {
       mockConnected();
       const flow = makeFlow([makeNode('n1', 'GenerateKeys')]);

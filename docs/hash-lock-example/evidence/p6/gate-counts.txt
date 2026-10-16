@@ -1,0 +1,23 @@
+P6 gate counts (committed tree state, REQUIRE_TOOLCHAINS=1, venv first on PATH)
+npm test: mcp-server 27 | studio 44 files 730 passed | agent-pack 51 | codegen 574 passed + 135 skipped (live-gated action-palette-e2e) | verification 17
+    at startTests (file:///C:/Accumulate_Stuff/on-boarding-platform/accumulate-studio/node_modules/@vitest/runner/dist/index.js:967:3)
+ Test Files  44 passed (44)
+      Tests  730 passed (730)
+ Test Files  1 passed (1)
+      Tests  51 passed (51)
+ Test Files  20 passed | 1 skipped (21)
+      Tests  574 passed | 135 skipped (709)
+ Test Files  2 passed (2)
+      Tests  17 passed (17)
+validate:manifests: 5 manifests at 28/28
+RESULT: PASS - All manifests valid.
+RESULT: PASS - all canonical tasks covered by every manifest.
+harness:test ℹ tests 74
+harness:test ℹ pass 74
+harness:test ℹ fail 0
+
+45/45 generations clean (0 errors, 0 warnings)
+test:mcp ℹ pass 27
+test:mcp ℹ fail 0
+lint: ✖ 95 problems (0 errors, 95 warnings)
+proxy pytest: 65 passed, 12 warnings in 2.94s

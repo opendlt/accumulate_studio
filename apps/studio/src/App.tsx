@@ -323,14 +323,6 @@ const AppInner: React.FC = () => {
   }, [selectedNetwork, addToast]);
 
   // Execution handlers
-  const handleExecuteFlow = useCallback(async () => {
-    try {
-      await executionEngine.executeFlow(flow);
-    } catch (error) {
-      console.error('Execution failed:', error);
-    }
-  }, [flow]);
-
   // Single entry point for "user pressed Execute" (Header button + Cmd/Ctrl+Enter).
   // Guards against starting a second run, blocks when required fields are missing,
   // then opens the confirm modal which owns the actual executeFlow call (credit-cost
@@ -623,7 +615,7 @@ const AppInner: React.FC = () => {
                     executionState={execution}
                     assertionResults={assertionResults}
                     assertionsRunning={assertionsRunning}
-                    onExecute={handleExecuteFlow}
+                    onExecute={handleHeaderExecute}
                     onStop={handleStopExecution}
                   />
                 </div>
