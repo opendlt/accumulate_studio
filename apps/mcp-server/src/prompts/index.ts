@@ -1,7 +1,7 @@
 /**
  * MCP Prompts — user-invoked workflow templates.
  *
- * The 8 golden paths are the most validated asset in this project: each has a
+ * The golden paths are the most validated asset in this project: each has a
  * working node graph, ordered instructions, and stated prerequisites. Without
  * the prompts capability they were invisible to MCP hosts — a user could not
  * type `/accumulate:create-adi` and get a workflow known to work.

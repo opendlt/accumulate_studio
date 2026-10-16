@@ -3,9 +3,20 @@
  *
  * For each YAML template:
  * 1. Generate Rust code via the manifest-driven generator
- * 2. Compilation check with `cargo check` (via rust-harness)
+ * 2. Compilation check with `cargo check --bin` (via rust-harness), self-contained templates
  * 3. Mock execution with validate_rust.py (self-contained templates only)
  * 4. Compare RPC call patterns against SDK example baselines
+ *
+ * Nothing here passes by skipping. If the Rust toolchain is absent (e.g. a bare CI) the
+ * toolchain-dependent tests are reported as SKIPPED, and REQUIRE_TOOLCHAINS=1 turns that into a
+ * failure. If cargo is present, a harness that cannot build is a FAILURE, never a quiet skip:
+ * the warm-up builds one self-contained program, a missing JSON report fails the test, and a
+ * mock run must succeed (not merely make a call).
+ *
+ * Why the warm-up builds one bin instead of running a bare `cargo check`: the harness keeps
+ * committed partial templates in src/bin (they reference variables defined by earlier blocks and
+ * cannot compile standalone), so a bare `cargo check` always failed. That used to flip a
+ * `harnessReady` flag to false and silently skip every compile and mock-execution test.
  *
  * To run: vitest run rust-validation
  */
@@ -19,6 +30,14 @@ import type { Flow } from '@accumulate-studio/types';
 import { deserializeYamlToFlow } from '../src/flow-serializer';
 import { generateCodeFromManifest } from '../src/manifest-generator';
 import { loadManifest } from '../src/manifest-loader';
+import {
+  HASH_LOCK,
+  expectHashLockRun,
+  expectWrongPreimageRejected,
+  harnessEnv,
+  wrongPreimageFlow,
+  type HarnessReport,
+} from './htlc-report';
 
 const TEMPLATES_DIR = join(__dirname, '../../../templates');
 const RUST_HARNESS_DIR = join(__dirname, 'rust-harness');
@@ -36,6 +55,9 @@ const TEMPLATE_TO_BASELINE: Record<string, string> = {
   'custom-token': 'example_06',
   'key-rotation': 'example_09',
   'multi-sig-setup': 'example_10',
+  // No SDK example exists for a hash lock; the comparison is soft (warns only), so use the
+  // closest setup flow.
+  'hash-lock': 'example_03',
 };
 
 // Templates that are self-contained (start with GenerateKeys + Faucet)
@@ -44,7 +66,21 @@ const SELF_CONTAINED_TEMPLATES = new Set([
   'lite-account-setup',
   'adi-creation',
   'zero-to-hero',
+  // Runs under the faithful node mock (htlc_mock.py): lock, locked deposit, release.
+  'hash-lock',
 ]);
+
+const hasCommand = (cmd: string): boolean => {
+  try {
+    execSync(process.platform === 'win32' ? `where ${cmd}` : `which ${cmd}`, { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+};
+const HAS_CARGO = hasCommand('cargo');
+const HAS_PYTHON = hasCommand('python');
+const REQUIRE_TOOLCHAINS = process.env.REQUIRE_TOOLCHAINS === '1';
 
 /**
  * Extract the last top-level JSON object from output by brace matching.
@@ -63,11 +99,9 @@ function extractJson(output: string): Record<string, unknown> | null {
   return null;
 }
 
-interface MockReport {
-  success: boolean;
-  calls: Array<{ method: string; params?: Record<string, unknown> }>;
-  call_count: number;
-  error: string | null;
+interface MockReport extends HarnessReport {
+  stdout?: string;
+  stderr?: string;
 }
 
 /**
@@ -103,165 +137,129 @@ function loadTemplates(): Array<{ name: string; flow: Flow }> {
   });
 }
 
+const binNameOf = (name: string): string => name.replace(/-/g, '_');
+
+/** Write the generated program for `flow` into the harness as bin `binName`. */
+function writeBin(binName: string, flow: Flow, manifest: ReturnType<typeof loadManifest>): void {
+  if (!existsSync(RUST_HARNESS_BIN_DIR)) mkdirSync(RUST_HARNESS_BIN_DIR, { recursive: true });
+  writeFileSync(
+    join(RUST_HARNESS_BIN_DIR, `${binName}.rs`),
+    generateCodeFromManifest(flow, 'rust', 'sdk', manifest),
+  );
+}
+
+/** `cargo <verb> --bin <bin>` in the harness; a failure throws with cargo's own message. */
+function cargo(verb: 'check' | 'build', binName: string, label: string, timeout = 300000): void {
+  try {
+    execSync(`cargo ${verb} --bin ${binName}`, {
+      cwd: RUST_HARNESS_DIR,
+      encoding: 'utf-8',
+      timeout,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+  } catch (err) {
+    const error = err as { stderr?: string; stdout?: string };
+    throw new Error(`Rust ${verb} failed for ${label}:\n${error.stderr || error.stdout || 'Unknown error'}`);
+  }
+}
+
+/** Run a built bin under validate_rust.py. The report is mandatory: no JSON means the harness broke. */
+function runMock(binName: string, name: string, timeout: number): MockReport {
+  // On Windows, binaries have .exe extension
+  const binaryPath = join(RUST_HARNESS_DIR, 'target/debug', process.platform === 'win32' ? `${binName}.exe` : binName);
+  expect(existsSync(binaryPath), `Binary not found at ${binaryPath}`).toBe(true);
+
+  // Capture output even on a non-zero exit: the harness prints its JSON report either way.
+  // The Node timeout must exceed Python's internal one (60s) so the report is always emitted.
+  let output: string;
+  try {
+    output = execSync(`python "${RUST_HARNESS_PY}" "${binaryPath}"`, {
+      encoding: 'utf-8',
+      timeout,
+      env: harnessEnv(name),
+    });
+  } catch (err) {
+    const error = err as { stderr?: string; stdout?: string };
+    output = (error.stdout || '') + (error.stderr || '');
+  }
+  const report = extractJson(output) as MockReport | null;
+  expect(report, `No JSON report for ${name} (${output.length} chars):\n${output.slice(-600)}`).not.toBeNull();
+  return report!;
+}
+
 describe('Rust Generated Code Validation', () => {
   const manifest = loadManifest('rust');
-  let harnessReady = false;
+  const templates = loadTemplates();
+  const firstSelfContained = templates.find((t) => SELF_CONTAINED_TEMPLATES.has(t.name))!;
+
+  it('has a Rust toolchain when one is required', () => {
+    if (REQUIRE_TOOLCHAINS) {
+      expect(HAS_CARGO, 'REQUIRE_TOOLCHAINS=1 but cargo is not on PATH').toBe(true);
+      expect(HAS_PYTHON, 'REQUIRE_TOOLCHAINS=1 but python is not on PATH').toBe(true);
+    }
+  });
 
   beforeAll(() => {
-    // Ensure bin directory exists for generated Rust files
-    if (!existsSync(RUST_HARNESS_BIN_DIR)) {
-      mkdirSync(RUST_HARNESS_BIN_DIR, { recursive: true });
-    }
+    if (!HAS_CARGO) return; // the toolchain-dependent tests below are reported as skipped
+    expect(existsSync(join(RUST_HARNESS_DIR, 'Cargo.toml')), 'rust-harness/Cargo.toml is missing').toBe(true);
 
-    // Check if Cargo.toml exists
-    const cargoToml = join(RUST_HARNESS_DIR, 'Cargo.toml');
-    if (!existsSync(cargoToml)) {
-      console.warn('rust-harness/Cargo.toml not found, skipping compilation tests');
-      return;
-    }
+    // Warm the dependency cache: fetch and compile the SDK once, through one self-contained
+    // program, so the per-template checks below only compile their own bin. A failure here is a
+    // real failure (unresolvable SDK crate, broken toolchain) and must not become a skip.
+    const bin = binNameOf(firstSelfContained.name);
+    writeBin(bin, firstSelfContained.flow, manifest);
+    cargo('build', bin, `the warm-up bin ${bin}`, 540000);
+  }, 600000);
 
-    // Warm the dependency cache with a placeholder check
-    try {
-      execSync('cargo check', {
-        cwd: RUST_HARNESS_DIR,
-        encoding: 'utf-8',
-        timeout: 120000,
-        stdio: ['pipe', 'pipe', 'pipe'],
-      });
-      harnessReady = true;
-    } catch (e) {
-      const err = e as { stderr?: string };
-      console.warn('cargo check warmup failed (skipping Rust compilation checks):', err.stderr?.slice(0, 500));
-      // Toolchain or SDK unavailable (e.g. CI without cargo, or the published
-      // accumulate-sdk crate unresolvable) — skip compilation, keep generation tests.
-      harnessReady = false;
-    }
-  }, 180000); // 3 minute timeout for cargo check warmup
-
-  for (const { name, flow } of loadTemplates()) {
+  for (const { name, flow } of templates) {
     describe(`${name}`, () => {
-      let generatedCode: string;
+      const selfContained = SELF_CONTAINED_TEMPLATES.has(name);
+      const binName = binNameOf(name);
 
       it('generates Rust code', () => {
-        generatedCode = generateCodeFromManifest(flow, 'rust', 'sdk', manifest);
-        expect(generatedCode).toBeTruthy();
-        expect(generatedCode.length).toBeGreaterThan(100);
+        const code = generateCodeFromManifest(flow, 'rust', 'sdk', manifest);
+        expect(code).toBeTruthy();
+        expect(code.length).toBeGreaterThan(100);
 
         // Write to rust-harness/src/bin/ for compilation
-        const binFile = join(RUST_HARNESS_BIN_DIR, `${name.replace(/-/g, '_')}.rs`);
-        if (!existsSync(RUST_HARNESS_BIN_DIR)) mkdirSync(RUST_HARNESS_BIN_DIR, { recursive: true });
-        writeFileSync(binFile, generatedCode);
+        writeBin(binName, flow, manifest);
       });
 
-      it('passes Rust compilation check', () => {
-        if (!harnessReady) {
-          console.warn('Rust harness not ready, skipping compilation check');
-          return;
-        }
+      // Partial templates (no GenerateKeys) reference variables defined by earlier blocks and
+      // cannot compile or run standalone, so the compile, mock-run and pattern tests exist only
+      // for self-contained templates. They are not registered (rather than registered and
+      // returning early) so the report never counts a check that did not happen as a pass.
+      if (selfContained) {
+        it.skipIf(!HAS_CARGO)('passes Rust compilation check', () => {
+          writeBin(binName, flow, manifest);
+          cargo('check', binName, name, 300000);
+        }, 300000);
 
-        // Partial templates (no GenerateKeys) reference undefined variables
-        // and cannot compile standalone — only self-contained templates can
-        if (!SELF_CONTAINED_TEMPLATES.has(name)) {
-          return;
-        }
+        it.skipIf(!HAS_CARGO || !HAS_PYTHON)('executes under mock harness', () => {
+          writeBin(binName, flow, manifest);
+          cargo('build', binName, name, 300000);
 
-        const binName = name.replace(/-/g, '_');
-        const binFile = join(RUST_HARNESS_BIN_DIR, `${binName}.rs`);
+          const report = runMock(binName, name, 90000);
+          expect(report.error, `mock run failed: ${report.error}\n${report.stderr ?? ''}`).toBeNull();
+          expect(report.success).toBe(true);
+          expect(report.call_count).toBeGreaterThan(0);
+          if (name === HASH_LOCK) expectHashLockRun(report);
+        }, 400000);
+      }
 
-        // Ensure generated code was written
-        if (!existsSync(binFile)) {
-          generatedCode = generateCodeFromManifest(flow, 'rust', 'sdk', manifest);
-          if (!existsSync(RUST_HARNESS_BIN_DIR)) mkdirSync(RUST_HARNESS_BIN_DIR, { recursive: true });
-          writeFileSync(binFile, generatedCode);
-        }
+      if (name === HASH_LOCK) {
+        // Mutation check: the same flow, but the release reveals a wrong preimage. The node accepts
+        // that at submit and rejects it at execute, so a program that does not turn the failed
+        // release into a non-zero exit would still look fine to a weaker check.
+        it.skipIf(!HAS_CARGO || !HAS_PYTHON)('fails closed when the release reveals the wrong preimage', () => {
+          const wrongBin = `${binName}_wrong_preimage`;
+          writeBin(wrongBin, wrongPreimageFlow(flow), manifest);
+          cargo('build', wrongBin, `${name} (wrong preimage)`, 300000);
+          expectWrongPreimageRejected(runMock(wrongBin, name, 90000));
+        }, 400000);
+      }
 
-        try {
-          execSync(`cargo check --bin ${binName}`, {
-            cwd: RUST_HARNESS_DIR,
-            encoding: 'utf-8',
-            timeout: 120000,
-            stdio: ['pipe', 'pipe', 'pipe'],
-          });
-        } catch (err) {
-          const error = err as { stderr?: string; stdout?: string };
-          throw new Error(
-            `Rust compilation error in ${name}:\n${error.stderr || error.stdout || 'Unknown error'}`,
-          );
-        }
-      }, 120000); // 2 minute timeout for cargo check
-
-      it('executes under mock harness', () => {
-        if (!harnessReady) {
-          console.warn('Rust harness not ready, skipping mock execution');
-          return;
-        }
-
-        // Only self-contained templates can run standalone
-        if (!SELF_CONTAINED_TEMPLATES.has(name)) {
-          return;
-        }
-
-        const binName = name.replace(/-/g, '_');
-
-        // Build the binary
-        try {
-          execSync(`cargo build --bin ${binName}`, {
-            cwd: RUST_HARNESS_DIR,
-            encoding: 'utf-8',
-            timeout: 120000,
-            stdio: ['pipe', 'pipe', 'pipe'],
-          });
-        } catch (err) {
-          const error = err as { stderr?: string };
-          throw new Error(`Rust build failed for ${name}: ${error.stderr?.slice(0, 500)}`);
-        }
-
-        // Find the compiled binary
-        const targetDir = join(RUST_HARNESS_DIR, 'target/debug');
-        // On Windows, binaries have .exe extension
-        const binaryName = process.platform === 'win32' ? `${binName}.exe` : binName;
-        const binaryPath = join(targetDir, binaryName);
-
-        if (!existsSync(binaryPath)) {
-          throw new Error(`Binary not found at ${binaryPath}`);
-        }
-
-        // Run via mock harness — capture output even on non-zero exit
-        // Node timeout must be longer than Python's internal timeout (60s)
-        // so Python can always emit its JSON report before Node kills it
-        let output: string;
-        try {
-          output = execSync(
-            `python "${RUST_HARNESS_PY}" "${binaryPath}"`,
-            { encoding: 'utf-8', timeout: 90000 },
-          );
-        } catch (err) {
-          const error = err as { stderr?: string; stdout?: string; status?: number };
-          // The mock harness outputs JSON to stdout, even on failure
-          output = (error.stdout || '') + (error.stderr || '');
-        }
-
-        const report = extractJson(output) as MockReport | null;
-        if (!report) {
-          // If no JSON output, the harness itself failed to run
-          console.warn(`No JSON report for ${name} (${output.length} chars)`);
-          return;
-        }
-        // For mock execution, we check that some RPC calls were made
-        // Full success requires a more complete mock server
-        expect(report.call_count).toBeGreaterThan(0);
-      }, 120000); // 2 minute timeout for build + run
-
-      it('RPC call pattern comparison', () => {
-        // Can only compare patterns for self-contained templates
-        if (!SELF_CONTAINED_TEMPLATES.has(name)) {
-          return;
-        }
-
-        if (!harnessReady) {
-          return;
-        }
-
+      if (selfContained) it.skipIf(!HAS_CARGO || !HAS_PYTHON)('RPC call pattern comparison', () => {
         // Check if we have a baseline
         const baselineName = TEMPLATE_TO_BASELINE[name];
         const baselinePath = baselineName
@@ -269,31 +267,13 @@ describe('Rust Generated Code Validation', () => {
           : '';
 
         if (!baselineName || !existsSync(baselinePath)) {
-          return;
+          return; // no recorded SDK example to compare against: nothing to assert
         }
 
-        // Build and run to get call pattern
-        const binName = name.replace(/-/g, '_');
-        const targetDir = join(RUST_HARNESS_DIR, 'target/debug');
-        const binaryName = process.platform === 'win32' ? `${binName}.exe` : binName;
-        const binaryPath = join(targetDir, binaryName);
-
-        if (!existsSync(binaryPath)) {
-          return; // Skip if not built
-        }
-
-        let output: string;
-        try {
-          output = execSync(
-            `python "${RUST_HARNESS_PY}" "${binaryPath}"`,
-            { encoding: 'utf-8', timeout: 60000 },
-          );
-        } catch {
-          return;
-        }
-
-        const report = extractJson(output) as MockReport | null;
-        if (!report) return;
+        // Build and run to get the call pattern
+        writeBin(binName, flow, manifest);
+        cargo('build', binName, name, 300000);
+        const report = runMock(binName, name, 90000);
         const baseline = JSON.parse(readFileSync(baselinePath, 'utf-8'));
 
         // Compare method sets
@@ -323,7 +303,7 @@ describe('Rust Generated Code Validation', () => {
 
         // Soft assertions
         expect(generatedMethodSet.size).toBeGreaterThan(0);
-      }, 60000);
+      }, 400000);
     });
   }
 });

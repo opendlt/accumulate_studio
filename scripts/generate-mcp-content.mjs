@@ -288,9 +288,16 @@ const manifests = {};
 for (const lang of LANGS) manifests[lang] = loadManifest(lang);
 
 const templates = loadTemplates();
-if (templates.length !== 8) {
+// The parser reads a regex-shaped literal, so cross-check it against the number of entries the
+// file actually declares: a template the regex silently skips would vanish from MCP otherwise.
+// (The count used to be hard-coded; adding a golden path should not need a code edit here.)
+const templatesSrc = readFileSync(TEMPLATES, 'utf-8');
+const declaredTemplates = (
+  templatesSrc.slice(templatesSrc.indexOf('export const GOLDEN_PATH_TEMPLATES')).match(/^ {2}\{\s+id:\s*'/gm) ?? []
+).length;
+if (templates.length < 8 || templates.length !== declaredTemplates) {
   throw new Error(
-    `expected 8 golden-path templates, parsed ${templates.length}. ` +
+    `expected every declared golden-path template (${declaredTemplates}, at least 8) to parse, got ${templates.length}. ` +
       `flow-templates.ts shape changed — update the parser in generate-mcp-content.mjs.`,
   );
 }

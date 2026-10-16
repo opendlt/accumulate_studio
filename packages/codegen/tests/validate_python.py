@@ -18,6 +18,8 @@ import sys
 import types
 import unittest.mock as mock
 
+from htlc_mock import HTLC
+
 
 def make_mock_response(json_data):
     """Create a mock requests.Response with the given JSON data."""
@@ -37,6 +39,11 @@ def route_rpc(method, params, calls_log):
         entry["params"] = params
 
     calls_log.append(entry)
+
+    # Hash-lock traffic is answered by the stateful node mock (None = not HTLC related).
+    htlc = HTLC.route(method, params)
+    if htlc is not None:
+        return {"jsonrpc": "2.0", **htlc, "id": 1}
 
     if method == "faucet":
         idx = len(calls_log)
@@ -152,9 +159,12 @@ def run_file(filepath):
             if hasattr(module, "main"):
                 module.main()
             return {"success": True, "calls": calls, "call_count": len(calls), "error": None}
-        except SystemExit:
-            # Some scripts may call sys.exit(0) on success
-            return {"success": True, "calls": calls, "call_count": len(calls), "error": None}
+        except SystemExit as exc:
+            # sys.exit(0) / sys.exit() is a normal end. A non-zero code is a failure: generated
+            # flows exit non-zero when a step fails, and that must not read as success.
+            if exc.code in (None, 0):
+                return {"success": True, "calls": calls, "call_count": len(calls), "error": None}
+            return {"success": False, "calls": calls, "call_count": len(calls), "error": f"exited with code {exc.code}"}
         except Exception as exc:
             return {"success": False, "calls": calls, "call_count": len(calls), "error": str(exc)}
         finally:
@@ -168,6 +178,9 @@ def main():
 
     filepath = sys.argv[1]
     result = run_file(filepath)
+    htlc_summary = HTLC.summary()
+    if htlc_summary:
+        result["htlc"] = htlc_summary
     print(json.dumps(result, indent=2))
     sys.exit(0 if result["success"] else 1)
 

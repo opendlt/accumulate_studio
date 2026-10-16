@@ -1,0 +1,265 @@
+# Hash Lock (HTLC) Payment - lock tokens to a hash, release them with the preimage
+# Self-contained: keys, faucet, credits, an ADI with a sender and a receiver account,
+# then a hash-locked send, the locked deposit, the release and a balance check.
+#
+# A hash lock is a HEADER field (hashLock) on an ordinary SendTokens. The sender is
+# debited at once; each recipient gets a locked deposit instead of a balance, and is
+# credited only when a ReleaseLockedOperation reveals the preimage. The release targets
+# the locked DEPOSIT (produced by the send), not the send itself.
+#
+# There is deliberately NO refund step. Refund on expiry is the protocol design, but it is
+# not currently functional on the network (see docs/hash-lock-example/CORE-ISSUE-refund.md):
+# a lock that is never released strands the funds. This flow always releases.
+version: "1.0"
+name: "Hash Lock (HTLC) Payment"
+description: >
+  Locks tokens to a SHA-256 hash, finds the locked deposit, releases it by revealing
+  the secret preimage and proves the receiver was credited. One ADI owns both accounts
+  here; in a real swap the receiver is another party.
+
+variables:
+  ADI_NAME:
+    type: string
+    description: "Name for your ADI (e.g., 'my-htlc-adi')"
+    required: true
+  LOCK_AMOUNT:
+    type: decimal
+    description: "Amount of ACME to lock"
+    default: "1.00000000"
+
+blocks:
+  # Step 1: Generate cryptographic keys
+  - id: generate_keys
+    type: GenerateKeys
+    config:
+      algorithm: Ed25519
+    outputs:
+      - keypair
+      - publicKey
+      - publicKeyHash
+      - liteIdentity
+      - liteTokenAccount
+
+  # Step 2: Request testnet tokens from the faucet
+  - id: faucet
+    type: Faucet
+    depends_on:
+      - generate_keys
+    config:
+      account: "{{generate_keys.liteTokenAccount}}"
+      times: 3
+
+  # Step 3: Wait for the ACME tokens to arrive
+  - id: wait_for_balance
+    type: WaitForBalance
+    depends_on:
+      - faucet
+    config:
+      account: "{{generate_keys.liteTokenAccount}}"
+      minBalance: "15.00000000"
+      maxAttempts: 30
+      delayMs: 2000
+
+  # Step 4: Add credits to the lite identity
+  - id: add_credits
+    type: AddCredits
+    depends_on:
+      - wait_for_balance
+    config:
+      recipient: "{{generate_keys.liteIdentity}}"
+      amount: "5.00000000"
+
+  # Step 5: Wait for the credits
+  - id: wait_for_credits
+    type: WaitForCredits
+    depends_on:
+      - add_credits
+    config:
+      account: "{{generate_keys.liteIdentity}}"
+      minCredits: 1000
+      maxAttempts: 30
+      delayMs: 2000
+
+  # Step 6: Create the ADI
+  - id: create_identity
+    type: CreateIdentity
+    depends_on:
+      - wait_for_credits
+    config:
+      url: "acc://{{ADI_NAME}}.acme"
+    outputs:
+      - adiUrl
+      - keyBookUrl
+      - keyPageUrl
+
+  # Step 7: Credit the ADI key page. It signs the lock and pays for the release.
+  - id: add_adi_credits
+    type: AddCredits
+    depends_on:
+      - create_identity
+    config:
+      recipient: "{{create_identity.adiUrl}}/book/1"
+      amount: "5.00000000"
+
+  - id: wait_for_adi_credits
+    type: WaitForCredits
+    depends_on:
+      - add_adi_credits
+    config:
+      account: "{{create_identity.adiUrl}}/book/1"
+      minCredits: 1000
+      maxAttempts: 30
+      delayMs: 2000
+
+  # Step 8: Create the sender and receiver token accounts
+  - id: create_sender_account
+    type: CreateTokenAccount
+    depends_on:
+      - wait_for_adi_credits
+    config:
+      url: "acc://{{ADI_NAME}}.acme/htlc-sender"
+      tokenUrl: "acc://ACME"
+      principal: "{{create_identity.adiUrl}}"
+      signerUrl: "{{create_identity.adiUrl}}/book/1"
+    outputs:
+      - tokenAccountUrl
+
+  - id: create_receiver_account
+    type: CreateTokenAccount
+    depends_on:
+      - create_sender_account
+    config:
+      url: "acc://{{ADI_NAME}}.acme/htlc-receiver"
+      tokenUrl: "acc://ACME"
+      principal: "{{create_identity.adiUrl}}"
+      signerUrl: "{{create_identity.adiUrl}}/book/1"
+    outputs:
+      - tokenAccountUrl
+
+  # Step 9: Fund the sender from the lite token account. The LITE IDENTITY must sign:
+  # the ADI key page is not an authority of a lite account, so signing with it would
+  # leave the transaction pending forever.
+  - id: fund_sender
+    type: SendTokens
+    depends_on:
+      - create_receiver_account
+    config:
+      principal: "{{generate_keys.liteTokenAccount}}"
+      signerUrl: "{{generate_keys.liteIdentity}}"
+      to: "{{create_sender_account.tokenAccountUrl}}"
+      amount: "500000000"
+
+  - id: wait_for_sender_balance
+    type: WaitForBalance
+    depends_on:
+      - fund_sender
+    config:
+      account: "{{create_sender_account.tokenAccountUrl}}"
+      minBalance: "1.00000000"
+      maxAttempts: 30
+      delayMs: 2000
+
+  # Step 10: The hash lock. A secret preimage, its SHA-256 hash and an expiration
+  # (the node needs 10 minutes to 30 days of headroom; 30 minutes is used here).
+  - id: create_hash_lock
+    type: GenerateHashLock
+    depends_on:
+      - wait_for_sender_balance
+    config:
+      hashAlgorithm: sha256
+      expirationMinutes: 30
+    outputs:
+      - preimage
+      - hash
+      - hashAlgorithm
+      - expiration
+      - expirationIso
+
+  # Step 11: The locked send. The sender is debited now; the receiver is NOT credited yet,
+  # so there is no balance.delta assertion for it below.
+  - id: locked_send
+    type: SendTokens
+    depends_on:
+      - create_hash_lock
+    config:
+      principal: "{{create_sender_account.tokenAccountUrl}}"
+      signerUrl: "{{create_identity.adiUrl}}/book/1"
+      recipients:
+        - url: "{{create_receiver_account.tokenAccountUrl}}"
+          amount: "{{LOCK_AMOUNT}}"
+      hashLockFrom: create_hash_lock
+    outputs:
+      - txHash
+      - txId
+
+  # Step 12: Find the locked deposit among the transactions the send produced.
+  - id: wait_for_locked_deposit
+    type: WaitForLockedDeposit
+    depends_on:
+      - locked_send
+    config:
+      sendTxId: "{{locked_send.txId}}"
+      maxAttempts: 60
+      delayMs: 2000
+    outputs:
+      - lockedTxId
+
+  # Step 13: Release. The RECEIVER signs and pays the small fee, and the preimage
+  # becomes public on-chain.
+  - id: release_locked
+    type: ReleaseLockedOperation
+    depends_on:
+      - wait_for_locked_deposit
+    config:
+      principal: "{{create_receiver_account.tokenAccountUrl}}"
+      signerUrl: "{{create_identity.adiUrl}}/book/1"
+      lockedTxId: "{{wait_for_locked_deposit.lockedTxId}}"
+      preimage: "{{create_hash_lock.preimage}}"
+    outputs:
+      - txHash
+
+  # Step 14: The receiver is credited only now.
+  - id: wait_for_receiver_balance
+    type: WaitForBalance
+    depends_on:
+      - release_locked
+    config:
+      account: "{{create_receiver_account.tokenAccountUrl}}"
+      minBalance: "1.00000000"
+      maxAttempts: 30
+      delayMs: 2000
+
+# Verify the flow. No balance.delta for the locked send: the receiver balance does not move
+# until the release. The floor below can only be met by the release (the account starts empty).
+assertions:
+  - type: account.exists
+    url: "{{create_identity.adiUrl}}"
+    message: "ADI should exist"
+
+  - type: account.exists
+    url: "{{create_sender_account.tokenAccountUrl}}"
+    message: "Sender token account should exist"
+
+  - type: account.exists
+    url: "{{create_receiver_account.tokenAccountUrl}}"
+    message: "Receiver token account should exist"
+
+  - type: tx.status.equals
+    sourceStep: create_identity
+    status: success
+    message: "CreateIdentity transaction should succeed"
+
+  - type: tx.status.equals
+    sourceStep: locked_send
+    status: success
+    message: "Hash-locked send should succeed"
+
+  - type: tx.status.equals
+    sourceStep: release_locked
+    status: success
+    message: "Release with the preimage should succeed"
+
+  - type: balance.gte
+    account: "{{create_receiver_account.tokenAccountUrl}}"
+    equals: "1"
+    message: "Receiver is credited only after the release (a locked deposit does not credit it)"

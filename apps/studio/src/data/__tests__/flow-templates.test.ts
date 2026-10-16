@@ -7,8 +7,9 @@
 
 import { describe, it, expect } from 'vitest';
 import { GOLDEN_PATH_TEMPLATES } from '../flow-templates';
-import { BLOCK_CATALOG, type BlockType } from '@accumulate-studio/types';
+import { BLOCK_CATALOG, type BlockType, type SDKLanguage } from '@accumulate-studio/types';
 import { validateFlow, topologicalSort } from '@accumulate-studio/types';
+import { generateCodeFromManifest, loadAllManifests } from '@accumulate-studio/codegen';
 
 describe('GOLDEN_PATH_TEMPLATES', () => {
   it('exports at least 5 templates', () => {
@@ -191,6 +192,81 @@ describe('Specific template flows', () => {
     expect(types).toContain('CreateKeyBook');
   });
 
+  describe('hash-lock (HTLC)', () => {
+    const t = GOLDEN_PATH_TEMPLATES.find((x) => x.id === 'hash-lock')!;
+    const node = (id: string) => t.flow.nodes.find((n) => n.id === id)!;
+    const config = (id: string) => node(id).config as Record<string, unknown>;
+
+    it('is registered with the documented metadata', () => {
+      expect(t).toBeDefined();
+      expect(t.name).toBe('Hash Lock (HTLC) Payment');
+      expect(t.category).toBe('advanced');
+      expect(t.estimatedTime).toBe('10 min');
+      expect(t.tags).toEqual(['tokens', 'advanced', 'htlc']);
+      expect(t.flow.variables.map((v) => v.name)).toEqual(['ADI_NAME', 'LOCK_AMOUNT']);
+    });
+
+    it('runs the lock, the deposit wait and the release in order, after a funded sender', () => {
+      const order = t.flow.nodes.map((n) => n.id);
+      const at = (id: string) => order.indexOf(id);
+      expect(at('wait_for_sender_balance')).toBeLessThan(at('create_hash_lock'));
+      expect(at('create_hash_lock')).toBeLessThan(at('locked_send'));
+      expect(at('locked_send')).toBeLessThan(at('wait_for_locked_deposit'));
+      expect(at('wait_for_locked_deposit')).toBeLessThan(at('release_locked'));
+      expect(at('release_locked')).toBeLessThan(at('wait_for_receiver_balance'));
+      // Executable order follows the connections, not just the array order.
+      const sorted = topologicalSort(t.flow).map((n) => n.id);
+      expect(sorted).toEqual(order);
+    });
+
+    it('wires locked_send -> wait_for_locked_deposit -> release_locked by reference', () => {
+      expect(node('create_hash_lock').type).toBe('GenerateHashLock');
+      expect(node('locked_send').type).toBe('SendTokens');
+      expect(config('locked_send').hashLockFrom).toBe('create_hash_lock'); // carries a hash lock
+      expect(node('create_hash_lock').type).toBe('GenerateHashLock');
+      expect(config('wait_for_locked_deposit').sendTxId).toBe('{{locked_send.txId}}');
+      expect(node('release_locked').type).toBe('ReleaseLockedOperation');
+      // The release targets the DEPOSIT (not the send) with the generated preimage.
+      expect(config('release_locked').lockedTxId).toBe('{{wait_for_locked_deposit.lockedTxId}}');
+      expect(config('release_locked').preimage).toBe('{{create_hash_lock.preimage}}');
+    });
+
+    it('releases from the receiver account, not the sender', () => {
+      expect(config('release_locked').principal).toBe('{{create_receiver_account.tokenAccountUrl}}');
+      const recipients = config('locked_send').recipients as Array<{ url: string; amount: string }>;
+      expect(recipients).toEqual([{ url: '{{create_receiver_account.tokenAccountUrl}}', amount: '{{LOCK_AMOUNT}}' }]);
+      expect(config('locked_send').principal).toBe('{{create_sender_account.tokenAccountUrl}}');
+    });
+
+    it('funds the sender with the lite identity (a lite account is not governed by the ADI key page)', () => {
+      expect(config('fund_sender').principal).toBe('{{generate_keys.liteTokenAccount}}');
+      expect(config('fund_sender').signerUrl).toBe('{{generate_keys.liteIdentity}}');
+    });
+
+    it('asserts the locked send and the release, but no receiver balance.delta for the lock', () => {
+      const a = t.flow.assertions ?? [];
+      expect(a.some((x) => x.type === 'tx.status.equals' && x.sourceStep === 'locked_send')).toBe(true);
+      expect(a.some((x) => x.type === 'tx.status.equals' && x.sourceStep === 'release_locked')).toBe(true);
+      expect(a.filter((x) => x.type === 'balance.delta')).toEqual([]);
+      expect(a.some((x) => x.type === 'balance.gte' && String(x.account).includes('create_receiver_account'))).toBe(true);
+    });
+
+    it('does not promise a refund: no refund step, and the copy says refund is not functional', () => {
+      const text = [t.description, ...(t.instructions ?? []), ...(t.prerequisites ?? [])].join(' ');
+      expect(t.flow.nodes.some((n) => /refund/i.test(`${n.id} ${n.label ?? ''}`))).toBe(false);
+      expect(text).toMatch(/refund/i);
+      expect(text).toMatch(/not currently functional|NOT currently functional/);
+    });
+
+    it('uses only default-allowed block types and 17 nodes', () => {
+      expect(t.flow.nodes).toHaveLength(17);
+      expect(new Set(t.flow.nodes.map((n) => n.type))).toEqual(new Set([
+        'GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits', 'CreateIdentity',
+        'CreateTokenAccount', 'SendTokens', 'GenerateHashLock', 'WaitForLockedDeposit', 'ReleaseLockedOperation',
+      ]));
+    });
+  });
+
   it('key-rotation is self-contained with full setup', () => {
     const t = GOLDEN_PATH_TEMPLATES.find((t) => t.id === 'key-rotation')!;
     expect(t).toBeDefined();
@@ -201,3 +277,28 @@ describe('Specific template flows', () => {
     expect(types).toContain('CreateIdentity');
   });
 });
+
+describe('Every golden-path template generates code', () => {
+  const manifests = loadAllManifests();
+  const languages: SDKLanguage[] = ['python', 'javascript', 'rust', 'dart', 'csharp'];
+
+  for (const template of GOLDEN_PATH_TEMPLATES) {
+    it(`${template.id} generates all five languages`, () => {
+      for (const lang of languages) {
+        const flow = { ...template.flow, network: 'kermit' as const };
+        const code = generateCodeFromManifest(flow, lang, 'sdk', manifests[lang]!);
+        expect(code.length, `${template.id}/${lang}`).toBeGreaterThan(200);
+        expect(code, `${template.id}/${lang}`).not.toMatch(/TODO:\s*Implement/);
+      }
+    });
+  }
+
+  it('hash-lock output has no template residue in any language', () => {
+    const t = GOLDEN_PATH_TEMPLATES.find((x) => x.id === 'hash-lock')!;
+    for (const lang of languages) {
+      const code = generateCodeFromManifest({ ...t.flow, network: 'kermit' }, lang, 'sdk', manifests[lang]!);
+      expect(code, lang).not.toMatch(/\{\{|\[object Object\]|\bundefined\b/);
+    }
+  });
+});
+

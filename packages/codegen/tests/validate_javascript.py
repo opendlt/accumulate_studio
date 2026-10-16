@@ -24,6 +24,8 @@ import subprocess
 import sys
 import threading
 
+from htlc_mock import HTLC
+
 
 # ── Default paths ─────────────────────────────────────────────────────────
 # The JS SDK is checked out as a sibling of the platform repo. From this file
@@ -88,6 +90,30 @@ class MockRPCHandler(http.server.BaseHTTPRequestHandler):
         with self.lock:
             self.calls_log.append(entry)
             idx = len(self.calls_log)
+
+        # Hash-lock traffic is answered by the stateful node mock (None = not HTLC related).
+        htlc = HTLC.route(method, params)
+        if htlc is not None:
+            return {"jsonrpc": "2.0", **htlc}
+
+        # V2 describe: the JS add_credits template reads the oracle price from it.
+        if method == "describe":
+            return {"jsonrpc": "2.0", "result": {"values": {"oracle": {"price": 50000000}}}}
+
+        # V2 account query (JS SDK queryAccount): `url` instead of `scope`, account under `data`.
+        if method == "query" and isinstance(params, dict) and "url" in params and "scope" not in params:
+            return {
+                "jsonrpc": "2.0",
+                "result": {
+                    "type": "liteTokenAccount",
+                    "data": {
+                        "type": "liteTokenAccount",
+                        "url": params["url"],
+                        "balance": "100000000000",
+                        "creditBalance": 10000,
+                    },
+                },
+            }
 
         if method == "faucet":
             return {
@@ -457,6 +483,9 @@ def main():
         sys.exit(1)
 
     result = run_js_file(js_file, harness_dir, sdk_dir)
+    htlc_summary = HTLC.summary()
+    if htlc_summary:
+        result["htlc"] = htlc_summary
     print(json.dumps(result, indent=2))
     sys.exit(0 if result["success"] else 1)
 

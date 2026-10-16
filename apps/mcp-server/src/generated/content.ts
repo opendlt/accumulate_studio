@@ -5709,6 +5709,35 @@ export const GOLDEN_PATHS: GoldenPathTemplate[] = [
     "prerequisites": [
       "None - fully self-contained!"
     ]
+  },
+  {
+    "id": "hash-lock",
+    "name": "Hash Lock (HTLC) Payment",
+    "description": "Complete hash-lock (HTLC) payment from scratch. Locks tokens to a SHA-256 hash, finds the locked deposit, releases it by revealing the preimage, and proves the receiver was credited. One ADI owns both accounts here; in a real swap the receiver is another party. Refund on expiry is the protocol design but is not currently functional on the network, so this flow always releases.",
+    "category": "advanced",
+    "estimatedTime": "10 min",
+    "tags": [
+      "tokens",
+      "advanced",
+      "htlc"
+    ],
+    "instructions": [
+      "Generate keys and fund via faucet",
+      "Add credits and create an ADI",
+      "Credit the ADI key page: it signs the lock and pays for the release",
+      "Create the sender and receiver token accounts",
+      "Fund the sender account from the lite token account",
+      "Create the hash lock: a secret preimage, its SHA-256 hash and a 30 minute expiration",
+      "Send with the hash lock: the sender is debited now, the receiver is NOT credited yet",
+      "Wait for the locked deposit: a release targets the deposit that the send produced, not the send itself",
+      "Release the deposit by revealing the preimage. The receiver signs and pays the small fee, and the preimage becomes public",
+      "Wait for the receiver balance to increase",
+      "Refund on expiry is the protocol design but is NOT currently functional on the network: a lock that is never released strands the funds, so use small amounts and always release"
+    ],
+    "prerequisites": [
+      "None - fully self-contained!",
+      "Testnet only: keep amounts small, because an unreleased lock cannot be refunded"
+    ]
   }
 ];
 
