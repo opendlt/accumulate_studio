@@ -792,6 +792,204 @@ export const keyRotationTemplate: FlowTemplate = {
 };
 
 // =============================================================================
+// Hash Lock (HTLC) Payment Template
+// =============================================================================
+
+// Mirrors templates/hash-lock.yaml. There is deliberately no refund step: refund on expiry is
+// the protocol design but is not currently functional on the network.
+const hashLockFlow: Flow = {
+  version: '1.0',
+  name: 'Hash Lock (HTLC) Payment',
+  description: 'Locks tokens to a SHA-256 hash, finds the locked deposit, releases it by revealing the secret preimage and proves the receiver was credited. One ADI owns both accounts here; in a real swap the receiver is another party.',
+  tags: ['advanced', 'tokens', 'htlc'],
+  network: 'testnet',
+  variables: [
+    {
+      name: 'ADI_NAME',
+      type: 'string',
+      description: "Name for your ADI (e.g., 'my-htlc-adi')",
+      required: true,
+    },
+    {
+      name: 'LOCK_AMOUNT',
+      type: 'decimal',
+      description: 'Amount of ACME to lock',
+      default: '1.00000000',
+      required: false,
+    },
+  ],
+  nodes: [
+    {
+      id: 'generate_keys',
+      type: 'GenerateKeys',
+      label: 'Generate Keys',
+      config: { algorithm: 'Ed25519' },
+      position: { x: 300, y: 80 },
+    },
+    {
+      id: 'faucet',
+      type: 'Faucet',
+      label: 'Request Tokens',
+      config: { account: '{{generate_keys.liteTokenAccount}}', times: 3 },
+      position: { x: 300, y: 240 },
+    },
+    {
+      id: 'wait_for_balance',
+      type: 'WaitForBalance',
+      label: 'Wait for ACME',
+      config: { account: '{{generate_keys.liteTokenAccount}}', minBalance: '15.00000000', maxAttempts: 30, delayMs: 2000 },
+      position: { x: 300, y: 400 },
+    },
+    {
+      id: 'add_credits',
+      type: 'AddCredits',
+      label: 'Add Credits',
+      config: { recipient: '{{generate_keys.liteIdentity}}', amount: '5.00000000' },
+      position: { x: 300, y: 560 },
+    },
+    {
+      id: 'wait_for_credits',
+      type: 'WaitForCredits',
+      label: 'Wait for Credits',
+      config: { account: '{{generate_keys.liteIdentity}}', minCredits: 1000, maxAttempts: 30, delayMs: 2000 },
+      position: { x: 300, y: 720 },
+    },
+    {
+      id: 'create_identity',
+      type: 'CreateIdentity',
+      label: 'Create ADI',
+      config: { url: 'acc://{{ADI_NAME}}.acme' },
+      position: { x: 300, y: 880 },
+    },
+    {
+      id: 'add_adi_credits',
+      type: 'AddCredits',
+      label: 'Credit Key Page',
+      config: { recipient: '{{create_identity.adiUrl}}/book/1', amount: '5.00000000' },
+      position: { x: 300, y: 1040 },
+    },
+    {
+      id: 'wait_for_adi_credits',
+      type: 'WaitForCredits',
+      label: 'Wait for Key Page Credits',
+      config: { account: '{{create_identity.adiUrl}}/book/1', minCredits: 1000, maxAttempts: 30, delayMs: 2000 },
+      position: { x: 300, y: 1200 },
+    },
+    {
+      id: 'create_sender_account',
+      type: 'CreateTokenAccount',
+      label: 'Create Sender Account',
+      config: { url: 'acc://{{ADI_NAME}}.acme/htlc-sender', tokenUrl: 'acc://ACME', principal: '{{create_identity.adiUrl}}', signerUrl: '{{create_identity.adiUrl}}/book/1' },
+      position: { x: 300, y: 1360 },
+    },
+    {
+      id: 'create_receiver_account',
+      type: 'CreateTokenAccount',
+      label: 'Create Receiver Account',
+      config: { url: 'acc://{{ADI_NAME}}.acme/htlc-receiver', tokenUrl: 'acc://ACME', principal: '{{create_identity.adiUrl}}', signerUrl: '{{create_identity.adiUrl}}/book/1' },
+      position: { x: 300, y: 1520 },
+    },
+    {
+      id: 'fund_sender',
+      type: 'SendTokens',
+      label: 'Fund Sender Account',
+      config: { principal: '{{generate_keys.liteTokenAccount}}', signerUrl: '{{generate_keys.liteIdentity}}', to: '{{create_sender_account.tokenAccountUrl}}', amount: '500000000' },
+      position: { x: 300, y: 1680 },
+    },
+    {
+      id: 'wait_for_sender_balance',
+      type: 'WaitForBalance',
+      label: 'Wait for Sender Balance',
+      config: { account: '{{create_sender_account.tokenAccountUrl}}', minBalance: '1.00000000', maxAttempts: 30, delayMs: 2000 },
+      position: { x: 300, y: 1840 },
+    },
+    {
+      id: 'create_hash_lock',
+      type: 'GenerateHashLock',
+      label: 'Create Hash Lock',
+      config: { hashAlgorithm: 'sha256', expirationMinutes: 30 },
+      position: { x: 300, y: 2000 },
+    },
+    {
+      id: 'locked_send',
+      type: 'SendTokens',
+      label: 'Locked Send',
+      config: { principal: '{{create_sender_account.tokenAccountUrl}}', signerUrl: '{{create_identity.adiUrl}}/book/1', recipients: [{ url: '{{create_receiver_account.tokenAccountUrl}}', amount: '{{LOCK_AMOUNT}}' }], hashLockFrom: 'create_hash_lock' },
+      position: { x: 300, y: 2160 },
+    },
+    {
+      id: 'wait_for_locked_deposit',
+      type: 'WaitForLockedDeposit',
+      label: 'Wait for Locked Deposit',
+      config: { sendTxId: '{{locked_send.txId}}', maxAttempts: 60, delayMs: 2000 },
+      position: { x: 300, y: 2320 },
+    },
+    {
+      id: 'release_locked',
+      type: 'ReleaseLockedOperation',
+      label: 'Release Locked Deposit',
+      config: { principal: '{{create_receiver_account.tokenAccountUrl}}', signerUrl: '{{create_identity.adiUrl}}/book/1', lockedTxId: '{{wait_for_locked_deposit.lockedTxId}}', preimage: '{{create_hash_lock.preimage}}' },
+      position: { x: 300, y: 2480 },
+    },
+    {
+      id: 'wait_for_receiver_balance',
+      type: 'WaitForBalance',
+      label: 'Wait for Receiver Balance',
+      config: { account: '{{create_receiver_account.tokenAccountUrl}}', minBalance: '1.00000000', maxAttempts: 30, delayMs: 2000 },
+      position: { x: 300, y: 2640 },
+    },
+  ],
+  connections: [
+    { id: 'conn_generate_keys_faucet', sourceNodeId: 'generate_keys', sourcePortId: 'output', targetNodeId: 'faucet', targetPortId: 'input' },
+    { id: 'conn_faucet_wait_for_balance', sourceNodeId: 'faucet', sourcePortId: 'output', targetNodeId: 'wait_for_balance', targetPortId: 'input' },
+    { id: 'conn_wait_for_balance_add_credits', sourceNodeId: 'wait_for_balance', sourcePortId: 'output', targetNodeId: 'add_credits', targetPortId: 'input' },
+    { id: 'conn_add_credits_wait_for_credits', sourceNodeId: 'add_credits', sourcePortId: 'output', targetNodeId: 'wait_for_credits', targetPortId: 'input' },
+    { id: 'conn_wait_for_credits_create_identity', sourceNodeId: 'wait_for_credits', sourcePortId: 'output', targetNodeId: 'create_identity', targetPortId: 'input' },
+    { id: 'conn_create_identity_add_adi_credits', sourceNodeId: 'create_identity', sourcePortId: 'output', targetNodeId: 'add_adi_credits', targetPortId: 'input' },
+    { id: 'conn_add_adi_credits_wait_for_adi_credits', sourceNodeId: 'add_adi_credits', sourcePortId: 'output', targetNodeId: 'wait_for_adi_credits', targetPortId: 'input' },
+    { id: 'conn_wait_for_adi_credits_create_sender_account', sourceNodeId: 'wait_for_adi_credits', sourcePortId: 'output', targetNodeId: 'create_sender_account', targetPortId: 'input' },
+    { id: 'conn_create_sender_account_create_receiver_account', sourceNodeId: 'create_sender_account', sourcePortId: 'output', targetNodeId: 'create_receiver_account', targetPortId: 'input' },
+    { id: 'conn_create_receiver_account_fund_sender', sourceNodeId: 'create_receiver_account', sourcePortId: 'output', targetNodeId: 'fund_sender', targetPortId: 'input' },
+    { id: 'conn_fund_sender_wait_for_sender_balance', sourceNodeId: 'fund_sender', sourcePortId: 'output', targetNodeId: 'wait_for_sender_balance', targetPortId: 'input' },
+    { id: 'conn_wait_for_sender_balance_create_hash_lock', sourceNodeId: 'wait_for_sender_balance', sourcePortId: 'output', targetNodeId: 'create_hash_lock', targetPortId: 'input' },
+    { id: 'conn_create_hash_lock_locked_send', sourceNodeId: 'create_hash_lock', sourcePortId: 'output', targetNodeId: 'locked_send', targetPortId: 'input' },
+    { id: 'conn_locked_send_wait_for_locked_deposit', sourceNodeId: 'locked_send', sourcePortId: 'output', targetNodeId: 'wait_for_locked_deposit', targetPortId: 'input' },
+    { id: 'conn_wait_for_locked_deposit_release_locked', sourceNodeId: 'wait_for_locked_deposit', sourcePortId: 'output', targetNodeId: 'release_locked', targetPortId: 'input' },
+    { id: 'conn_release_locked_wait_for_receiver_balance', sourceNodeId: 'release_locked', sourcePortId: 'output', targetNodeId: 'wait_for_receiver_balance', targetPortId: 'input' },
+  ],
+  assertions: [
+    { type: 'account.exists', url: '{{create_identity.adiUrl}}', message: 'ADI should exist' },
+    { type: 'account.exists', url: '{{create_sender_account.tokenAccountUrl}}', message: 'Sender token account should exist' },
+    { type: 'account.exists', url: '{{create_receiver_account.tokenAccountUrl}}', message: 'Receiver token account should exist' },
+    { type: 'tx.status.equals', sourceStep: 'create_identity', status: 'success', message: 'CreateIdentity transaction should succeed' },
+    { type: 'tx.status.equals', sourceStep: 'locked_send', status: 'success', message: 'Hash-locked send should succeed' },
+    { type: 'tx.status.equals', sourceStep: 'release_locked', status: 'success', message: 'Release with the preimage should succeed' },
+    { type: 'balance.gte', account: '{{create_receiver_account.tokenAccountUrl}}', equals: '1', message: 'Receiver is credited only after the release (a locked deposit does not credit it)' },
+  ],
+};
+
+export const hashLockTemplate: FlowTemplate = {
+  id: 'hash-lock',
+  name: 'Hash Lock (HTLC) Payment',
+  description: 'Lock tokens to a SHA-256 hash, release them with the preimage and prove the receiver was credited. Refund on expiry is not currently functional on the network, so this flow always releases.',
+  category: 'advanced',
+  estimatedTime: '10 min',
+  tags: ['tokens', 'advanced', 'htlc'],
+  flow: hashLockFlow,
+  instructions: [
+    'Generate keys, fund via faucet, add credits and create an ADI',
+    'Credit the ADI key page and create the sender and receiver token accounts',
+    'Fund the sender account from the lite token account',
+    'Create the hash lock (secret preimage, SHA-256 hash, expiration)',
+    'Send with the hash lock: the sender is debited, the receiver is not credited yet',
+    'Wait for the locked deposit produced by the send',
+    'Release the deposit by revealing the preimage (the receiver signs and pays)',
+    'Wait for the receiver balance to increase',
+  ],
+  prerequisites: ['None - fully self-contained!', 'Testnet only: an unreleased lock cannot be refunded'],
+};
+
+// =============================================================================
 // Template Registry
 // =============================================================================
 
@@ -807,6 +1005,7 @@ export const GOLDEN_PATH_TEMPLATES: FlowTemplate[] = [
   customTokenTemplate,
   multiSigSetupTemplate,
   keyRotationTemplate,
+  hashLockTemplate,
 ];
 
 /**

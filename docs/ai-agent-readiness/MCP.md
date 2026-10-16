@@ -1,6 +1,6 @@
 # Accumulate MCP — install & use (Phase 2 · P2-ST-09)
 
-The Accumulate MCP server (`accumulate-studio-mcp`) gives an AI agent all three MCP primitives for Accumulate — 14 typed **tools**, readable context **resources**, and 8 golden-path **prompts** — with a safe-by-default permission model. This page is the install reference.
+The Accumulate MCP server (`accumulate-studio-mcp`) gives an AI agent all three MCP primitives for Accumulate — 14 typed **tools**, readable context **resources**, and 9 golden-path **prompts** — with a safe-by-default permission model. This page is the install reference.
 
 ## What an agent gets
 
@@ -29,7 +29,7 @@ Without these an agent could call `acc.query` but had no way to learn that amoun
 
 ### Prompts (invocable workflows)
 
-All 8 golden paths: `lite-account-setup`, `create-adi`, `zero-to-hero`, `token-transfer`, `data-writing`, `custom-token`, `multi-sig-setup`, `key-rotation`.
+All 9 golden paths: `lite-account-setup`, `create-adi`, `zero-to-hero`, `token-transfer`, `data-writing`, `custom-token`, `multi-sig-setup`, `key-rotation`, `hash-lock`.
 
 Each returns ordered steps, prerequisites, and the rules that prevent the two most common failures. A workflow ending in a submit **discloses** when the server's permission mode will refuse it, rather than leading the agent into a dead end.
 

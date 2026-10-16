@@ -1,6 +1,6 @@
 # apps/mcp-server — repository guide for agents
 
-The Accumulate MCP server, published to npm as `accumulate-studio-mcp`. Exposes all three MCP primitives: 14 typed **tools**, context **resources**, and 8 golden-path **prompts**.
+The Accumulate MCP server, published to npm as `accumulate-studio-mcp`. Exposes all three MCP primitives: 14 typed **tools**, context **resources**, and 9 golden-path **prompts**.
 
 Read the [root guide](../../AGENTS.md) first for monorepo setup.
 
@@ -22,7 +22,7 @@ src/index.ts            server setup, capabilities, request handlers, CLI
 src/permissions.ts      READ_ONLY < BUILD_ONLY < SIGN_AND_SUBMIT
 src/tools/              network, query, transaction, verification tools
 src/resources/          concept docs, network registry, operation catalogs
-src/prompts/            the 8 golden paths as invocable workflows
+src/prompts/            the 9 golden paths as invocable workflows
 src/generated/content.ts  GENERATED — do not edit
 test/protocol.test.mjs  end-to-end JSON-RPC tests against dist/
 ```

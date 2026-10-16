@@ -22,6 +22,8 @@ import subprocess
 import sys
 import threading
 
+from htlc_mock import HTLC
+
 
 class MockRPCHandler(http.server.BaseHTTPRequestHandler):
     """Handle JSON-RPC requests with mock responses."""
@@ -71,6 +73,11 @@ class MockRPCHandler(http.server.BaseHTTPRequestHandler):
         with self.lock:
             self.calls_log.append(entry)
             idx = len(self.calls_log)
+
+        # Hash-lock traffic is answered by the stateful node mock (None = not HTLC related).
+        htlc = HTLC.route(method, params)
+        if htlc is not None:
+            return {"jsonrpc": "2.0", **htlc}
 
         if method == "faucet":
             return {
@@ -247,6 +254,9 @@ def main():
         sys.exit(1)
 
     result = run_dart_file(dart_file, harness_dir)
+    htlc_summary = HTLC.summary()
+    if htlc_summary:
+        result["htlc"] = htlc_summary
     print(json.dumps(result, indent=2))
     sys.exit(0 if result["success"] else 1)
 

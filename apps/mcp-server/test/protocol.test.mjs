@@ -288,16 +288,27 @@ describe('MCP protocol — built bundle', () => {
   });
 
   // --- prompts -------------------------------------------------------------
-  test('lists all 8 golden paths as prompts', async () => {
+  test('lists all 9 golden paths as prompts', async () => {
     const r = await client.send('prompts/list');
-    assert.equal(r.result.prompts.length, 8);
+    assert.equal(r.result.prompts.length, 9);
     const names = r.result.prompts.map((p) => p.name);
     for (const id of [
       'lite-account-setup', 'create-adi', 'zero-to-hero', 'token-transfer',
-      'data-writing', 'custom-token', 'multi-sig-setup', 'key-rotation',
+      'data-writing', 'custom-token', 'multi-sig-setup', 'key-rotation', 'hash-lock',
     ]) {
       assert.ok(names.includes(id), `prompt ${id}`);
     }
+  });
+
+  test('the hash-lock prompt describes the lock/deposit/release flow and does not promise a refund', async () => {
+    const r = await client.send('prompts/get', { name: 'hash-lock' });
+    const text = r.result.messages[0].content.text;
+    assert.match(text, /Hash Lock \(HTLC\) Payment/);
+    assert.match(text, /locked deposit/i);
+    assert.match(text, /reveal/i);
+    // Refund on expiry is unreachable in core: the copy must say so rather than promise it.
+    assert.match(text, /not currently functional/i);
+    assert.doesNotMatch(text, /refunded to the sender/i);
   });
 
   test('every prompt states the 1e8 rule and the credit prerequisite', async () => {

@@ -1065,6 +1065,214 @@ const keyRotationFlow: Flow = {
 };
 
 // =============================================================================
+// 9. Hash Lock (HTLC) Payment (self-contained, from scratch)
+// =============================================================================
+
+// One ADI owns both accounts so the flow is self-contained; in a real swap the receiver
+// is another party. The lock is a header field on an ordinary SendTokens: the sender is
+// debited at once and the receiver is credited only when the release reveals the preimage.
+// There is no refund step on purpose: the protocol design refunds on expiry, but that path
+// is unreachable in current core (docs/hash-lock-example/CORE-ISSUE-refund.md).
+const hashLockFlow: Flow = {
+  version: '1.0',
+  name: 'Hash Lock (HTLC) Payment',
+  description:
+    'Lock tokens to a SHA-256 hash, find the locked deposit, release it with the secret preimage, and prove the receiver was credited.',
+  variables: [
+    { name: 'ADI_NAME', type: 'string', description: "Name for your ADI (e.g., 'my-htlc-adi')", required: true },
+    { name: 'LOCK_AMOUNT', type: 'decimal', description: 'Amount of ACME to lock', default: '1.00000000' },
+  ],
+  nodes: [
+    // ── Setup: keys, faucet, credits ──
+    {
+      id: 'generate_keys',
+      type: 'GenerateKeys',
+      label: 'Generate Keys',
+      config: { algorithm: 'Ed25519' },
+      position: pos(0),
+    },
+    {
+      id: 'faucet',
+      type: 'Faucet',
+      label: 'Request Tokens',
+      config: { times: 3 },
+      position: pos(1),
+    },
+    {
+      id: 'wait_for_balance',
+      type: 'WaitForBalance',
+      label: 'Wait for ACME',
+      config: { minBalance: '15.00000000', maxAttempts: 30, delayMs: 2000 },
+      position: pos(2),
+    },
+    {
+      id: 'add_credits',
+      type: 'AddCredits',
+      label: 'Add Credits',
+      config: { amount: '5.00000000' },
+      position: pos(3),
+    },
+    {
+      id: 'wait_for_credits',
+      type: 'WaitForCredits',
+      label: 'Wait for Credits',
+      config: { minCredits: 1000, maxAttempts: 30, delayMs: 2000 },
+      position: pos(4),
+    },
+    // ── Create ADI ──
+    {
+      id: 'create_identity',
+      type: 'CreateIdentity',
+      label: 'Create ADI',
+      config: { url: 'acc://{{ADI_NAME}}.acme' },
+      position: pos(5),
+    },
+    // ── Credit key page: it signs the lock and pays for the release ──
+    {
+      id: 'add_adi_credits',
+      type: 'AddCredits',
+      label: 'Credit Key Page',
+      config: { recipient: '{{create_identity.adiUrl}}/book/1', amount: '5.00000000' },
+      position: pos(6),
+    },
+    {
+      id: 'wait_for_adi_credits',
+      type: 'WaitForCredits',
+      label: 'Wait for Key Page Credits',
+      config: { account: '{{create_identity.adiUrl}}/book/1', minCredits: 1000, maxAttempts: 30, delayMs: 2000 },
+      position: pos(7),
+    },
+    // ── Sender and receiver token accounts ──
+    {
+      id: 'create_sender_account',
+      type: 'CreateTokenAccount',
+      label: 'Create Sender Account',
+      config: {
+        url: 'acc://{{ADI_NAME}}.acme/htlc-sender',
+        tokenUrl: 'acc://ACME',
+        principal: '{{create_identity.adiUrl}}',
+        signerUrl: '{{create_identity.adiUrl}}/book/1',
+      },
+      position: pos(8),
+    },
+    {
+      id: 'create_receiver_account',
+      type: 'CreateTokenAccount',
+      label: 'Create Receiver Account',
+      config: {
+        url: 'acc://{{ADI_NAME}}.acme/htlc-receiver',
+        tokenUrl: 'acc://ACME',
+        principal: '{{create_identity.adiUrl}}',
+        signerUrl: '{{create_identity.adiUrl}}/book/1',
+      },
+      position: pos(9),
+    },
+    // ── Fund the sender from the lite token account ──
+    {
+      id: 'fund_sender',
+      type: 'SendTokens',
+      label: 'Fund Sender Account',
+      config: {
+        principal: '{{generate_keys.liteTokenAccount}}',
+        // The lite identity governs the lite token account. Without this the generator
+        // signs with the ADI book/1 (every transaction after CreateIdentity does), which
+        // is not an authority here, so the send stays pending forever.
+        signerUrl: '{{generate_keys.liteIdentity}}',
+        to: '{{create_sender_account.tokenAccountUrl}}',
+        amount: '500000000',
+      },
+      position: pos(10),
+    },
+    {
+      id: 'wait_for_sender_balance',
+      type: 'WaitForBalance',
+      label: 'Wait for Sender Balance',
+      config: { account: '{{create_sender_account.tokenAccountUrl}}', minBalance: '1.00000000', maxAttempts: 30, delayMs: 2000 },
+      position: pos(11),
+    },
+    // ── The hash lock: secret preimage, its SHA-256 hash and an expiration ──
+    {
+      id: 'create_hash_lock',
+      type: 'GenerateHashLock',
+      label: 'Create Hash Lock',
+      config: { hashAlgorithm: 'sha256', expirationMinutes: 30 },
+      position: pos(12),
+    },
+    // ── Locked send: the sender is debited, the receiver is NOT credited yet ──
+    {
+      id: 'locked_send',
+      type: 'SendTokens',
+      label: 'Locked Send',
+      config: {
+        principal: '{{create_sender_account.tokenAccountUrl}}',
+        signerUrl: '{{create_identity.adiUrl}}/book/1',
+        recipients: [{ url: '{{create_receiver_account.tokenAccountUrl}}', amount: '{{LOCK_AMOUNT}}' }],
+        hashLockFrom: 'create_hash_lock',
+      },
+      position: pos(13),
+    },
+    // ── The release targets the locked DEPOSIT (produced by the send), not the send ──
+    {
+      id: 'wait_for_locked_deposit',
+      type: 'WaitForLockedDeposit',
+      label: 'Wait for Locked Deposit',
+      config: { sendTxId: '{{locked_send.txId}}', maxAttempts: 60, delayMs: 2000 },
+      position: pos(14),
+    },
+    // ── Release: the receiver signs, pays the fee and reveals the preimage ──
+    {
+      id: 'release_locked',
+      type: 'ReleaseLockedOperation',
+      label: 'Release Locked Deposit',
+      config: {
+        principal: '{{create_receiver_account.tokenAccountUrl}}',
+        signerUrl: '{{create_identity.adiUrl}}/book/1',
+        lockedTxId: '{{wait_for_locked_deposit.lockedTxId}}',
+        preimage: '{{create_hash_lock.preimage}}',
+      },
+      position: pos(15),
+    },
+    {
+      id: 'wait_for_receiver_balance',
+      type: 'WaitForBalance',
+      label: 'Wait for Receiver Balance',
+      config: { account: '{{create_receiver_account.tokenAccountUrl}}', minBalance: '1.00000000', maxAttempts: 30, delayMs: 2000 },
+      position: pos(16),
+    },
+  ],
+  connections: [
+    { id: 'conn_gk_faucet', sourceNodeId: 'generate_keys', sourcePortId: 'output', targetNodeId: 'faucet', targetPortId: 'input' },
+    { id: 'conn_faucet_wait', sourceNodeId: 'faucet', sourcePortId: 'output', targetNodeId: 'wait_for_balance', targetPortId: 'input' },
+    { id: 'conn_wait_credits', sourceNodeId: 'wait_for_balance', sourcePortId: 'output', targetNodeId: 'add_credits', targetPortId: 'input' },
+    { id: 'conn_credits_waitc', sourceNodeId: 'add_credits', sourcePortId: 'output', targetNodeId: 'wait_for_credits', targetPortId: 'input' },
+    { id: 'conn_waitc_adi', sourceNodeId: 'wait_for_credits', sourcePortId: 'output', targetNodeId: 'create_identity', targetPortId: 'input' },
+    { id: 'conn_adi_adicredits', sourceNodeId: 'create_identity', sourcePortId: 'output', targetNodeId: 'add_adi_credits', targetPortId: 'input' },
+    { id: 'conn_adicredits_waitadic', sourceNodeId: 'add_adi_credits', sourcePortId: 'output', targetNodeId: 'wait_for_adi_credits', targetPortId: 'input' },
+    { id: 'conn_waitadic_sender', sourceNodeId: 'wait_for_adi_credits', sourcePortId: 'output', targetNodeId: 'create_sender_account', targetPortId: 'input' },
+    { id: 'conn_sender_receiver', sourceNodeId: 'create_sender_account', sourcePortId: 'output', targetNodeId: 'create_receiver_account', targetPortId: 'input' },
+    { id: 'conn_receiver_fund', sourceNodeId: 'create_receiver_account', sourcePortId: 'output', targetNodeId: 'fund_sender', targetPortId: 'input' },
+    { id: 'conn_fund_waitsender', sourceNodeId: 'fund_sender', sourcePortId: 'output', targetNodeId: 'wait_for_sender_balance', targetPortId: 'input' },
+    { id: 'conn_waitsender_lock', sourceNodeId: 'wait_for_sender_balance', sourcePortId: 'output', targetNodeId: 'create_hash_lock', targetPortId: 'input' },
+    { id: 'conn_lock_send', sourceNodeId: 'create_hash_lock', sourcePortId: 'output', targetNodeId: 'locked_send', targetPortId: 'input' },
+    { id: 'conn_send_waitdeposit', sourceNodeId: 'locked_send', sourcePortId: 'output', targetNodeId: 'wait_for_locked_deposit', targetPortId: 'input' },
+    { id: 'conn_waitdeposit_release', sourceNodeId: 'wait_for_locked_deposit', sourcePortId: 'output', targetNodeId: 'release_locked', targetPortId: 'input' },
+    { id: 'conn_release_waitreceiver', sourceNodeId: 'release_locked', sourcePortId: 'output', targetNodeId: 'wait_for_receiver_balance', targetPortId: 'input' },
+  ],
+  // No balance.delta on the receiver for the locked send: its balance does not move until
+  // the release. The receiver check is a floor that only the release can satisfy (the
+  // receiver account starts empty).
+  assertions: [
+    { type: 'account.exists', url: '{{create_identity.adiUrl}}', message: 'ADI should exist' },
+    { type: 'account.exists', url: '{{create_sender_account.tokenAccountUrl}}', message: 'Sender token account should exist' },
+    { type: 'account.exists', url: '{{create_receiver_account.tokenAccountUrl}}', message: 'Receiver token account should exist' },
+    { type: 'tx.status.equals', sourceStep: 'create_identity', status: 'success', message: 'CreateIdentity transaction should succeed' },
+    { type: 'tx.status.equals', sourceStep: 'locked_send', status: 'success', message: 'Hash-locked send should succeed' },
+    { type: 'tx.status.equals', sourceStep: 'release_locked', status: 'success', message: 'Release with the preimage should succeed' },
+    { type: 'balance.gte', account: '{{create_receiver_account.tokenAccountUrl}}', equals: '1', message: 'Receiver is credited only after the release (a locked deposit does not credit it)' },
+  ],
+};
+
+// =============================================================================
 // Exported Template Definitions
 // =============================================================================
 
@@ -1221,5 +1429,32 @@ export const GOLDEN_PATH_TEMPLATES: FlowTemplate[] = [
       'Verify the key page was updated',
     ],
     prerequisites: ['None - fully self-contained!'],
+  },
+  {
+    id: 'hash-lock',
+    name: 'Hash Lock (HTLC) Payment',
+    description:
+      'Complete hash-lock (HTLC) payment from scratch. Locks tokens to a SHA-256 hash, finds the locked deposit, releases it by revealing the preimage, and proves the receiver was credited. One ADI owns both accounts here; in a real swap the receiver is another party. Refund on expiry is the protocol design but is not currently functional on the network, so this flow always releases.',
+    category: 'advanced',
+    estimatedTime: '10 min',
+    tags: ['tokens', 'advanced', 'htlc'],
+    flow: hashLockFlow,
+    instructions: [
+      'Generate keys and fund via faucet',
+      'Add credits and create an ADI',
+      'Credit the ADI key page: it signs the lock and pays for the release',
+      'Create the sender and receiver token accounts',
+      'Fund the sender account from the lite token account',
+      'Create the hash lock: a secret preimage, its SHA-256 hash and a 30 minute expiration',
+      'Send with the hash lock: the sender is debited now, the receiver is NOT credited yet',
+      'Wait for the locked deposit: a release targets the deposit that the send produced, not the send itself',
+      'Release the deposit by revealing the preimage. The receiver signs and pays the small fee, and the preimage becomes public',
+      'Wait for the receiver balance to increase',
+      'Refund on expiry is the protocol design but is NOT currently functional on the network: a lock that is never released strands the funds, so use small amounts and always release',
+    ],
+    prerequisites: [
+      'None - fully self-contained!',
+      'Testnet only: keep amounts small, because an unreleased lock cannot be refunded',
+    ],
   },
 ];

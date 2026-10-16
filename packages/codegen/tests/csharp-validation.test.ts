@@ -19,6 +19,14 @@ import type { Flow } from '@accumulate-studio/types';
 import { deserializeYamlToFlow } from '../src/flow-serializer';
 import { generateCodeFromManifest } from '../src/manifest-generator';
 import { loadManifest } from '../src/manifest-loader';
+import {
+  HASH_LOCK,
+  expectHashLockRun,
+  expectWrongPreimageRejected,
+  harnessEnv,
+  wrongPreimageFlow,
+  type HarnessReport,
+} from './htlc-report';
 
 const TEMPLATES_DIR = join(__dirname, '../../../templates');
 const CSHARP_HARNESS_DIR = join(__dirname, 'csharp-harness');
@@ -36,6 +44,9 @@ const TEMPLATE_TO_BASELINE: Record<string, string> = {
   'custom-token': 'example_06',
   'key-rotation': 'example_09',
   'multi-sig-setup': 'example_10',
+  // No SDK example exists for a hash lock; the comparison is soft (warns only), so use the
+  // closest setup flow.
+  'hash-lock': 'example_03',
 };
 
 // Templates that are self-contained (start with GenerateKeys + Faucet)
@@ -45,6 +56,8 @@ const TEMPLATE_TO_BASELINE: Record<string, string> = {
 const SELF_CONTAINED_TEMPLATES = new Set([
   'lite-account-setup',
   'zero-to-hero',
+  // Runs under the faithful node mock (htlc_mock.py): lock, locked deposit, release.
+  'hash-lock',
 ]);
 
 /**
@@ -241,7 +254,7 @@ describe('C# Generated Code Validation', () => {
         try {
           output = execSync(
             `python "${CSHARP_HARNESS_PY}" "${binFile}" "${CSHARP_HARNESS_DIR}"`,
-            { encoding: 'utf-8', timeout: 150000 },
+            { encoding: 'utf-8', timeout: 150000, env: harnessEnv(name) },
           );
         } catch (err) {
           const error = err as { stderr?: string; stdout?: string };
@@ -249,6 +262,7 @@ describe('C# Generated Code Validation', () => {
         }
 
         const report = extractJson(output) as MockReport | null;
+        if (name === HASH_LOCK) expectHashLockRun(report as unknown as HarnessReport | null);
         if (!report) {
           console.warn(`No JSON report for ${name} (${output.length} chars)`);
           return;
@@ -256,6 +270,32 @@ describe('C# Generated Code Validation', () => {
         // For mock execution, check that some RPC calls were made
         expect(report.call_count).toBeGreaterThan(0);
       }, 180000); // 3 minute timeout for dotnet run
+
+      if (name === HASH_LOCK) {
+        // Mutation check: the same flow, but the release reveals a wrong preimage. The node accepts
+        // that at submit and rejects it at execute, so a program that does not turn the failed
+        // release into a non-zero exit would still look fine to a weaker check.
+        it('fails closed when the release reveals the wrong preimage', () => {
+          if (!harnessReady) {
+            console.warn('C# harness not ready, skipping wrong-preimage check');
+            return;
+          }
+          const code = generateCodeFromManifest(wrongPreimageFlow(flow), 'csharp', 'sdk', manifest);
+          const file = join(CSHARP_HARNESS_BIN_DIR, `${name.replace(/-/g, '_')}_wrong_preimage.cs`);
+          writeFileSync(file, code);
+          let output: string;
+          try {
+            output = execSync(
+              `python "${CSHARP_HARNESS_PY}" "${file}" "${CSHARP_HARNESS_DIR}"`,
+              { encoding: 'utf-8', timeout: 150000, env: harnessEnv(name) },
+            );
+          } catch (err) {
+            const error = err as { stderr?: string; stdout?: string };
+            output = (error.stdout || '') + (error.stderr || '');
+          }
+          expectWrongPreimageRejected(extractJson(output) as unknown as HarnessReport | null);
+        }, 180000);
+      }
 
       it('RPC call pattern comparison', () => {
         // Can only compare patterns for self-contained templates
@@ -288,7 +328,7 @@ describe('C# Generated Code Validation', () => {
         try {
           output = execSync(
             `python "${CSHARP_HARNESS_PY}" "${binFile}" "${CSHARP_HARNESS_DIR}"`,
-            { encoding: 'utf-8', timeout: 150000 },
+            { encoding: 'utf-8', timeout: 150000, env: harnessEnv(name) },
           );
         } catch {
           return;

@@ -1,0 +1,20 @@
+ℹ tests 27
+ℹ pass 27
+ℹ fail 0
+ℹ skipped 0
+ ✓ src/services/__tests__/config-validation.test.ts  (7 tests) 21ms
+ Test Files  41 passed (41)
+      Tests  633 passed (633)
+ Test Files  1 passed (1)
+      Tests  51 passed (51)
+ ✓ tests/csharp-validation.test.ts  (37 tests) 134731ms
+ ✓ tests/python-validation.test.ts  (37 tests) 23229ms
+ ✓ tests/dart-validation.test.ts  (37 tests) 134740ms
+ ✓ tests/rust-validation.test.ts  (23 tests) 175771ms
+ ✓ tests/javascript-validation.test.ts  (37 tests) 44685ms
+ ✓ tests/htlc-codegen.test.ts  (39 tests) 773ms
+ ✓ tests/codegen-snapshots.test.ts  (45 tests) 1652ms
+ Test Files  20 passed | 1 skipped (21)
+      Tests  574 passed | 135 skipped (709)
+ Test Files  2 passed (2)
+      Tests  17 passed (17)
