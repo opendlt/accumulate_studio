@@ -4,7 +4,7 @@ Current phase: P3   Next step: P3 step 1 (packages/types: add the 3 blocks) - se
 
 ## Resume guide (a NEW session starting P3 reads this first)
 1. Read `MASTER_PROMPT.md` (§1–§5), `RUNBOOK.md` (Design D-1..D-4, P3, P4, Appendix B/C) and then THIS file top to bottom. Decisions D-01..D-05 and the Defect triage table override the runbook where they differ (D-03: P7 = 2 runs; D-04: no SDK-branch fixes, rust-validation not repaired; D-05: `fund_sender` signer).
-2. State at hand-over: branch `feat/htlc-golden-path`, clean tree, P0 + P1 + P2 PASSED and committed (`git log --oneline` shows them). Nothing has been pushed; no registry publish; `accumulate-core` untouched; no SDK repo modified (only reverted test side effects).
+2. State at hand-over: branch `feat/htlc-golden-path`, clean tree, P0 + P1 + P2 PASSED and committed (`git log --oneline` shows them). The branch was pushed to origin at `a968987` (user-approved 2026-10-16, plain push, no force; the PR is NOT opened: `gh` is not installed, open it via https://github.com/opendlt/accumulate_studio/pull/new/feat/htlc-golden-path). Later commits are local until the user approves another push. No registry publish; `accumulate-core` untouched; no SDK repo modified (only reverted test side effects).
 3. Environment rules on this machine (Windows, Git Bash):
    - Only Python 3.14 is installed. Run the codegen suite with the SDK venv first on PATH: `PATH="/c/tmp/htlc-venv/Scripts:$PATH" npm test -w packages/codegen`. Without it 10 Python tests fail on `No module named 'accumulate_client'`.
    - Full `npm test` ≈ 15–20 min (JS validation 6 min, C#/Rust/Dart baselines 3–7 min each). Run it in the background; iterate with workspace-scoped runs (`npm test -w apps/studio`, `npx vitest run <name>` inside `packages/codegen`).
@@ -186,7 +186,7 @@ Dart `token-transfer` needed a re-export after P2-F2 (first attempt failed at `d
 - `accumulate-core` working tree has an untracked `grep.exe.stackdump` (not ours; left alone). Same file exists in the C# SDK repo.
 
 ## Human checkpoints pending
-- [ ] push branch / PR
+- [x] push branch: done at `a968987` (approved). [ ] open the PR (human, via the URL above); every FURTHER push needs fresh approval
 - [ ] publish SDK fixes (list)
 - [ ] gen:agent:dist
 - [ ] file core refund issue (docs/hash-lock-example/CORE-ISSUE-refund.md)
