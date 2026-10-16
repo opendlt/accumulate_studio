@@ -174,7 +174,7 @@ def _patched_write_data_body_hash(body):
 
 def _compute_non_ed25519(
     keypair, principal, body, signer_url, signer_version,
-    memo=None, timestamp=None,
+    memo=None, timestamp=None, hash_lock=None,
 ):
     """Replicate the Ed25519 signing flow with a parameterised sig type.
 
@@ -182,6 +182,8 @@ def _compute_non_ed25519(
     Accumulate signature types — only Field 1 (Type) differs.  We reuse
     the SDK's low-level field helpers for this.
     """
+    hash_lock = _conv._hash_lock_dict(hash_lock)
+
     # -- Public key bytes (AlgoKeypair normalises this) --------------------
     pub_key = keypair.public_key_bytes()
 
@@ -211,6 +213,7 @@ def _compute_non_ed25519(
         principal=principal,
         initiator=initiator,
         memo=memo,
+        hash_lock=hash_lock,
     )
 
     # -- Step 4: body ------------------------------------------------------
@@ -241,6 +244,8 @@ def _compute_non_ed25519(
     }
     if memo:
         transaction["header"]["memo"] = memo
+    if hash_lock:
+        transaction["header"]["hashLock"] = _conv._hash_lock_to_json(hash_lock)
 
     envelope = {
         "transaction": [transaction],
@@ -263,13 +268,17 @@ def _compute_non_ed25519(
 
 def _patched_compute(
     keypair, principal, body, signer_url, signer_version,
-    memo=None, timestamp=None,
+    memo=None, timestamp=None, hash_lock=None,
 ):
     """Wrapper that pads 64-byte bodies before signing.
 
     For Ed25519 (type 2) we delegate to the SDK's proven original path.
     For other algorithms we use our own implementation that parameterises
     the signature type.
+
+    ``hash_lock`` (HTLC header field 8) is forwarded on both paths. SDK 2.5.0's
+    ``sign_and_build`` ALWAYS passes it, so a wrapper that does not accept it
+    breaks every signing call, locked or not.
     """
     # Pad 64-byte bodies (applies to ALL algorithms)
     encoded = _patched_encode_tx_body(body)
@@ -281,10 +290,12 @@ def _patched_compute(
     if is_ed25519:
         return _original_compute(
             keypair, principal, body, signer_url, signer_version, memo, timestamp,
+            hash_lock=hash_lock,
         )
     else:
         return _compute_non_ed25519(
             keypair, principal, body, signer_url, signer_version, memo, timestamp,
+            hash_lock=hash_lock,
         )
 
 

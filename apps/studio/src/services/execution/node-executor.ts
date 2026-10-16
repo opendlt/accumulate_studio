@@ -24,6 +24,9 @@ import type {
   WaitForCreditsConfig,
   GenerateKeysConfig,
   UpdateAccountAuthConfig,
+  GenerateHashLockConfig,
+  WaitForLockedDepositConfig,
+  ReleaseLockedOperationConfig,
 } from '@accumulate-studio/types';
 import { AccumulateAPI } from '../network/api';
 import { abortableDelay } from '../network/fetch-with-timeout';
@@ -85,6 +88,85 @@ export function parseCreditAmount(amount: string | number): number {
     throw new Error(`Invalid credit amount: ${amount}`);
   }
   return Math.trunc(num); // whole credits; proxy scales ×100
+}
+
+// ── Hash lock (HTLC) ─────────────────────────────────────────────────────────
+// Runs in the browser: no Buffer (it crashes there). Randomness from crypto.getRandomValues, hashes
+// from crypto.subtle (https or localhost only), hex by hand. The node limits are 10 min..30 days;
+// the block enforces 15 min..30 days so clock skew between this browser and the node cannot flip a
+// lock into a rejected one.
+export type HashLockAlgorithm = 'sha256' | 'sha256d';
+
+export interface HashLock {
+  preimage: string;          // hex, the secret
+  hash: string;              // hex, what goes on the chain
+  hashAlgorithm: HashLockAlgorithm;
+  expiration: number;        // absolute unix SECONDS (whole)
+  expirationIso: string;
+}
+
+const MIN_LOCK_MINUTES = 15;
+const MAX_LOCK_MINUTES = 43200; // 30 days
+const MAX_PREIMAGE_BYTES = 256;
+
+export function bytesToHex(bytes: Uint8Array): string {
+  let out = '';
+  for (let i = 0; i < bytes.length; i++) out += bytes[i].toString(16).padStart(2, '0');
+  return out;
+}
+
+/** Strict hex decode; throws on anything that is not an even-length hex string. */
+export function hexToBytes(hex: string): Uint8Array<ArrayBuffer> {
+  if (!/^[0-9a-fA-F]*$/.test(hex) || hex.length % 2 !== 0) {
+    throw new Error(`Invalid hex string: ${hex.length > 16 ? `${hex.slice(0, 16)}…` : hex}`);
+  }
+  const out = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  return out;
+}
+
+/** A preimage is 1..256 bytes of hex; the hash is computed over the raw bytes, no prefix. */
+function parsePreimage(hex: string): Uint8Array<ArrayBuffer> {
+  const bytes = hexToBytes(hex.trim());
+  if (bytes.length < 1 || bytes.length > MAX_PREIMAGE_BYTES) {
+    throw new Error(`Hash lock preimage must be 1..${MAX_PREIMAGE_BYTES} bytes (got ${bytes.length})`);
+  }
+  return bytes;
+}
+
+export async function createHashLock(
+  opts: { hashAlgorithm?: string; expirationMinutes?: number | string; preimage?: string },
+  nowMs: number = Date.now()
+): Promise<HashLock> {
+  const algorithm = String(opts.hashAlgorithm || 'sha256').toLowerCase();
+  if (algorithm !== 'sha256' && algorithm !== 'sha256d') {
+    throw new Error(`GenerateHashLock: unsupported hash algorithm "${opts.hashAlgorithm}" (use sha256 or sha256d)`);
+  }
+  const minutes = Number(opts.expirationMinutes ?? 30);
+  if (!Number.isInteger(minutes) || minutes < MIN_LOCK_MINUTES || minutes > MAX_LOCK_MINUTES) {
+    throw new Error(
+      `GenerateHashLock: expirationMinutes must be a whole number between ${MIN_LOCK_MINUTES} and ${MAX_LOCK_MINUTES}`
+    );
+  }
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle) {
+    throw new Error('GenerateHashLock needs crypto.subtle, which browsers only provide on https:// or http://localhost');
+  }
+
+  const preimage = opts.preimage
+    ? parsePreimage(opts.preimage)
+    : globalThis.crypto.getRandomValues(new Uint8Array(32));
+  let digest = new Uint8Array(await subtle.digest('SHA-256', preimage));
+  if (algorithm === 'sha256d') digest = new Uint8Array(await subtle.digest('SHA-256', digest));
+
+  const expiration = Math.floor(nowMs / 1000) + minutes * 60;
+  return {
+    preimage: bytesToHex(preimage),
+    hash: bytesToHex(digest),
+    hashAlgorithm: algorithm,
+    expiration,
+    expirationIso: new Date(expiration * 1000).toISOString(),
+  };
 }
 
 // =============================================================================
@@ -158,6 +240,15 @@ export class NodeExecutor {
 
       case 'UpdateAccountAuth':
         return this.executeUpdateAccountAuth(node.config as unknown as UpdateAccountAuthConfig, inputs, context);
+
+      case 'GenerateHashLock':
+        return this.executeGenerateHashLock(node.config as unknown as GenerateHashLockConfig, inputs);
+
+      case 'WaitForLockedDeposit':
+        return this.executeWaitForLockedDeposit(node.config as unknown as WaitForLockedDepositConfig, inputs, context);
+
+      case 'ReleaseLockedOperation':
+        return this.executeReleaseLockedOperation(node.config as unknown as ReleaseLockedOperationConfig, inputs, context);
 
       case 'Comment':
         return {}; // No-op for comments
@@ -567,7 +658,9 @@ export class NodeExecutor {
     }
 
     // ── Resolve source account (from / principal) ──
-    let from = config.from ? this.resolveValue(config.from, inputs) : '';
+    // The golden-path flows say `principal`; `from` is the older name for the same field.
+    const rawFrom = config.from || config.principal;
+    let from = rawFrom ? this.resolveValue(rawFrom, inputs) : '';
     if (!from) {
       // Default: lite token account (most common funding source)
       from = keypair.liteTokenAccount;
@@ -588,7 +681,11 @@ export class NodeExecutor {
     const keyPageUrl = inputs.keyPageUrl as string | undefined;
     let signerUrl: string;
 
-    if (isLiteAccount) {
+    const explicitSigner = config.signerUrl ? this.resolveValue(config.signerUrl, inputs) : '';
+    if (explicitSigner) {
+      this.requireResolved('SendTokens signerUrl', explicitSigner);
+      signerUrl = explicitSigner;
+    } else if (isLiteAccount) {
       signerUrl = keypair.liteTokenAccount;
     } else if (keyPageUrl) {
       signerUrl = keyPageUrl;
@@ -624,6 +721,15 @@ export class NodeExecutor {
       );
     }
 
+    // ── Hash lock (HTLC): the lock comes from an upstream GenerateHashLock ──
+    let hashLock: Pick<HashLock, 'hashAlgorithm' | 'hash' | 'expiration'> | undefined;
+    if (config.hashLockFrom) {
+      if (recipients.length !== 1) {
+        throw new Error('A hash-locked SendTokens takes exactly one recipient (one deposit is followed through to its release)');
+      }
+      hashLock = this.readHashLock(config.hashLockFrom, inputs);
+    }
+
     const result = await this.api.callProxy<{
       success: boolean;
       tx_hash?: string;
@@ -633,6 +739,11 @@ export class NodeExecutor {
       principal: from,
       recipients,
       signer_url: signerUrl,
+      ...(hashLock && {
+        hash_algorithm: hashLock.hashAlgorithm,
+        hash: hashLock.hash,
+        expiration: hashLock.expiration,
+      }),
     });
 
     if (!result.success) {
@@ -641,8 +752,11 @@ export class NodeExecutor {
 
     return {
       txHash: result.tx_hash,
+      // The transaction's own id (what `produced` is queried on), for {{send.txId}} references.
+      txId: result.tx_hash,
       from,
       recipients,
+      ...(hashLock && { hashLocked: true }),
       ...this.collectPassthrough(inputs),
       keypair,
       signer: keypair,
@@ -650,6 +764,215 @@ export class NodeExecutor {
       liteIdentity: keypair.liteIdentity,
       liteTokenAccount: keypair.liteTokenAccount,
     };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Hash lock (HTLC)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Create the secret, its hash and an expiration. Entirely client-side: the preimage never
+   * leaves the browser until the release reveals it on chain.
+   */
+  async executeGenerateHashLock(config: GenerateHashLockConfig, inputs: NodeOutputs): Promise<NodeOutputs> {
+    const preimage = config.preimage ? this.resolveValue(config.preimage, inputs) : '';
+    const lock = await createHashLock({
+      hashAlgorithm: config.hashAlgorithm,
+      expirationMinutes: config.expirationMinutes,
+      preimage,
+    });
+
+    const keypair = (inputs.keypair || inputs.signer) as KeyPair | undefined;
+    return {
+      ...lock,
+      ...this.collectPassthrough(inputs),
+      ...(keypair && {
+        keypair,
+        signer: keypair,
+        principal: inputs.principal,
+        liteIdentity: keypair.liteIdentity,
+        liteTokenAccount: keypair.liteTokenAccount,
+      }),
+    };
+  }
+
+  /**
+   * Find the SyntheticLockedDeposit a locked send produced. The release targets THAT id, not the
+   * send's. Scans `produced.records` itself: `produced.total` can exceed the records returned.
+   */
+  async executeWaitForLockedDeposit(
+    config: WaitForLockedDepositConfig,
+    inputs: NodeOutputs,
+    context: ExecutionContext
+  ): Promise<NodeOutputs> {
+    let sendTxId = config.sendTxId ? this.resolveValue(config.sendTxId, inputs) : '';
+    if (!sendTxId || sendTxId.includes('{{')) {
+      sendTxId = (inputs.txId as string) || '';
+    }
+    if (!sendTxId) {
+      throw new Error(
+        'WaitForLockedDeposit requires the txid of the locked SendTokens. Set sendTxId or connect the locked send upstream.'
+      );
+    }
+
+    const maxAttempts = config.maxAttempts || 60;
+    const delayMs = config.delayMs || 2000;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (context.abortController.signal.aborted) {
+        throw new Error('Execution aborted');
+      }
+
+      const lockedTxId = await this.findLockedDeposit(sendTxId);
+      if (lockedTxId) {
+        const keypair = (inputs.keypair || inputs.signer) as KeyPair | undefined;
+        return {
+          lockedTxId,
+          sendTxId,
+          attempts: attempt + 1,
+          ...this.collectPassthrough(inputs),
+          ...(keypair && {
+            keypair,
+            signer: keypair,
+            principal: inputs.principal,
+            liteIdentity: keypair.liteIdentity,
+            liteTokenAccount: keypair.liteTokenAccount,
+          }),
+        };
+      }
+
+      await this.delay(delayMs, context.abortController.signal);
+    }
+
+    throw new Error(`No delivered locked deposit found for ${sendTxId} after ${maxAttempts} attempts`);
+  }
+
+  /**
+   * Release a locked deposit by revealing the preimage. The principal is the RECEIVING account and
+   * its signer pays. A wrong preimage, an expired lock or a second release is accepted at submit and
+   * only fails at execute; the proxy waits for the result, so a failure surfaces here as an error.
+   */
+  async executeReleaseLockedOperation(
+    config: ReleaseLockedOperationConfig,
+    inputs: NodeOutputs,
+    _context: ExecutionContext
+  ): Promise<NodeOutputs> {
+    const keypair = (inputs.signer || inputs.keypair) as KeyPair | undefined;
+    if (!keypair) {
+      throw new Error('ReleaseLockedOperation requires a signer keypair');
+    }
+
+    let principal = config.principal ? this.resolveValue(config.principal, inputs) : '';
+    if (!principal) {
+      // Default: the recipient of the locked send upstream.
+      const upstream = inputs.recipients as Array<{ url: string }> | undefined;
+      principal = upstream?.[0]?.url || '';
+    }
+    let lockedTxId = config.lockedTxId ? this.resolveValue(config.lockedTxId, inputs) : '';
+    if (!lockedTxId) lockedTxId = (inputs.lockedTxId as string) || '';
+    let preimage = config.preimage ? this.resolveValue(config.preimage, inputs) : '';
+    if (!preimage) preimage = (inputs.preimage as string) || '';
+
+    if (!principal) {
+      throw new Error('ReleaseLockedOperation requires the receiving account (principal)');
+    }
+    if (!lockedTxId) {
+      throw new Error('ReleaseLockedOperation requires lockedTxId (the output of WaitForLockedDeposit)');
+    }
+    if (!preimage) {
+      throw new Error('ReleaseLockedOperation requires the preimage (the output of GenerateHashLock)');
+    }
+    this.requireResolved('ReleaseLockedOperation principal', principal);
+    this.requireResolved('ReleaseLockedOperation lockedTxId', lockedTxId);
+    this.requireResolved('ReleaseLockedOperation preimage', preimage);
+    parsePreimage(preimage); // 1..256 bytes of hex, before a transaction is spent on it
+
+    const explicitSigner = config.signerUrl ? this.resolveValue(config.signerUrl, inputs) : '';
+    const signerUrl = explicitSigner || (inputs.keyPageUrl as string | undefined) || keypair.liteTokenAccount;
+    this.requireResolved('ReleaseLockedOperation signerUrl', signerUrl);
+
+    const result = await this.api.callProxy<{
+      success: boolean;
+      tx_hash?: string;
+      error?: string;
+    }>('/api/sign-and-submit', {
+      session_id: this.sessionId,
+      tx_type: this.mapBlockTypeToTxType('ReleaseLockedOperation' as BlockType),
+      principal,
+      signer_url: signerUrl,
+      fields: { lockedTxID: lockedTxId, preimage },
+      wait: true,
+    });
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to release the locked deposit');
+    }
+
+    return {
+      txHash: result.tx_hash,
+      txId: result.tx_hash,
+      lockedTxId,
+      ...this.collectPassthrough(inputs),
+      keypair,
+      signer: keypair,
+      principal,
+      liteIdentity: keypair.liteIdentity,
+      liteTokenAccount: keypair.liteTokenAccount,
+    };
+  }
+
+  /**
+   * Query a send for its `produced` records and return the first one that is a delivered
+   * SyntheticLockedDeposit, or undefined when it is not there yet (a NotFound is "not ready").
+   */
+  private async findLockedDeposit(sendTxId: string): Promise<string | undefined> {
+    type QueryResult = { success: boolean; data?: Record<string, unknown>; error?: string };
+
+    const send = await this.api.callProxyRead<QueryResult>('/api/query-tx', { tx_hash: sendTxId });
+    if (!send.success || !send.data) return undefined;
+
+    const produced = send.data.produced as { records?: unknown[] } | unknown[] | undefined;
+    const records = Array.isArray(produced) ? produced : produced?.records ?? [];
+
+    for (const record of records) {
+      const txid = typeof record === 'string' ? record : (record as { value?: string } | null)?.value;
+      if (!txid) continue;
+
+      const deposit = await this.api.callProxyRead<QueryResult>('/api/query-tx', { tx_hash: txid });
+      if (!deposit.success || !deposit.data) continue;
+
+      const message = deposit.data.message as { transaction?: { body?: { type?: string } } } | undefined;
+      if (
+        message?.transaction?.body?.type === 'syntheticLockedDeposit' &&
+        String(deposit.data.status).toLowerCase() === 'delivered'
+      ) {
+        return txid;
+      }
+    }
+    return undefined;
+  }
+
+  /** The lock an upstream GenerateHashLock produced, read from the run's namespaced outputs. */
+  private readHashLock(
+    nodeId: string,
+    inputs: NodeOutputs
+  ): Pick<HashLock, 'hashAlgorithm' | 'hash' | 'expiration'> {
+    const hash = inputs[`${nodeId}.hash`];
+    const hashAlgorithm = inputs[`${nodeId}.hashAlgorithm`];
+    const expiration = inputs[`${nodeId}.expiration`];
+    if (typeof hash !== 'string' || typeof hashAlgorithm !== 'string' || typeof expiration !== 'number') {
+      throw new Error(
+        `SendTokens hashLockFrom "${nodeId}" has no hash lock output. It must be a GenerateHashLock block that runs before this send.`
+      );
+    }
+    return { hashAlgorithm: hashAlgorithm as HashLockAlgorithm, hash, expiration };
+  }
+
+  /** Fail loudly on a reference that did not resolve instead of sending it to the network. */
+  private requireResolved(label: string, value: string): void {
+    if (value.includes('{{')) {
+      throw new Error(`${label} did not resolve (${value}). Is the block it refers to connected upstream?`);
+    }
   }
 
   /**
@@ -867,9 +1190,11 @@ export class NodeExecutor {
 
     return {
       txHash: result.tx_hash,
+      ...this.collectPassthrough(inputs),
+      // AFTER the passthrough: `tokenAccountUrl` is a passthrough key, so a second CreateTokenAccount
+      // in a row would otherwise re-emit the FIRST account's URL as its own output.
       tokenAccountUrl: url,
       tokenUrl,
-      ...this.collectPassthrough(inputs),
       keypair,
       signer: keypair,
       principal,
@@ -1384,6 +1709,7 @@ export class NodeExecutor {
       UpdateKey: 'UpdateKey',
       LockAccount: 'LockAccount',
       UpdateAccountAuth: 'UpdateAccountAuth',
+      ReleaseLockedOperation: 'ReleaseLockedOperation',
     };
 
     return mapping[blockType] || blockType;

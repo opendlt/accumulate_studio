@@ -134,7 +134,8 @@ interface FlowActions {
   setDragging: (isDragging: boolean, blockType?: BlockType | null) => void;
 
   // Execution
-  startExecution: () => void;
+  /** `variables`: the values this run was given, overlaid on the flow's defaults */
+  startExecution: (variables?: Record<string, unknown>) => void;
   updateNodeExecution: (nodeId: string, state: Partial<NodeExecutionState>) => void;
   addExecutionLog: (log: Omit<ExecutionLog, 'timestamp'>) => void;
   completeExecution: (status: 'completed' | 'failed') => void;
@@ -481,15 +482,16 @@ export const useFlowStore = create<FlowState & FlowActions>()(
       },
 
       // Execution
-      startExecution: () => {
+      startExecution: (runVariables) => {
         set((state) => {
-          // Populate execution variables from flow variable defaults
+          // Populate execution variables from flow variable defaults, then the values this run was given
           const variables: Record<string, unknown> = {};
           for (const v of state.flow.variables) {
             if (v.default !== undefined) {
               variables[v.name] = v.default;
             }
           }
+          Object.assign(variables, runVariables);
           state.execution = {
             flowId: state.flow.name,
             status: 'running',

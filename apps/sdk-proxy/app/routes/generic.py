@@ -4,6 +4,7 @@ import concurrent.futures
 import hashlib
 import logging
 import os
+import re
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
@@ -36,6 +37,7 @@ ALLOWED_TX_TYPES = {
     "AddCredits", "TransferCredits", "BurnCredits",
     "WriteData", "WriteDataTo",
     "UpdateKeyPage", "UpdateKey", "LockAccount", "UpdateAccountAuth",
+    "ReleaseLockedOperation",
 }
 
 
@@ -100,7 +102,38 @@ _TYPES_WITH_BYTES_FIELDS = {
     "LockAccount",         # bypass builder — SDK encoder missing height field
     "TransferCredits",     # bypass builder — SDK encoder missing to field
     "BurnCredits",         # bypass builder — SDK encoder missing amount field
+    "ReleaseLockedOperation",  # bypass builder — preimage is hex, kept as-is for the encoder
 }
+
+_HEX = re.compile(r"[0-9a-fA-F]+")
+
+
+def _release_locked_fields(fields: dict) -> dict:
+    """Validate a ReleaseLockedOperation body (HTLC release) before any signing.
+
+    ``lockedTxID`` is the SyntheticLockedDeposit's id (``acc://<hash>@<account>``),
+    NOT the SendTokens id. ``preimage`` is 1..256 bytes, sent as hex. A wrong
+    preimage is accepted at submit and only fails at execute, so a malformed one
+    is rejected here instead of costing a transaction.
+    """
+    locked = fields.get("lockedTxID") or fields.get("lockedTxId")
+    preimage = fields.get("preimage")
+    if not isinstance(locked, str) or not locked.startswith("acc://") or "@" not in locked:
+        raise HTTPException(
+            status_code=422,
+            detail="ReleaseLockedOperation needs lockedTxID as acc://<hash>@<account>",
+        )
+    if (
+        not isinstance(preimage, str)
+        or not _HEX.fullmatch(preimage)
+        or len(preimage) % 2
+        or not 2 <= len(preimage) <= 512
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="ReleaseLockedOperation preimage must be 1..256 bytes of hex",
+        )
+    return {"lockedTxID": locked, "preimage": preimage.lower()}
 
 
 def _to_camel(name: str) -> str:
@@ -124,6 +157,10 @@ async def sign_and_submit(
     if req.tx_type not in ALLOWED_TX_TYPES:
         raise HTTPException(status_code=422, detail=f"Unsupported tx_type '{req.tx_type}'")
 
+    fields = req.fields
+    if req.tx_type == "ReleaseLockedOperation":
+        fields = _release_locked_fields(fields)
+
     client = get_client(net)
 
     kp = store.get(req.session_id)
@@ -133,7 +170,7 @@ async def sign_and_submit(
     try:
         if req.tx_type in _TYPES_WITH_BYTES_FIELDS:
             # Bypass builder to avoid Pydantic double-encoding of bytes fields.
-            body = {"type": _to_camel(req.tx_type), **req.fields}
+            body = {"type": _to_camel(req.tx_type), **fields}
         else:
             builder = get_builder_for(req.tx_type)
             for key, value in req.fields.items():

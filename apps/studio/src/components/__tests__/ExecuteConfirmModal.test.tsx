@@ -279,4 +279,112 @@ describe('ExecuteConfirmModal', () => {
     expect(screen.getByText('3')).toBeDefined();
     expect(screen.getByText('1')).toBeDefined();
   });
+
+  // -------------------------------------------------------------------------
+  // Flow variables
+  // -------------------------------------------------------------------------
+
+  describe('flow variables', () => {
+    const withVariables = (variables: unknown[]) => {
+      mockFlowState = { flow: { ...mockFlowState.flow, variables: variables as never[] } };
+    };
+    const ADI = { name: 'ADI_NAME', type: 'string', required: true, description: 'Name for your ADI' };
+    const AMOUNT = { name: 'LOCK_AMOUNT', type: 'decimal', default: '1.00000000', description: 'Amount to lock' };
+    const executeButton = () => screen.getByRole('button', { name: /Execute Flow/ });
+    const field = (name: string) => screen.getByLabelText(new RegExp(name)) as HTMLInputElement;
+
+    it('shows nothing extra when the flow declares no variables', () => {
+      render(<ExecuteConfirmModal {...defaultProps()} />);
+      expect(screen.queryByText('Flow variables')).toBeNull();
+      expect(executeButton().hasAttribute('disabled')).toBe(false);
+    });
+
+    it('renders a labelled field per variable, defaults prefilled, required ones first', () => {
+      withVariables([AMOUNT, ADI]);
+      render(<ExecuteConfirmModal {...defaultProps()} />);
+
+      expect(screen.getByText('Flow variables')).toBeDefined();
+      expect(screen.getByText('required')).toBeDefined();
+      expect(screen.getByText('Name for your ADI')).toBeDefined();
+      expect(field('LOCK_AMOUNT').value).toBe('1.00000000');
+      expect(field('ADI_NAME').value).toBe('');
+      expect(field('ADI_NAME').getAttribute('aria-required')).toBe('true');
+
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.map((i) => i.id.split('-').pop())).toEqual(['ADI_NAME', 'LOCK_AMOUNT']);
+    });
+
+    it('keeps Execute disabled, and says why, until the required value is entered', () => {
+      withVariables([ADI, AMOUNT]);
+      const props = defaultProps();
+      render(<ExecuteConfirmModal {...props} />);
+
+      expect(executeButton().hasAttribute('disabled')).toBe(true);
+      expect(screen.getByText('Enter a value for ADI_NAME to enable Execute.')).toBeDefined();
+
+      fireEvent.change(field('ADI_NAME'), { target: { value: 'htlc-p6-1' } });
+      expect(executeButton().hasAttribute('disabled')).toBe(false);
+      expect(screen.queryByText(/to enable Execute/)).toBeNull();
+
+      fireEvent.click(executeButton());
+      expect(props.onConfirm).toHaveBeenCalledWith({ ADI_NAME: 'htlc-p6-1', LOCK_AMOUNT: '1.00000000' });
+      expect(props.onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('flags a malformed value after the field is left, and blocks Execute until fixed', () => {
+      withVariables([ADI, AMOUNT]);
+      render(<ExecuteConfirmModal {...defaultProps()} />);
+      fireEvent.change(field('ADI_NAME'), { target: { value: 'ok' } });
+
+      fireEvent.change(field('LOCK_AMOUNT'), { target: { value: '1.123456789' } });
+      expect(screen.queryByRole('alert')).toBeNull(); // not before the person has left the field
+      fireEvent.blur(field('LOCK_AMOUNT'));
+
+      expect(screen.getByRole('alert').textContent).toMatch(/at most 8 decimal places/);
+      expect(field('LOCK_AMOUNT').getAttribute('aria-invalid')).toBe('true');
+      expect(field('LOCK_AMOUNT').getAttribute('aria-describedby')).toContain('-error');
+      expect(executeButton().hasAttribute('disabled')).toBe(true);
+
+      fireEvent.change(field('LOCK_AMOUNT'), { target: { value: '2.5' } });
+      expect(screen.queryByRole('alert')).toBeNull();
+      expect(executeButton().hasAttribute('disabled')).toBe(false);
+    });
+
+    it('Enter in a field runs the flow when complete, and shows what is missing when not', () => {
+      withVariables([ADI]);
+      const props = defaultProps();
+      render(<ExecuteConfirmModal {...props} />);
+
+      fireEvent.keyDown(field('ADI_NAME'), { key: 'Enter' });
+      expect(props.onConfirm).not.toHaveBeenCalled();
+      expect(screen.getByRole('alert').textContent).toBe('Required');
+
+      fireEvent.change(field('ADI_NAME'), { target: { value: 'my-adi' } });
+      fireEvent.keyDown(field('ADI_NAME'), { key: 'Enter' });
+      expect(props.onConfirm).toHaveBeenCalledWith({ ADI_NAME: 'my-adi' });
+    });
+
+    it('focuses the first field that still needs a value when it opens', () => {
+      withVariables([ADI, AMOUNT]);
+      render(<ExecuteConfirmModal {...defaultProps()} />);
+      expect(document.activeElement).toBe(field('ADI_NAME'));
+    });
+
+    it('starts every opening from the defaults', () => {
+      withVariables([ADI]);
+      const props = defaultProps();
+      const { rerender } = render(<ExecuteConfirmModal {...props} />);
+      fireEvent.change(field('ADI_NAME'), { target: { value: 'used-last-time' } });
+
+      rerender(<ExecuteConfirmModal {...props} isOpen={false} />);
+      rerender(<ExecuteConfirmModal {...props} isOpen />);
+      expect(field('ADI_NAME').value).toBe('');
+    });
+
+    it('hides a secret variable while it is typed', () => {
+      withVariables([{ name: 'API_KEY', type: 'string', required: true, secret: true }]);
+      render(<ExecuteConfirmModal {...defaultProps()} />);
+      expect(field('API_KEY').type).toBe('password');
+    });
+  });
 });

@@ -8,6 +8,7 @@ import { PrerequisiteAssistantModal } from './PrerequisiteAssistantModal';
 import { WelcomeModal } from './WelcomeModal';
 import { ShortcutsModal } from './ShortcutsModal';
 import { executionEngine } from '../../services/execution';
+import type { VariableValues } from '../../services/flow-variables';
 
 // =============================================================================
 // Modal IDs
@@ -40,9 +41,9 @@ export const ModalContainer: React.FC = () => {
   }, [closeModal]);
 
   // Handle execution confirm
-  const handleExecuteConfirm = useCallback(async () => {
+  const handleExecuteConfirm = useCallback(async (variables: VariableValues) => {
     try {
-      await executionEngine.executeFlow(flow);
+      await executionEngine.executeFlow(flow, variables);
     } catch (error) {
       console.error('Execution failed:', error);
     }

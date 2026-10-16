@@ -1,0 +1,565 @@
+{
+  "endpoint": "https://kermit.accumulatenetwork.io/v3",
+  "mode": "positive",
+  "send": "acc://ce16b3f63e0e9fe8f1312bab4546f9db48497f16780b3c25ce74dd70a3970109@adi-1792188300.acme/htlc-sender",
+  "release": "acc://3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72@adi-1792188300.acme/htlc-receiver",
+  "amount": 100000000,
+  "RESULT": "PASS",
+  "checks": [
+    {
+      "check": "send record found",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "send delivered, no error",
+      "ok": true,
+      "detail": "status=delivered error=None"
+    },
+    {
+      "check": "send body is sendTokens",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "send header carries the hashLock",
+      "ok": true,
+      "detail": "{\"hashAlgorithm\": \"sha256\", \"hash\": \"f785e0e8a9cddb2140094edf0c5f8048c0fcf615dadf8cf24c3922940d319acc\", \"expiration\": \"2026-10-16T22:35:35Z\"}"
+    },
+    {
+      "check": "send amount is exactly the lock amount",
+      "ok": true,
+      "detail": "100000000"
+    },
+    {
+      "check": "a syntheticLockedDeposit is among send.produced.records",
+      "ok": true,
+      "detail": "1 record(s)"
+    },
+    {
+      "check": "deposit delivered",
+      "ok": true,
+      "detail": "delivered"
+    },
+    {
+      "check": "deposit result.releaseTxID is set",
+      "ok": true,
+      "detail": "acc://3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72@adi-1792188300.acme/htlc-receiver"
+    },
+    {
+      "check": "deposit result.releaseTxID equals the release txid the program printed",
+      "ok": true,
+      "detail": "program printed acc://3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72@adi-1792188300.acme/htlc-receiver"
+    },
+    {
+      "check": "release record found",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "release delivered, no error",
+      "ok": true,
+      "detail": "status=delivered error=None"
+    },
+    {
+      "check": "release is a releaseLockedOperation",
+      "ok": true,
+      "detail": "releaseLockedOperation"
+    },
+    {
+      "check": "release targets THIS deposit (not the send)",
+      "ok": true,
+      "detail": "acc://55a5169fddff8c32aeedeafe436884cd4e1ca03c03833794b560d9f56f1aa95f@adi-1792188300.acme/htlc-receiver"
+    },
+    {
+      "check": "release preimage hashes to the lock's hash",
+      "ok": true,
+      "detail": "sha256(32 bytes) = f785e0e8a9cddb21..."
+    },
+    {
+      "check": "receiver balance is exactly 0 + 100000000",
+      "ok": true,
+      "detail": "balance=100000000"
+    },
+    {
+      "check": "sender balance is exactly 400000000",
+      "ok": true,
+      "detail": "balance=400000000"
+    }
+  ],
+  "raw": {
+    "send": {
+      "recordType": "message",
+      "id": "acc://ce16b3f63e0e9fe8f1312bab4546f9db48497f16780b3c25ce74dd70a3970109@adi-1792188300.acme/htlc-sender",
+      "message": {
+        "type": "transaction",
+        "transaction": {
+          "header": {
+            "principal": "acc://adi-1792188300.acme/htlc-sender",
+            "initiator": "fd804f2b448b256d651f30deafbc24db6435f2c73140c64a3ef5e203010cbd6e",
+            "hashLock": {
+              "hashAlgorithm": "sha256",
+              "hash": "f785e0e8a9cddb2140094edf0c5f8048c0fcf615dadf8cf24c3922940d319acc",
+              "expiration": "2026-10-16T22:35:35Z"
+            }
+          },
+          "body": {
+            "type": "sendTokens",
+            "to": [
+              {
+                "url": "acc://adi-1792188300.acme/htlc-receiver",
+                "amount": "100000000"
+              }
+            ]
+          }
+        }
+      },
+      "status": "delivered",
+      "statusNo": 201,
+      "result": {
+        "type": "unknown"
+      },
+      "produced": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "txID",
+            "value": "acc://55a5169fddff8c32aeedeafe436884cd4e1ca03c03833794b560d9f56f1aa95f@adi-1792188300.acme/htlc-receiver"
+          }
+        ],
+        "start": 0,
+        "total": 2
+      },
+      "cause": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "txID",
+            "value": "acc://3c3e5ce0b537079a0d6bd16f4c18ee9af6924d193202c2ee49c7d2b312c641c7@adi-1792188300.acme/htlc-sender"
+          },
+          {
+            "recordType": "txID",
+            "value": "acc://5c3e684c21ee224d58bcae88781370bbe519c50393e51fc2f5877b01cee78776@adi-1792188300.acme/book"
+          }
+        ],
+        "start": 0,
+        "total": 2
+      },
+      "signatures": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "keyBook",
+              "url": "acc://adi-1792188300.acme/book",
+              "authorities": [
+                {
+                  "url": "acc://adi-1792188300.acme/book"
+                }
+              ],
+              "pageCount": 1
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://5c3e684c21ee224d58bcae88781370bbe519c50393e51fc2f5877b01cee78776@adi-1792188300.acme/book",
+                  "message": {
+                    "type": "signatureRequest",
+                    "authority": "acc://adi-1792188300.acme/book",
+                    "txID": "acc://ce16b3f63e0e9fe8f1312bab4546f9db48497f16780b3c25ce74dd70a3970109@adi-1792188300.acme/htlc-sender",
+                    "cause": "acc://3c3e5ce0b537079a0d6bd16f4c18ee9af6924d193202c2ee49c7d2b312c641c7@adi-1792188300.acme/htlc-sender"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 1
+            }
+          },
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "keyPage",
+              "keyBook": "acc://adi-1792188300.acme/book",
+              "url": "acc://adi-1792188300.acme/book/1",
+              "creditBalance": 49994699,
+              "acceptThreshold": 1,
+              "threshold": 1,
+              "version": 1,
+              "keys": [
+                {
+                  "publicKeyHash": "6a7b5f4dff02d028d445f70d7c034e3e4a0cd62c92c2a59d96a1490ef2df4433",
+                  "publicKey": "6a7b5f4dff02d028d445f70d7c034e3e4a0cd62c92c2a59d96a1490ef2df4433",
+                  "lastUsedOn": 1792188338264000
+                }
+              ]
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://d76ceafa0e6205f5e06a87be7b204628965fdf2ad8d7703e0ecc134507b91c28@adi-1792188300.acme/book/1",
+                  "message": {
+                    "type": "signature",
+                    "signature": {
+                      "type": "ed25519",
+                      "publicKey": "84aac2d2d5356802b72f345031680a1bbc8a650a9b4f35fd6b81d9527153f085",
+                      "signature": "3da3457d9b5b4682f68c951cde954561748db676513aa210fb31985da8dc99e4ca1f241f034b189d180d2deef83fc59b72842ca1526efc7d9e86be2cc2c29c03",
+                      "signer": "acc://adi-1792188300.acme/book/1",
+                      "signerVersion": 1,
+                      "timestamp": 1792188335711000,
+                      "transactionHash": "ce16b3f63e0e9fe8f1312bab4546f9db48497f16780b3c25ce74dd70a3970109"
+                    },
+                    "txID": "acc://ce16b3f63e0e9fe8f1312bab4546f9db48497f16780b3c25ce74dd70a3970109@adi-1792188300.acme/htlc-sender"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 1
+            }
+          },
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "tokenAccount",
+              "url": "acc://adi-1792188300.acme/htlc-sender",
+              "tokenUrl": "acc://ACME",
+              "balance": "400000000"
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://3c3e5ce0b537079a0d6bd16f4c18ee9af6924d193202c2ee49c7d2b312c641c7@adi-1792188300.acme/htlc-sender",
+                  "message": {
+                    "type": "signatureRequest",
+                    "authority": "acc://adi-1792188300.acme/htlc-sender",
+                    "txID": "acc://ce16b3f63e0e9fe8f1312bab4546f9db48497f16780b3c25ce74dd70a3970109@adi-1792188300.acme/htlc-sender",
+                    "cause": "acc://d76ceafa0e6205f5e06a87be7b204628965fdf2ad8d7703e0ecc134507b91c28@adi-1792188300.acme/book/1"
+                  },
+                  "historical": true
+                },
+                {
+                  "recordType": "message",
+                  "id": "acc://c93d249a9835f07ef0260b8e36ca69dd218afc5e69203e89d7774dec22ae816d@adi-1792188300.acme/htlc-sender",
+                  "message": {
+                    "type": "creditPayment",
+                    "paid": 300,
+                    "payer": "acc://adi-1792188300.acme/book/1",
+                    "initiator": true,
+                    "txID": "acc://ce16b3f63e0e9fe8f1312bab4546f9db48497f16780b3c25ce74dd70a3970109@adi-1792188300.acme/htlc-sender",
+                    "cause": "acc://d76ceafa0e6205f5e06a87be7b204628965fdf2ad8d7703e0ecc134507b91c28@adi-1792188300.acme/book/1"
+                  },
+                  "historical": true
+                },
+                {
+                  "recordType": "message",
+                  "id": "acc://70f1cd297f34e514c034e6a5827b40ce8473db17ef088436a39ffb295315c170@adi-1792188300.acme/htlc-sender",
+                  "message": {
+                    "type": "signature",
+                    "signature": {
+                      "type": "authority",
+                      "origin": "acc://adi-1792188300.acme/book/1",
+                      "authority": "acc://adi-1792188300.acme/book",
+                      "txID": "acc://ce16b3f63e0e9fe8f1312bab4546f9db48497f16780b3c25ce74dd70a3970109@adi-1792188300.acme/htlc-sender",
+                      "cause": "acc://d76ceafa0e6205f5e06a87be7b204628965fdf2ad8d7703e0ecc134507b91c28@adi-1792188300.acme/book/1"
+                    },
+                    "txID": "acc://ce16b3f63e0e9fe8f1312bab4546f9db48497f16780b3c25ce74dd70a3970109@adi-1792188300.acme/htlc-sender"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 3
+            }
+          }
+        ],
+        "start": 0,
+        "total": 3
+      },
+      "sequence": {
+        "type": "sequenced"
+      },
+      "lastBlockTime": "2026-10-16T22:05:45Z"
+    },
+    "produced": {
+      "acc://55a5169fddff8c32aeedeafe436884cd4e1ca03c03833794b560d9f56f1aa95f@adi-1792188300.acme/htlc-receiver": {
+        "recordType": "message",
+        "id": "acc://55a5169fddff8c32aeedeafe436884cd4e1ca03c03833794b560d9f56f1aa95f@adi-1792188300.acme/htlc-receiver",
+        "message": {
+          "type": "transaction",
+          "transaction": {
+            "header": {
+              "principal": "acc://adi-1792188300.acme/htlc-receiver"
+            },
+            "body": {
+              "type": "syntheticLockedDeposit",
+              "cause": "acc://ce16b3f63e0e9fe8f1312bab4546f9db48497f16780b3c25ce74dd70a3970109@adi-1792188300.acme/htlc-sender",
+              "source": "acc://adi-1792188300.acme/htlc-sender",
+              "initiator": "acc://adi-1792188300.acme/book/1",
+              "feeRefund": 100,
+              "index": 5,
+              "token": "acc://ACME",
+              "amount": "100000000",
+              "sender": "acc://adi-1792188300.acme/htlc-sender",
+              "hashAlgorithm": "sha256",
+              "hash": "f785e0e8a9cddb2140094edf0c5f8048c0fcf615dadf8cf24c3922940d319acc",
+              "expiration": "2026-10-16T22:35:35Z"
+            }
+          }
+        },
+        "status": "delivered",
+        "statusNo": 201,
+        "result": {
+          "type": "syntheticLockedDeposit",
+          "releaseTxID": "acc://3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72@adi-1792188300.acme/htlc-receiver"
+        },
+        "produced": {
+          "recordType": "range",
+          "start": 0,
+          "total": 0
+        },
+        "cause": {
+          "recordType": "range",
+          "start": 0,
+          "total": 0
+        },
+        "signatures": {
+          "recordType": "range",
+          "start": 0,
+          "total": 0
+        },
+        "sequence": {
+          "type": "sequenced"
+        },
+        "lastBlockTime": "2026-10-16T22:05:45Z"
+      }
+    },
+    "release": {
+      "recordType": "message",
+      "id": "acc://3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72@adi-1792188300.acme/htlc-receiver",
+      "message": {
+        "type": "transaction",
+        "transaction": {
+          "header": {
+            "principal": "acc://adi-1792188300.acme/htlc-receiver",
+            "initiator": "635cd75a08416c0e6c915d7207820bb20c8ac6349ad44340976867024ee078c5"
+          },
+          "body": {
+            "type": "releaseLockedOperation",
+            "lockedTxID": "acc://55a5169fddff8c32aeedeafe436884cd4e1ca03c03833794b560d9f56f1aa95f@adi-1792188300.acme/htlc-receiver",
+            "preimage": "1ff24a1a305bb991ca1a165f253cd249356759b9cbcd8c52c246f911848860c6"
+          }
+        }
+      },
+      "status": "delivered",
+      "statusNo": 201,
+      "result": {
+        "type": "releaseLockedOperation",
+        "preimage": "1ff24a1a305bb991ca1a165f253cd249356759b9cbcd8c52c246f911848860c6",
+        "hashAlgorithm": "sha256",
+        "hash": "f785e0e8a9cddb2140094edf0c5f8048c0fcf615dadf8cf24c3922940d319acc",
+        "amount": "100000000",
+        "token": "acc://ACME"
+      },
+      "produced": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "cause": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "txID",
+            "value": "acc://8423eb4d167998445c1c2b073aec6be0912f7b99b5e5d60eaaa67fb18eb3948d@adi-1792188300.acme/htlc-receiver"
+          },
+          {
+            "recordType": "txID",
+            "value": "acc://b6b4b23415655b6f24e681ef89273db2d84ea2998385812487fe3e2fcb01da14@adi-1792188300.acme/book"
+          }
+        ],
+        "start": 0,
+        "total": 2
+      },
+      "signatures": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "keyBook",
+              "url": "acc://adi-1792188300.acme/book",
+              "authorities": [
+                {
+                  "url": "acc://adi-1792188300.acme/book"
+                }
+              ],
+              "pageCount": 1
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://b6b4b23415655b6f24e681ef89273db2d84ea2998385812487fe3e2fcb01da14@adi-1792188300.acme/book",
+                  "message": {
+                    "type": "signatureRequest",
+                    "authority": "acc://adi-1792188300.acme/book",
+                    "txID": "acc://3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72@adi-1792188300.acme/htlc-receiver",
+                    "cause": "acc://8423eb4d167998445c1c2b073aec6be0912f7b99b5e5d60eaaa67fb18eb3948d@adi-1792188300.acme/htlc-receiver"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 1
+            }
+          },
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "keyPage",
+              "keyBook": "acc://adi-1792188300.acme/book",
+              "url": "acc://adi-1792188300.acme/book/1",
+              "creditBalance": 49994699,
+              "acceptThreshold": 1,
+              "threshold": 1,
+              "version": 1,
+              "keys": [
+                {
+                  "publicKeyHash": "6a7b5f4dff02d028d445f70d7c034e3e4a0cd62c92c2a59d96a1490ef2df4433",
+                  "publicKey": "6a7b5f4dff02d028d445f70d7c034e3e4a0cd62c92c2a59d96a1490ef2df4433",
+                  "lastUsedOn": 1792188338264000
+                }
+              ]
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://a037c319a9e38bc05e21cef95def3dff6a41db742aadaab8c8306edddecac0ab@adi-1792188300.acme/book/1",
+                  "message": {
+                    "type": "signature",
+                    "signature": {
+                      "type": "ed25519",
+                      "publicKey": "84aac2d2d5356802b72f345031680a1bbc8a650a9b4f35fd6b81d9527153f085",
+                      "signature": "ccd532ee83708c3728011c15880a5bf9e6e0157b6d15ffc36cb7526b1cdd12d9ec80d2739a36cbdceec0ace95c5a8ffedcfa03a74f47b15d8a110dc8026fb60d",
+                      "signer": "acc://adi-1792188300.acme/book/1",
+                      "signerVersion": 1,
+                      "timestamp": 1792188338264000,
+                      "transactionHash": "3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72"
+                    },
+                    "txID": "acc://3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72@adi-1792188300.acme/htlc-receiver"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 1
+            }
+          },
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "tokenAccount",
+              "url": "acc://adi-1792188300.acme/htlc-receiver",
+              "tokenUrl": "acc://ACME",
+              "balance": "100000000"
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://8423eb4d167998445c1c2b073aec6be0912f7b99b5e5d60eaaa67fb18eb3948d@adi-1792188300.acme/htlc-receiver",
+                  "message": {
+                    "type": "signatureRequest",
+                    "authority": "acc://adi-1792188300.acme/htlc-receiver",
+                    "txID": "acc://3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72@adi-1792188300.acme/htlc-receiver",
+                    "cause": "acc://a037c319a9e38bc05e21cef95def3dff6a41db742aadaab8c8306edddecac0ab@adi-1792188300.acme/book/1"
+                  },
+                  "historical": true
+                },
+                {
+                  "recordType": "message",
+                  "id": "acc://333246d4cea784208b202c0505bf3a828907152c1c3806de8b621b869d02d488@adi-1792188300.acme/htlc-receiver",
+                  "message": {
+                    "type": "creditPayment",
+                    "paid": 1,
+                    "payer": "acc://adi-1792188300.acme/book/1",
+                    "initiator": true,
+                    "txID": "acc://3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72@adi-1792188300.acme/htlc-receiver",
+                    "cause": "acc://a037c319a9e38bc05e21cef95def3dff6a41db742aadaab8c8306edddecac0ab@adi-1792188300.acme/book/1"
+                  },
+                  "historical": true
+                },
+                {
+                  "recordType": "message",
+                  "id": "acc://72a7013c787ac6dca089134bc994b5c9546677b502e8d6b7dbf146c97e5c7841@adi-1792188300.acme/htlc-receiver",
+                  "message": {
+                    "type": "signature",
+                    "signature": {
+                      "type": "authority",
+                      "origin": "acc://adi-1792188300.acme/book/1",
+                      "authority": "acc://adi-1792188300.acme/book",
+                      "txID": "acc://3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72@adi-1792188300.acme/htlc-receiver",
+                      "cause": "acc://a037c319a9e38bc05e21cef95def3dff6a41db742aadaab8c8306edddecac0ab@adi-1792188300.acme/book/1"
+                    },
+                    "txID": "acc://3854b2ac33ea2724eb2b56ef76c64ba53769663eea53d5455532c59716443f72@adi-1792188300.acme/htlc-receiver"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 3
+            }
+          }
+        ],
+        "start": 0,
+        "total": 3
+      },
+      "sequence": {
+        "type": "sequenced"
+      },
+      "lastBlockTime": "2026-10-16T22:05:46Z"
+    },
+    "receiver": {
+      "recordType": "account",
+      "account": {
+        "type": "tokenAccount",
+        "url": "acc://adi-1792188300.acme/htlc-receiver",
+        "tokenUrl": "acc://ACME",
+        "balance": "100000000"
+      },
+      "pending": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "lastBlockTime": "2026-10-16T22:05:46Z"
+    },
+    "sender": {
+      "recordType": "account",
+      "account": {
+        "type": "tokenAccount",
+        "url": "acc://adi-1792188300.acme/htlc-sender",
+        "tokenUrl": "acc://ACME",
+        "balance": "400000000"
+      },
+      "pending": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "lastBlockTime": "2026-10-16T22:05:46Z"
+    }
+  }
+}

@@ -13,6 +13,7 @@ import { parseReceipt, verifyReceipt } from '@accumulate-studio/verification';
 import { useFlowStore } from '../../store/flow-store';
 import { networkService, AccumulateAPI } from '../network';
 import { NodeExecutor, type NodeOutputs } from './node-executor';
+import { resolveRunVariables, type VariableValues } from '../flow-variables';
 
 // =============================================================================
 // Execution Types
@@ -70,7 +71,7 @@ export class ExecutionEngine {
   /**
    * Execute an entire flow
    */
-  async executeFlow(flow: Flow): Promise<void> {
+  async executeFlow(flow: Flow, variables?: VariableValues): Promise<void> {
     if (this.status === 'running') {
       throw new Error('Execution already in progress');
     }
@@ -79,6 +80,10 @@ export class ExecutionEngine {
     if (!networkConfig) {
       throw new Error('Not connected to any network');
     }
+
+    // Every required variable must have a value before anything touches the network: an unresolved
+    // `{{ADI_NAME}}` would otherwise be submitted as a literal.
+    const runVariables = resolveRunVariables(flow.variables, variables);
 
     // Generate a session ID for SDK proxy keypair management
     const sessionId = crypto.randomUUID();
@@ -97,11 +102,9 @@ export class ExecutionEngine {
     // button (which calls abortController.abort()) cancels requests in flight.
     api.setAbortSignal(this.context.abortController.signal);
 
-    // Initialize flow variables with defaults
-    for (const variable of flow.variables) {
-      if (variable.default !== undefined) {
-        this.context.variables.set(variable.name, variable.default);
-      }
+    // Flow variables: defaults overlaid with the values this run was given
+    for (const [name, value] of Object.entries(runVariables)) {
+      this.context.variables.set(name, value);
     }
 
     this.nodeExecutor = new NodeExecutor(api, sessionId);
@@ -139,7 +142,7 @@ export class ExecutionEngine {
       });
     }
 
-    store.startExecution();
+    store.startExecution(runVariables);
     store.addExecutionLog({
       level: 'info',
       message: `Starting flow execution: ${flow.name}`,

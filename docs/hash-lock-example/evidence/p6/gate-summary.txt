@@ -1,0 +1,11 @@
+typecheck exit=0
+build-mcp exit=0
+test-mcp exit=0
+npm-test exit=0
+validate-manifests exit=0
+validate-canonical exit=0
+harness-test exit=0
+verify-codegen exit=0
+lint exit=0
+proxy-pytest exit=0
+ALLDONE

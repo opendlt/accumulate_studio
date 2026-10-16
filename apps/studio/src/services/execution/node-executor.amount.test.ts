@@ -12,6 +12,14 @@ describe('parseAcmeAmount (ACME, ×1e8)', () => {
   it('number passthrough: 42 → 42 (already base units)', () => expect(parseAcmeAmount(42)).toBe(42));
   it('throws on garbage', () => expect(() => parseAcmeAmount('abc')).toThrow());
   it('uses ACME_PRECISION = 1e8', () => expect(ACME_PRECISION).toBe(100_000_000));
+  // Hash lock flow: the generated code overrides LOCK_AMOUNT to "100000000" base units
+  // (FLOW_VAR_DEFAULTS_*); the engine must reach the same figure, scaled exactly once.
+  it('LOCK_AMOUNT default 1.00000000 → 100000000 (same as the generated code)', () =>
+    expect(parseAcmeAmount('1.00000000')).toBe(100_000_000));
+  it('a NUMBER is already base units (fund_sender 500000000 is 5 ACME, not 5e16)', () => {
+    expect(parseAcmeAmount(500_000_000)).toBe(500_000_000);
+    expect(parseAcmeAmount('500000000')).toBe(50_000_000_000_000_000); // the string would be 500M ACME
+  });
 });
 
 describe('parseCreditAmount (whole credits, NO ×1e8)', () => {

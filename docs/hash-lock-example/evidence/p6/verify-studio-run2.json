@@ -1,0 +1,553 @@
+{
+  "endpoint": "https://kermit.accumulatenetwork.io/v3",
+  "send": "acc://63445d54840492e24f870a99c221aaa9ba72a76d429dff4dd39d8ac0daa80fa9@htlc-p6-1792185332.acme/htlc-sender",
+  "release": "acc://5e5e49676cdd1ed5a737c58523e5880f779f374e469b2a565503b4cab096bef1@htlc-p6-1792185332.acme/htlc-receiver",
+  "receiver": "acc://htlc-p6-1792185332.acme/htlc-receiver",
+  "amount": 100000000,
+  "RESULT": "PASS",
+  "checks": [
+    {
+      "check": "send record found",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "send delivered, no error",
+      "ok": true,
+      "detail": "status=delivered error=None"
+    },
+    {
+      "check": "send body is sendTokens",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "send header carries the hashLock",
+      "ok": true,
+      "detail": "{\"hashAlgorithm\": \"sha256\", \"hash\": \"6fe1c9f76209393515a348063d70e900d23d4580a551e32458483c03311cf532\", \"expiration\": \"2026-10-16T21:46:18Z\"}"
+    },
+    {
+      "check": "a syntheticLockedDeposit is among send.produced.records",
+      "ok": true,
+      "detail": "1 record(s)"
+    },
+    {
+      "check": "deposit delivered",
+      "ok": true,
+      "detail": "delivered"
+    },
+    {
+      "check": "deposit result.releaseTxID equals the release txid",
+      "ok": true,
+      "detail": "deposit says acc://5e5e49676cdd1ed5a737c58523e5880f779f374e469b2a565503b4cab096bef1@htlc-p6-1792185332.acme/htlc-receiver"
+    },
+    {
+      "check": "release record found",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "release delivered, no error",
+      "ok": true,
+      "detail": "status=delivered error=None"
+    },
+    {
+      "check": "release is a releaseLockedOperation",
+      "ok": true,
+      "detail": "releaseLockedOperation"
+    },
+    {
+      "check": "release targets THIS deposit (not the send)",
+      "ok": true,
+      "detail": "acc://6e5047264e6d8af68f9c5eadef0119980274f194b1cfa50501a4d4fe35b33b7a@htlc-p6-1792185332.acme/htlc-receiver"
+    },
+    {
+      "check": "release preimage hashes to the lock's hash",
+      "ok": true,
+      "detail": "sha256(32 bytes) = 6fe1c9f762093935..."
+    },
+    {
+      "check": "receiver balance is exactly 0 + 100000000",
+      "ok": true,
+      "detail": "balance=100000000"
+    },
+    {
+      "check": "sender balance is exactly 400000000",
+      "ok": true,
+      "detail": "balance=400000000"
+    }
+  ],
+  "raw": {
+    "send": {
+      "recordType": "message",
+      "id": "acc://63445d54840492e24f870a99c221aaa9ba72a76d429dff4dd39d8ac0daa80fa9@htlc-p6-1792185332.acme/htlc-sender",
+      "message": {
+        "type": "transaction",
+        "transaction": {
+          "header": {
+            "principal": "acc://htlc-p6-1792185332.acme/htlc-sender",
+            "initiator": "647c8549b38d3aea2cedeff84bbbd0c71fdf1d6a194dd5da4a3e8bee80f97153",
+            "hashLock": {
+              "hashAlgorithm": "sha256",
+              "hash": "6fe1c9f76209393515a348063d70e900d23d4580a551e32458483c03311cf532",
+              "expiration": "2026-10-16T21:46:18Z"
+            }
+          },
+          "body": {
+            "type": "sendTokens",
+            "to": [
+              {
+                "url": "acc://htlc-p6-1792185332.acme/htlc-receiver",
+                "amount": "100000000"
+              }
+            ]
+          }
+        }
+      },
+      "status": "delivered",
+      "statusNo": 201,
+      "result": {
+        "type": "unknown"
+      },
+      "produced": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "txID",
+            "value": "acc://6e5047264e6d8af68f9c5eadef0119980274f194b1cfa50501a4d4fe35b33b7a@htlc-p6-1792185332.acme/htlc-receiver"
+          }
+        ],
+        "start": 0,
+        "total": 2
+      },
+      "cause": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "txID",
+            "value": "acc://740f700220bed956723ddd9abd54a78eed39b6e60644ab43ed0b198648b6f0c7@htlc-p6-1792185332.acme/book"
+          },
+          {
+            "recordType": "txID",
+            "value": "acc://8d6c1af0ca0f6bc9b87904ca967f7054194936f77a6a469c84e6d2f11d67a1dc@htlc-p6-1792185332.acme/htlc-sender"
+          }
+        ],
+        "start": 0,
+        "total": 2
+      },
+      "signatures": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "keyBook",
+              "url": "acc://htlc-p6-1792185332.acme/book",
+              "authorities": [
+                {
+                  "url": "acc://htlc-p6-1792185332.acme/book"
+                }
+              ],
+              "pageCount": 1
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://740f700220bed956723ddd9abd54a78eed39b6e60644ab43ed0b198648b6f0c7@htlc-p6-1792185332.acme/book",
+                  "message": {
+                    "type": "signatureRequest",
+                    "authority": "acc://htlc-p6-1792185332.acme/book",
+                    "txID": "acc://63445d54840492e24f870a99c221aaa9ba72a76d429dff4dd39d8ac0daa80fa9@htlc-p6-1792185332.acme/htlc-sender",
+                    "cause": "acc://8d6c1af0ca0f6bc9b87904ca967f7054194936f77a6a469c84e6d2f11d67a1dc@htlc-p6-1792185332.acme/htlc-sender"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 1
+            }
+          },
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "keyPage",
+              "keyBook": "acc://htlc-p6-1792185332.acme/book",
+              "url": "acc://htlc-p6-1792185332.acme/book/1",
+              "creditBalance": 49994699,
+              "acceptThreshold": 1,
+              "threshold": 1,
+              "version": 1,
+              "keys": [
+                {
+                  "publicKeyHash": "7d8c77d1c1dba6270195cea3e4040111d676d3821503f61f5c8d4070cdb8713c",
+                  "publicKey": "7d8c77d1c1dba6270195cea3e4040111d676d3821503f61f5c8d4070cdb8713c",
+                  "lastUsedOn": 1792185381218357
+                }
+              ]
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://a8eb516f18dc36d2bfdb315c9e266c9cca2e3c687b082da5686e2a2866822de5@htlc-p6-1792185332.acme/book/1",
+                  "message": {
+                    "type": "signature",
+                    "signature": {
+                      "type": "ed25519",
+                      "publicKey": "f2006bd3041cde3c49f2cc4a8c74072461964347a59282252aff630e07692b12",
+                      "signature": "fdfb5ed08f92de41d0139577416a2930ca6a3508d8e2ac9968a1cb88ab288df4cb0b664778dca6643d85dbf3ec8fea74c991bda8d452e859b6f1a0d2d5cfb50f",
+                      "signer": "acc://htlc-p6-1792185332.acme/book/1",
+                      "signerVersion": 1,
+                      "timestamp": 1792185378742848
+                    },
+                    "txID": "acc://63445d54840492e24f870a99c221aaa9ba72a76d429dff4dd39d8ac0daa80fa9@htlc-p6-1792185332.acme/htlc-sender"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 1
+            }
+          },
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "tokenAccount",
+              "url": "acc://htlc-p6-1792185332.acme/htlc-sender",
+              "tokenUrl": "acc://ACME",
+              "balance": "400000000"
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://8d6c1af0ca0f6bc9b87904ca967f7054194936f77a6a469c84e6d2f11d67a1dc@htlc-p6-1792185332.acme/htlc-sender",
+                  "message": {
+                    "type": "signatureRequest",
+                    "authority": "acc://htlc-p6-1792185332.acme/htlc-sender",
+                    "txID": "acc://63445d54840492e24f870a99c221aaa9ba72a76d429dff4dd39d8ac0daa80fa9@htlc-p6-1792185332.acme/htlc-sender",
+                    "cause": "acc://a8eb516f18dc36d2bfdb315c9e266c9cca2e3c687b082da5686e2a2866822de5@htlc-p6-1792185332.acme/book/1"
+                  },
+                  "historical": true
+                },
+                {
+                  "recordType": "message",
+                  "id": "acc://d099804c0c77bfcdf8e13d7c7ae6eb2db1175d801ae6192c0ffe396ba5ba7381@htlc-p6-1792185332.acme/htlc-sender",
+                  "message": {
+                    "type": "creditPayment",
+                    "paid": 300,
+                    "payer": "acc://htlc-p6-1792185332.acme/book/1",
+                    "initiator": true,
+                    "txID": "acc://63445d54840492e24f870a99c221aaa9ba72a76d429dff4dd39d8ac0daa80fa9@htlc-p6-1792185332.acme/htlc-sender",
+                    "cause": "acc://a8eb516f18dc36d2bfdb315c9e266c9cca2e3c687b082da5686e2a2866822de5@htlc-p6-1792185332.acme/book/1"
+                  },
+                  "historical": true
+                },
+                {
+                  "recordType": "message",
+                  "id": "acc://7694317eb8f8716bf91362fd43bf9676fcd154097fbdf5ddc31a277e46f63f7e@htlc-p6-1792185332.acme/htlc-sender",
+                  "message": {
+                    "type": "signature",
+                    "signature": {
+                      "type": "authority",
+                      "origin": "acc://htlc-p6-1792185332.acme/book/1",
+                      "authority": "acc://htlc-p6-1792185332.acme/book",
+                      "txID": "acc://63445d54840492e24f870a99c221aaa9ba72a76d429dff4dd39d8ac0daa80fa9@htlc-p6-1792185332.acme/htlc-sender",
+                      "cause": "acc://a8eb516f18dc36d2bfdb315c9e266c9cca2e3c687b082da5686e2a2866822de5@htlc-p6-1792185332.acme/book/1"
+                    },
+                    "txID": "acc://63445d54840492e24f870a99c221aaa9ba72a76d429dff4dd39d8ac0daa80fa9@htlc-p6-1792185332.acme/htlc-sender"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 3
+            }
+          }
+        ],
+        "start": 0,
+        "total": 3
+      },
+      "sequence": {
+        "type": "sequenced"
+      },
+      "lastBlockTime": "2026-10-16T21:17:01Z"
+    },
+    "produced": {
+      "acc://6e5047264e6d8af68f9c5eadef0119980274f194b1cfa50501a4d4fe35b33b7a@htlc-p6-1792185332.acme/htlc-receiver": {
+        "recordType": "message",
+        "id": "acc://6e5047264e6d8af68f9c5eadef0119980274f194b1cfa50501a4d4fe35b33b7a@htlc-p6-1792185332.acme/htlc-receiver",
+        "message": {
+          "type": "transaction",
+          "transaction": {
+            "header": {
+              "principal": "acc://htlc-p6-1792185332.acme/htlc-receiver"
+            },
+            "body": {
+              "type": "syntheticLockedDeposit",
+              "cause": "acc://63445d54840492e24f870a99c221aaa9ba72a76d429dff4dd39d8ac0daa80fa9@htlc-p6-1792185332.acme/htlc-sender",
+              "source": "acc://htlc-p6-1792185332.acme/htlc-sender",
+              "initiator": "acc://htlc-p6-1792185332.acme/book/1",
+              "feeRefund": 100,
+              "index": 5,
+              "token": "acc://ACME",
+              "amount": "100000000",
+              "sender": "acc://htlc-p6-1792185332.acme/htlc-sender",
+              "hashAlgorithm": "sha256",
+              "hash": "6fe1c9f76209393515a348063d70e900d23d4580a551e32458483c03311cf532",
+              "expiration": "2026-10-16T21:46:18Z"
+            }
+          }
+        },
+        "status": "delivered",
+        "statusNo": 201,
+        "result": {
+          "type": "syntheticLockedDeposit",
+          "releaseTxID": "acc://5e5e49676cdd1ed5a737c58523e5880f779f374e469b2a565503b4cab096bef1@htlc-p6-1792185332.acme/htlc-receiver"
+        },
+        "produced": {
+          "recordType": "range",
+          "start": 0,
+          "total": 0
+        },
+        "cause": {
+          "recordType": "range",
+          "start": 0,
+          "total": 0
+        },
+        "signatures": {
+          "recordType": "range",
+          "start": 0,
+          "total": 0
+        },
+        "sequence": {
+          "type": "sequenced"
+        },
+        "lastBlockTime": "2026-10-16T21:17:01Z"
+      }
+    },
+    "release": {
+      "recordType": "message",
+      "id": "acc://5e5e49676cdd1ed5a737c58523e5880f779f374e469b2a565503b4cab096bef1@htlc-p6-1792185332.acme/htlc-receiver",
+      "message": {
+        "type": "transaction",
+        "transaction": {
+          "header": {
+            "principal": "acc://htlc-p6-1792185332.acme/htlc-receiver",
+            "initiator": "a6240aec29cd18b535ce665398322980279674135ee45274a8eb618f153257b2"
+          },
+          "body": {
+            "type": "releaseLockedOperation",
+            "lockedTxID": "acc://6e5047264e6d8af68f9c5eadef0119980274f194b1cfa50501a4d4fe35b33b7a@htlc-p6-1792185332.acme/htlc-receiver",
+            "preimage": "7431146a2f9fa972c222cdf3aedfebfc993360cd22a891d1696b492243c7cb27"
+          }
+        }
+      },
+      "status": "delivered",
+      "statusNo": 201,
+      "result": {
+        "type": "releaseLockedOperation",
+        "preimage": "7431146a2f9fa972c222cdf3aedfebfc993360cd22a891d1696b492243c7cb27",
+        "hashAlgorithm": "sha256",
+        "hash": "6fe1c9f76209393515a348063d70e900d23d4580a551e32458483c03311cf532",
+        "amount": "100000000",
+        "token": "acc://ACME"
+      },
+      "produced": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "cause": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "txID",
+            "value": "acc://33415e187d72415c4157c97ce455754d06b57950d09a5925c6c742893551f453@htlc-p6-1792185332.acme/htlc-receiver"
+          },
+          {
+            "recordType": "txID",
+            "value": "acc://fc1bdee05ecec95bbeaefbf62c412ee5ac1b485204bc9d5f6d3aaa7389da7b69@htlc-p6-1792185332.acme/book"
+          }
+        ],
+        "start": 0,
+        "total": 2
+      },
+      "signatures": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "keyBook",
+              "url": "acc://htlc-p6-1792185332.acme/book",
+              "authorities": [
+                {
+                  "url": "acc://htlc-p6-1792185332.acme/book"
+                }
+              ],
+              "pageCount": 1
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://fc1bdee05ecec95bbeaefbf62c412ee5ac1b485204bc9d5f6d3aaa7389da7b69@htlc-p6-1792185332.acme/book",
+                  "message": {
+                    "type": "signatureRequest",
+                    "authority": "acc://htlc-p6-1792185332.acme/book",
+                    "txID": "acc://5e5e49676cdd1ed5a737c58523e5880f779f374e469b2a565503b4cab096bef1@htlc-p6-1792185332.acme/htlc-receiver",
+                    "cause": "acc://33415e187d72415c4157c97ce455754d06b57950d09a5925c6c742893551f453@htlc-p6-1792185332.acme/htlc-receiver"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 1
+            }
+          },
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "keyPage",
+              "keyBook": "acc://htlc-p6-1792185332.acme/book",
+              "url": "acc://htlc-p6-1792185332.acme/book/1",
+              "creditBalance": 49994699,
+              "acceptThreshold": 1,
+              "threshold": 1,
+              "version": 1,
+              "keys": [
+                {
+                  "publicKeyHash": "7d8c77d1c1dba6270195cea3e4040111d676d3821503f61f5c8d4070cdb8713c",
+                  "publicKey": "7d8c77d1c1dba6270195cea3e4040111d676d3821503f61f5c8d4070cdb8713c",
+                  "lastUsedOn": 1792185381218357
+                }
+              ]
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://7784de0aa66f992d8e6cf269bfab711aee2983461d7f644133e5b2677f4940c4@htlc-p6-1792185332.acme/book/1",
+                  "message": {
+                    "type": "signature",
+                    "signature": {
+                      "type": "ed25519",
+                      "publicKey": "f2006bd3041cde3c49f2cc4a8c74072461964347a59282252aff630e07692b12",
+                      "signature": "f94492274beee849b66d82353406d87f94ca9c38f3e7c7c65c474a99d2b071792fc59b87d93e7a36bb92d34ca08143592e481ad41036b2ee4b58e08c7e436402",
+                      "signer": "acc://htlc-p6-1792185332.acme/book/1",
+                      "signerVersion": 1,
+                      "timestamp": 1792185381218357
+                    },
+                    "txID": "acc://5e5e49676cdd1ed5a737c58523e5880f779f374e469b2a565503b4cab096bef1@htlc-p6-1792185332.acme/htlc-receiver"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 1
+            }
+          },
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "tokenAccount",
+              "url": "acc://htlc-p6-1792185332.acme/htlc-receiver",
+              "tokenUrl": "acc://ACME",
+              "balance": "100000000"
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://33415e187d72415c4157c97ce455754d06b57950d09a5925c6c742893551f453@htlc-p6-1792185332.acme/htlc-receiver",
+                  "message": {
+                    "type": "signatureRequest",
+                    "authority": "acc://htlc-p6-1792185332.acme/htlc-receiver",
+                    "txID": "acc://5e5e49676cdd1ed5a737c58523e5880f779f374e469b2a565503b4cab096bef1@htlc-p6-1792185332.acme/htlc-receiver",
+                    "cause": "acc://7784de0aa66f992d8e6cf269bfab711aee2983461d7f644133e5b2677f4940c4@htlc-p6-1792185332.acme/book/1"
+                  },
+                  "historical": true
+                },
+                {
+                  "recordType": "message",
+                  "id": "acc://87f9fd4bbb1b9261149e6db8032bbfaf3a9936d4d90edd42e2dcfd96c4d0aa9c@htlc-p6-1792185332.acme/htlc-receiver",
+                  "message": {
+                    "type": "creditPayment",
+                    "paid": 1,
+                    "payer": "acc://htlc-p6-1792185332.acme/book/1",
+                    "initiator": true,
+                    "txID": "acc://5e5e49676cdd1ed5a737c58523e5880f779f374e469b2a565503b4cab096bef1@htlc-p6-1792185332.acme/htlc-receiver",
+                    "cause": "acc://7784de0aa66f992d8e6cf269bfab711aee2983461d7f644133e5b2677f4940c4@htlc-p6-1792185332.acme/book/1"
+                  },
+                  "historical": true
+                },
+                {
+                  "recordType": "message",
+                  "id": "acc://703ad5f41a8cac67992b48f07f720f484da21f0bd2b4c62bace6f2bce6cb9385@htlc-p6-1792185332.acme/htlc-receiver",
+                  "message": {
+                    "type": "signature",
+                    "signature": {
+                      "type": "authority",
+                      "origin": "acc://htlc-p6-1792185332.acme/book/1",
+                      "authority": "acc://htlc-p6-1792185332.acme/book",
+                      "txID": "acc://5e5e49676cdd1ed5a737c58523e5880f779f374e469b2a565503b4cab096bef1@htlc-p6-1792185332.acme/htlc-receiver",
+                      "cause": "acc://7784de0aa66f992d8e6cf269bfab711aee2983461d7f644133e5b2677f4940c4@htlc-p6-1792185332.acme/book/1"
+                    },
+                    "txID": "acc://5e5e49676cdd1ed5a737c58523e5880f779f374e469b2a565503b4cab096bef1@htlc-p6-1792185332.acme/htlc-receiver"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 3
+            }
+          }
+        ],
+        "start": 0,
+        "total": 3
+      },
+      "sequence": {
+        "type": "sequenced"
+      },
+      "lastBlockTime": "2026-10-16T21:17:01Z"
+    },
+    "receiver": {
+      "recordType": "account",
+      "account": {
+        "type": "tokenAccount",
+        "url": "acc://htlc-p6-1792185332.acme/htlc-receiver",
+        "tokenUrl": "acc://ACME",
+        "balance": "100000000"
+      },
+      "pending": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "lastBlockTime": "2026-10-16T21:17:02Z"
+    },
+    "sender": {
+      "recordType": "account",
+      "account": {
+        "type": "tokenAccount",
+        "url": "acc://htlc-p6-1792185332.acme/htlc-sender",
+        "tokenUrl": "acc://ACME",
+        "balance": "400000000"
+      },
+      "pending": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "lastBlockTime": "2026-10-16T21:17:02Z"
+    }
+  }
+}
