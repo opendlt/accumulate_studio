@@ -1,0 +1,10 @@
+OK   delivered      acc://e71a50306abad1f9b5bf36dc184d31987c9f14f8aaf823fd6d1b74cbc3ec0fa4 
+OK   delivered      acc://c7a70f04dae89444a0578f9d38db99362fe722f8c77f5fbc0f3b1eb0440f9c80 
+OK   delivered      acc://6fc4a6182cc88fde2b063c64baedfcfee82cf5aca4d320ae4ee1b67c2dd92359 
+OK   delivered      acc://24830fed95a6130badac6e6d2b09e0e5a184800b8695c58cd2d693ba5671b067 
+OK   delivered      acc://4964ab0150fe90ebe2ddcec22e17be5fa297a94d970660e3796e9020eb9c9f79 
+OK   delivered      acc://5925f3d304ed4c1521b00c30360ddd25d4f0278b617a6f949c194e341458c9fd 
+OK   delivered      acc://0acc4c5204dbfcc833d46290f8f7b4949e590146ab63f37fa5c282bcb96d4b72 
+OK   delivered      acc://74006fa925722efa2f2594635381905aa36366c2f4fe16a990d543aae21babee 
+OK   delivered      acc://d69929504e523eed8739380de6e6d9641d48a68505e6ee7fda35b3bfa486c21d 
+VERIFY C:/tmp/htlc-logs/p2-live-multi-sig-setup-python.log: 9 ids, 0 failing

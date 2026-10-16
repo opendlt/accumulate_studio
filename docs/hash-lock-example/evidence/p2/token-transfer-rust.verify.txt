@@ -1,0 +1,8 @@
+OK   delivered      acc://166cd0385e57c231150736b4e9fee48a13d287e3c35321e2e00f3b781b486053 
+OK   delivered      acc://a61d64bab228940f2dc2c83fc94591fb04b1a8b6bef3c83111fe0ec7153cec63 
+OK   delivered      acc://644aa90d5231312470c462b47826dfa18c7d663b37a35d9623af296100153e75 
+OK   delivered      acc://9d3253af7afe1e8ba480634ec6124769a16c5bd70f4f1c62cb24f5262d93baed 
+OK   delivered      acc://8aba882ca8336edf610f2b9addee13731fc21e190f28088e501a31c19ab123b2 
+OK   delivered      acc://29088728ddce39b161ddc4e52951b4de446f513449a27d525a2ead78a92e77e6 
+OK   delivered      acc://3829e1a088cc35d512da7e26b9a635d7d87189b75311160391a9e84d3d42687a 
+VERIFY C:/tmp/htlc-logs/p2-live-token-transfer-rust.log: 7 ids, 0 failing

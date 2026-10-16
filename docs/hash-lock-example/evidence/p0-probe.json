@@ -1,0 +1,922 @@
+{
+  "endpoint": "https://kermit.accumulatenetwork.io",
+  "startedAt": "2026-10-16T07:39:07.538758+00:00",
+  "steps": {
+    "faucet": [
+      {
+        "url": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+        "response": {
+          "jsonrpc": "2.0",
+          "result": {
+            "transactionHash": "af0a11d7ea70e891251f23defba32690a7a0a1686b3f031a4d345cab6ae3bf7f",
+            "txid": "acc://af0a11d7ea70e891251f23defba32690a7a0a1686b3f031a4d345cab6ae3bf7f@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+            "result": {
+              "txID": "acc://af0a11d7ea70e891251f23defba32690a7a0a1686b3f031a4d345cab6ae3bf7f@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+              "code": "ok",
+              "codeNum": 200,
+              "result": {
+                "type": "unknown"
+              }
+            }
+          },
+          "id": 1
+        }
+      },
+      {
+        "url": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+        "response": {
+          "jsonrpc": "2.0",
+          "result": {
+            "transactionHash": "c6fac004a2178892f6782e76dd7991f1adf530fbb1c6cf30432490cb7f92eb26",
+            "txid": "acc://c6fac004a2178892f6782e76dd7991f1adf530fbb1c6cf30432490cb7f92eb26@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+            "result": {
+              "txID": "acc://c6fac004a2178892f6782e76dd7991f1adf530fbb1c6cf30432490cb7f92eb26@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+              "code": "ok",
+              "codeNum": 200,
+              "result": {
+                "type": "unknown"
+              }
+            }
+          },
+          "id": 2
+        }
+      },
+      {
+        "url": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+        "response": {
+          "jsonrpc": "2.0",
+          "result": {
+            "transactionHash": "7e4ae43f474ffab1b40734d110a9ba4272a5b4f1d5af365f5d1e4519c2f8a5ae",
+            "txid": "acc://7e4ae43f474ffab1b40734d110a9ba4272a5b4f1d5af365f5d1e4519c2f8a5ae@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+            "result": {
+              "txID": "acc://7e4ae43f474ffab1b40734d110a9ba4272a5b4f1d5af365f5d1e4519c2f8a5ae@61c57f92a56e5db6b44afcc9add522c014512b1d64fa5ad0/ACME",
+              "code": "ok",
+              "codeNum": 200,
+              "result": {
+                "type": "unknown"
+              }
+            }
+          },
+          "id": 1
+        }
+      }
+    ],
+    "balancesAfterFaucet": {
+      "sender": 2000000000,
+      "receiver": 1000000000
+    },
+    "addCredits": {
+      "sender": {
+        "txid": "acc://36f21a34da5b7e5ab245b021e190d7977e385b2ed3ee92291523976377a149ac@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+        "success": true,
+        "error": null
+      },
+      "receiver": {
+        "txid": "acc://00b118ede412f34e34ea578064e0fa03c05a177b93a2f8b06d2cc8aa29a2bce6@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+        "success": true,
+        "error": null
+      }
+    },
+    "receiverBalanceBeforeLock": 700000000,
+    "send_ok": {
+      "txid": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+      "hash": "f1cbe323b4df43c242b2b681f9b15b772714237fd1bb724c050bf0f35301a0aa",
+      "expiration": "2026-10-16T08:09:25+00:00",
+      "preimageSha256Check": true,
+      "sendQueryRaw": {
+        "recordType": "message",
+        "id": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+        "message": {
+          "type": "transaction",
+          "transaction": {
+            "header": {
+              "principal": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+              "initiator": "a1add09c3446479abe0e16636c547d482eeee6a5934b384dd187a2eb83272884",
+              "hashLock": {
+                "hashAlgorithm": "sha256",
+                "hash": "f1cbe323b4df43c242b2b681f9b15b772714237fd1bb724c050bf0f35301a0aa",
+                "expiration": "2026-10-16T08:09:25Z"
+              }
+            },
+            "body": {
+              "type": "sendTokens",
+              "to": [
+                {
+                  "url": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+                  "amount": "100000000"
+                }
+              ]
+            }
+          }
+        },
+        "status": "delivered",
+        "statusNo": 201,
+        "result": {
+          "type": "unknown"
+        },
+        "produced": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "txID",
+              "value": "acc://9662865219daac6555d9be52a94de9761496f5e75da0082e86123cb8b8329b3e@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME"
+            }
+          ],
+          "start": 0,
+          "total": 2
+        },
+        "cause": {
+          "recordType": "range",
+          "start": 0,
+          "total": 0
+        },
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "signatureSet",
+              "account": {
+                "type": "liteIdentity",
+                "url": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                "creditBalance": 49999700,
+                "lastUsedOn": 1792136365986452
+              },
+              "signatures": {
+                "recordType": "range",
+                "records": [
+                  {
+                    "recordType": "message",
+                    "id": "acc://14eec91ae42560216f839d009e8d69b1aa56745ae753ed8ca29968d60c3b96dc@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                    "message": {
+                      "type": "signature",
+                      "signature": {
+                        "type": "ed25519",
+                        "publicKey": "ce6704075f5b872d32d637855b29b56b7f5ac903a401aaa4696b186be4c3047a",
+                        "signature": "5da5674053f1d70f521c9897664c1369e7e7baca00aaa23a9985119a12663c5578f96989554ff27d3cf2533a245a9b23362e03b629ed57b9cc0711daab45e106",
+                        "signer": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                        "signerVersion": 1,
+                        "timestamp": 1792136365986452
+                      },
+                      "txID": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME"
+                    },
+                    "historical": true
+                  }
+                ],
+                "start": 0,
+                "total": 1
+              }
+            },
+            {
+              "recordType": "signatureSet",
+              "account": {
+                "type": "liteTokenAccount",
+                "url": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                "tokenUrl": "acc://ACME",
+                "balance": "1400000000"
+              },
+              "signatures": {
+                "recordType": "range",
+                "records": [
+                  {
+                    "recordType": "message",
+                    "id": "acc://b8e61e365a8b281a3ffd91b44724ece3a63252b6a28d0f04d470b9a20f384fff@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                    "message": {
+                      "type": "creditPayment",
+                      "paid": 300,
+                      "payer": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                      "initiator": true,
+                      "txID": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                      "cause": "acc://14eec91ae42560216f839d009e8d69b1aa56745ae753ed8ca29968d60c3b96dc@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82"
+                    },
+                    "historical": true
+                  },
+                  {
+                    "recordType": "message",
+                    "id": "acc://b433097382191bf9e2aabfeb959ea93f3b2b53384aeb68c998c70c83cfe03ebb@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                    "message": {
+                      "type": "signature",
+                      "signature": {
+                        "type": "authority",
+                        "origin": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                        "authority": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                        "txID": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                        "cause": "acc://14eec91ae42560216f839d009e8d69b1aa56745ae753ed8ca29968d60c3b96dc@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82"
+                      },
+                      "txID": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME"
+                    },
+                    "historical": true
+                  }
+                ],
+                "start": 0,
+                "total": 2
+              }
+            }
+          ],
+          "start": 0,
+          "total": 2
+        },
+        "sequence": {
+          "type": "sequenced"
+        },
+        "lastBlockTime": "2026-10-16T07:39:29Z"
+      }
+    },
+    "receiverBalanceAfterLock": 700000000,
+    "sendQueryFinalRaw": {
+      "recordType": "message",
+      "id": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+      "message": {
+        "type": "transaction",
+        "transaction": {
+          "header": {
+            "principal": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+            "initiator": "a1add09c3446479abe0e16636c547d482eeee6a5934b384dd187a2eb83272884",
+            "hashLock": {
+              "hashAlgorithm": "sha256",
+              "hash": "f1cbe323b4df43c242b2b681f9b15b772714237fd1bb724c050bf0f35301a0aa",
+              "expiration": "2026-10-16T08:09:25Z"
+            }
+          },
+          "body": {
+            "type": "sendTokens",
+            "to": [
+              {
+                "url": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+                "amount": "100000000"
+              }
+            ]
+          }
+        }
+      },
+      "status": "delivered",
+      "statusNo": 201,
+      "result": {
+        "type": "unknown"
+      },
+      "produced": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "txID",
+            "value": "acc://9662865219daac6555d9be52a94de9761496f5e75da0082e86123cb8b8329b3e@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME"
+          }
+        ],
+        "start": 0,
+        "total": 2
+      },
+      "cause": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "signatures": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "liteIdentity",
+              "url": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+              "creditBalance": 49999700,
+              "lastUsedOn": 1792136365986452
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://14eec91ae42560216f839d009e8d69b1aa56745ae753ed8ca29968d60c3b96dc@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                  "message": {
+                    "type": "signature",
+                    "signature": {
+                      "type": "ed25519",
+                      "publicKey": "ce6704075f5b872d32d637855b29b56b7f5ac903a401aaa4696b186be4c3047a",
+                      "signature": "5da5674053f1d70f521c9897664c1369e7e7baca00aaa23a9985119a12663c5578f96989554ff27d3cf2533a245a9b23362e03b629ed57b9cc0711daab45e106",
+                      "signer": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                      "signerVersion": 1,
+                      "timestamp": 1792136365986452
+                    },
+                    "txID": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 1
+            }
+          },
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "liteTokenAccount",
+              "url": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+              "tokenUrl": "acc://ACME",
+              "balance": "1400000000"
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://b8e61e365a8b281a3ffd91b44724ece3a63252b6a28d0f04d470b9a20f384fff@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                  "message": {
+                    "type": "creditPayment",
+                    "paid": 300,
+                    "payer": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                    "initiator": true,
+                    "txID": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                    "cause": "acc://14eec91ae42560216f839d009e8d69b1aa56745ae753ed8ca29968d60c3b96dc@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82"
+                  },
+                  "historical": true
+                },
+                {
+                  "recordType": "message",
+                  "id": "acc://b433097382191bf9e2aabfeb959ea93f3b2b53384aeb68c998c70c83cfe03ebb@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                  "message": {
+                    "type": "signature",
+                    "signature": {
+                      "type": "authority",
+                      "origin": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                      "authority": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                      "txID": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                      "cause": "acc://14eec91ae42560216f839d009e8d69b1aa56745ae753ed8ca29968d60c3b96dc@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82"
+                    },
+                    "txID": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 2
+            }
+          }
+        ],
+        "start": 0,
+        "total": 2
+      },
+      "sequence": {
+        "type": "sequenced"
+      },
+      "lastBlockTime": "2026-10-16T07:39:34Z"
+    },
+    "lockedDepositBeforeReleaseRaw": {
+      "recordType": "message",
+      "id": "acc://9662865219daac6555d9be52a94de9761496f5e75da0082e86123cb8b8329b3e@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+      "message": {
+        "type": "transaction",
+        "transaction": {
+          "header": {
+            "principal": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME"
+          },
+          "body": {
+            "type": "syntheticLockedDeposit",
+            "cause": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+            "source": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+            "initiator": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+            "feeRefund": 100,
+            "index": 3,
+            "token": "acc://ACME",
+            "amount": "100000000",
+            "sender": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+            "hashAlgorithm": "sha256",
+            "hash": "f1cbe323b4df43c242b2b681f9b15b772714237fd1bb724c050bf0f35301a0aa",
+            "expiration": "2026-10-16T08:09:25Z"
+          }
+        }
+      },
+      "status": "delivered",
+      "statusNo": 201,
+      "result": {
+        "type": "syntheticLockedDeposit"
+      },
+      "produced": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "cause": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "txID",
+            "value": "acc://73ca87c7e34ec935ec02b5508c1c830c842b24e9779927efcc671a36326ef895@bvn-BVN1.acme"
+          }
+        ],
+        "start": 0,
+        "total": 1
+      },
+      "signatures": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "sequence": {
+        "type": "sequenced",
+        "message": {
+          "type": "transaction",
+          "transaction": {
+            "header": {
+              "principal": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME"
+            },
+            "body": {
+              "type": "syntheticLockedDeposit",
+              "cause": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+              "source": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+              "initiator": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+              "feeRefund": 100,
+              "index": 3,
+              "token": "acc://ACME",
+              "amount": "100000000",
+              "sender": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+              "hashAlgorithm": "sha256",
+              "hash": "f1cbe323b4df43c242b2b681f9b15b772714237fd1bb724c050bf0f35301a0aa",
+              "expiration": "2026-10-16T08:09:25Z"
+            }
+          }
+        },
+        "source": "acc://bvn-BVN1.acme",
+        "destination": "acc://bvn-BVN1.acme",
+        "number": 25169
+      },
+      "lastBlockTime": "2026-10-16T07:39:34Z"
+    },
+    "lockedTxId": "acc://9662865219daac6555d9be52a94de9761496f5e75da0082e86123cb8b8329b3e@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+    "release": {
+      "txid": "acc://7cf0b1a74ea0af662faaf6112a37a4945896682b93d928ec307d22bb997202fd@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+      "success": true,
+      "error": null
+    },
+    "releaseQueryRaw": {
+      "recordType": "message",
+      "id": "acc://7cf0b1a74ea0af662faaf6112a37a4945896682b93d928ec307d22bb997202fd@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+      "message": {
+        "type": "transaction",
+        "transaction": {
+          "header": {
+            "principal": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+            "initiator": "5dd55d804a1278baca5f3852d7e0d6ee05f4d4c62deac2cb1b568f8bfd20e144"
+          },
+          "body": {
+            "type": "releaseLockedOperation",
+            "lockedTxID": "acc://9662865219daac6555d9be52a94de9761496f5e75da0082e86123cb8b8329b3e@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+            "preimage": "c7290423ebd8b3a2d1ba144d82b42c562ac5807a3ac192852d9b4c0104ac3ade"
+          }
+        }
+      },
+      "status": "delivered",
+      "statusNo": 201,
+      "result": {
+        "type": "releaseLockedOperation",
+        "preimage": "c7290423ebd8b3a2d1ba144d82b42c562ac5807a3ac192852d9b4c0104ac3ade",
+        "hashAlgorithm": "sha256",
+        "hash": "f1cbe323b4df43c242b2b681f9b15b772714237fd1bb724c050bf0f35301a0aa",
+        "amount": "100000000",
+        "token": "acc://ACME"
+      },
+      "produced": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "cause": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "signatures": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "liteIdentity",
+              "url": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7",
+              "creditBalance": 29999989,
+              "lastUsedOn": 1792136372908104
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://6b095b4f1eca18b33bf6249ba32c7d32092bd7af84138ae9938143f78c390854@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7",
+                  "message": {
+                    "type": "signature",
+                    "signature": {
+                      "type": "ed25519",
+                      "publicKey": "afa82b369527426647fe92793412fb69fa0bb9f17c730b7f5fc063c40b63dc6f",
+                      "signature": "390d8f915b2250bf175e38182ed10ae6a4ec73a6c1ee95588a702186330901594b1acacbbce655c63252d4202a74c3857be46346732ea6eab506dc3b5b607604",
+                      "signer": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7",
+                      "signerVersion": 1,
+                      "timestamp": 1792136372908104
+                    },
+                    "txID": "acc://7cf0b1a74ea0af662faaf6112a37a4945896682b93d928ec307d22bb997202fd@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 1
+            }
+          },
+          {
+            "recordType": "signatureSet",
+            "account": {
+              "type": "liteTokenAccount",
+              "url": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+              "tokenUrl": "acc://ACME",
+              "balance": "800000000"
+            },
+            "signatures": {
+              "recordType": "range",
+              "records": [
+                {
+                  "recordType": "message",
+                  "id": "acc://4782cc37df2e0e79d30bb1997684e61e2f8287e1ea56ae94424221927aceb31a@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+                  "message": {
+                    "type": "creditPayment",
+                    "paid": 11,
+                    "payer": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7",
+                    "initiator": true,
+                    "txID": "acc://7cf0b1a74ea0af662faaf6112a37a4945896682b93d928ec307d22bb997202fd@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+                    "cause": "acc://6b095b4f1eca18b33bf6249ba32c7d32092bd7af84138ae9938143f78c390854@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7"
+                  },
+                  "historical": true
+                }
+              ],
+              "start": 0,
+              "total": 1
+            }
+          }
+        ],
+        "start": 0,
+        "total": 2
+      },
+      "sequence": {
+        "type": "sequenced"
+      },
+      "lastBlockTime": "2026-10-16T07:39:36Z"
+    },
+    "lockedDepositAfterReleaseRaw": {
+      "recordType": "message",
+      "id": "acc://9662865219daac6555d9be52a94de9761496f5e75da0082e86123cb8b8329b3e@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+      "message": {
+        "type": "transaction",
+        "transaction": {
+          "header": {
+            "principal": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME"
+          },
+          "body": {
+            "type": "syntheticLockedDeposit",
+            "cause": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+            "source": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+            "initiator": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+            "feeRefund": 100,
+            "index": 3,
+            "token": "acc://ACME",
+            "amount": "100000000",
+            "sender": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+            "hashAlgorithm": "sha256",
+            "hash": "f1cbe323b4df43c242b2b681f9b15b772714237fd1bb724c050bf0f35301a0aa",
+            "expiration": "2026-10-16T08:09:25Z"
+          }
+        }
+      },
+      "status": "delivered",
+      "statusNo": 201,
+      "result": {
+        "type": "syntheticLockedDeposit",
+        "releaseTxID": "acc://7cf0b1a74ea0af662faaf6112a37a4945896682b93d928ec307d22bb997202fd@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME"
+      },
+      "produced": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "cause": {
+        "recordType": "range",
+        "records": [
+          {
+            "recordType": "txID",
+            "value": "acc://73ca87c7e34ec935ec02b5508c1c830c842b24e9779927efcc671a36326ef895@bvn-BVN1.acme"
+          }
+        ],
+        "start": 0,
+        "total": 1
+      },
+      "signatures": {
+        "recordType": "range",
+        "start": 0,
+        "total": 0
+      },
+      "sequence": {
+        "type": "sequenced",
+        "message": {
+          "type": "transaction",
+          "transaction": {
+            "header": {
+              "principal": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME"
+            },
+            "body": {
+              "type": "syntheticLockedDeposit",
+              "cause": "acc://4643bdca3fc763b9b2cf117f04609cfd3b166473a0716a42f8d83b55d8603165@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+              "source": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+              "initiator": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+              "feeRefund": 100,
+              "index": 3,
+              "token": "acc://ACME",
+              "amount": "100000000",
+              "sender": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+              "hashAlgorithm": "sha256",
+              "hash": "f1cbe323b4df43c242b2b681f9b15b772714237fd1bb724c050bf0f35301a0aa",
+              "expiration": "2026-10-16T08:09:25Z"
+            }
+          }
+        },
+        "source": "acc://bvn-BVN1.acme",
+        "destination": "acc://bvn-BVN1.acme",
+        "number": 25169
+      },
+      "lastBlockTime": "2026-10-16T07:39:36Z"
+    },
+    "receiverBalanceAfterRelease": 800000000,
+    "receiverDelta": 100000000,
+    "send_negative": {
+      "txid": "acc://66393ff66ec5dd92d72b81043448c04f8015b13400b6ab618f4641b7f905c654@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+      "hash": "75db080ee3134394c06ac56a936f1a8cc82fc2fbfb55eefab72cfecac2c95cbb",
+      "expiration": "2026-10-16T08:09:35+00:00",
+      "preimageSha256Check": true,
+      "sendQueryRaw": {
+        "recordType": "message",
+        "id": "acc://66393ff66ec5dd92d72b81043448c04f8015b13400b6ab618f4641b7f905c654@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+        "message": {
+          "type": "transaction",
+          "transaction": {
+            "header": {
+              "principal": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+              "initiator": "79f38300b464f1162aee6f32ab9600398657a57332052b94464decaf8a32ab3c",
+              "hashLock": {
+                "hashAlgorithm": "sha256",
+                "hash": "75db080ee3134394c06ac56a936f1a8cc82fc2fbfb55eefab72cfecac2c95cbb",
+                "expiration": "2026-10-16T08:09:35Z"
+              }
+            },
+            "body": {
+              "type": "sendTokens",
+              "to": [
+                {
+                  "url": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+                  "amount": "100000000"
+                }
+              ]
+            }
+          }
+        },
+        "status": "delivered",
+        "statusNo": 201,
+        "result": {
+          "type": "unknown"
+        },
+        "produced": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "txID",
+              "value": "acc://bf26532d7ccf29d0b150c7e02602018120e65cea3bf580f56c1867798c97fd6a@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME"
+            }
+          ],
+          "start": 0,
+          "total": 2
+        },
+        "cause": {
+          "recordType": "range",
+          "start": 0,
+          "total": 0
+        },
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "signatureSet",
+              "account": {
+                "type": "liteIdentity",
+                "url": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                "creditBalance": 49999400,
+                "lastUsedOn": 1792136375301378
+              },
+              "signatures": {
+                "recordType": "range",
+                "records": [
+                  {
+                    "recordType": "message",
+                    "id": "acc://e8c74f8dd55be529d3d39192d27bf0edb2cc010e81974b6f802623db0e3e33c3@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                    "message": {
+                      "type": "signature",
+                      "signature": {
+                        "type": "ed25519",
+                        "publicKey": "ce6704075f5b872d32d637855b29b56b7f5ac903a401aaa4696b186be4c3047a",
+                        "signature": "f19a66861be1a77591fb06633f04b7c5ced310e543e0667002d28a40c5838decb9b4ee45d110e9c2aef85ce47332c7e1d4dbc974834c5739ff5cac9854d4b600",
+                        "signer": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                        "signerVersion": 1,
+                        "timestamp": 1792136375301378
+                      },
+                      "txID": "acc://66393ff66ec5dd92d72b81043448c04f8015b13400b6ab618f4641b7f905c654@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME"
+                    },
+                    "historical": true
+                  }
+                ],
+                "start": 0,
+                "total": 1
+              }
+            },
+            {
+              "recordType": "signatureSet",
+              "account": {
+                "type": "liteTokenAccount",
+                "url": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                "tokenUrl": "acc://ACME",
+                "balance": "1300000000"
+              },
+              "signatures": {
+                "recordType": "range",
+                "records": [
+                  {
+                    "recordType": "message",
+                    "id": "acc://bb055d31bd334fa5090278ff75f8a17ffc01ce5a4082b00ad19a1f85ee57e8bc@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                    "message": {
+                      "type": "creditPayment",
+                      "paid": 300,
+                      "payer": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                      "initiator": true,
+                      "txID": "acc://66393ff66ec5dd92d72b81043448c04f8015b13400b6ab618f4641b7f905c654@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                      "cause": "acc://e8c74f8dd55be529d3d39192d27bf0edb2cc010e81974b6f802623db0e3e33c3@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82"
+                    },
+                    "historical": true
+                  },
+                  {
+                    "recordType": "message",
+                    "id": "acc://9b2a844dc27437a8eab43afdc61f3af27d64b263eb3ec9573b440660e0a4c362@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                    "message": {
+                      "type": "signature",
+                      "signature": {
+                        "type": "authority",
+                        "origin": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                        "authority": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+                        "txID": "acc://66393ff66ec5dd92d72b81043448c04f8015b13400b6ab618f4641b7f905c654@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+                        "cause": "acc://e8c74f8dd55be529d3d39192d27bf0edb2cc010e81974b6f802623db0e3e33c3@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82"
+                      },
+                      "txID": "acc://66393ff66ec5dd92d72b81043448c04f8015b13400b6ab618f4641b7f905c654@e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME"
+                    },
+                    "historical": true
+                  }
+                ],
+                "start": 0,
+                "total": 2
+              }
+            }
+          ],
+          "start": 0,
+          "total": 2
+        },
+        "sequence": {
+          "type": "sequenced"
+        },
+        "lastBlockTime": "2026-10-16T07:39:38Z"
+      }
+    },
+    "negative": {
+      "lockedTxId": "acc://bf26532d7ccf29d0b150c7e02602018120e65cea3bf580f56c1867798c97fd6a@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+      "wrongPreimageRelease": {
+        "txid": "acc://1e4b163d0f73c49c47c7050149f3e26889a7943dbb719d5c40b178c653215a5b@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+        "success": false,
+        "error": "Transaction failed: preimage does not match hash (unauthenticated, code 401)"
+      },
+      "wrongPreimageReleaseQueryRaw": {
+        "recordType": "message",
+        "id": "acc://1e4b163d0f73c49c47c7050149f3e26889a7943dbb719d5c40b178c653215a5b@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+        "message": {
+          "type": "transaction",
+          "transaction": {
+            "header": {
+              "principal": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+              "initiator": "a405c7759d16e346c56ea87108dee19c59c6eaaf99a1027fe8ff998fc474e288"
+            },
+            "body": {
+              "type": "releaseLockedOperation",
+              "lockedTxID": "acc://bf26532d7ccf29d0b150c7e02602018120e65cea3bf580f56c1867798c97fd6a@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+              "preimage": "b1b88a3e3833205bb9b23c718a507a3620c0b4000510ac85d695c3814579a368"
+            }
+          }
+        },
+        "status": "unauthenticated",
+        "statusNo": 401,
+        "error": {
+          "message": "preimage does not match hash",
+          "code": "unauthenticated",
+          "codeID": 401
+        },
+        "result": {
+          "type": "unknown"
+        },
+        "produced": {
+          "recordType": "range",
+          "start": 0,
+          "total": 0
+        },
+        "cause": {
+          "recordType": "range",
+          "start": 0,
+          "total": 0
+        },
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "signatureSet",
+              "account": {
+                "type": "liteIdentity",
+                "url": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7",
+                "creditBalance": 29999978,
+                "lastUsedOn": 1792136381974078
+              },
+              "signatures": {
+                "recordType": "range",
+                "records": [
+                  {
+                    "recordType": "message",
+                    "id": "acc://370d71f44f0b56992c50a2d3faeafea807654ac88704582eedccea08089f9676@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7",
+                    "message": {
+                      "type": "signature",
+                      "signature": {
+                        "type": "ed25519",
+                        "publicKey": "afa82b369527426647fe92793412fb69fa0bb9f17c730b7f5fc063c40b63dc6f",
+                        "signature": "9709fd40815219e2c4fedb6bca8d6fa5fc648970f07db7ebd4341d98874f9a826bfb53a6417b67918842ef39a28698170a5b76a0e19b4622df6542da0ff3eb05",
+                        "signer": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7",
+                        "signerVersion": 1,
+                        "timestamp": 1792136381974078
+                      },
+                      "txID": "acc://1e4b163d0f73c49c47c7050149f3e26889a7943dbb719d5c40b178c653215a5b@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME"
+                    },
+                    "historical": true
+                  }
+                ],
+                "start": 0,
+                "total": 1
+              }
+            },
+            {
+              "recordType": "signatureSet",
+              "account": {
+                "type": "liteTokenAccount",
+                "url": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+                "tokenUrl": "acc://ACME",
+                "balance": "800000000"
+              },
+              "signatures": {
+                "recordType": "range",
+                "records": [
+                  {
+                    "recordType": "message",
+                    "id": "acc://50687df3abf119e9dd6570dcac5bc6e28fed6ae3b888fe214a61a643a8ac3f6a@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+                    "message": {
+                      "type": "creditPayment",
+                      "paid": 11,
+                      "payer": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7",
+                      "initiator": true,
+                      "txID": "acc://1e4b163d0f73c49c47c7050149f3e26889a7943dbb719d5c40b178c653215a5b@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+                      "cause": "acc://370d71f44f0b56992c50a2d3faeafea807654ac88704582eedccea08089f9676@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7"
+                    },
+                    "historical": true
+                  }
+                ],
+                "start": 0,
+                "total": 1
+              }
+            }
+          ],
+          "start": 0,
+          "total": 2
+        },
+        "sequence": {
+          "type": "sequenced"
+        },
+        "lastBlockTime": "2026-10-16T07:39:45Z"
+      },
+      "expectedError": "preimage does not match hash",
+      "matchedExpected": true,
+      "recoveryRelease": {
+        "txid": "acc://7001892d5b610285dbbd747c84251bf232f3fc58415df5bef8906c1ae26ae960@b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME",
+        "success": true,
+        "error": null
+      }
+    }
+  },
+  "accounts": {
+    "senderLid": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82",
+    "senderLta": "acc://e9366b83c1ee76cd7c676a097016ae12b375ddf751b06d82/ACME",
+    "receiverLid": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7",
+    "receiverLta": "acc://b9ff0b0208c1fdbbcb0a3ff66a9071769bb2e5b788e122a7/ACME"
+  },
+  "finishedAt": "2026-10-16T07:39:46.408541+00:00",
+  "RESULT": "PASS"
+}
