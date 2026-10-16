@@ -1,6 +1,6 @@
 # opendlt-python-v2v3-sdk — repository guide for agents
 
-The Python SDK for the Accumulate blockchain. Published as `accumulate-sdk-opendlt` (v2.3.0).
+The Python SDK for the Accumulate blockchain. Published as `accumulate-sdk-opendlt` (v2.5.0).
 
 > Building **on** Accumulate rather than **on this SDK**? You want `llms.txt` (quickstart + rules) and `llms-full.txt` (full API). This file is about working on the SDK itself.
 

@@ -1,0 +1,10 @@
+OK   delivered      acc://9a8612d6269b5b50d4e7009d15f1398f14e4c4174a255af4395d592095e7a4cb 
+OK   delivered      acc://5ec83ecdbfdd991a7e4f28cc78553399c201976e3d841d6cdcbf4bb112e39ecc 
+OK   delivered      acc://04725f97e66949277ada5724eff128caeb6601a36b9726674030b4c4c27d2087 
+OK   delivered      acc://d312bd54ad269714269eceb02487a9d2c64ac9c7fe4f8374bbda6a9e1c986a65 
+OK   delivered      acc://cf5cc5cc9d223974533fe49aa439a075140630511601d32b189cf44648ff4b00 
+OK   delivered      acc://fbd16005c9f830b8c6302f99dee84c4b5affc540e2585cff78bcbf93a1505678 
+OK   delivered      acc://8cbf4ae09a935717d0d88305a55f94430d5a5b00dd439084abee6c0570eacddf 
+OK   delivered      acc://ab3dd9611f68ff1d5ba5bee5a969c83ad2e5110138dd6ae8b0a73be55ff0a0da 
+OK   delivered      acc://d0d114fc459f13e7c4c2ca05cf0e6cb9c525b351303ba363be15c4660e5315b2 
+VERIFY C:/tmp/htlc-logs/p2-live-multi-sig-setup-rust.log: 9 ids, 0 failing

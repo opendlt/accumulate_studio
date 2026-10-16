@@ -1,0 +1,8 @@
+OK   delivered      acc://dc95c01f7fdc9a0b3af1ab289179e9066100d513e85e6e425e0849f3c6188c27 
+OK   delivered      acc://8491a75f0a7394eecb02dee57f408411c264d8e8b939e7ed0d76dda326c71d4c 
+OK   delivered      acc://c3be0d337a476545abd42996e4f684a58ef0ea6d9eac7a6a862fe114afb1b3c4 
+OK   delivered      acc://bb71203ace47c9afdf82ab0b682eddc539278a4d7f9c1e77431185dc6e9564f0 
+OK   delivered      acc://c986bf44e6f27b3884077fbbebf89021162a54fd46571775242b8339f76ff192 
+OK   delivered      acc://651768f974ed95f4bd4a3ccde18a33c408d93ae8359926803b8daaf4ddf291e3 
+OK   delivered      acc://b1ef27af5959e15c554ec5a10cd6e21744c9db6eb178a2cc88ba8f0c081f9b13 
+VERIFY C:/tmp/htlc-logs/p2-live-token-transfer-python.log: 7 ids, 0 failing

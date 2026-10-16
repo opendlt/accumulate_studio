@@ -1,0 +1,13 @@
+OK   delivered      acc://cf43f2c00135da32544e5cb4b2fdb0472a35fe165bff2590d439f3dce9ef39eb 
+OK   delivered      acc://2ca417d14eadd183cdcfb163f9dc81630fd13fea7339c5954546bb872f3e45ae 
+OK   delivered      acc://05a9365712aaf26963adcfcff79b0d44c5727acaaf77796095bd9a72ae175de6 
+OK   delivered      acc://15953770a14081f270c35694207a9b23c57b9e1488285347d67db3b7e713351b 
+OK   delivered      acc://ba7659284d0e1e6a1c0a0a13fa0e3216785467b5460275eac52ebbdfb0bd426e 
+OK   delivered      acc://67cb42d666cc02c6872cc1487d675379944900eee16a7c031e226f34043b9c69 
+OK   delivered      acc://c80362ecbacc725d6c55420e22695e2bd56153730e0d73494ab7b968e46ae242 
+OK   delivered      acc://57c29e1b8ac0daebb5ca8d5d222fa501f74fa03998d8227628fbb57469de7ccf 
+OK   delivered      acc://493484f020b88b59d3060ac26b9bad89c3ba288d6ae5a7bcca0be62ebc20431f 
+OK   delivered      acc://d6c53d5a0899396cb50c2539bde79ac3d2dbc43a56f6df32e04257210c7b0402 
+OK   delivered      acc://6e90d943c2c63248739bb91153374a6499a8225537cfae3138deca908363a43f 
+OK   delivered      acc://05871969b0bfab104f1c1fc09fc913181bb0c63064f6ef31fbafa99d4b95bf70 
+VERIFY C:/tmp/htlc-logs/p2-live-multi-sig-setup-dart.log: 12 ids, 0 failing

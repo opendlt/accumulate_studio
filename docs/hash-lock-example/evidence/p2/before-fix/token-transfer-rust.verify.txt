@@ -1,0 +1,8 @@
+OK   delivered      acc://9529c9188d0504a0d7469fb9b56b5b2808c368909fbceb1c5ca6c224a924176b 
+OK   delivered      acc://b48c700e32abf38629769c2e9a9d48ef750465807a71e13045f459dbdbdf2d0f 
+OK   delivered      acc://f2dd4f61616d175fa3133ec0d9dcd5fa0af5d8d1db0e287109fbe08cd816dcd6 
+OK   delivered      acc://18e8230add38f018f4f37158c448fd1447c05ff123f27b19dfc12f464c06afd6 
+OK   delivered      acc://c5bfef311bbf481f49400b390a994494c310d50be30bba364d8a46d9c3e6363b 
+FAIL pending        acc://5bf17420ff6264b345a6ca1dea6c071fd65a78efc847cfe59feb436c536bfdd3 
+FAIL unknownError   acc://bf0af5411512e80706f0098f9b2903082fc1ad33b233bf20893bea4ad50ca70f insufficient balance: have 0, want 100000000
+VERIFY C:/tmp/htlc-logs/p2-first-run/p2-live-token-transfer-rust.log: 7 ids, 2 failing

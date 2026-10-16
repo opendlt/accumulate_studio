@@ -1,0 +1,11 @@
+OK   delivered      acc://07bac9c31d039c8d99c144ed056928e630083d2c596c1c1a487f66a689129c1b 
+OK   delivered      acc://64044a5055812b1ffc30f435b2b170906ec86776a8041e77064719bdbc9185e6 
+OK   delivered      acc://eb57fb16eb888d6abec399471ff917e79bfdead2a1c7bad94b89b3b912c87a4c 
+OK   delivered      acc://abf21e57c9a1aeac1bd9e4103e5b3250677772f2a4400763361ee7d6bcb78c1b 
+OK   delivered      acc://898802d5dea5e7697427999c9adfc4d505b02235dc5b60b3762c2ca29b70a18e 
+OK   delivered      acc://2fd6662fa10d6e191561e0785cc8027294a2d5e07892f1f49d48e6818f131894 
+OK   delivered      acc://8842a62a70b10b88e7e98c564be38167831ce35e8316c5cb6ed0485fb3116e36 
+OK   delivered      acc://68b86807e7ff7a9bbf536c07cabc301d201cb5a09c12a712cc36015e95724b3c 
+FAIL pending        acc://5ed89c3f5de8a2b56810b862628406ef1f41961455d0fa0731623ffdb0026fbe 
+FAIL unknownError   acc://0d84094403929a492539d2298b579ee3ec5c3877b4a3d0e25d6b30378dca450d insufficient balance: have 0, want 100000000
+VERIFY C:/tmp/htlc-logs/p2-first-run/p2-live-token-transfer-dart.log: 10 ids, 2 failing

@@ -389,6 +389,11 @@ const tokenTransferFlow: Flow = {
       label: 'Fund Sender Account',
       config: {
         principal: '{{generate_keys.liteTokenAccount}}',
+        // The lite identity governs the lite token account. Without this the
+        // generator signs with the ADI book/1 (every transaction after
+        // CreateIdentity does), which is not an authority here, so the send
+        // stays pending forever.
+        signerUrl: '{{generate_keys.liteIdentity}}',
         to: '{{create_sender_account.tokenAccountUrl}}',
         amount: '500000000',
       },

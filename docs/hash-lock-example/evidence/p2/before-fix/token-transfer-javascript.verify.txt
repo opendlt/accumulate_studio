@@ -1,0 +1,7 @@
+OK   delivered      acc://2469fffc61ca6e18ee4ead17abad918ca561ab874e225cec56f3043ebf9eb0f2 
+OK   delivered      acc://2aec93acf53332d2f4bacff08b3278e187cc92de7b82b7f7b86557c38b77bece 
+OK   delivered      acc://cf2140eaadbbea8ef48c1428836bc86b8c312ed0f7b12cf658f4006fbbfcb1af 
+OK   delivered      acc://be3de35b55000c5626c2229029184f3e142bb287797d4d264a07775f7245a5ab 
+OK   delivered      acc://09521cfb21679cf3f4d70c5f0334e79b8e6b27351cfc295e8edafd3ec1c5345f 
+FAIL pending        acc://714654880080972bbeae6506ff80dcb4388e1e0468fcb9b71104f4157ed57586 
+VERIFY C:/tmp/htlc-logs/p2-first-run/p2-live-token-transfer-javascript.log: 6 ids, 1 failing

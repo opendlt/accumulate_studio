@@ -1,0 +1,10 @@
+OK   delivered      acc://691bb57949ed723a0be1e85ba47d1948b649a4653775625971f1efd4b70c5071 
+OK   delivered      acc://60f71d24050a6df6fd06ceca97f85c560eee387ce1bf7833e07ac301e696acc6 
+OK   delivered      acc://f39adbf7a5da0aebdb738a80640c6f97ffb1c559e9db6c1f93844f0f21f34144 
+OK   delivered      acc://9b96052274659c1ed3cef71c092ae8929451ad809f7dfe82cdfa338517060714 
+OK   delivered      acc://f415bf929cf82baab2bff935d8bc8a5cd34147051bb5529cd0856aa25882d06c 
+OK   delivered      acc://5541223198019299e5822e3e983bee81ee9ea813d38e27915bdfe531f97e276d 
+OK   delivered      acc://3fd253fc4381a5f43e13659d3bfd668beea44b330e9ca01ac204a7f5933a880e 
+OK   delivered      acc://4d161735549b127f3a98da2699819861a82c19738e2872134ac8e83c78ccd095 
+OK   delivered      acc://483a15fae4bc3749b35279e48375d037b4b3d79b4a17376e0f7ca42a976dd467 
+VERIFY C:/tmp/htlc-logs/p2-live-multi-sig-setup-javascript.log: 9 ids, 0 failing

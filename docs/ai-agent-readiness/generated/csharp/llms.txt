@@ -1,6 +1,6 @@
 # Accumulate C# SDK
 
-> Build on the Accumulate blockchain from C#. Package: `Acme.Net.Sdk` (v2.3.2).
+> Build on the Accumulate blockchain from C#. Package: `Acme.Net.Sdk` (v2.5.0).
 
 ## Install
 ```
