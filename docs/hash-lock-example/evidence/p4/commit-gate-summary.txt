@@ -1,0 +1,5 @@
+typecheck exit=0
+npm test exit=0
+validate:manifests exit=0
+harness:test exit=0
+ALLDONE
