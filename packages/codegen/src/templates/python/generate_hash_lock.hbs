@@ -1,0 +1,33 @@
+        # =========================================================
+        # {{label}} (Action: GenerateHashLock)
+        # =========================================================
+        # The lock is a hash of a secret preimage. The preimage stays with you until the
+        # release transaction reveals it on-chain.
+{{#if preimageHex}}
+        {{varName}}_preimage_bytes = bytes.fromhex("{{preimageHex}}")
+{{else}}
+        {{varName}}_preimage_bytes = os.urandom(32)
+{{/if}}
+        {{varName}}_preimage = {{varName}}_preimage_bytes.hex()
+{{#if hashIsDouble}}
+        {{varName}}_hash_bytes = hashlib.sha256(hashlib.sha256({{varName}}_preimage_bytes).digest()).digest()
+{{else}}
+        {{varName}}_hash_bytes = hashlib.sha256({{varName}}_preimage_bytes).digest()
+{{/if}}
+        {{varName}}_hash = {{varName}}_hash_bytes.hex()
+        {{varName}}_hash_algorithm = "{{hashAlgorithm}}"
+        # Whole seconds in UTC: the node needs 10 minutes to 30 days of headroom and rejects fractions
+        {{varName}}_expiration_dt = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(minutes={{expirationMinutes}})
+        {{varName}}_expiration = int({{varName}}_expiration_dt.timestamp())
+        {{varName}}_expiration_iso = {{varName}}_expiration_dt.isoformat()
+        {{varName}}_lock = HashLockOptions(
+            hashAlgorithm={{varName}}_hash_algorithm,
+            hash={{varName}}_hash_bytes,
+            expiration={{varName}}_expiration_dt,
+        )
+        {{varName}}_lock.validate_for_submit()
+        print("Hash lock ready:")
+        print(f"  algorithm: { {{~varName}}_hash_algorithm}")
+        print(f"  hash:      { {{~varName}}_hash}")
+        print(f"  expires:   { {{~varName}}_expiration_iso}")
+        print(f"  PREIMAGE:  { {{~varName}}_preimage}")

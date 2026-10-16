@@ -56,6 +56,8 @@ export interface TemplateContext {
   hasWait: boolean;
   hasQuery: boolean;
   hasData: boolean;
+  /** Flow uses a hash lock (HTLC): GenerateHashLock, WaitForLockedDeposit, ReleaseLockedOperation or a locked SendTokens */
+  hasHashLock: boolean;
 
   // Manifest data
   manifest: SDKMap | null;
@@ -71,13 +73,19 @@ export interface TemplateContext {
 
 const TX_TYPES = new Set<string>([
   'CreateIdentity', 'CreateKeyBook', 'CreateKeyPage', 'CreateTokenAccount',
-  'CreateDataAccount', 'CreateToken', 'SendTokens', 'IssueTokens', 'BurnTokens',
+  'CreateDataAccount', 'CreateToken', 'SendTokens', 'IssueTokens', 'BurnTokens', 'ReleaseLockedOperation',
   'AddCredits', 'TransferCredits', 'BurnCredits', 'WriteData', 'WriteDataTo',
   'UpdateKeyPage', 'UpdateKey', 'LockAccount', 'UpdateAccountAuth',
 ]);
 
 function isTransactionType(type: string): boolean {
   return TX_TYPES.has(type);
+}
+
+/** True for the three HTLC blocks and for a SendTokens that carries a hash lock. */
+export function isHashLockNode(node: FlowNode): boolean {
+  if (node.type === 'GenerateHashLock' || node.type === 'WaitForLockedDeposit' || node.type === 'ReleaseLockedOperation') return true;
+  return node.type === 'SendTokens' && Boolean((node.config as Record<string, unknown> | undefined)?.hashLockFrom);
 }
 
 // =============================================================================
@@ -126,6 +134,7 @@ export function generateCodeFromManifest(
   let hasWait = false;
   let hasQuery = false;
   let hasData = false;
+  let hasHashLock = false;
 
   for (const node of sortedNodes) {
     if (node.type === 'GenerateKeys') hasKeyGen = true;
@@ -134,6 +143,7 @@ export function generateCodeFromManifest(
     if (node.type === 'QueryAccount') hasQuery = true;
     if (node.type === 'WriteData' || node.type === 'WriteDataTo') hasData = true;
     if (isTransactionType(node.type)) hasTransactions = true;
+    if (isHashLockNode(node)) hasHashLock = true;
   }
 
   // Build the base context (shared across all templates)
@@ -152,6 +162,7 @@ export function generateCodeFromManifest(
     hasWait,
     hasQuery,
     hasData,
+    hasHashLock,
     manifest,
   };
 
@@ -161,6 +172,7 @@ export function generateCodeFromManifest(
     TOKEN_SYMBOL: '"TKN"',
     DATA_CONTENT: '"48656c6c6f20576f726c64"',  // hex("Hello World")
     TRANSFER_AMOUNT: '"100000000"',
+    LOCK_AMOUNT: '"100000000"',
     INITIAL_ISSUE_AMOUNT: '"100000000000"',
   };
   const FLOW_VAR_DEFAULTS_DART: Record<string, string> = {
@@ -168,6 +180,7 @@ export function generateCodeFromManifest(
     TOKEN_SYMBOL: "'TKN'",
     DATA_CONTENT: "'48656c6c6f20576f726c64'",  // hex("Hello World")
     TRANSFER_AMOUNT: "'100000000'",
+    LOCK_AMOUNT: "'100000000'",
     INITIAL_ISSUE_AMOUNT: "'100000000000'",
   };
   const FLOW_VAR_DEFAULTS_RUST: Record<string, string> = {
@@ -175,6 +188,7 @@ export function generateCodeFromManifest(
     TOKEN_SYMBOL: '"TKN".to_string()',
     DATA_CONTENT: '"48656c6c6f20576f726c64".to_string()',  // hex("Hello World")
     TRANSFER_AMOUNT: '"100000000".to_string()',
+    LOCK_AMOUNT: '"100000000".to_string()',
     INITIAL_ISSUE_AMOUNT: '"100000000000".to_string()',
   };
   const FLOW_VAR_DEFAULTS_JAVASCRIPT: Record<string, string> = {
@@ -182,6 +196,7 @@ export function generateCodeFromManifest(
     TOKEN_SYMBOL: '"TKN"',
     DATA_CONTENT: '"48656c6c6f20576f726c64"',  // hex("Hello World")
     TRANSFER_AMOUNT: '"100000000"',
+    LOCK_AMOUNT: '"100000000"',
     INITIAL_ISSUE_AMOUNT: '"100000000000"',
   };
   const FLOW_VAR_DEFAULTS_CSHARP: Record<string, string> = {
@@ -189,6 +204,7 @@ export function generateCodeFromManifest(
     TOKEN_SYMBOL: '"TKN"',
     DATA_CONTENT: '"48656c6c6f20576f726c64"',  // hex("Hello World")
     TRANSFER_AMOUNT: '"100000000"',
+    LOCK_AMOUNT: '"100000000"',
     INITIAL_ISSUE_AMOUNT: '"100000000000"',
   };
   const flowVarDefs = (flow.variables || []).map((v) => ({
@@ -239,6 +255,12 @@ export function generateCodeFromManifest(
   let lastCreateTokenVarName = '';
   let lastCreateTokenAccountVarName = '';
   let lastCreateDataAccountVarName = '';
+  // HTLC chain: later blocks default to the nearest upstream lock, locked send and deposit
+  let lastGenerateHashLockVarName = '';
+  let lastLockedSendVarName = '';
+  let lastLockedRecipientUrl = '';
+  let lastLockedRecipientUrlIsRef = false;
+  let lastWaitForLockedDepositVarName = '';
 
   // Render each node
   const nodeOutputs: string[] = [];
@@ -318,6 +340,22 @@ export function generateCodeFromManifest(
       keyVarName = lastKeyGenVarName || varName;
     }
 
+    // A hash-locked SendTokens names the GenerateHashLock block that supplies its lock.
+    // Resolve it here, where block ids map to variable names, and fail loudly on a bad
+    // reference rather than emitting code that uses an undefined variable.
+    let hashLockVarName = '';
+    if (node.type === 'SendTokens' && rawConfig.hashLockFrom) {
+      const lockNodeId = String(rawConfig.hashLockFrom);
+      const lockNode = sortedNodes.find((n) => n.id === lockNodeId);
+      if (!lockNode || lockNode.type !== 'GenerateHashLock') {
+        throw new Error(`SendTokens "${node.id}": hashLockFrom "${lockNodeId}" must be the id of a GenerateHashLock block in this flow`);
+      }
+      if (sortedNodes.indexOf(lockNode) > sortedNodes.indexOf(node)) {
+        throw new Error(`SendTokens "${node.id}": GenerateHashLock "${lockNodeId}" must run before the send that uses it`);
+      }
+      hashLockVarName = varNameMap.get(lockNode.id) ?? '';
+    }
+
     // Build per-node context with pre-computed template variables
     const nodeContext = {
       ...baseContext,
@@ -332,6 +370,8 @@ export function generateCodeFromManifest(
       ...computeNodeVars(node, config, varName, language, keyVarName, lastCreateIdentityVarName, {
         firstKeyGenVarName, lastKeyGenVarName,
         lastCreateTokenVarName, lastCreateTokenAccountVarName, lastCreateDataAccountVarName,
+        hashLockVarName, lastGenerateHashLockVarName, lastLockedSendVarName,
+        lastLockedRecipientUrl, lastLockedRecipientUrlIsRef, lastWaitForLockedDepositVarName,
       }),
     } as unknown as TemplateContext;
 
@@ -347,6 +387,13 @@ export function generateCodeFromManifest(
     if (node.type === 'CreateToken') lastCreateTokenVarName = varName;
     if (node.type === 'CreateTokenAccount') lastCreateTokenAccountVarName = varName;
     if (node.type === 'CreateDataAccount') lastCreateDataAccountVarName = varName;
+    if (node.type === 'GenerateHashLock') lastGenerateHashLockVarName = varName;
+    if (node.type === 'SendTokens' && hashLockVarName) {
+      lastLockedSendVarName = varName;
+      lastLockedRecipientUrl = String((nodeContext as Record<string, unknown>).firstRecipientUrl ?? '');
+      lastLockedRecipientUrlIsRef = Boolean((nodeContext as Record<string, unknown>).firstRecipientUrlIsRef);
+    }
+    if (node.type === 'WaitForLockedDeposit') lastWaitForLockedDepositVarName = varName;
   }
 
   // Render epilogue
@@ -477,6 +524,38 @@ function getSuffixMap(language: SDKLanguage): Record<string, string> {
 }
 
 /**
+ * Variable suffixes for the HTLC outputs ({{lock.preimage}}, {{send.txId}}, ...): plain strings
+ * and ints, where txId is the real transaction id of a locked send.
+ *
+ * Deliberately NOT part of the OUTPUT_VAR_SUFFIXES_* maps. Several heuristics decide that a bare
+ * string is a resolved reference when it "ends with a known suffix" (UpdateKeyPage keys, CreateToken
+ * symbols), and generic endings such as `_hash` or `Hash` would turn plain literals such as
+ * `signer_2_public_key_hash` into undefined identifiers.
+ */
+const HTLC_SUFFIXES_SNAKE: Record<string, string> = {
+  preimage: '_preimage',
+  hash: '_hash',
+  hashAlgorithm: '_hash_algorithm',
+  expiration: '_expiration',
+  expirationIso: '_expiration_iso',
+  lockedTxId: '_locked_txid',
+  txId: '_txid',
+};
+const HTLC_SUFFIXES_CAMEL: Record<string, string> = {
+  preimage: 'Preimage',
+  hash: 'Hash',
+  hashAlgorithm: 'HashAlgorithm',
+  expiration: 'Expiration',
+  expirationIso: 'ExpirationIso',
+  lockedTxId: 'LockedTxId',
+  txId: 'TxId',
+};
+
+function getHtlcSuffixes(language: SDKLanguage): Record<string, string> {
+  return language === 'python' || language === 'rust' ? HTLC_SUFFIXES_SNAKE : HTLC_SUFFIXES_CAMEL;
+}
+
+/**
  * Resolve {{blockId.outputName}} references in a config value string
  * to Python variable expressions.
  *
@@ -500,6 +579,7 @@ function resolveRef(value: string, language: SDKLanguage, varNameMap: Map<string
   }
 
   const suffixMap = getSuffixMap(language);
+  const htlcSuffixes = getHtlcSuffixes(language);
 
   // Check if the entire string is exactly one dotted reference (no surrounding text)
   const fullRefMatch = value.match(/^\{\{([\w-]+)\.(\w+)\}\}$/);
@@ -507,7 +587,7 @@ function resolveRef(value: string, language: SDKLanguage, varNameMap: Map<string
     const [, blockId, outputName] = fullRefMatch;
     const blockVarName = blockIdToVarName(blockId);
 
-    const suffix = suffixMap[outputName];
+    const suffix = suffixMap[outputName] ?? htlcSuffixes[outputName];
     const varExpr = suffix !== undefined ? `${blockVarName}${suffix}` : `${blockVarName}_${outputName}`;
 
     // URL outputs should be wrapped for Python (str()), C# (.String()), Dart (.toString())
@@ -545,7 +625,7 @@ function resolveRef(value: string, language: SDKLanguage, varNameMap: Map<string
     /\{\{([\w-]+)\.(\w+)\}\}/g,
     (_match, blockId: string, outputName: string) => {
       const blockVarName = blockIdToVarName(blockId);
-      const suffix = suffixMap[outputName];
+      const suffix = suffixMap[outputName] ?? htlcSuffixes[outputName];
       const varExpr = suffix !== undefined ? `${blockVarName}${suffix}` : `${blockVarName}_${outputName}`;
       if (language === 'python' && URL_OUTPUTS.has(outputName)) {
         return `{str(${varExpr})}`;
@@ -712,6 +792,13 @@ function computeNodeVars(
     lastCreateTokenVarName: string;
     lastCreateTokenAccountVarName: string;
     lastCreateDataAccountVarName: string;
+    /** HTLC: variable prefix of the GenerateHashLock a locked SendTokens uses ('' = not locked) */
+    hashLockVarName?: string;
+    lastGenerateHashLockVarName?: string;
+    lastLockedSendVarName?: string;
+    lastLockedRecipientUrl?: string;
+    lastLockedRecipientUrlIsRef?: boolean;
+    lastWaitForLockedDepositVarName?: string;
   },
 ): Record<string, unknown> {
   // keyVarName defaults to varName if not provided
@@ -723,6 +810,7 @@ function computeNodeVars(
 
   // Language-aware variable suffixes
   const sfx = getSuffixMap(language);
+  const htlcSfx = getHtlcSuffixes(language);
   const ltaSuffix = sfx.liteTokenAccount || '_lta';   // Dart/JS: 'Lta', Python: '_lta', Rust: '_lta'
   const lidSuffix = sfx.liteIdentity || '_lid';        // Dart/JS: 'Lid', Python: '_lid', Rust: '_lid'
   const pubHashSuffix = sfx.publicKeyHash || '_pub_hash'; // Dart/JS: 'PubHash', Python: '_pub_hash'
@@ -1015,6 +1103,107 @@ function computeNodeVars(
       vars.firstRecipientAmountIsRef = isVarRef(rawFirstAmt);
       // Support 'from' as alias for 'principal'
       vars.sendTokensPrincipal = principalExpr(config.principal || config.from, 'acc://my-identity.acme/ACME', `${kv}${ltaSuffix}`);
+
+      if (tracker?.hashLockVarName) {
+        // One recipient only: a locked send creates one deposit per recipient and the
+        // templates follow a single deposit through to its release.
+        if (recipients.length > 1) {
+          throw new Error(`SendTokens "${node.id}": a hash-locked send supports one recipient (got ${recipients.length})`);
+        }
+        vars.hashLock = true;
+        vars.hashLockVar = tracker.hashLockVarName;
+      }
+      break;
+    }
+
+    case 'GenerateHashLock': {
+      // Never run the algorithm through isVarRef: 'sha256' matches the identifier pattern.
+      const algo = String(config.hashAlgorithm || 'sha256').toLowerCase();
+      if (algo !== 'sha256' && algo !== 'sha256d') {
+        throw new Error(`GenerateHashLock "${node.id}": unsupported hashAlgorithm "${String(config.hashAlgorithm)}" (use sha256 or sha256d; HASH160 is SDK-level only)`);
+      }
+      vars.hashAlgorithm = algo;
+      vars.hashIsDouble = algo === 'sha256d';
+      const rawMinutes = config.expirationMinutes;
+      const minutes = rawMinutes === undefined || rawMinutes === null || rawMinutes === '' ? 30 : Number(rawMinutes);
+      // The node needs 10 minutes to 30 days of headroom; 15 minutes leaves room for clock skew and latency.
+      if (!Number.isInteger(minutes) || minutes < 15 || minutes > 43200) {
+        throw new Error(`GenerateHashLock "${node.id}": expirationMinutes must be a whole number from 15 to 43200 (got ${String(rawMinutes)})`);
+      }
+      vars.expirationMinutes = minutes;
+      const rawPreimage = config.preimage === undefined || config.preimage === null ? '' : String(config.preimage).trim();
+      if (rawPreimage) {
+        if (!/^([0-9a-fA-F]{2}){1,256}$/.test(rawPreimage)) {
+          throw new Error(`GenerateHashLock "${node.id}": preimage must be 1 to 256 bytes of hex`);
+        }
+        vars.preimageHex = rawPreimage.toLowerCase();
+      }
+      break;
+    }
+
+    case 'WaitForLockedDeposit': {
+      const rawSendTx = config.sendTxId === undefined || config.sendTxId === null ? '' : String(config.sendTxId).trim();
+      if (rawSendTx) {
+        vars.sendTxId = rawSendTx;
+        vars.sendTxIdIsRef = isVarRef(rawSendTx);
+      } else if (tracker?.lastLockedSendVarName) {
+        vars.sendTxId = `${tracker.lastLockedSendVarName}${htlcSfx.txId}`;
+        vars.sendTxIdIsRef = true;
+      } else {
+        throw new Error(`WaitForLockedDeposit "${node.id}": set sendTxId or place the block after a hash-locked SendTokens`);
+      }
+      const attempts = Number(config.maxAttempts);
+      const delay = Number(config.delayMs);
+      const delayMs = Number.isInteger(delay) && delay > 0 ? delay : 2000;
+      vars.maxAttempts = Number.isInteger(attempts) && attempts > 0 ? attempts : 60;
+      vars.delayMs = delayMs;
+      vars.delaySeconds = delayMs / 1000;
+      break;
+    }
+
+    case 'ReleaseLockedOperation': {
+      // The deposit sits in the RECIPIENT account, which is the release principal and signs.
+      const rawLocked = config.lockedTxId === undefined || config.lockedTxId === null ? '' : String(config.lockedTxId).trim();
+      if (rawLocked) {
+        vars.lockedTxId = rawLocked;
+        vars.lockedTxIdIsRef = isVarRef(rawLocked);
+      } else if (tracker?.lastWaitForLockedDepositVarName) {
+        vars.lockedTxId = `${tracker.lastWaitForLockedDepositVarName}${htlcSfx.lockedTxId}`;
+        vars.lockedTxIdIsRef = true;
+      } else {
+        throw new Error(`ReleaseLockedOperation "${node.id}": set lockedTxId or place the block after a WaitForLockedDeposit`);
+      }
+
+      const rawPreimage = config.preimage === undefined || config.preimage === null ? '' : String(config.preimage).trim();
+      if (rawPreimage) {
+        // A hex literal is never a variable, whatever its length (isVarRef only knows >= 16 chars).
+        if (/^([0-9a-fA-F]{2})+$/.test(rawPreimage)) {
+          if (rawPreimage.length > 512) {
+            throw new Error(`ReleaseLockedOperation "${node.id}": preimage is longer than 256 bytes`);
+          }
+          vars.releasePreimage = rawPreimage.toLowerCase();
+          vars.releasePreimageIsRef = false;
+        } else {
+          vars.releasePreimage = rawPreimage;
+          vars.releasePreimageIsRef = true;
+        }
+      } else if (tracker?.lastGenerateHashLockVarName) {
+        vars.releasePreimage = `${tracker.lastGenerateHashLockVarName}${htlcSfx.preimage}`;
+        vars.releasePreimageIsRef = true;
+      } else {
+        throw new Error(`ReleaseLockedOperation "${node.id}": set preimage or place the block after a GenerateHashLock`);
+      }
+
+      const rawAccount = config.principal === undefined || config.principal === null ? '' : String(config.principal).trim();
+      if (rawAccount) {
+        vars.releaseAccount = rawAccount;
+        vars.releaseAccountIsRef = isVarRef(rawAccount);
+      } else if (tracker?.lastLockedRecipientUrl) {
+        vars.releaseAccount = tracker.lastLockedRecipientUrl;
+        vars.releaseAccountIsRef = Boolean(tracker.lastLockedRecipientUrlIsRef);
+      } else {
+        throw new Error(`ReleaseLockedOperation "${node.id}": set principal to the recipient account of the locked send`);
+      }
       break;
     }
 
@@ -1779,6 +1968,18 @@ function generateCLI(flow: Flow, _language: SDKLanguage): string {
   lines.push('');
   lines.push('set -e  # Exit on error');
   lines.push('');
+
+  // The CLI has no hash-lock option, and the steps around a lock (wait for the deposit,
+  // release) mean nothing without it. Emit no commands rather than a flow that cannot work.
+  if (sortedNodes.some(isHashLockNode)) {
+    lines.push('# This flow uses a hash lock (HTLC). Hash locks are SDK-only: the Accumulate CLI');
+    lines.push('# cannot set the hashLock transaction header, so no CLI commands are generated.');
+    lines.push('# Generate the flow as Python, JavaScript, Dart, Rust or C# instead.');
+    lines.push('echo "Hash locks (HTLC) are SDK-only; generate this flow with an SDK language." >&2');
+    lines.push('exit 1');
+    return lines.join('\n');
+  }
+
   lines.push(`NETWORK="${flow.network ?? 'https://testnet.accumulatenetwork.io/v2'}"`);
   lines.push('');
 

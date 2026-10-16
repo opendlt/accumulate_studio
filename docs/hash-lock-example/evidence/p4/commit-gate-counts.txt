@@ -1,0 +1,11 @@
+ℹ tests 26
+ℹ pass 26
+ℹ fail 0
+ Test Files  41 passed (41)
+      Tests  606 passed (606)
+ Test Files  1 passed (1)
+      Tests  51 passed (51)
+ Test Files  20 passed | 1 skipped (21)
+      Tests  558 passed | 135 skipped (693)
+ Test Files  2 passed (2)
+      Tests  17 passed (17)

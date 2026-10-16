@@ -1,0 +1,378 @@
+{
+  "version": "1.0",
+  "name": "Hash Lock (HTLC) Payment",
+  "description": "Lock tokens to a SHA-256 hash, find the locked deposit, release it with the preimage and prove the recipient was credited.",
+  "network": "kermit",
+  "variables": [
+    {
+      "name": "ADI_NAME",
+      "type": "string",
+      "description": "Name for your ADI (e.g., 'my-htlc-adi')",
+      "required": true
+    },
+    {
+      "name": "LOCK_AMOUNT",
+      "type": "decimal",
+      "description": "Amount of ACME to lock",
+      "default": "1.00000000"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "generate_keys",
+      "type": "GenerateKeys",
+      "label": "Generate Keys",
+      "config": {
+        "algorithm": "Ed25519"
+      },
+      "position": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "faucet",
+      "type": "Faucet",
+      "label": "Request Tokens",
+      "config": {
+        "times": 3
+      },
+      "position": {
+        "x": 100,
+        "y": 260
+      }
+    },
+    {
+      "id": "wait_for_balance",
+      "type": "WaitForBalance",
+      "label": "Wait for ACME",
+      "config": {
+        "minBalance": "15.00000000",
+        "maxAttempts": 30,
+        "delayMs": 2000
+      },
+      "position": {
+        "x": 100,
+        "y": 420
+      }
+    },
+    {
+      "id": "add_credits",
+      "type": "AddCredits",
+      "label": "Add Credits",
+      "config": {
+        "amount": "5.00000000"
+      },
+      "position": {
+        "x": 100,
+        "y": 580
+      }
+    },
+    {
+      "id": "wait_for_credits",
+      "type": "WaitForCredits",
+      "label": "Wait for Credits",
+      "config": {
+        "minCredits": 1000,
+        "maxAttempts": 30,
+        "delayMs": 2000
+      },
+      "position": {
+        "x": 100,
+        "y": 740
+      }
+    },
+    {
+      "id": "create_identity",
+      "type": "CreateIdentity",
+      "label": "Create ADI",
+      "config": {
+        "url": "acc://{{ADI_NAME}}.acme"
+      },
+      "position": {
+        "x": 100,
+        "y": 900
+      }
+    },
+    {
+      "id": "add_adi_credits",
+      "type": "AddCredits",
+      "label": "Credit Key Page",
+      "config": {
+        "recipient": "{{create_identity.adiUrl}}/book/1",
+        "amount": "5.00000000"
+      },
+      "position": {
+        "x": 100,
+        "y": 1060
+      }
+    },
+    {
+      "id": "wait_for_adi_credits",
+      "type": "WaitForCredits",
+      "label": "Wait for Key Page Credits",
+      "config": {
+        "account": "{{create_identity.adiUrl}}/book/1",
+        "minCredits": 1000,
+        "maxAttempts": 30,
+        "delayMs": 2000
+      },
+      "position": {
+        "x": 100,
+        "y": 1220
+      }
+    },
+    {
+      "id": "create_sender_account",
+      "type": "CreateTokenAccount",
+      "label": "Create Sender Account",
+      "config": {
+        "url": "acc://{{ADI_NAME}}.acme/htlc-sender",
+        "tokenUrl": "acc://ACME",
+        "principal": "{{create_identity.adiUrl}}",
+        "signerUrl": "{{create_identity.adiUrl}}/book/1"
+      },
+      "position": {
+        "x": 100,
+        "y": 1380
+      }
+    },
+    {
+      "id": "create_receiver_account",
+      "type": "CreateTokenAccount",
+      "label": "Create Receiver Account",
+      "config": {
+        "url": "acc://{{ADI_NAME}}.acme/htlc-receiver",
+        "tokenUrl": "acc://ACME",
+        "principal": "{{create_identity.adiUrl}}",
+        "signerUrl": "{{create_identity.adiUrl}}/book/1"
+      },
+      "position": {
+        "x": 100,
+        "y": 1540
+      }
+    },
+    {
+      "id": "fund_sender",
+      "type": "SendTokens",
+      "label": "Fund Sender Account",
+      "config": {
+        "principal": "{{generate_keys.liteTokenAccount}}",
+        "signerUrl": "{{generate_keys.liteIdentity}}",
+        "to": "{{create_sender_account.tokenAccountUrl}}",
+        "amount": "500000000"
+      },
+      "position": {
+        "x": 100,
+        "y": 1700
+      }
+    },
+    {
+      "id": "wait_for_sender_balance",
+      "type": "WaitForBalance",
+      "label": "Wait for Sender Balance",
+      "config": {
+        "account": "{{create_sender_account.tokenAccountUrl}}",
+        "minBalance": "1.00000000",
+        "maxAttempts": 30,
+        "delayMs": 2000
+      },
+      "position": {
+        "x": 100,
+        "y": 1860
+      }
+    },
+    {
+      "id": "create_hash_lock",
+      "type": "GenerateHashLock",
+      "label": "Create Hash Lock",
+      "config": {
+        "hashAlgorithm": "sha256",
+        "expirationMinutes": 30
+      },
+      "position": {
+        "x": 100,
+        "y": 2020
+      }
+    },
+    {
+      "id": "locked_send",
+      "type": "SendTokens",
+      "label": "Locked Send",
+      "config": {
+        "principal": "{{create_sender_account.tokenAccountUrl}}",
+        "signerUrl": "{{create_identity.adiUrl}}/book/1",
+        "recipients": [
+          {
+            "url": "{{create_receiver_account.tokenAccountUrl}}",
+            "amount": "{{LOCK_AMOUNT}}"
+          }
+        ],
+        "hashLockFrom": "create_hash_lock"
+      },
+      "position": {
+        "x": 100,
+        "y": 2180
+      }
+    },
+    {
+      "id": "wait_for_locked_deposit",
+      "type": "WaitForLockedDeposit",
+      "label": "Wait for Locked Deposit",
+      "config": {
+        "sendTxId": "{{locked_send.txId}}",
+        "maxAttempts": 60,
+        "delayMs": 2000
+      },
+      "position": {
+        "x": 100,
+        "y": 2340
+      }
+    },
+    {
+      "id": "release_locked",
+      "type": "ReleaseLockedOperation",
+      "label": "Release Locked Deposit",
+      "config": {
+        "principal": "{{create_receiver_account.tokenAccountUrl}}",
+        "signerUrl": "{{create_identity.adiUrl}}/book/1",
+        "lockedTxId": "{{wait_for_locked_deposit.lockedTxId}}",
+        "preimage": "{{create_hash_lock.preimage}}"
+      },
+      "position": {
+        "x": 100,
+        "y": 2500
+      }
+    },
+    {
+      "id": "wait_for_receiver_balance",
+      "type": "WaitForBalance",
+      "label": "Wait for Receiver Balance",
+      "config": {
+        "account": "{{create_receiver_account.tokenAccountUrl}}",
+        "minBalance": "100000000",
+        "maxAttempts": 30,
+        "delayMs": 2000
+      },
+      "position": {
+        "x": 100,
+        "y": 2660
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "c0",
+      "sourceNodeId": "generate_keys",
+      "sourcePortId": "output",
+      "targetNodeId": "faucet",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c1",
+      "sourceNodeId": "faucet",
+      "sourcePortId": "output",
+      "targetNodeId": "wait_for_balance",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c2",
+      "sourceNodeId": "wait_for_balance",
+      "sourcePortId": "output",
+      "targetNodeId": "add_credits",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c3",
+      "sourceNodeId": "add_credits",
+      "sourcePortId": "output",
+      "targetNodeId": "wait_for_credits",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c4",
+      "sourceNodeId": "wait_for_credits",
+      "sourcePortId": "output",
+      "targetNodeId": "create_identity",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c5",
+      "sourceNodeId": "create_identity",
+      "sourcePortId": "output",
+      "targetNodeId": "add_adi_credits",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c6",
+      "sourceNodeId": "add_adi_credits",
+      "sourcePortId": "output",
+      "targetNodeId": "wait_for_adi_credits",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c7",
+      "sourceNodeId": "wait_for_adi_credits",
+      "sourcePortId": "output",
+      "targetNodeId": "create_sender_account",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c8",
+      "sourceNodeId": "create_sender_account",
+      "sourcePortId": "output",
+      "targetNodeId": "create_receiver_account",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c9",
+      "sourceNodeId": "create_receiver_account",
+      "sourcePortId": "output",
+      "targetNodeId": "fund_sender",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c10",
+      "sourceNodeId": "fund_sender",
+      "sourcePortId": "output",
+      "targetNodeId": "wait_for_sender_balance",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c11",
+      "sourceNodeId": "wait_for_sender_balance",
+      "sourcePortId": "output",
+      "targetNodeId": "create_hash_lock",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c12",
+      "sourceNodeId": "create_hash_lock",
+      "sourcePortId": "output",
+      "targetNodeId": "locked_send",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c13",
+      "sourceNodeId": "locked_send",
+      "sourcePortId": "output",
+      "targetNodeId": "wait_for_locked_deposit",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c14",
+      "sourceNodeId": "wait_for_locked_deposit",
+      "sourcePortId": "output",
+      "targetNodeId": "release_locked",
+      "targetPortId": "input"
+    },
+    {
+      "id": "c15",
+      "sourceNodeId": "release_locked",
+      "sourcePortId": "output",
+      "targetNodeId": "wait_for_receiver_balance",
+      "targetPortId": "input"
+    }
+  ],
+  "assertions": []
+}

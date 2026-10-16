@@ -1,3 +1,22 @@
+{{#if hashLock}}
+    // =========================================================
+    // {{label}} (Action: SendTokens, hash-locked)
+    // =========================================================
+    // Hash-locked send: the sender is debited now and the recipient is credited only
+    // when a ReleaseLockedOperation reveals the preimage. The lock rides in the
+    // transaction header, so the `_with_options` variant is required.
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_options = HeaderOptions { hash_lock: Some({{hashLockVar}}_lock.clone()), ..Default::default() };
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait_with_options(
+        {{#if sendTokensPrincipalIsRef}}&{{sendTokensPrincipal}}{{else}}"{{sendTokensPrincipal}}"{{/if}},
+        &TxBody::send_tokens_single({{#if firstRecipientUrlIsRef}}&{{firstRecipientUrl}}{{else}}"{{firstRecipientUrl}}"{{/if}}, {{#if firstRecipientAmountIsRef}}&{{firstRecipientAmount}}{{else}}"{{firstRecipientAmount}}"{{/if}}),
+        &{{varName}}_options,
+        30,
+    ).await;
+    let {{varName}}_txid = confirm(&client, "SendTokens (hash-locked)", &{{varName}}_result).await;
+    println!("SendTokens LOCKED - TxID: {}", {{varName}}_txid);
+    tx_ids.push(("SendTokens (hash-locked)", {{varName}}_txid.clone()));
+{{else}}
     // =========================================================
     // {{label}} (Action: SendTokens)
     // =========================================================
@@ -28,4 +47,4 @@
         }
     } else {
         println!("SendTokens FAILED: {:?}", {{varName}}_result.error);
-    }
+    }{{/if}}

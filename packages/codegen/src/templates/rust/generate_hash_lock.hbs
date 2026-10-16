@@ -1,0 +1,30 @@
+    // =========================================================
+    // {{label}} (Action: GenerateHashLock)
+    // =========================================================
+    // The lock is a hash of a secret preimage. The preimage stays with you until the
+    // release transaction reveals it on-chain.
+{{#if preimageHex}}
+    let {{varName}}_preimage_bytes: Vec<u8> = hex::decode("{{preimageHex}}").unwrap_or_else(|_| fail("invalid preimage hex"));
+{{else}}
+    let mut {{varName}}_preimage_bytes = vec![0u8; 32];
+    getrandom::getrandom(&mut {{varName}}_preimage_bytes).unwrap_or_else(|e| fail(&format!("no random bytes: {}", e)));
+{{/if}}
+    let {{varName}}_preimage = hex::encode(&{{varName}}_preimage_bytes);
+{{#if hashIsDouble}}
+    let {{varName}}_hash_bytes = Sha256::digest(Sha256::digest(&{{varName}}_preimage_bytes)).to_vec();
+{{else}}
+    let {{varName}}_hash_bytes = Sha256::digest(&{{varName}}_preimage_bytes).to_vec();
+{{/if}}
+    let {{varName}}_hash = hex::encode(&{{varName}}_hash_bytes);
+    let {{varName}}_hash_algorithm = "{{hashAlgorithm}}";
+    // Whole Unix seconds: the node needs 10 minutes to 30 days of headroom
+    let {{varName}}_now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64;
+    let {{varName}}_expiration: i64 = {{varName}}_now + {{expirationMinutes}} * 60;
+    let {{varName}}_lock = TxBody::hash_lock(HashAlgorithm::{{#if hashIsDouble}}Sha256D{{else}}Sha256{{/if}}, {{varName}}_hash_bytes.clone(), {{varName}}_expiration);
+    {{varName}}_lock.validate_for_submit({{varName}}_now).unwrap_or_else(|e| fail(&format!("invalid hash lock: {}", e)));
+    let {{varName}}_expiration_iso = {{varName}}_lock.expiration.clone().unwrap_or_default();
+    println!("Hash lock ready:");
+    println!("  algorithm: {}", {{varName}}_hash_algorithm);
+    println!("  hash:      {}", {{varName}}_hash);
+    println!("  expires:   {}", {{varName}}_expiration_iso);
+    println!("  PREIMAGE:  {}", {{varName}}_preimage);

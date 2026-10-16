@@ -12,6 +12,10 @@ use accumulate_client::{{lb}}
 use sha2::{{lb}}Digest, Sha256{{rb}};
 use url::Url;
 use serde_json::{{lb}}json, Value{{rb}};
+{{#if hasHashLock}}
+use accumulate_client::generated::enums::HashAlgorithm;
+use accumulate_client::{{lb}}HeaderOptions, TxResult{{rb}};
+{{/if}}
 
 const NETWORK_V2: &str = "https://kermit.accumulatenetwork.io/v2";
 const NETWORK_V3: &str = "https://kermit.accumulatenetwork.io/v3";
@@ -22,6 +26,67 @@ fn sha256_hash(data: &[u8]) -> String {
     hex::encode(hasher.finalize())
 }
 
+{{#if hasHashLock}}
+/// Print the reason and stop with a non-zero exit code: a failed HTLC step must never look like success.
+fn fail(message: &str) -> ! {
+    println!("FAILED: {}", message);
+    std::process::exit(1)
+}
+
+/// Raw v3 `query` of an account URL or a transaction id.
+async fn query(client: &AccumulateClient, scope: &str) -> Result<Value, Box<dyn std::error::Error>> {
+    Ok(client.v3_client.call_v3::<Value>("query", json!({ "scope": scope })).await?)
+}
+
+/// `TxResult::txid` is NOT the transaction id: it is the id of the SIGNATURE message (the
+/// second entry of the v3 submit response). The transaction id is the first entry's
+/// `status.txID`. When a wait gives up the SDK returns no response, only "Timeout waiting
+/// for delivery: <signature id>", so resolve the signature message to the transaction it signs.
+async fn tx_id(client: &AccumulateClient, label: &str, res: &TxResult) -> Result<String, Box<dyn std::error::Error>> {
+    if let Some(id) = res.response.as_ref().and_then(|r| r.get(0)).and_then(|e| e["status"]["txID"].as_str()) {
+        return Ok(id.to_string());
+    }
+    let sig_id = res
+        .error
+        .as_deref()
+        .and_then(|e| e.strip_prefix("Timeout waiting for delivery: "))
+        .ok_or_else(|| format!("{}: {}", label, res.error.as_deref().unwrap_or("no txid")))?;
+    let q = query(client, sig_id).await?;
+    Ok(q["message"]["txID"].as_str().unwrap_or(sig_id).to_string())
+}
+
+/// The SDK wait helpers poll the signature message and treat any v3 string status other than
+/// "delivered" (including a FAILED one such as "unauthenticated") as "keep polling", so a
+/// failed transaction is reported as a success or a timeout. This polls the TRANSACTION itself
+/// until it is final, stops the flow with the node's real error if it failed, and returns its id.
+async fn confirm(client: &AccumulateClient, label: &str, res: &TxResult) -> String {
+    let txid = match tx_id(client, label, res).await {
+        Ok(id) => id,
+        Err(e) => fail(&format!("{} failed: {}", label, e)),
+    };
+    let mut last = String::from("no response");
+    for _ in 0..30 {
+        match query(client, &txid).await {
+            Ok(q) => {
+                let status = q["status"].as_str().unwrap_or("unknown");
+                let status_no = q["statusNo"].as_u64().unwrap_or(0);
+                if status == "delivered" {
+                    return txid;
+                }
+                if status_no >= 400 || !q["error"].is_null() {
+                    let msg = q["error"]["message"].as_str().unwrap_or("no error message from node");
+                    fail(&format!("{} {} failed: status '{}' (statusNo {}): {}", label, txid, status, status_no, msg));
+                }
+                last = format!("status '{}'", status);
+            }
+            Err(e) => last = e.to_string(),
+        }
+        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+    }
+    fail(&format!("{} {} did not finish: last {}", label, txid, last))
+}
+
+{{/if}}
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //

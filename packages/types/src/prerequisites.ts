@@ -24,7 +24,9 @@ export type ResourceKind =
   | 'token-issuer'
   | 'token-balance'
   | 'data-account'
-  | 'signer';
+  | 'signer'
+  | 'hash-lock'
+  | 'locked-deposit';
 
 // =============================================================================
 // Resource Requirement
@@ -118,6 +120,35 @@ export const PREREQUISITE_GRAPH: Record<BlockType, PrerequisiteRule> = {
     creditCost: 0,
     explanation: 'Polls until a minimum credit balance is reached.',
     defaultRecipe: ['GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits'],
+  },
+
+  GenerateHashLock: {
+    requires: [],
+    produces: ['hash-lock'],
+    creditCost: 0,
+    explanation:
+      'Generates a secret preimage, its hash and an expiration in the browser or at run time. Nothing is sent to the network. No prerequisites needed.',
+    defaultRecipe: [],
+  },
+
+  WaitForLockedDeposit: {
+    requires: [
+      {
+        resource: 'hash-lock',
+        severity: 'warning',
+        label: 'Hash Lock (the locked send to wait on)',
+        satisfiedBy: ['GenerateHashLock'],
+      },
+    ],
+    produces: ['locked-deposit'],
+    creditCost: 0,
+    explanation:
+      'Polls the hash-locked send until its locked deposit is delivered, then outputs the deposit txid (not the send txid). Needs a SendTokens block that carries a hash lock.',
+    defaultRecipe: [
+      'GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'CreateTokenAccount',
+      'GenerateHashLock', 'SendTokens',
+    ],
   },
 
   QueryAccount: {
@@ -458,6 +489,39 @@ export const PREREQUISITE_GRAPH: Record<BlockType, PrerequisiteRule> = {
     defaultRecipe: [
       'GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
       'GenerateKeys',
+    ],
+  },
+
+  ReleaseLockedOperation: {
+    requires: [
+      {
+        resource: 'keypair',
+        severity: 'error',
+        label: 'Keypair (Signer)',
+        satisfiedBy: ['GenerateKeys'],
+      },
+      {
+        resource: 'locked-deposit',
+        severity: 'error',
+        label: 'Delivered Locked Deposit',
+        satisfiedBy: ['WaitForLockedDeposit'],
+      },
+      {
+        // The recipient's signer pays for the release.
+        resource: 'credits',
+        severity: 'error',
+        label: 'Credits on the Recipient Signer',
+        satisfiedBy: ['AddCredits', 'WaitForCredits'],
+      },
+    ],
+    produces: ['token-balance'],
+    creditCost: 1,
+    explanation:
+      'Releases a hash-locked deposit by revealing the preimage. The recipient account must sign and pay. A wrong preimage or an expired lock is accepted at submit and fails at execute.',
+    defaultRecipe: [
+      'GenerateKeys', 'Faucet', 'WaitForBalance', 'AddCredits', 'WaitForCredits',
+      'CreateIdentity', 'AddCredits', 'WaitForCredits', 'CreateTokenAccount',
+      'GenerateHashLock', 'SendTokens', 'WaitForLockedDeposit',
     ],
   },
 

@@ -1,0 +1,35 @@
+        // =========================================================
+        // {{label}} (WaitForLockedDeposit)
+        // =========================================================
+        // A release targets the locked DEPOSIT, not the send. The deposit is one of the
+        // send's produced transactions. A query error just means it is not ready yet, and
+        // `produced.total` can over-count, so scan the records themselves.
+        const {{varName}}SendTxId = {{#if sendTxIdIsRef}}{{sendTxId}}{{else}}"{{sendTxId}}"{{/if}};
+        let {{varName}}LockedTxId = null;
+        console.log(`Waiting for the locked deposit produced by ${ {{~varName}}SendTxId}...`);
+        for (let attempt = 1; attempt <= {{maxAttempts}} && !{{varName}}LockedTxId; attempt++) {
+            try {
+                const sendRec = await v3Query(client, {{varName}}SendTxId);
+                for (const rec of sendRec.produced?.records ?? []) {
+                    if (!rec.value) continue;
+                    try {
+                        const dep = await v3Query(client, rec.value);
+                        if (dep.message?.transaction?.body?.type === "syntheticLockedDeposit" && dep.status === "delivered") {
+                            {{varName}}LockedTxId = rec.value;
+                            break;
+                        }
+                    } catch {
+                        // produced id not found yet
+                    }
+                }
+            } catch {
+                // send not queryable yet
+            }
+            if (!{{varName}}LockedTxId) {
+                console.log(`  Waiting for locked deposit... (attempt ${attempt}/{{maxAttempts}})`);
+                await sleep({{delayMs}});
+            }
+        }
+        if (!{{varName}}LockedTxId) fail("the locked deposit was not delivered in time");
+        console.log(`Locked deposit: ${ {{~varName}}LockedTxId}`);
+        txIds.push(["LockedDeposit", {{varName}}LockedTxId]);

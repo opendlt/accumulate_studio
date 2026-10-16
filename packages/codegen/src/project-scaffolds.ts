@@ -9,7 +9,7 @@
  */
 
 import type { Flow, GeneratedFile, SDKLanguage, SDKMap } from '@accumulate-studio/types';
-import { generateCodeFromManifest } from './manifest-generator';
+import { generateCodeFromManifest, isHashLockNode } from './manifest-generator';
 import { loadAllManifests } from './manifest-loader';
 
 // =============================================================================
@@ -157,7 +157,7 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 serde_json = "1"
 sha2 = "0.10"
 hex = "0.4"
-url = "2"
+url = "2"${flow.nodes.some(isHashLockNode) ? '\ngetrandom = "0.2"' : ''}
 
 [build-dependencies]
 # Embeds an asInvoker manifest so Windows' Installer Detection heuristic does not

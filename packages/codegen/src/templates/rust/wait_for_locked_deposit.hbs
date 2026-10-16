@@ -1,0 +1,35 @@
+    // =========================================================
+    // {{label}} (Action: WaitForLockedDeposit)
+    // =========================================================
+    // A release targets the locked DEPOSIT, not the send. The deposit is one of the
+    // send's produced transactions. A query error just means it is not ready yet, and
+    // `produced.total` can over-count, so scan the records themselves.
+    let {{varName}}_send_txid: String = {{#if sendTxIdIsRef}}{{sendTxId}}.clone(){{else}}"{{sendTxId}}".to_string(){{/if}};
+    let mut {{varName}}_found: Option<String> = None;
+    println!("Waiting for the locked deposit produced by {}...", {{varName}}_send_txid);
+    for {{varName}}_attempt in 1..={{maxAttempts}}u32 {
+        if let Ok(send) = query(&client, &{{varName}}_send_txid).await {
+            for rec in send["produced"]["records"].as_array().into_iter().flatten() {
+                let Some(id) = rec["value"].as_str() else { continue };
+                // NotFound while the produced transaction is still in flight is not an error.
+                let Ok(dep) = query(&client, id).await else { continue };
+                if dep["message"]["transaction"]["body"]["type"] == "syntheticLockedDeposit"
+                    && dep["status"] == "delivered"
+                {
+                    {{varName}}_found = Some(id.to_string());
+                    break;
+                }
+            }
+        }
+        if {{varName}}_found.is_some() {
+            break;
+        }
+        println!("  Waiting for locked deposit... (attempt {}/{{maxAttempts}})", {{varName}}_attempt);
+        tokio::time::sleep(std::time::Duration::from_millis({{delayMs}})).await;
+    }
+    let {{varName}}_locked_txid: String = match {{varName}}_found {
+        Some(id) => id,
+        None => fail("the locked deposit was not delivered in time"),
+    };
+    println!("Locked deposit: {}", {{varName}}_locked_txid);
+    tx_ids.push(("LockedDeposit", {{varName}}_locked_txid.clone()));

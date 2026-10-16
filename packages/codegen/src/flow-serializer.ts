@@ -149,6 +149,7 @@ function isTransactionBlock(type: BlockType): boolean {
     'SendTokens',
     'IssueTokens',
     'BurnTokens',
+    'ReleaseLockedOperation',
     'AddCredits',
     'TransferCredits',
     'BurnCredits',
@@ -224,9 +225,16 @@ function extractOutputs(node: FlowNode): string[] {
     case 'GenerateKeys':
       outputs.push('keypair', 'publicKey', 'publicKeyHash', 'liteIdentity', 'liteTokenAccount');
       break;
+    case 'GenerateHashLock':
+      outputs.push('preimage', 'hash', 'hashAlgorithm', 'expiration', 'expirationIso');
+      break;
+    case 'WaitForLockedDeposit':
+      outputs.push('lockedTxId');
+      break;
     case 'SendTokens':
     case 'IssueTokens':
     case 'BurnTokens':
+    case 'ReleaseLockedOperation':
     case 'AddCredits':
     case 'TransferCredits':
     case 'WriteData':

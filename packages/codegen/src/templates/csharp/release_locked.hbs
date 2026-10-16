@@ -1,0 +1,16 @@
+            // =========================================================
+            // {{label}} (ReleaseLockedOperation)
+            // =========================================================
+            // The RECIPIENT account releases the deposit and pays the small fee, so the signer
+            // needs credits. A wrong preimage or an expired lock is accepted at submit and only
+            // fails when the transaction executes; the SDK wait reports that failure.
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{#if releaseAccountIsRef}}{{releaseAccount}}{{else}}"{{releaseAccount}}"{{/if}},
+                TxBody.ReleaseLockedOperation({{#if lockedTxIdIsRef}}{{lockedTxId}}{{else}}"{{lockedTxId}}"{{/if}}, {{#if releasePreimageIsRef}}{{releasePreimage}}{{else}}"{{releasePreimage}}"{{/if}}),
+                maxAttempts: 45
+            );
+            if ({{varName}}Result.TxId != null) txIds.Add(("ReleaseLockedOperation", {{varName}}Result.TxId));
+            if (!{{varName}}Result.Success || {{varName}}Result.TxId == null)
+                Fail($"ReleaseLockedOperation failed: { {{~varName}}Result.Error}");
+            Console.WriteLine($"ReleaseLockedOperation SUCCESS - TxID: { {{~varName}}Result.TxId}");

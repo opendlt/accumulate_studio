@@ -1,0 +1,35 @@
+    // =========================================================
+    // {{label}} (GenerateHashLock)
+    // =========================================================
+    // The lock is a hash of a secret preimage. The preimage stays with you until the
+    // release transaction reveals it on-chain.
+{{#if preimageHex}}
+    final {{varName}}PreimageBytes = fromHex('{{preimageHex}}');
+{{else}}
+    final {{varName}}PreimageBytes = randomBytes(32);
+{{/if}}
+    final {{varName}}Preimage = toHexString({{varName}}PreimageBytes);
+{{#if hashIsDouble}}
+    final {{varName}}HashBytes = Uint8List.fromList(sha256.convert(sha256.convert({{varName}}PreimageBytes).bytes).bytes);
+{{else}}
+    final {{varName}}HashBytes = Uint8List.fromList(sha256.convert({{varName}}PreimageBytes).bytes);
+{{/if}}
+    final {{varName}}Hash = toHexString({{varName}}HashBytes);
+    final {{varName}}HashAlgorithm = '{{hashAlgorithm}}';
+    // Whole seconds in UTC: the node needs 10 minutes to 30 days of headroom and rejects fractions
+    final {{varName}}Now = DateTime.now().toUtc();
+    final {{varName}}ExpirationAt = DateTime.utc({{varName}}Now.year, {{varName}}Now.month, {{varName}}Now.day, {{varName}}Now.hour, {{varName}}Now.minute, {{varName}}Now.second)
+        .add(const Duration(minutes: {{expirationMinutes}}));
+    final {{varName}}Expiration = {{varName}}ExpirationAt.millisecondsSinceEpoch ~/ 1000;
+    final {{varName}}ExpirationIso = {{varName}}ExpirationAt.toIso8601String().replaceAll('.000Z', 'Z');
+    final {{varName}}Lock = HashLockOptions(
+      hashAlgorithm: HashAlgorithm.{{#if hashIsDouble}}SHA256D{{else}}SHA256{{/if}},
+      hash: {{varName}}HashBytes,
+      expiration: {{varName}}ExpirationAt,
+    );
+    {{varName}}Lock.validateForSubmit();
+    print('Hash lock ready:');
+    print('  algorithm: ${ {{~varName}}HashAlgorithm}');
+    print('  hash:      ${ {{~varName}}Hash}');
+    print('  expires:   ${ {{~varName}}ExpirationIso} (unix ${ {{~varName}}Expiration})');
+    print('  PREIMAGE:  ${ {{~varName}}Preimage}');

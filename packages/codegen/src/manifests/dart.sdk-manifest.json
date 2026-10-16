@@ -480,6 +480,11 @@
           "symbol": "TxBody.sendTokens",
           "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
           "signature": "static Map<String, dynamic> sendTokens({required List<TokenRecipient> recipients})"
+        },
+        {
+          "symbol": "SmartSigner.signSubmitAndWait",
+          "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+          "signature": "Future<TransactionResult> signSubmitAndWait({required String principal, required Map<String, dynamic> body, HashLockOptions? hashLock, String? memo, int maxAttempts})"
         }
       ],
       "inputs": [
@@ -487,6 +492,12 @@
           "name": "recipients",
           "type": "List<TokenRecipient>",
           "required": true
+        },
+        {
+          "name": "hashLock",
+          "type": "HashLockOptions",
+          "required": false,
+          "description": "Optional hash lock; pass as hashLock: to SmartSigner.signSubmitAndWait"
         }
       ],
       "outputs": [
@@ -504,7 +515,10 @@
       ],
       "notes": [
         "The recipient token account must already exist. A send to a missing ADI token account is ACCEPTED at submit and then bounces: the synthetic deposit fails and the amount is refunded to the sender. The submit looks successful, so verify the recipient balance rather than the submit response.",
-        "Wait for the recipient balance to settle. The deposit is a synthetic transaction that lands after the send is delivered, so a balance read immediately after submit shows the old value."
+        "Wait for the recipient balance to settle. The deposit is a synthetic transaction that lands after the send is delivered, so a balance read immediately after submit shows the old value.",
+        "A hash-locked send debits the sender immediately. The recipient is credited only when a ReleaseLockedOperation reveals the preimage; until then the recipient balance does not change. The lock is a transaction HEADER field (hashLock), not a new transaction type, and it is silently ignored on every transaction type except SendTokens.",
+        "The lock expiration must be 10 minutes to 30 days ahead (whole UTC seconds, checked against the node clock at submit and at execute); use at least 15 minutes. Refund on expiry is the protocol design but is NOT currently functional on the network: an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Use small amounts and always release.",
+        "Dart: set the lock ONLY through the hashLock: parameter of signSubmitAndWait (the legacy header models emit a field the encoder ignores). TransactionResult.txid is the id of the SIGNATURE message and success is true even when the transaction fails at execute: query the txid, follow message.txID, and judge by the transaction's own status and error."
       ]
     },
     {
@@ -950,6 +964,173 @@
       ],
       "examples": [
         "example/v3/SDK_Examples_file_15_Co_Signing_v3.dart"
+      ]
+    },
+    {
+      "op": "generate_hash_lock",
+      "category": "utility",
+      "symbols": [
+        {
+          "symbol": "HashLockOptions",
+          "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+          "signature": "const HashLockOptions({required HashAlgorithm hashAlgorithm, required Uint8List hash, DateTime? expiration})"
+        },
+        {
+          "symbol": "HashLockOptions.validateForSubmit",
+          "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+          "signature": "void validateForSubmit()"
+        },
+        {
+          "symbol": "HashAlgorithm",
+          "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+          "signature": "enum { SHA256, SHA256D, HASH160 }"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "hashAlgorithm",
+          "type": "str",
+          "required": false,
+          "description": "sha256 (default) or sha256d"
+        },
+        {
+          "name": "expirationMinutes",
+          "type": "int",
+          "required": false,
+          "description": "Minutes until the lock expires, 15 to 43200 (default 30)"
+        },
+        {
+          "name": "preimage",
+          "type": "str",
+          "required": false,
+          "description": "Optional hex preimage, 1 to 256 bytes; 32 random bytes when empty"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "preimage",
+          "type": "str"
+        },
+        {
+          "name": "hash",
+          "type": "str"
+        },
+        {
+          "name": "hashAlgorithm",
+          "type": "str"
+        },
+        {
+          "name": "expiration",
+          "type": "int"
+        },
+        {
+          "name": "expirationIso",
+          "type": "str"
+        }
+      ],
+      "requires": [],
+      "examples": [],
+      "notes": [
+        "Nothing is sent to the network. The preimage (1 to 256 bytes) is the secret: keep it until the release transaction reveals it on-chain. sha256 and sha256d are supported here; hash160 is SDK-level only.",
+        "The node requires an expiration 10 minutes to 30 days ahead; 15 minutes or more leaves room for clock skew. The expiration must be whole UTC seconds."
+      ]
+    },
+    {
+      "op": "wait_for_locked_deposit",
+      "category": "utility",
+      "symbols": [
+        {
+          "symbol": "AccumulateV3.rawCall",
+          "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+          "signature": "Future<dynamic> rawCall(String method, Map<String, dynamic> params)"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "sendTxId",
+          "type": "str",
+          "required": true,
+          "description": "Txid of the hash-locked SendTokens"
+        },
+        {
+          "name": "maxAttempts",
+          "type": "int",
+          "required": false,
+          "description": "Polling attempts (default 60)"
+        },
+        {
+          "name": "delayMs",
+          "type": "int",
+          "required": false,
+          "description": "Delay between attempts in ms (default 2000)"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "lockedTxId",
+          "type": "str"
+        }
+      ],
+      "requires": [
+        "keypair"
+      ],
+      "examples": [],
+      "notes": [
+        "A release targets the locked DEPOSIT (a SyntheticLockedDeposit), not the send. Find it among the send's produced records: the first whose message.transaction.body.type is syntheticLockedDeposit and whose status is delivered. A query error on a produced id means it is not ready yet. Never trust produced.total (it can exceed the records returned); scan the records themselves.",
+        "No SDK ships a helper for this, so generated code contains the polling loop."
+      ]
+    },
+    {
+      "op": "release_locked",
+      "category": "transaction",
+      "symbols": [
+        {
+          "symbol": "TxBody.releaseLockedOperation",
+          "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+          "signature": "static Map<String, dynamic> releaseLockedOperation({required String lockedTxId, required Uint8List preimage})"
+        },
+        {
+          "symbol": "SmartSigner.signSubmitAndWait",
+          "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+          "signature": "Future<TransactionResult> signSubmitAndWait({required String principal, required Map<String, dynamic> body, String? memo, int maxAttempts})"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "principal",
+          "type": "str",
+          "required": true,
+          "description": "Recipient account URL that holds the locked deposit"
+        },
+        {
+          "name": "lockedTxId",
+          "type": "str",
+          "required": true,
+          "description": "Txid of the locked deposit (not of the send)"
+        },
+        {
+          "name": "preimage",
+          "type": "str",
+          "required": true,
+          "description": "Hex preimage that hashes to the lock"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "txHash",
+          "type": "str"
+        }
+      ],
+      "requires": [
+        "keypair",
+        "credits"
+      ],
+      "examples": [],
+      "notes": [
+        "The principal is the RECIPIENT account that holds the deposit, and that account's authority must sign and have credits (the release fee, about 0.01 credits, is paid by the recipient's signer).",
+        "A wrong preimage, an expired lock or a double release is ACCEPTED at submit and FAILS at execute (for example 'preimage does not match hash'). Always check the final transaction status, not the submit response. After a successful release the deposit's result carries the release txid and the recipient balance increases by the locked amount.",
+        "Refund on expiry is the protocol design but is NOT currently functional on the network: an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Use small amounts and always release.",
+        "A release that fails at execute is reported by signSubmitAndWait as a false success or a timeout; confirm the real transaction status with a v3 query."
       ]
     }
   ],

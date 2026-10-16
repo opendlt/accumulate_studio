@@ -43,7 +43,7 @@ Scoped invocation (no global shim): `dart run opendlt_accumulate:accumulate`
 - Full API digest: `llms-full.txt`
 - Repository guide (build/test/lint, for working ON this SDK): `AGENTS.md`
 - Runnable end-to-end examples: `example/v3/`
-- 25 operations across 7 categories.
+- 28 operations across 7 categories.
 
 ## Operations
 - `generate_keys` — Generate Keys (utility)
@@ -71,3 +71,6 @@ Scoped invocation (no global shim): `dart run opendlt_accumulate:accumulate`
 - `lock_account` — Lock Account (authority)
 - `update_account_auth` — Update Account Auth (authority)
 - `co_sign` — Co Sign (authority)
+- `generate_hash_lock` — Generate Hash Lock (utility)
+- `wait_for_locked_deposit` — Wait For Locked Deposit (utility)
+- `release_locked` — Release Locked (transaction)

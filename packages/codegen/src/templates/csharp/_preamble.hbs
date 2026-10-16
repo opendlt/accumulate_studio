@@ -21,6 +21,34 @@ using Acme.Net.Sdk.Helpers;
 
 class Program
 {
+{{#if hasHashLock}}
+    // Print the reason and stop with a non-zero exit code: a failed HTLC step must never look like success.
+    [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+    static void Fail(string message)
+    {
+        Console.Error.WriteLine($"FAILED: {message}");
+        Environment.Exit(1);
+    }
+
+    // Walks a path of object properties; null if any segment is missing.
+    static JsonElement? Dig(JsonElement e, params string[] path)
+    {
+        var cur = e;
+        foreach (var key in path)
+        {
+            if (cur.ValueKind != JsonValueKind.Object || !cur.TryGetProperty(key, out var next)) return null;
+            cur = next;
+        }
+        return cur;
+    }
+
+    static string? Str(JsonElement e, params string[] path)
+    {
+        var v = Dig(e, path);
+        return v is { ValueKind: JsonValueKind.String } s ? s.GetString() : null;
+    }
+
+{{/if}}
     static async Task Main(string[] args)
     {
         var baseUrl = Environment.GetEnvironmentVariable("ACCUMULATE_BASE_URL")

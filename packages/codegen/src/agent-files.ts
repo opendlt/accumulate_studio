@@ -137,6 +137,7 @@ function getBlockCategory(type: string): string {
     SendTokens: 'Token Operations',
     IssueTokens: 'Token Operations',
     BurnTokens: 'Token Operations',
+    ReleaseLockedOperation: 'Token Operations',
     AddCredits: 'Credit Operations',
     TransferCredits: 'Credit Operations',
     BurnCredits: 'Credit Operations',
@@ -151,6 +152,8 @@ function getBlockCategory(type: string): string {
     WaitForBalance: 'Utility Operations',
     WaitForCredits: 'Utility Operations',
     GenerateKeys: 'Utility Operations',
+    GenerateHashLock: 'Utility Operations',
+    WaitForLockedDeposit: 'Utility Operations',
     Comment: 'Utility Operations',
   };
 
@@ -331,11 +334,20 @@ function getNodeAcceptanceCriteria(node: FlowNode): string[] {
     case 'SendTokens': {
       const recipients = config.recipients as Array<{ url: string; amount: string }> ?? [];
       for (const r of recipients) {
-        criteria.push(`- [ ] ${r.amount} tokens delivered to \`${r.url}\``);
+        criteria.push(
+          config.hashLockFrom
+            ? `- [ ] ${r.amount} tokens locked for \`${r.url}\` (credited only after release)`
+            : `- [ ] ${r.amount} tokens delivered to \`${r.url}\``
+        );
       }
       criteria.push('- [ ] Transaction receipt is verified');
       break;
     }
+
+    case 'ReleaseLockedOperation':
+      criteria.push('- [ ] Release transaction is delivered (a wrong preimage fails at execute, not at submit)');
+      criteria.push('- [ ] Locked deposit result carries the release txid');
+      break;
 
     case 'AddCredits':
       criteria.push(`- [ ] Credits purchased for \`${config.recipient}\``);
@@ -445,6 +457,7 @@ function isTransactionBlock(type: string): boolean {
     'SendTokens',
     'IssueTokens',
     'BurnTokens',
+    'ReleaseLockedOperation',
     'AddCredits',
     'TransferCredits',
     'BurnCredits',

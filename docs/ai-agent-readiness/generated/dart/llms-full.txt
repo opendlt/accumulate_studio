@@ -154,7 +154,7 @@ The node could not determine which partition should handle the request.
 - Dart type: `ApiError`
 - fix: Build the envelope through TxBody + SmartSigner rather than by hand. Every transaction needs a header with a valid `principal` — that URL is the routing key, and without it the node rejects the request before validating anything else.
 
-## Operations (25)
+## Operations (28)
 
 ### generate_keys  —  Generate Keys  [utility]
 Symbols:
@@ -201,6 +201,35 @@ Outputs:
 Requires: keypair
 Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_TX_NOT_SETTLED, ACC_UNAUTHORIZED_SIGNER
 Examples: examples/wait_for_credits.dart
+
+### generate_hash_lock  —  Generate Hash Lock  [utility]
+Symbols:
+  - `HashLockOptions` — `const HashLockOptions({required HashAlgorithm hashAlgorithm, required Uint8List hash, DateTime? expiration})`
+  - `HashLockOptions.validateForSubmit` — `void validateForSubmit()`
+  - `HashAlgorithm` — `enum { SHA256, SHA256D, HASH160 }`
+Inputs:
+  - `hashAlgorithm` (str, optional) — sha256 (default) or sha256d
+  - `expirationMinutes` (int, optional) — Minutes until the lock expires, 15 to 43200 (default 30)
+  - `preimage` (str, optional) — Optional hex preimage, 1 to 256 bytes; 32 random bytes when empty
+Outputs:
+  - `preimage` (str)
+  - `hash` (str)
+  - `hashAlgorithm` (str)
+  - `expiration` (int)
+  - `expirationIso` (str)
+Errors: ACC_NETWORK_UNAVAILABLE
+
+### wait_for_locked_deposit  —  Wait For Locked Deposit  [utility]
+Symbols:
+  - `AccumulateV3.rawCall` — `Future<dynamic> rawCall(String method, Map<String, dynamic> params)`
+Inputs:
+  - `sendTxId` (str, required) — Txid of the hash-locked SendTokens
+  - `maxAttempts` (int, optional) — Polling attempts (default 60)
+  - `delayMs` (int, optional) — Delay between attempts in ms (default 2000)
+Outputs:
+  - `lockedTxId` (str)
+Requires: keypair
+Errors: ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 
 ### add_credits  —  Add Credits  [credits]
 Symbols:
@@ -327,8 +356,10 @@ Examples: examples/create_lite_token_account.dart
 Symbols:
   - `TxBody.sendTokensSingle` — `static Map<String, dynamic> sendTokensSingle({required String toUrl, required String amount})`
   - `TxBody.sendTokens` — `static Map<String, dynamic> sendTokens({required List<TokenRecipient> recipients})`
+  - `SmartSigner.signSubmitAndWait` — `Future<TransactionResult> signSubmitAndWait({required String principal, required Map<String, dynamic> body, HashLockOptions? hashLock, String? memo, int maxAttempts})`
 Inputs:
   - `recipients` (List<TokenRecipient>, required)
+  - `hashLock` (HashLockOptions, optional) — Optional hash lock; pass as hashLock: to SmartSigner.signSubmitAndWait
 Outputs:
   - `txHash` (String)
 Requires: keypair, credits
@@ -380,6 +411,19 @@ Outputs:
 Requires: keypair, credits
 Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 Examples: examples/write_data_to.dart
+
+### release_locked  —  Release Locked  [transaction]
+Symbols:
+  - `TxBody.releaseLockedOperation` — `static Map<String, dynamic> releaseLockedOperation({required String lockedTxId, required Uint8List preimage})`
+  - `SmartSigner.signSubmitAndWait` — `Future<TransactionResult> signSubmitAndWait({required String principal, required Map<String, dynamic> body, String? memo, int maxAttempts})`
+Inputs:
+  - `principal` (str, required) — Recipient account URL that holds the locked deposit
+  - `lockedTxId` (str, required) — Txid of the locked deposit (not of the send)
+  - `preimage` (str, required) — Hex preimage that hashes to the lock
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 
 ### query_account  —  Query Account  [query]
 Symbols:

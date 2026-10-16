@@ -67,6 +67,7 @@ const ALL_BLOCK_TYPES: BlockType[] = [
   'WriteData', 'WriteDataTo',
   'UpdateKeyPage', 'UpdateKey', 'LockAccount',
   'UpdateAccountAuth',
+  'GenerateHashLock', 'WaitForLockedDeposit', 'ReleaseLockedOperation',
 ];
 
 // ── Mock Server (for TEST_MODE=mock) ─────────────────────────────────────
@@ -204,7 +205,7 @@ function buildE2EFlow(targetType: BlockType): Flow {
       id,
       type: bt,
       label: `${bt}${suffix}`,
-      config: getConfig(bt, typeCounts, adiBase),
+      config: getConfig(bt, typeCounts, adiBase, recipe),
       position: { x: 100, y: 100 + i * 160 },
     });
 
@@ -232,6 +233,7 @@ function getConfig(
   bt: BlockType,
   typeCounts: Record<string, number>,
   adi: string,
+  recipe: BlockType[],
 ): Record<string, unknown> {
   const book = `${adi}/book`;
   const page = `${adi}/book/1`;
@@ -258,7 +260,16 @@ function getConfig(
     case 'CreateTokenAccount': return { url: tokens, tokenUrl: 'acc://ACME', principal: adi };
     case 'CreateDataAccount': return { url: data, principal: adi };
     case 'CreateToken': return { url: token, symbol: 'TKN', precision: 8, principal: adi };
-    case 'SendTokens': return { recipients: [{ url: tokens, amount: '100' }], principal: tokens };
+    case 'SendTokens':
+      // Inside the HTLC chain: the hash-locked send from the lite token account, signed by the lite identity.
+      if (recipe.includes('GenerateHashLock')) {
+        return {
+          recipients: [{ url: tokens, amount: '100000000' }],
+          hashLockFrom: 'generate_hash_lock',
+          signerUrl: '{{generate_keys.liteIdentity}}',
+        };
+      }
+      return { recipients: [{ url: tokens, amount: '100' }], principal: tokens };
     case 'IssueTokens': return { amount: '1000000', recipient: tokens, principal: token };
     case 'BurnTokens': return { amount: '500', principal: tokens };
     case 'WriteData': return { entries: ['Hello World'], principal: data };

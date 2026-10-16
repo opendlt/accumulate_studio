@@ -5,6 +5,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+{{#if hasHashLock}}
+import 'dart:math';
+{{/if}}
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:opendlt_accumulate/opendlt_accumulate.dart';
@@ -15,6 +18,79 @@ const String defaultV3 = 'https://kermit.accumulatenetwork.io/v3';
 String toHexString(List<int> bytes) {
   return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
 }
+{{#if hasHashLock}}
+
+/// Stop with a non-zero exit code. A failed HTLC step must never look like success.
+Never fail(String message) {
+  print('FAILED: $message');
+  exit(1);
+}
+
+Uint8List randomBytes(int n) {
+  final rng = Random.secure();
+  return Uint8List.fromList(List<int>.generate(n, (_) => rng.nextInt(256)));
+}
+
+/// Strict hex decoding (even length, hex digits only).
+Uint8List fromHex(String hex) {
+  if (hex.isEmpty || hex.length.isOdd || !RegExp(r'^[0-9a-fA-F]+$').hasMatch(hex)) {
+    fail('invalid hex value');
+  }
+  return Uint8List.fromList(
+    List<int>.generate(hex.length ~/ 2, (i) => int.parse(hex.substring(i * 2, i * 2 + 2), radix: 16)),
+  );
+}
+
+/// v3 `query` of an account or transaction id.
+Future<Map<String, dynamic>> queryScope(AccumulateV3 v3, String scope) async {
+  final r = await v3.rawCall('query', {
+    'scope': scope,
+    'query': {'queryType': 'default'},
+  });
+  return Map<String, dynamic>.from(r as Map);
+}
+
+/// Confirm a SmartSigner result from the node's own v3 status and return the
+/// TRANSACTION id. The SDK cannot be trusted on its own here:
+///  * signSubmitAndWait returns the id of the SIGNATURE message, not of the
+///    transaction, so the id is resolved through `message.txID`;
+///  * its wait treats any status other than "delivered" as pending, so a
+///    transaction that FAILS at execute (a wrong preimage, an expired lock) is
+///    reported as a success or a timeout and the node's error text is lost.
+Future<String> confirmDelivered(AccumulateV3 v3, String label, TransactionResult r) async {
+  if (r.txid == null) fail('$label failed: ${r.error}');
+  var txid = r.txid!;
+  try {
+    final q = await queryScope(v3, txid);
+    final msg = q['message'];
+    if (msg is Map && msg['type'] == 'signature' && msg['txID'] != null) {
+      txid = msg['txID'].toString();
+    }
+  } catch (_) {}
+  var last = r.error ?? 'no status';
+  for (var i = 0; i < 30; i++) {
+    Map<String, dynamic>? q;
+    try {
+      q = await queryScope(v3, txid);
+    } catch (e) {
+      last = '$e';
+    }
+    if (q != null) {
+      final status = q['status'];
+      final err = q['error'];
+      final statusNo = q['statusNo'];
+      if (err != null || (statusNo is int && statusNo >= 400)) {
+        final message = err is Map && err['message'] != null ? err['message'] : status;
+        fail('$label failed: $message ($status, code $statusNo) txid=$txid');
+      }
+      if (status == 'delivered') return txid;
+      last = '$status';
+    }
+    await Future.delayed(const Duration(seconds: 2));
+  }
+  fail('$label: not delivered ($last; sdk: ${r.error}) txid=$txid');
+}
+{{/if}}
 
 Future<void> main() async {
   final v2 = Platform.environment['ACCUMULATE_V2_URL'] ?? defaultV2;

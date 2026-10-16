@@ -1,0 +1,502 @@
+
+> accumulate-studio@1.0.0 verify:codegen
+> node scripts/build-headless.mjs && node tools/studio-headless/dist/studio-headless.mjs --all
+
+Built tools/studio-headless/dist/studio-headless.mjs
+generating lite-account-setup / python...
+generating lite-account-setup / rust...
+generating lite-account-setup / dart...
+generating lite-account-setup / csharp...
+generating lite-account-setup / javascript...
+generating create-adi / python...
+generating create-adi / rust...
+generating create-adi / dart...
+generating create-adi / csharp...
+generating create-adi / javascript...
+generating zero-to-hero / python...
+generating zero-to-hero / rust...
+generating zero-to-hero / dart...
+generating zero-to-hero / csharp...
+generating zero-to-hero / javascript...
+generating token-transfer / python...
+generating token-transfer / rust...
+generating token-transfer / dart...
+generating token-transfer / csharp...
+generating token-transfer / javascript...
+generating data-writing / python...
+generating data-writing / rust...
+generating data-writing / dart...
+generating data-writing / csharp...
+generating data-writing / javascript...
+generating custom-token / python...
+generating custom-token / rust...
+generating custom-token / dart...
+generating custom-token / csharp...
+generating custom-token / javascript...
+generating multi-sig-setup / python...
+generating multi-sig-setup / rust...
+generating multi-sig-setup / dart...
+generating multi-sig-setup / csharp...
+generating multi-sig-setup / javascript...
+generating key-rotation / python...
+generating key-rotation / rust...
+generating key-rotation / dart...
+generating key-rotation / csharp...
+generating key-rotation / javascript...
+{
+  "schema": 1,
+  "ok": true,
+  "summary": {
+    "total": 40,
+    "passed": 40,
+    "failed": 0,
+    "templates": 8,
+    "languages": 5,
+    "errors": 0,
+    "warnings": 0
+  },
+  "results": [
+    {
+      "template": "lite-account-setup",
+      "language": "python",
+      "nodeCount": 3,
+      "ok": true,
+      "bytes": 4923,
+      "lines": 136,
+      "durationMs": 35,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "lite-account-setup",
+      "language": "rust",
+      "nodeCount": 3,
+      "ok": true,
+      "bytes": 4674,
+      "lines": 109,
+      "durationMs": 21,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "lite-account-setup",
+      "language": "dart",
+      "nodeCount": 3,
+      "ok": true,
+      "bytes": 3223,
+      "lines": 89,
+      "durationMs": 12,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "lite-account-setup",
+      "language": "csharp",
+      "nodeCount": 3,
+      "ok": true,
+      "bytes": 3401,
+      "lines": 90,
+      "durationMs": 12,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "lite-account-setup",
+      "language": "javascript",
+      "nodeCount": 3,
+      "ok": true,
+      "bytes": 2298,
+      "lines": 70,
+      "durationMs": 15,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "create-adi",
+      "language": "python",
+      "nodeCount": 5,
+      "ok": true,
+      "bytes": 7092,
+      "lines": 182,
+      "durationMs": 19,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "create-adi",
+      "language": "rust",
+      "nodeCount": 5,
+      "ok": true,
+      "bytes": 6940,
+      "lines": 156,
+      "durationMs": 20,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "create-adi",
+      "language": "dart",
+      "nodeCount": 5,
+      "ok": true,
+      "bytes": 5511,
+      "lines": 150,
+      "durationMs": 14,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "create-adi",
+      "language": "csharp",
+      "nodeCount": 5,
+      "ok": true,
+      "bytes": 5715,
+      "lines": 140,
+      "durationMs": 14,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "create-adi",
+      "language": "javascript",
+      "nodeCount": 5,
+      "ok": true,
+      "bytes": 4242,
+      "lines": 113,
+      "durationMs": 13,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "zero-to-hero",
+      "language": "python",
+      "nodeCount": 9,
+      "ok": true,
+      "bytes": 10269,
+      "lines": 244,
+      "durationMs": 18,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "zero-to-hero",
+      "language": "rust",
+      "nodeCount": 9,
+      "ok": true,
+      "bytes": 11436,
+      "lines": 239,
+      "durationMs": 24,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "zero-to-hero",
+      "language": "dart",
+      "nodeCount": 9,
+      "ok": true,
+      "bytes": 9128,
+      "lines": 244,
+      "durationMs": 16,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "zero-to-hero",
+      "language": "csharp",
+      "nodeCount": 9,
+      "ok": true,
+      "bytes": 8753,
+      "lines": 203,
+      "durationMs": 15,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "zero-to-hero",
+      "language": "javascript",
+      "nodeCount": 9,
+      "ok": true,
+      "bytes": 6943,
+      "lines": 170,
+      "durationMs": 15,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "token-transfer",
+      "language": "python",
+      "nodeCount": 13,
+      "ok": true,
+      "bytes": 13694,
+      "lines": 310,
+      "durationMs": 18,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "token-transfer",
+      "language": "rust",
+      "nodeCount": 13,
+      "ok": true,
+      "bytes": 15605,
+      "lines": 317,
+      "durationMs": 22,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "token-transfer",
+      "language": "dart",
+      "nodeCount": 13,
+      "ok": true,
+      "bytes": 13089,
+      "lines": 346,
+      "durationMs": 15,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "token-transfer",
+      "language": "csharp",
+      "nodeCount": 13,
+      "ok": true,
+      "bytes": 12456,
+      "lines": 279,
+      "durationMs": 18,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "token-transfer",
+      "language": "javascript",
+      "nodeCount": 13,
+      "ok": true,
+      "bytes": 10245,
+      "lines": 237,
+      "durationMs": 20,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "data-writing",
+      "language": "python",
+      "nodeCount": 11,
+      "ok": true,
+      "bytes": 11235,
+      "lines": 263,
+      "durationMs": 17,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "data-writing",
+      "language": "rust",
+      "nodeCount": 11,
+      "ok": true,
+      "bytes": 12816,
+      "lines": 269,
+      "durationMs": 19,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "data-writing",
+      "language": "dart",
+      "nodeCount": 11,
+      "ok": true,
+      "bytes": 10405,
+      "lines": 280,
+      "durationMs": 12,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "data-writing",
+      "language": "csharp",
+      "nodeCount": 11,
+      "ok": true,
+      "bytes": 10024,
+      "lines": 227,
+      "durationMs": 13,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "data-writing",
+      "language": "javascript",
+      "nodeCount": 11,
+      "ok": true,
+      "bytes": 8013,
+      "lines": 191,
+      "durationMs": 15,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "custom-token",
+      "language": "python",
+      "nodeCount": 12,
+      "ok": true,
+      "bytes": 12620,
+      "lines": 290,
+      "durationMs": 18,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "custom-token",
+      "language": "rust",
+      "nodeCount": 12,
+      "ok": true,
+      "bytes": 14059,
+      "lines": 289,
+      "durationMs": 22,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "custom-token",
+      "language": "dart",
+      "nodeCount": 12,
+      "ok": true,
+      "bytes": 11774,
+      "lines": 316,
+      "durationMs": 16,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "custom-token",
+      "language": "csharp",
+      "nodeCount": 12,
+      "ok": true,
+      "bytes": 11499,
+      "lines": 258,
+      "durationMs": 16,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "custom-token",
+      "language": "javascript",
+      "nodeCount": 12,
+      "ok": true,
+      "bytes": 9365,
+      "lines": 219,
+      "durationMs": 16,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "multi-sig-setup",
+      "language": "python",
+      "nodeCount": 17,
+      "ok": true,
+      "bytes": 22145,
+      "lines": 423,
+      "durationMs": 18,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "multi-sig-setup",
+      "language": "rust",
+      "nodeCount": 17,
+      "ok": true,
+      "bytes": 24799,
+      "lines": 447,
+      "durationMs": 26,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "multi-sig-setup",
+      "language": "dart",
+      "nodeCount": 17,
+      "ok": true,
+      "bytes": 21152,
+      "lines": 481,
+      "durationMs": 18,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "multi-sig-setup",
+      "language": "csharp",
+      "nodeCount": 17,
+      "ok": true,
+      "bytes": 21368,
+      "lines": 405,
+      "durationMs": 18,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "multi-sig-setup",
+      "language": "javascript",
+      "nodeCount": 17,
+      "ok": true,
+      "bytes": 16471,
+      "lines": 317,
+      "durationMs": 18,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "key-rotation",
+      "language": "python",
+      "nodeCount": 11,
+      "ok": true,
+      "bytes": 11434,
+      "lines": 264,
+      "durationMs": 26,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "key-rotation",
+      "language": "rust",
+      "nodeCount": 11,
+      "ok": true,
+      "bytes": 12546,
+      "lines": 260,
+      "durationMs": 24,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "key-rotation",
+      "language": "dart",
+      "nodeCount": 11,
+      "ok": true,
+      "bytes": 10194,
+      "lines": 271,
+      "durationMs": 10,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "key-rotation",
+      "language": "csharp",
+      "nodeCount": 11,
+      "ok": true,
+      "bytes": 9892,
+      "lines": 220,
+      "durationMs": 11,
+      "diagnostics": [],
+      "error": null
+    },
+    {
+      "template": "key-rotation",
+      "language": "javascript",
+      "nodeCount": 11,
+      "ok": true,
+      "bytes": 7747,
+      "lines": 186,
+      "durationMs": 12,
+      "diagnostics": [],
+      "error": null
+    }
+  ]
+}
+
+40/40 generations clean (0 errors, 0 warnings)

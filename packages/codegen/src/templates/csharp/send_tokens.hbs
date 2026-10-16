@@ -1,3 +1,25 @@
+{{#if hashLock}}
+            // =========================================================
+            // {{label}} (SendTokens, hash-locked)
+            // =========================================================
+            // Hash-locked send: the sender is debited now and the recipient is credited only
+            // when a ReleaseLockedOperation reveals the preimage.
+            var {{varName}}Signer = new SmartSigner(client.V3, {{keyVarName}}Kp, {{signerUrl}});
+            var {{varName}}Result = await {{varName}}Signer.SignSubmitAndWaitAsync(
+                {{sendTokensPrincipal}},
+                TxBody.SendTokensSingle(
+                    {{#if firstRecipientUrlIsRef}}{{firstRecipientUrl}}{{else}}"{{firstRecipientUrl}}"{{/if}},
+                    {{#if firstRecipientAmountIsRef}}{{firstRecipientAmount}}{{else}}"{{firstRecipientAmount}}"{{/if}}
+                ),
+                headerOptions: {{hashLockVar}}Lock,
+                maxAttempts: 45
+            );
+            if (!{{varName}}Result.Success || {{varName}}Result.TxId == null)
+                Fail($"SendTokens (hash-locked) failed: { {{~varName}}Result.Error}");
+            var {{varName}}TxId = {{varName}}Result.TxId!;
+            Console.WriteLine($"SendTokens LOCKED - TxID: { {{~varName}}TxId}");
+            txIds.Add(("SendTokens (hash-locked)", {{varName}}TxId));
+{{else}}
             // =========================================================
             // {{label}} (Action: SendTokens)
             // =========================================================
@@ -30,3 +52,4 @@
             {
                 Console.WriteLine($"SendTokens FAILED: { {{~varName}}Result.Error}");
             }
+{{/if}}

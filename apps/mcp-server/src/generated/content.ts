@@ -580,6 +580,11 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "symbol": "SmartSigner.sign_submit_and_wait",
             "path": "accumulate_client.convenience",
             "signature": "(self, principal: str, body: dict) -> dict"
+          },
+          {
+            "symbol": "SmartSigner.sign_submit_and_wait",
+            "path": "accumulate_client.convenience",
+            "signature": "(self, principal: str, body: dict, hash_lock: HashLockOptions | None = None, max_attempts: int = 30) -> TransactionResult"
           }
         ],
         "inputs": [
@@ -588,6 +593,12 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "type": "list[tuple[str, str]]",
             "required": true,
             "description": "List of (url, amount) tuples"
+          },
+          {
+            "name": "hashLock",
+            "type": "HashLockOptions",
+            "required": false,
+            "description": "Optional hash lock; pass as hash_lock= to SmartSigner.sign_submit_and_wait"
           }
         ],
         "outputs": [
@@ -1054,6 +1065,151 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
           "keypair",
           "credits"
         ]
+      },
+      {
+        "op": "generate_hash_lock",
+        "category": "utility",
+        "symbols": [
+          {
+            "symbol": "HashLockOptions",
+            "path": "accumulate_client.tx.header",
+            "signature": "(hashAlgorithm: str, hash: bytes, expiration: datetime)"
+          },
+          {
+            "symbol": "HashLockOptions.validate_for_submit",
+            "path": "accumulate_client.tx.header",
+            "signature": "(self) -> None"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "hashAlgorithm",
+            "type": "str",
+            "required": false,
+            "description": "sha256 (default) or sha256d"
+          },
+          {
+            "name": "expirationMinutes",
+            "type": "int",
+            "required": false,
+            "description": "Minutes until the lock expires, 15 to 43200 (default 30)"
+          },
+          {
+            "name": "preimage",
+            "type": "str",
+            "required": false,
+            "description": "Optional hex preimage, 1 to 256 bytes; 32 random bytes when empty"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "preimage",
+            "type": "str"
+          },
+          {
+            "name": "hash",
+            "type": "str"
+          },
+          {
+            "name": "hashAlgorithm",
+            "type": "str"
+          },
+          {
+            "name": "expiration",
+            "type": "int"
+          },
+          {
+            "name": "expirationIso",
+            "type": "str"
+          }
+        ],
+        "requires": []
+      },
+      {
+        "op": "wait_for_locked_deposit",
+        "category": "utility",
+        "symbols": [
+          {
+            "symbol": "Accumulate.v3.query",
+            "path": "accumulate_client",
+            "signature": "(self, url: str) -> dict"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "sendTxId",
+            "type": "str",
+            "required": true,
+            "description": "Txid of the hash-locked SendTokens"
+          },
+          {
+            "name": "maxAttempts",
+            "type": "int",
+            "required": false,
+            "description": "Polling attempts (default 60)"
+          },
+          {
+            "name": "delayMs",
+            "type": "int",
+            "required": false,
+            "description": "Delay between attempts in ms (default 2000)"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "lockedTxId",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair"
+        ]
+      },
+      {
+        "op": "release_locked",
+        "category": "transaction",
+        "symbols": [
+          {
+            "symbol": "TxBody.release_locked_operation",
+            "path": "accumulate_client.convenience",
+            "signature": "(locked_txid: str, preimage: bytes | str) -> dict"
+          },
+          {
+            "symbol": "SmartSigner.sign_submit_and_wait",
+            "path": "accumulate_client.convenience",
+            "signature": "(self, principal: str, body: dict) -> TransactionResult"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "principal",
+            "type": "str",
+            "required": true,
+            "description": "Recipient account URL that holds the locked deposit"
+          },
+          {
+            "name": "lockedTxId",
+            "type": "str",
+            "required": true,
+            "description": "Txid of the locked deposit (not of the send)"
+          },
+          {
+            "name": "preimage",
+            "type": "str",
+            "required": true,
+            "description": "Hex preimage that hashes to the lock"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "txHash",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair",
+          "credits"
+        ]
       }
     ]
   },
@@ -1503,6 +1659,11 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "symbol": "TxBody::send_tokens_multi",
             "path": "accumulate_client",
             "signature": "(recipients: &[(&str, &str)]) -> TxBody"
+          },
+          {
+            "symbol": "SmartSigner::sign_submit_and_wait_with_options",
+            "path": "accumulate_client",
+            "signature": "(&mut self, principal: &str, body: &TxBody, options: &HeaderOptions, max_attempts: u32) -> TxResult"
           }
         ],
         "inputs": [
@@ -1510,6 +1671,12 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "name": "recipients",
             "type": "Vec<(String, String)>",
             "required": true
+          },
+          {
+            "name": "hashLock",
+            "type": "HashLockOptions",
+            "required": false,
+            "description": "Optional hash lock; carried in HeaderOptions { hash_lock: Some(lock), .. } to sign_submit_and_wait_with_options"
           }
         ],
         "outputs": [
@@ -1906,6 +2073,156 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "type": "list",
             "required": true,
             "description": "Distinct keys that must ALSO sign the SAME transaction"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "txHash",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair",
+          "credits"
+        ]
+      },
+      {
+        "op": "generate_hash_lock",
+        "category": "utility",
+        "symbols": [
+          {
+            "symbol": "TxBody::hash_lock",
+            "path": "accumulate_client",
+            "signature": "(algorithm: HashAlgorithm, hash: Vec<u8>, expiration_unix_secs: i64) -> HashLockOptions"
+          },
+          {
+            "symbol": "HashLockOptions::validate_for_submit",
+            "path": "accumulate_client",
+            "signature": "(&self, now_unix: i64) -> Result<()>"
+          },
+          {
+            "symbol": "HashAlgorithm",
+            "path": "accumulate_client::generated::enums",
+            "signature": "enum { Sha256, Sha256D, Hash160 }"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "hashAlgorithm",
+            "type": "str",
+            "required": false,
+            "description": "sha256 (default) or sha256d"
+          },
+          {
+            "name": "expirationMinutes",
+            "type": "int",
+            "required": false,
+            "description": "Minutes until the lock expires, 15 to 43200 (default 30)"
+          },
+          {
+            "name": "preimage",
+            "type": "str",
+            "required": false,
+            "description": "Optional hex preimage, 1 to 256 bytes; 32 random bytes when empty"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "preimage",
+            "type": "str"
+          },
+          {
+            "name": "hash",
+            "type": "str"
+          },
+          {
+            "name": "hashAlgorithm",
+            "type": "str"
+          },
+          {
+            "name": "expiration",
+            "type": "int"
+          },
+          {
+            "name": "expirationIso",
+            "type": "str"
+          }
+        ],
+        "requires": []
+      },
+      {
+        "op": "wait_for_locked_deposit",
+        "category": "utility",
+        "symbols": [
+          {
+            "symbol": "AccumulateClient::v3_client.call_v3",
+            "path": "accumulate_client",
+            "signature": "<T>(&self, method: &str, params: Value) -> Result<T>"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "sendTxId",
+            "type": "str",
+            "required": true,
+            "description": "Txid of the hash-locked SendTokens"
+          },
+          {
+            "name": "maxAttempts",
+            "type": "int",
+            "required": false,
+            "description": "Polling attempts (default 60)"
+          },
+          {
+            "name": "delayMs",
+            "type": "int",
+            "required": false,
+            "description": "Delay between attempts in ms (default 2000)"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "lockedTxId",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair"
+        ]
+      },
+      {
+        "op": "release_locked",
+        "category": "transaction",
+        "symbols": [
+          {
+            "symbol": "TxBody::release_locked_operation",
+            "path": "accumulate_client",
+            "signature": "(locked_txid: &str, preimage: &[u8]) -> TxBody"
+          },
+          {
+            "symbol": "SmartSigner::sign_submit_and_wait",
+            "path": "accumulate_client",
+            "signature": "(&mut self, principal: &str, body: &TxBody, memo: Option<&str>, max_attempts: u32) -> TxResult"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "principal",
+            "type": "str",
+            "required": true,
+            "description": "Recipient account URL that holds the locked deposit"
+          },
+          {
+            "name": "lockedTxId",
+            "type": "str",
+            "required": true,
+            "description": "Txid of the locked deposit (not of the send)"
+          },
+          {
+            "name": "preimage",
+            "type": "str",
+            "required": true,
+            "description": "Hex preimage that hashes to the lock"
           }
         ],
         "outputs": [
@@ -2362,6 +2679,11 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "symbol": "TxBody.sendTokens",
             "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
             "signature": "static Map<String, dynamic> sendTokens({required List<TokenRecipient> recipients})"
+          },
+          {
+            "symbol": "SmartSigner.signSubmitAndWait",
+            "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+            "signature": "Future<TransactionResult> signSubmitAndWait({required String principal, required Map<String, dynamic> body, HashLockOptions? hashLock, String? memo, int maxAttempts})"
           }
         ],
         "inputs": [
@@ -2369,6 +2691,12 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "name": "recipients",
             "type": "List<TokenRecipient>",
             "required": true
+          },
+          {
+            "name": "hashLock",
+            "type": "HashLockOptions",
+            "required": false,
+            "description": "Optional hash lock; pass as hashLock: to SmartSigner.signSubmitAndWait"
           }
         ],
         "outputs": [
@@ -2755,6 +3083,156 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "type": "list",
             "required": true,
             "description": "Distinct keys that must ALSO sign the SAME transaction"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "txHash",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair",
+          "credits"
+        ]
+      },
+      {
+        "op": "generate_hash_lock",
+        "category": "utility",
+        "symbols": [
+          {
+            "symbol": "HashLockOptions",
+            "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+            "signature": "const HashLockOptions({required HashAlgorithm hashAlgorithm, required Uint8List hash, DateTime? expiration})"
+          },
+          {
+            "symbol": "HashLockOptions.validateForSubmit",
+            "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+            "signature": "void validateForSubmit()"
+          },
+          {
+            "symbol": "HashAlgorithm",
+            "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+            "signature": "enum { SHA256, SHA256D, HASH160 }"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "hashAlgorithm",
+            "type": "str",
+            "required": false,
+            "description": "sha256 (default) or sha256d"
+          },
+          {
+            "name": "expirationMinutes",
+            "type": "int",
+            "required": false,
+            "description": "Minutes until the lock expires, 15 to 43200 (default 30)"
+          },
+          {
+            "name": "preimage",
+            "type": "str",
+            "required": false,
+            "description": "Optional hex preimage, 1 to 256 bytes; 32 random bytes when empty"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "preimage",
+            "type": "str"
+          },
+          {
+            "name": "hash",
+            "type": "str"
+          },
+          {
+            "name": "hashAlgorithm",
+            "type": "str"
+          },
+          {
+            "name": "expiration",
+            "type": "int"
+          },
+          {
+            "name": "expirationIso",
+            "type": "str"
+          }
+        ],
+        "requires": []
+      },
+      {
+        "op": "wait_for_locked_deposit",
+        "category": "utility",
+        "symbols": [
+          {
+            "symbol": "AccumulateV3.rawCall",
+            "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+            "signature": "Future<dynamic> rawCall(String method, Map<String, dynamic> params)"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "sendTxId",
+            "type": "str",
+            "required": true,
+            "description": "Txid of the hash-locked SendTokens"
+          },
+          {
+            "name": "maxAttempts",
+            "type": "int",
+            "required": false,
+            "description": "Polling attempts (default 60)"
+          },
+          {
+            "name": "delayMs",
+            "type": "int",
+            "required": false,
+            "description": "Delay between attempts in ms (default 2000)"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "lockedTxId",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair"
+        ]
+      },
+      {
+        "op": "release_locked",
+        "category": "transaction",
+        "symbols": [
+          {
+            "symbol": "TxBody.releaseLockedOperation",
+            "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+            "signature": "static Map<String, dynamic> releaseLockedOperation({required String lockedTxId, required Uint8List preimage})"
+          },
+          {
+            "symbol": "SmartSigner.signSubmitAndWait",
+            "path": "package:opendlt_accumulate/opendlt_accumulate.dart",
+            "signature": "Future<TransactionResult> signSubmitAndWait({required String principal, required Map<String, dynamic> body, String? memo, int maxAttempts})"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "principal",
+            "type": "str",
+            "required": true,
+            "description": "Recipient account URL that holds the locked deposit"
+          },
+          {
+            "name": "lockedTxId",
+            "type": "str",
+            "required": true,
+            "description": "Txid of the locked deposit (not of the send)"
+          },
+          {
+            "name": "preimage",
+            "type": "str",
+            "required": true,
+            "description": "Hex preimage that hashes to the lock"
           }
         ],
         "outputs": [
@@ -3272,6 +3750,11 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "symbol": "SmartSigner.SignSubmitAndWaitAsync",
             "path": "Acme.Net.Sdk.Signing",
             "signature": "(string, object) -> Task<object>"
+          },
+          {
+            "symbol": "SmartSigner.SignSubmitAndWaitAsync",
+            "path": "Acme.Net.Sdk.Signing",
+            "signature": "(string principal, object body, HeaderOptions? headerOptions, int maxAttempts) -> Task<TxResult>"
           }
         ],
         "inputs": [
@@ -3280,6 +3763,12 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "type": "List<TxRecipient>",
             "required": true,
             "description": "List of (url, amount) recipients"
+          },
+          {
+            "name": "hashLock",
+            "type": "Dictionary<string, object?>",
+            "required": false,
+            "description": "Optional hash lock from TxBody.HashLock(); pass as new HeaderOptions { HashLock = ... } via headerOptions:"
           }
         ],
         "outputs": [
@@ -3734,6 +4223,156 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "type": "list",
             "required": true,
             "description": "Distinct keys that must ALSO sign the SAME transaction"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "txHash",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair",
+          "credits"
+        ]
+      },
+      {
+        "op": "generate_hash_lock",
+        "category": "utility",
+        "symbols": [
+          {
+            "symbol": "TxBody.HashLock",
+            "path": "Acme.Net.Sdk.Transactions",
+            "signature": "(string hashAlgorithm, string hashHex, DateTimeOffset? expiration) -> Dictionary<string, object?>"
+          },
+          {
+            "symbol": "HashLockOptions.ValidateForSubmit",
+            "path": "Acme.Net.Sdk.Protocol.Generated",
+            "signature": "() -> void"
+          },
+          {
+            "symbol": "HeaderOptions",
+            "path": "Acme.Net.Sdk.Signing",
+            "signature": "class { Dictionary<string, object?>? HashLock }"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "hashAlgorithm",
+            "type": "str",
+            "required": false,
+            "description": "sha256 (default) or sha256d"
+          },
+          {
+            "name": "expirationMinutes",
+            "type": "int",
+            "required": false,
+            "description": "Minutes until the lock expires, 15 to 43200 (default 30)"
+          },
+          {
+            "name": "preimage",
+            "type": "str",
+            "required": false,
+            "description": "Optional hex preimage, 1 to 256 bytes; 32 random bytes when empty"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "preimage",
+            "type": "str"
+          },
+          {
+            "name": "hash",
+            "type": "str"
+          },
+          {
+            "name": "hashAlgorithm",
+            "type": "str"
+          },
+          {
+            "name": "expiration",
+            "type": "int"
+          },
+          {
+            "name": "expirationIso",
+            "type": "str"
+          }
+        ],
+        "requires": []
+      },
+      {
+        "op": "wait_for_locked_deposit",
+        "category": "utility",
+        "symbols": [
+          {
+            "symbol": "Accumulate.V3.QueryTransactionAsync",
+            "path": "Acme.Net.Sdk",
+            "signature": "(string id) -> Task<JsonElement>"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "sendTxId",
+            "type": "str",
+            "required": true,
+            "description": "Txid of the hash-locked SendTokens"
+          },
+          {
+            "name": "maxAttempts",
+            "type": "int",
+            "required": false,
+            "description": "Polling attempts (default 60)"
+          },
+          {
+            "name": "delayMs",
+            "type": "int",
+            "required": false,
+            "description": "Delay between attempts in ms (default 2000)"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "lockedTxId",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair"
+        ]
+      },
+      {
+        "op": "release_locked",
+        "category": "transaction",
+        "symbols": [
+          {
+            "symbol": "TxBody.ReleaseLockedOperation",
+            "path": "Acme.Net.Sdk.Transactions",
+            "signature": "(string lockedTxId, string preimageHex) -> Dictionary<string, object?>"
+          },
+          {
+            "symbol": "SmartSigner.SignSubmitAndWaitAsync",
+            "path": "Acme.Net.Sdk.Signing",
+            "signature": "(string principal, object body, int maxAttempts) -> Task<TxResult>"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "principal",
+            "type": "str",
+            "required": true,
+            "description": "Recipient account URL that holds the locked deposit"
+          },
+          {
+            "name": "lockedTxId",
+            "type": "str",
+            "required": true,
+            "description": "Txid of the locked deposit (not of the send)"
+          },
+          {
+            "name": "preimage",
+            "type": "str",
+            "required": true,
+            "description": "Hex preimage that hashes to the lock"
           }
         ],
         "outputs": [
@@ -4244,6 +4883,11 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "symbol": "SmartSigner.signSubmitAndWait",
             "path": "accumulate-sdk-opendlt",
             "signature": "(principal: string, body: object) -> Promise<object>"
+          },
+          {
+            "symbol": "SmartSigner.signSubmitAndWait",
+            "path": "accumulate-sdk-opendlt",
+            "signature": "(principal: string, body: object, options?: { hashLock?: object, maxAttempts?: number }) -> Promise<object>"
           }
         ],
         "inputs": [
@@ -4252,6 +4896,12 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "type": "Array<{url: string, amount: string}>",
             "required": true,
             "description": "List of {url, amount} recipients"
+          },
+          {
+            "name": "hashLock",
+            "type": "object",
+            "required": false,
+            "description": "Optional hash lock from TxBody.hashLock(); pass as { hashLock } to signSubmitAndWait"
           }
         ],
         "outputs": [
@@ -4706,6 +5356,156 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
             "type": "list",
             "required": true,
             "description": "Distinct keys that must ALSO sign the SAME transaction"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "txHash",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair",
+          "credits"
+        ]
+      },
+      {
+        "op": "generate_hash_lock",
+        "category": "utility",
+        "symbols": [
+          {
+            "symbol": "TxBody.hashLock",
+            "path": "accumulate-sdk-opendlt",
+            "signature": "(algorithm: core.HashAlgorithm, hashHex: string, expiration: Date) -> object"
+          },
+          {
+            "symbol": "helpers.validateHashLockForSubmit",
+            "path": "accumulate-sdk-opendlt",
+            "signature": "(lock: object) -> void"
+          },
+          {
+            "symbol": "core.HashAlgorithm",
+            "path": "accumulate-sdk-opendlt",
+            "signature": "enum { SHA256, SHA256D, HASH160 }"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "hashAlgorithm",
+            "type": "str",
+            "required": false,
+            "description": "sha256 (default) or sha256d"
+          },
+          {
+            "name": "expirationMinutes",
+            "type": "int",
+            "required": false,
+            "description": "Minutes until the lock expires, 15 to 43200 (default 30)"
+          },
+          {
+            "name": "preimage",
+            "type": "str",
+            "required": false,
+            "description": "Optional hex preimage, 1 to 256 bytes; 32 random bytes when empty"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "preimage",
+            "type": "str"
+          },
+          {
+            "name": "hash",
+            "type": "str"
+          },
+          {
+            "name": "hashAlgorithm",
+            "type": "str"
+          },
+          {
+            "name": "expiration",
+            "type": "int"
+          },
+          {
+            "name": "expirationIso",
+            "type": "str"
+          }
+        ],
+        "requires": []
+      },
+      {
+        "op": "wait_for_locked_deposit",
+        "category": "utility",
+        "symbols": [
+          {
+            "symbol": "Accumulate.v3.call",
+            "path": "accumulate-sdk-opendlt",
+            "signature": "(method: string, params: object) -> Promise<object>"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "sendTxId",
+            "type": "str",
+            "required": true,
+            "description": "Txid of the hash-locked SendTokens"
+          },
+          {
+            "name": "maxAttempts",
+            "type": "int",
+            "required": false,
+            "description": "Polling attempts (default 60)"
+          },
+          {
+            "name": "delayMs",
+            "type": "int",
+            "required": false,
+            "description": "Delay between attempts in ms (default 2000)"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "lockedTxId",
+            "type": "str"
+          }
+        ],
+        "requires": [
+          "keypair"
+        ]
+      },
+      {
+        "op": "release_locked",
+        "category": "transaction",
+        "symbols": [
+          {
+            "symbol": "TxBody.releaseLockedOperation",
+            "path": "accumulate-sdk-opendlt",
+            "signature": "(lockedTxId: string, preimageHex: string) -> object"
+          },
+          {
+            "symbol": "SmartSigner.signSubmitAndWait",
+            "path": "accumulate-sdk-opendlt",
+            "signature": "(principal: string, body: object, options?: object) -> Promise<object>"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "principal",
+            "type": "str",
+            "required": true,
+            "description": "Recipient account URL that holds the locked deposit"
+          },
+          {
+            "name": "lockedTxId",
+            "type": "str",
+            "required": true,
+            "description": "Txid of the locked deposit (not of the send)"
+          },
+          {
+            "name": "preimage",
+            "type": "str",
+            "required": true,
+            "description": "Hex preimage that hashes to the lock"
           }
         ],
         "outputs": [
