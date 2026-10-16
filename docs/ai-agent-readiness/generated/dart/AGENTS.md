@@ -1,6 +1,6 @@
 # opendlt-dart-v2v3-sdk — repository guide for agents
 
-The Dart SDK for the Accumulate blockchain. Published as `opendlt_accumulate` (v2.3.4).
+The Dart SDK for the Accumulate blockchain. Published as `opendlt_accumulate` (v2.5.0).
 
 > Building **on** Accumulate rather than **on this SDK**? You want `llms.txt` (quickstart + rules) and `llms-full.txt` (full API). This file is about working on the SDK itself.
 

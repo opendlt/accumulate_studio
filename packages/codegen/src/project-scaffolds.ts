@@ -57,7 +57,7 @@ description = "${flow.description ?? `Accumulate flow: ${flow.name}`}"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "accumulate-sdk-opendlt>=2.1.0",
+    "accumulate-sdk-opendlt>=2.5.0",
     "requests>=2.31",
 ]
 
@@ -152,7 +152,7 @@ edition = "2021"
 description = "${flow.description ?? `Accumulate flow: ${flow.name}`}"
 
 [dependencies]
-accumulate-sdk = "2"
+accumulate-sdk = "2.5"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 serde_json = "1"
 sha2 = "0.10"
@@ -236,14 +236,14 @@ export function generateDartProject(flow: Flow): GeneratedFile[] {
   files.push({
     path: 'pubspec.yaml',
     content: `name: ${safeName}
-description: ${flow.description ?? `Accumulate flow: ${flow.name}`}
+description: ${JSON.stringify(flow.description ?? `Accumulate flow: ${flow.name}`)}
 version: 0.1.0
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
 
 dependencies:
-  opendlt_accumulate: ^2.1.0
+  opendlt_accumulate: ^2.5.0
   crypto: ^3.0.3
 
 dev_dependencies:
@@ -317,7 +317,7 @@ export function generateJavaScriptProject(flow: Flow): GeneratedFile[] {
           start: 'node src/index.js',
         },
         dependencies: {
-          'accumulate-sdk-opendlt': '^0.12.3',
+          'accumulate-sdk-opendlt': '^2.5.2',
         },
       },
       null,
@@ -390,7 +390,7 @@ export function generateCSharpProject(flow: Flow): GeneratedFile[] {
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Acme.Net.Sdk" Version="1.0.*" />
+    <PackageReference Include="Acme.Net.Sdk" Version="2.5.*" />
   </ItemGroup>
 
 </Project>

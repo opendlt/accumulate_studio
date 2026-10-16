@@ -1,7 +1,7 @@
 {
   "sdk_name": "accumulate-sdk-opendlt",
-  "sdk_version": "2.3.0",
-  "commit": "4d0bbe4",
+  "sdk_version": "2.5.2",
+  "commit": "e35ce43",
   "generated_at": "2026-07-21T00:00:00Z",
   "entrypoints": [
     {

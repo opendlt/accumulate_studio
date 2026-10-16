@@ -84,7 +84,7 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
     "display": "Python",
     "package": "accumulate-sdk-opendlt",
     "install": "pip install accumulate-sdk-opendlt",
-    "sdkVersion": "2.3.0",
+    "sdkVersion": "2.5.0",
     "entrypoints": [
       {
         "symbol": "Accumulate",
@@ -1062,7 +1062,7 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
     "display": "Rust",
     "package": "accumulate-sdk",
     "install": "cargo add accumulate-sdk",
-    "sdkVersion": "2.3.2",
+    "sdkVersion": "2.5.0",
     "entrypoints": [
       {
         "symbol": "AccumulateClient",
@@ -1926,7 +1926,7 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
     "display": "Dart",
     "package": "opendlt_accumulate",
     "install": "dart pub add opendlt_accumulate",
-    "sdkVersion": "2.3.4",
+    "sdkVersion": "2.5.0",
     "entrypoints": [
       {
         "symbol": "Accumulate",
@@ -2775,7 +2775,7 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
     "display": "C#",
     "package": "Acme.Net.Sdk",
     "install": "dotnet add package Acme.Net.Sdk",
-    "sdkVersion": "2.3.2",
+    "sdkVersion": "2.5.0",
     "entrypoints": [
       {
         "symbol": "Accumulate",
@@ -3754,7 +3754,7 @@ export const OPERATION_CATALOGS: Record<string, OperationCatalog> = {
     "display": "JavaScript / TypeScript",
     "package": "accumulate-sdk-opendlt",
     "install": "npm install accumulate-sdk-opendlt",
-    "sdkVersion": "2.3.0",
+    "sdkVersion": "2.5.2",
     "entrypoints": [
       {
         "symbol": "Accumulate",
