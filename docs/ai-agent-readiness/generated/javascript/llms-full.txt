@@ -152,7 +152,7 @@ The node could not determine which partition should handle the request.
 - JavaScript / TypeScript type: `AccumulateError`
 - fix: Build the envelope through TxBody + SmartSigner rather than by hand. Every transaction needs a header with a valid `principal` — that URL is the routing key, and without it the node rejects the request before validating anything else.
 
-## Operations (25)
+## Operations (28)
 
 ### generate_keys  —  Generate Keys  [utility]
 Symbols:
@@ -201,6 +201,35 @@ Outputs:
 Requires: keypair
 Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_TX_NOT_SETTLED, ACC_UNAUTHORIZED_SIGNER
 Examples: examples/wait_for_credits.js
+
+### generate_hash_lock  —  Generate Hash Lock  [utility]
+Symbols:
+  - `TxBody.hashLock` — `(algorithm: core.HashAlgorithm, hashHex: string, expiration: Date) -> object`
+  - `helpers.validateHashLockForSubmit` — `(lock: object) -> void`
+  - `core.HashAlgorithm` — `enum { SHA256, SHA256D, HASH160 }`
+Inputs:
+  - `hashAlgorithm` (str, optional) — sha256 (default) or sha256d
+  - `expirationMinutes` (int, optional) — Minutes until the lock expires, 15 to 43200 (default 30)
+  - `preimage` (str, optional) — Optional hex preimage, 1 to 256 bytes; 32 random bytes when empty
+Outputs:
+  - `preimage` (str)
+  - `hash` (str)
+  - `hashAlgorithm` (str)
+  - `expiration` (int)
+  - `expirationIso` (str)
+Errors: ACC_NETWORK_UNAVAILABLE
+
+### wait_for_locked_deposit  —  Wait For Locked Deposit  [utility]
+Symbols:
+  - `Accumulate.v3.call` — `(method: string, params: object) -> Promise<object>`
+Inputs:
+  - `sendTxId` (str, required) — Txid of the hash-locked SendTokens
+  - `maxAttempts` (int, optional) — Polling attempts (default 60)
+  - `delayMs` (int, optional) — Delay between attempts in ms (default 2000)
+Outputs:
+  - `lockedTxId` (str)
+Requires: keypair
+Errors: ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 
 ### add_credits  —  Add Credits  [credits]
 Symbols:
@@ -336,8 +365,10 @@ Symbols:
   - `TxBody.sendTokensSingle` — `(toUrl: string, amount: string) -> object`
   - `TxBody.sendTokensMulti` — `(recipients: Array<{url, amount}>) -> object`
   - `SmartSigner.signSubmitAndWait` — `(principal: string, body: object) -> Promise<object>`
+  - `SmartSigner.signSubmitAndWait` — `(principal: string, body: object, options?: { hashLock?: object, maxAttempts?: number }) -> Promise<object>`
 Inputs:
   - `recipients` (Array<{url: string, amount: string}>, required) — List of {url, amount} recipients
+  - `hashLock` (object, optional) — Optional hash lock from TxBody.hashLock(); pass as { hashLock } to signSubmitAndWait
 Outputs:
   - `txHash` (string)
 Requires: keypair, credits
@@ -394,6 +425,19 @@ Outputs:
 Requires: keypair, credits
 Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 Examples: examples/write_data_to.js
+
+### release_locked  —  Release Locked  [transaction]
+Symbols:
+  - `TxBody.releaseLockedOperation` — `(lockedTxId: string, preimageHex: string) -> object`
+  - `SmartSigner.signSubmitAndWait` — `(principal: string, body: object, options?: object) -> Promise<object>`
+Inputs:
+  - `principal` (str, required) — Recipient account URL that holds the locked deposit
+  - `lockedTxId` (str, required) — Txid of the locked deposit (not of the send)
+  - `preimage` (str, required) — Hex preimage that hashes to the lock
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 
 ### query_account  —  Query Account  [query]
 Symbols:

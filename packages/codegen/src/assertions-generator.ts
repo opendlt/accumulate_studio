@@ -188,6 +188,9 @@ function generateNodeAssertions(
 
     // Token Operations
     case 'SendTokens': {
+      // A hash-locked send debits the sender but credits nobody until the lock is
+      // released, so the recipient has no balance delta to assert here.
+      if (config.hashLockFrom) break;
       const recipients = config.recipients as Array<{ url: string; amount: string }> ?? [];
       for (const recipient of recipients) {
         // Recipient should receive tokens (positive delta)
@@ -307,6 +310,7 @@ function isTransactionBlock(type: BlockType): boolean {
     'SendTokens',
     'IssueTokens',
     'BurnTokens',
+    'ReleaseLockedOperation',
     'AddCredits',
     'TransferCredits',
     'BurnCredits',

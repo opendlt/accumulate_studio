@@ -1,0 +1,23 @@
+    // =========================================================
+    // {{label}} (ReleaseLockedOperation)
+    // =========================================================
+    // The RECIPIENT account releases the deposit and pays the small fee, so the signer
+    // needs credits. A wrong preimage or an expired lock is accepted at submit and only
+    // fails when the transaction executes; confirmDelivered checks the final status.
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{#if releaseAccountIsRef}}{{releaseAccount}}{{else}}'{{releaseAccount}}'{{/if}},
+      body: TxBody.releaseLockedOperation(
+        lockedTxId: {{#if lockedTxIdIsRef}}{{lockedTxId}}{{else}}'{{lockedTxId}}'{{/if}},
+        preimage: fromHex({{#if releasePreimageIsRef}}{{releasePreimage}}{{else}}'{{releasePreimage}}'{{/if}}),
+      ),
+      memo: 'Release locked',
+      maxAttempts: 45,
+    );
+    final {{varName}}TxId = await confirmDelivered(client.v3, 'ReleaseLockedOperation', {{varName}}Result);
+    print('ReleaseLockedOperation SUCCESS - TxID: ${ {{~varName}}TxId}');
+    txIds.add(MapEntry('ReleaseLockedOperation', {{varName}}TxId));

@@ -154,7 +154,7 @@ The node could not determine which partition should handle the request.
 - C# type: `AccumulateApiException`
 - fix: Build the envelope through TxBody + SmartSigner rather than by hand. Every transaction needs a header with a valid `principal` — that URL is the routing key, and without it the node rejects the request before validating anything else.
 
-## Operations (25)
+## Operations (28)
 
 ### generate_keys  —  Generate Keys  [utility]
 Symbols:
@@ -202,6 +202,35 @@ Outputs:
 Requires: keypair
 Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_TX_NOT_SETTLED, ACC_UNAUTHORIZED_SIGNER
 Examples: examples/WaitForCredits.cs
+
+### generate_hash_lock  —  Generate Hash Lock  [utility]
+Symbols:
+  - `TxBody.HashLock` — `(string hashAlgorithm, string hashHex, DateTimeOffset? expiration) -> Dictionary<string, object?>`
+  - `HashLockOptions.ValidateForSubmit` — `() -> void`
+  - `HeaderOptions` — `class { Dictionary<string, object?>? HashLock }`
+Inputs:
+  - `hashAlgorithm` (str, optional) — sha256 (default) or sha256d
+  - `expirationMinutes` (int, optional) — Minutes until the lock expires, 15 to 43200 (default 30)
+  - `preimage` (str, optional) — Optional hex preimage, 1 to 256 bytes; 32 random bytes when empty
+Outputs:
+  - `preimage` (str)
+  - `hash` (str)
+  - `hashAlgorithm` (str)
+  - `expiration` (int)
+  - `expirationIso` (str)
+Errors: ACC_NETWORK_UNAVAILABLE
+
+### wait_for_locked_deposit  —  Wait For Locked Deposit  [utility]
+Symbols:
+  - `Accumulate.V3.QueryTransactionAsync` — `(string id) -> Task<JsonElement>`
+Inputs:
+  - `sendTxId` (str, required) — Txid of the hash-locked SendTokens
+  - `maxAttempts` (int, optional) — Polling attempts (default 60)
+  - `delayMs` (int, optional) — Delay between attempts in ms (default 2000)
+Outputs:
+  - `lockedTxId` (str)
+Requires: keypair
+Errors: ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 
 ### add_credits  —  Add Credits  [credits]
 Symbols:
@@ -337,8 +366,10 @@ Symbols:
   - `TxBody.SendTokensSingle` — `(string, string) -> object`
   - `TxBody.SendTokens` — `(List<TxRecipient>) -> object`
   - `SmartSigner.SignSubmitAndWaitAsync` — `(string, object) -> Task<object>`
+  - `SmartSigner.SignSubmitAndWaitAsync` — `(string principal, object body, HeaderOptions? headerOptions, int maxAttempts) -> Task<TxResult>`
 Inputs:
   - `recipients` (List<TxRecipient>, required) — List of (url, amount) recipients
+  - `hashLock` (Dictionary<string, object?>, optional) — Optional hash lock from TxBody.HashLock(); pass as new HeaderOptions { HashLock = ... } via headerOptions:
 Outputs:
   - `txHash` (string)
 Requires: keypair, credits
@@ -395,6 +426,19 @@ Outputs:
 Requires: keypair, credits
 Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 Examples: examples/WriteDataTo.cs
+
+### release_locked  —  Release Locked  [transaction]
+Symbols:
+  - `TxBody.ReleaseLockedOperation` — `(string lockedTxId, string preimageHex) -> Dictionary<string, object?>`
+  - `SmartSigner.SignSubmitAndWaitAsync` — `(string principal, object body, int maxAttempts) -> Task<TxResult>`
+Inputs:
+  - `principal` (str, required) — Recipient account URL that holds the locked deposit
+  - `lockedTxId` (str, required) — Txid of the locked deposit (not of the send)
+  - `preimage` (str, required) — Hex preimage that hashes to the lock
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 
 ### query_account  —  Query Account  [query]
 Symbols:

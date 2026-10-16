@@ -14,7 +14,7 @@
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -239,19 +239,26 @@ describe('MCP protocol — built bundle', () => {
     assert.equal(mainnet.faucetAvailable, false);
   });
 
-  test('every SDK operation catalog resolves with 25 operations', async () => {
+  test('every SDK operation catalog resolves with every manifest operation', async () => {
     for (const lang of ['python', 'rust', 'dart', 'csharp', 'javascript']) {
+      // The catalog is generated from the manifest minus the `comment` pseudo-operation, so that
+      // is the expected count (25 blocks plus the 3 HTLC operations = 28); the floor guards
+      // against a silent drop.
+      const expected = JSON.parse(
+        readFileSync(join(HERE, '..', '..', '..', 'packages', 'codegen', 'src', 'manifests', `${lang}.sdk-manifest.json`), 'utf8'),
+      ).operations.filter((o) => o.op !== 'comment').length;
+      assert.ok(expected >= 28, `${lang} manifest has at least 28 operations`);
       const r = await client.send('resources/read', {
         uri: `accumulate://sdk/${lang}/operations`,
       });
       const cat = JSON.parse(r.result.contents[0].text);
       assert.equal(cat.language, lang);
-      assert.equal(cat.operations.length, 25, `${lang} operation count`);
+      assert.equal(cat.operations.length, expected, `${lang} operation count`);
       assert.ok(cat.package, `${lang} package name`);
       assert.ok(cat.install, `${lang} install command`);
       // Signatures are what make the catalog useful over prose.
       const withSymbols = cat.operations.filter((o) => o.symbols?.length);
-      assert.equal(withSymbols.length, 25, `${lang} ops all carry symbols`);
+      assert.equal(withSymbols.length, expected, `${lang} ops all carry symbols`);
     }
   });
 

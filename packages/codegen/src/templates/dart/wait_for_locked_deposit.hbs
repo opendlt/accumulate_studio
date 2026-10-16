@@ -1,0 +1,38 @@
+    // =========================================================
+    // {{label}} (WaitForLockedDeposit)
+    // =========================================================
+    // A release targets the locked DEPOSIT, not the send. The deposit is one of the
+    // send's produced transactions. A query error just means it is not ready yet, and
+    // `produced.total` can over-count, so scan the records themselves.
+    final {{varName}}SendTxId = {{#if sendTxIdIsRef}}{{sendTxId}}{{else}}'{{sendTxId}}'{{/if}};
+    String? {{varName}}LockedTxId;
+    print('Waiting for the locked deposit produced by ${ {{~varName}}SendTxId}...');
+    for (var attempt = 1; attempt <= {{maxAttempts}} && {{varName}}LockedTxId == null; attempt++) {
+      try {
+        final sendRec = await queryScope(client.v3, {{varName}}SendTxId);
+        final records = (sendRec['produced']?['records'] as List?) ?? const [];
+        for (final rec in records) {
+          final id = rec is Map ? rec['value'] : null;
+          if (id is! String) continue;
+          try {
+            final dep = await queryScope(client.v3, id);
+            final type = dep['message']?['transaction']?['body']?['type'];
+            if (type == 'syntheticLockedDeposit' && dep['status'] == 'delivered') {
+              {{varName}}LockedTxId = id;
+              break;
+            }
+          } catch (_) {
+            // produced id not found yet
+          }
+        }
+      } catch (_) {
+        // send not queryable yet
+      }
+      if ({{varName}}LockedTxId == null) {
+        print('  Waiting for locked deposit... (attempt $attempt/{{maxAttempts}})');
+        await Future.delayed(Duration(milliseconds: {{delayMs}}));
+      }
+    }
+    if ({{varName}}LockedTxId == null) fail('the locked deposit was not delivered in time');
+    print('Locked deposit: ${ {{~varName}}LockedTxId}');
+    txIds.add(MapEntry('LockedDeposit', {{varName}}LockedTxId));

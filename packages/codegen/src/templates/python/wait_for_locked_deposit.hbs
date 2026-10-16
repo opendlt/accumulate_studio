@@ -1,0 +1,35 @@
+        # =========================================================
+        # {{label}} (Action: WaitForLockedDeposit)
+        # =========================================================
+        # A release targets the locked DEPOSIT, not the send. The deposit is one of the
+        # send's produced transactions. A query error just means it is not ready yet, and
+        # `produced.total` can over-count, so scan the records themselves.
+        {{varName}}_send_txid = {{#if sendTxIdIsRef}}{{sendTxId}}{{else}}"{{sendTxId}}"{{/if}}
+        {{varName}}_locked_txid = None
+        print(f"Waiting for the locked deposit produced by { {{~varName}}_send_txid}...")
+        for _attempt in range({{maxAttempts}}):
+            try:
+                _records = (client.v3.query({{varName}}_send_txid).get("produced") or {}).get("records") or []
+            except Exception:
+                _records = []
+            for _rec in _records:
+                _produced_id = _rec.get("value")
+                if not _produced_id:
+                    continue
+                try:
+                    _q = client.v3.query(_produced_id)
+                except Exception:
+                    continue  # not found yet
+                _body = ((_q.get("message") or {}).get("transaction") or {}).get("body") or {}
+                if _body.get("type") == "syntheticLockedDeposit" and _q.get("status") == "delivered":
+                    {{varName}}_locked_txid = _produced_id
+                    break
+            if {{varName}}_locked_txid:
+                break
+            print(f"  Waiting for locked deposit... (attempt {_attempt + 1}/{{maxAttempts}})")
+            time.sleep({{delaySeconds}})
+        if not {{varName}}_locked_txid:
+            print("ERROR: the locked deposit was not delivered in time. Stopping.")
+            sys.exit(1)
+        print(f"Locked deposit: { {{~varName}}_locked_txid}")
+        tx_ids.append(("LockedDeposit", {{varName}}_locked_txid))

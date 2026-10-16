@@ -8,9 +8,20 @@ Network: {{network}}
 """
 
 import time
+{{#if hasHashLock}}
+import os
+import sys
+from datetime import datetime, timedelta, timezone
+{{#unless hasKeyGen}}
+import hashlib
+{{/unless}}
+{{/if}}
 
 from accumulate_client import Accumulate{{#if hasTransactions}}, NetworkStatusOptions{{/if}}
 from accumulate_client.convenience import TxBody, SmartSigner
+{{#if hasHashLock}}
+from accumulate_client.tx.header import HashLockOptions  # not the top-level export, which is a different class
+{{/if}}
 {{#if hasKeyGen}}
 from accumulate_client.crypto.ed25519 import Ed25519KeyPair
 import hashlib

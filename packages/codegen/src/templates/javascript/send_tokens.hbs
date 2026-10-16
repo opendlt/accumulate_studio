@@ -1,3 +1,24 @@
+{{#if hashLock}}
+        // =========================================================
+        // {{label}} (SendTokens, hash-locked)
+        // =========================================================
+        // Hash-locked send: the sender is debited now and the recipient is credited only
+        // when a ReleaseLockedOperation reveals the preimage.
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}TxId = await submitAndConfirm(
+            client,
+            "SendTokens (hash-locked)",
+            {{varName}}Signer,
+            {{#if sendTokensPrincipalIsRef}}{{sendTokensPrincipal}}{{else}}"{{sendTokensPrincipal}}"{{/if}},
+            TxBody.sendTokensSingle(
+                {{#if firstRecipientUrlIsRef}}{{firstRecipientUrl}}{{else}}"{{firstRecipientUrl}}"{{/if}},
+                {{#if firstRecipientAmountIsRef}}{{firstRecipientAmount}}{{else}}"{{firstRecipientAmount}}"{{/if}},
+            ),
+            { hashLock: {{hashLockVar}}Lock },
+        );
+        console.log(`SendTokens LOCKED - TxID: ${ {{~varName}}TxId}`);
+        txIds.push(["SendTokens (hash-locked)", {{varName}}TxId]);
+{{else}}
         // =========================================================
         // {{label}} (Action: SendTokens)
         // =========================================================
@@ -26,3 +47,4 @@
         } else {
             console.log(`SendTokens FAILED: ${ {{~varName}}Result.error}`);
         }
+{{/if}}

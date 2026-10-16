@@ -1,3 +1,26 @@
+{{#if hashLock}}
+        # =========================================================
+        # {{label}} (Action: SendTokens, hash-locked)
+        # =========================================================
+        # Hash-locked send: the sender is debited now and the recipient is credited only
+        # when a ReleaseLockedOperation reveals the preimage.
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if sendTokensPrincipalIsRef}}{{sendTokensPrincipal}}{{else}}"{{sendTokensPrincipal}}"{{/if}},
+            body=TxBody.send_tokens_single(
+                to_url={{#if firstRecipientUrlIsRef}}{{firstRecipientUrl}}{{else}}"{{firstRecipientUrl}}"{{/if}},
+                amount={{#if firstRecipientAmountIsRef}}{{firstRecipientAmount}}{{else}}"{{firstRecipientAmount}}"{{/if}},
+            ),
+            hash_lock={{hashLockVar}}_lock,
+            max_attempts=45,
+        )
+        if not {{varName}}_result.success:
+            print(f"SendTokens (hash-locked) FAILED: { {{~varName}}_result.error}")
+            sys.exit(1)
+        {{varName}}_txid = {{varName}}_result.txid
+        print(f"SendTokens LOCKED - TxID: { {{~varName}}_txid}")
+        tx_ids.append(("SendTokens (hash-locked)", {{varName}}_txid))
+{{else}}
         # =========================================================
         # {{label}} (Action: SendTokens)
         # =========================================================
@@ -28,4 +51,4 @@
             print(f"SendTokens SUCCESS - TxID: { {{~varName}}_result.txid}")
             tx_ids.append(("SendTokens", {{varName}}_result.txid))
         else:
-            print(f"SendTokens FAILED: { {{~varName}}_result.error}")
+            print(f"SendTokens FAILED: { {{~varName}}_result.error}"){{/if}}

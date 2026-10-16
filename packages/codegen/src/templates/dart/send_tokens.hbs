@@ -1,3 +1,28 @@
+{{#if hashLock}}
+    // =========================================================
+    // {{label}} (SendTokens, hash-locked)
+    // =========================================================
+    // Hash-locked send: the sender is debited now and the recipient is credited only
+    // when a ReleaseLockedOperation reveals the preimage.
+    final {{varName}}Signer = SmartSigner(
+      client: client.v3,
+      keypair: {{keyVarName}}Key,
+      signerUrl: {{signerUrl}},
+    );
+    final {{varName}}Result = await {{varName}}Signer.signSubmitAndWait(
+      principal: {{sendTokensPrincipal}},
+      body: TxBody.sendTokensSingle(
+        toUrl: {{#if firstRecipientUrlIsRef}}{{firstRecipientUrl}}{{else}}'{{firstRecipientUrl}}'{{/if}},
+        amount: {{#if firstRecipientAmountIsRef}}{{firstRecipientAmount}}{{else}}'{{firstRecipientAmount}}'{{/if}},
+      ),
+      hashLock: {{hashLockVar}}Lock,
+      memo: 'Locked send',
+      maxAttempts: 45,
+    );
+    final {{varName}}TxId = await confirmDelivered(client.v3, 'SendTokens (hash-locked)', {{varName}}Result);
+    print('SendTokens LOCKED - TxID: ${ {{~varName}}TxId}');
+    txIds.add(MapEntry('SendTokens (hash-locked)', {{varName}}TxId));
+{{else}}
     // =========================================================
     // {{label}} (Action: SendTokens)
     // =========================================================
@@ -38,3 +63,4 @@
     } else {
       print('SendTokens FAILED: ${ {{~varName}}Result.error}');
     }
+{{/if}}

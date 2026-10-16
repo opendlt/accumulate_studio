@@ -1,0 +1,17 @@
+        // =========================================================
+        // {{label}} (ReleaseLockedOperation)
+        // =========================================================
+        // The RECIPIENT account releases the deposit and pays the small fee, so the signer
+        // needs credits. A wrong preimage or an expired lock is accepted at submit and only
+        // fails when the transaction executes; submitAndConfirm checks the final status.
+        const {{varName}}Signer = new SmartSigner(client, {{keyVarName}}Kp.toKey(), {{signerUrl}});
+        const {{varName}}Preimage = requireHex("preimage", {{#if releasePreimageIsRef}}{{releasePreimage}}{{else}}"{{releasePreimage}}"{{/if}}, 1, 256);
+        const {{varName}}TxId = await submitAndConfirm(
+            client,
+            "ReleaseLockedOperation",
+            {{varName}}Signer,
+            {{#if releaseAccountIsRef}}{{releaseAccount}}{{else}}"{{releaseAccount}}"{{/if}},
+            TxBody.releaseLockedOperation({{#if lockedTxIdIsRef}}{{lockedTxId}}{{else}}"{{lockedTxId}}"{{/if}}, {{varName}}Preimage),
+        );
+        console.log(`ReleaseLockedOperation SUCCESS - TxID: ${ {{~varName}}TxId}`);
+        txIds.push(["ReleaseLockedOperation", {{varName}}TxId]);

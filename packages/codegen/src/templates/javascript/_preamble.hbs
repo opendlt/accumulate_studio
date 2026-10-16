@@ -7,6 +7,9 @@
  * Run with: node script.mjs
  */
 
+{{#if hasHashLock}}
+import { createHash, randomBytes } from "node:crypto";
+{{/if}}
 import {
     Accumulate,
     SmartSigner,
@@ -18,10 +21,64 @@ import {
     pollForBalance,
     pollForCredits,
 {{/if}}
+{{#if hasHashLock}}
+    core,
+    helpers,
+{{/if}}
 } from "accumulate-sdk-opendlt";
 
 const V2_ENDPOINT = process.env.ACCUMULATE_V2_URL || KERMIT_V2;
 const V3_ENDPOINT = process.env.ACCUMULATE_V3_URL || KERMIT_V3;
+{{#if hasHashLock}}
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Stop the flow with a non-zero exit code. The caller's catch prints the message.
+function fail(message) {
+    process.exitCode = 1;
+    throw new Error(message);
+}
+
+// Hex goes through Buffer.from(hex, "hex"), which silently truncates at the first invalid
+// character, so check every hex value before it reaches the SDK.
+function requireHex(label, hex, minBytes, maxBytes) {
+    const ok = typeof hex === "string" && /^[0-9a-fA-F]+$/.test(hex) && hex.length % 2 === 0
+        && hex.length >= minBytes * 2 && hex.length <= maxBytes * 2;
+    if (!ok) fail(`${label} must be ${minBytes === maxBytes ? minBytes : `${minBytes} to ${maxBytes}`} bytes of hex`);
+    return hex;
+}
+
+// Raw v3 query (plain JSON where status is a string such as "delivered").
+const v3Query = (client, scope) => client.v3.call("query", { scope });
+
+// The SDK wait cannot be trusted on its own (its V3 fallback never detects delivery), so
+// every transaction is confirmed with a raw v3 query: status "delivered" and no error.
+async function settle(client, txid, attempts) {
+    let last;
+    for (let i = 0; i < attempts; i++) {
+        try {
+            last = await v3Query(client, txid);
+            if (last.status === "delivered" && !last.error) return { ok: true };
+            if (last.error || (last.status !== "pending" && last.status !== "remote")) {
+                return { ok: false, message: last.error?.message ?? `status ${last.status}` };
+            }
+        } catch {
+            // not indexed yet
+        }
+        if (i < attempts - 1) await sleep(2000);
+    }
+    return { ok: false, message: last ? `status ${last.status}` : "not found" };
+}
+
+// Sign, submit and wait, then confirm the final status; stop the flow on any failure.
+async function submitAndConfirm(client, label, signer, principal, body, options) {
+    const result = await signer.signSubmitAndWait(principal, body, { maxAttempts: 45, ...options });
+    if (!result.txid) fail(`${label} failed: ${result.error}`);
+    const final = await settle(client, result.txid, result.success ? 45 : 1);
+    if (!final.ok) fail(`${label} failed: ${final.message}`);
+    return result.txid;
+}
+{{/if}}
 
 async function main() {
     const client = Accumulate.custom(V2_ENDPOINT, V3_ENDPOINT);

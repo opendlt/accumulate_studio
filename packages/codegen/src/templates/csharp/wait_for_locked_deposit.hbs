@@ -1,0 +1,50 @@
+            // =========================================================
+            // {{label}} (WaitForLockedDeposit)
+            // =========================================================
+            // A release targets the locked DEPOSIT, not the send. The deposit is one of the
+            // send's produced transactions. A query error just means it is not ready yet, and
+            // `produced.total` can over-count, so scan the records themselves.
+            var {{varName}}SendTxId = {{#if sendTxIdIsRef}}{{sendTxId}}{{else}}"{{sendTxId}}"{{/if}};
+            string? {{varName}}LockedTxId = null;
+            Console.WriteLine($"Waiting for the locked deposit produced by { {{~varName}}SendTxId}...");
+            for (int attempt = 1; attempt <= {{maxAttempts}} && {{varName}}LockedTxId == null; attempt++)
+            {
+                try
+                {
+                    var sendQuery = await client.V3.QueryTransactionAsync({{varName}}SendTxId);
+                    if (Dig(sendQuery, "produced", "records") is { ValueKind: JsonValueKind.Array } records)
+                    {
+                        foreach (var rec in records.EnumerateArray())
+                        {
+                            var producedId = Str(rec, "value");
+                            if (producedId == null) continue;
+                            try
+                            {
+                                var dep = await client.V3.QueryTransactionAsync(producedId);
+                                if (Str(dep, "message", "transaction", "body", "type") == "syntheticLockedDeposit"
+                                    && Str(dep, "status") == "delivered")
+                                {
+                                    {{varName}}LockedTxId = producedId;
+                                    break;
+                                }
+                            }
+                            catch
+                            {
+                                // produced id not found yet
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // send not queryable yet
+                }
+                if ({{varName}}LockedTxId == null)
+                {
+                    Console.WriteLine($"  Waiting for locked deposit... (attempt {attempt}/{{maxAttempts}})");
+                    await Task.Delay({{delayMs}});
+                }
+            }
+            if ({{varName}}LockedTxId == null) Fail("the locked deposit was not delivered in time");
+            Console.WriteLine($"Locked deposit: { {{~varName}}LockedTxId}");
+            txIds.Add(("LockedDeposit", {{varName}}LockedTxId!));

@@ -1,0 +1,17 @@
+    // =========================================================
+    // {{label}} (Action: ReleaseLockedOperation)
+    // =========================================================
+    // The RECIPIENT account releases the deposit and pays the small fee, so the signer
+    // needs credits. A wrong preimage or an expired lock is accepted at submit and only
+    // fails when the transaction executes; confirm() checks the final status.
+    let mut {{varName}}_signer = SmartSigner::new(&client, {{keyVarName}}_signer.clone(), {{#if signerUrlIsRef}}&{{signerUrl}}{{else}}{{signerUrl}}{{/if}});
+    let {{varName}}_preimage_bytes: Vec<u8> = hex::decode({{#if releasePreimageIsRef}}&{{releasePreimage}}{{else}}"{{releasePreimage}}"{{/if}}).unwrap_or_else(|_| fail("invalid preimage hex"));
+    let {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+        {{#if releaseAccountIsRef}}&{{releaseAccount}}{{else}}"{{releaseAccount}}"{{/if}},
+        &TxBody::release_locked_operation({{#if lockedTxIdIsRef}}&{{lockedTxId}}{{else}}"{{lockedTxId}}"{{/if}}, &{{varName}}_preimage_bytes),
+        Some("Release locked"),
+        30,
+    ).await;
+    let {{varName}}_txid = confirm(&client, "ReleaseLockedOperation", &{{varName}}_result).await;
+    println!("ReleaseLockedOperation SUCCESS - TxID: {}", {{varName}}_txid);
+    tx_ids.push(("ReleaseLockedOperation", {{varName}}_txid.clone()));

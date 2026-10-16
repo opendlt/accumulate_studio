@@ -26,6 +26,9 @@ import pythonCreateTokenAccount from './templates/python/create_token_account.hb
 import pythonCreateDataAccount from './templates/python/create_data_account.hbs?raw';
 import pythonCreateToken from './templates/python/create_token.hbs?raw';
 import pythonSendTokens from './templates/python/send_tokens.hbs?raw';
+import pythonGenerateHashLock from './templates/python/generate_hash_lock.hbs?raw';
+import pythonWaitForLockedDeposit from './templates/python/wait_for_locked_deposit.hbs?raw';
+import pythonReleaseLocked from './templates/python/release_locked.hbs?raw';
 import pythonIssueTokens from './templates/python/issue_tokens.hbs?raw';
 import pythonBurnTokens from './templates/python/burn_tokens.hbs?raw';
 import pythonWriteData from './templates/python/write_data.hbs?raw';
@@ -60,6 +63,9 @@ import rustCreateTokenAccount from './templates/rust/create_token_account.hbs?ra
 import rustCreateDataAccount from './templates/rust/create_data_account.hbs?raw';
 import rustCreateToken from './templates/rust/create_token.hbs?raw';
 import rustSendTokens from './templates/rust/send_tokens.hbs?raw';
+import rustGenerateHashLock from './templates/rust/generate_hash_lock.hbs?raw';
+import rustWaitForLockedDeposit from './templates/rust/wait_for_locked_deposit.hbs?raw';
+import rustReleaseLocked from './templates/rust/release_locked.hbs?raw';
 import rustIssueTokens from './templates/rust/issue_tokens.hbs?raw';
 import rustBurnTokens from './templates/rust/burn_tokens.hbs?raw';
 import rustWriteData from './templates/rust/write_data.hbs?raw';
@@ -94,6 +100,9 @@ import dartCreateTokenAccount from './templates/dart/create_token_account.hbs?ra
 import dartCreateDataAccount from './templates/dart/create_data_account.hbs?raw';
 import dartCreateToken from './templates/dart/create_token.hbs?raw';
 import dartSendTokens from './templates/dart/send_tokens.hbs?raw';
+import dartGenerateHashLock from './templates/dart/generate_hash_lock.hbs?raw';
+import dartWaitForLockedDeposit from './templates/dart/wait_for_locked_deposit.hbs?raw';
+import dartReleaseLocked from './templates/dart/release_locked.hbs?raw';
 import dartIssueTokens from './templates/dart/issue_tokens.hbs?raw';
 import dartBurnTokens from './templates/dart/burn_tokens.hbs?raw';
 import dartWriteData from './templates/dart/write_data.hbs?raw';
@@ -128,6 +137,9 @@ import csharpCreateTokenAccount from './templates/csharp/create_token_account.hb
 import csharpCreateDataAccount from './templates/csharp/create_data_account.hbs?raw';
 import csharpCreateToken from './templates/csharp/create_token.hbs?raw';
 import csharpSendTokens from './templates/csharp/send_tokens.hbs?raw';
+import csharpGenerateHashLock from './templates/csharp/generate_hash_lock.hbs?raw';
+import csharpWaitForLockedDeposit from './templates/csharp/wait_for_locked_deposit.hbs?raw';
+import csharpReleaseLocked from './templates/csharp/release_locked.hbs?raw';
 import csharpIssueTokens from './templates/csharp/issue_tokens.hbs?raw';
 import csharpBurnTokens from './templates/csharp/burn_tokens.hbs?raw';
 import csharpWriteData from './templates/csharp/write_data.hbs?raw';
@@ -162,6 +174,9 @@ import jsCreateTokenAccount from './templates/javascript/create_token_account.hb
 import jsCreateDataAccount from './templates/javascript/create_data_account.hbs?raw';
 import jsCreateToken from './templates/javascript/create_token.hbs?raw';
 import jsSendTokens from './templates/javascript/send_tokens.hbs?raw';
+import jsGenerateHashLock from './templates/javascript/generate_hash_lock.hbs?raw';
+import jsWaitForLockedDeposit from './templates/javascript/wait_for_locked_deposit.hbs?raw';
+import jsReleaseLocked from './templates/javascript/release_locked.hbs?raw';
 import jsIssueTokens from './templates/javascript/issue_tokens.hbs?raw';
 import jsBurnTokens from './templates/javascript/burn_tokens.hbs?raw';
 import jsWriteData from './templates/javascript/write_data.hbs?raw';
@@ -209,6 +224,9 @@ const PYTHON_TEMPLATES = buildTemplateMap(
   ['create_data_account', pythonCreateDataAccount],
   ['create_token', pythonCreateToken],
   ['send_tokens', pythonSendTokens],
+  ['generate_hash_lock', pythonGenerateHashLock],
+  ['wait_for_locked_deposit', pythonWaitForLockedDeposit],
+  ['release_locked', pythonReleaseLocked],
   ['issue_tokens', pythonIssueTokens],
   ['burn_tokens', pythonBurnTokens],
   ['write_data', pythonWriteData],
@@ -241,6 +259,9 @@ const RUST_TEMPLATES = buildTemplateMap(
   ['create_data_account', rustCreateDataAccount],
   ['create_token', rustCreateToken],
   ['send_tokens', rustSendTokens],
+  ['generate_hash_lock', rustGenerateHashLock],
+  ['wait_for_locked_deposit', rustWaitForLockedDeposit],
+  ['release_locked', rustReleaseLocked],
   ['issue_tokens', rustIssueTokens],
   ['burn_tokens', rustBurnTokens],
   ['write_data', rustWriteData],
@@ -273,6 +294,9 @@ const DART_TEMPLATES = buildTemplateMap(
   ['create_data_account', dartCreateDataAccount],
   ['create_token', dartCreateToken],
   ['send_tokens', dartSendTokens],
+  ['generate_hash_lock', dartGenerateHashLock],
+  ['wait_for_locked_deposit', dartWaitForLockedDeposit],
+  ['release_locked', dartReleaseLocked],
   ['issue_tokens', dartIssueTokens],
   ['burn_tokens', dartBurnTokens],
   ['write_data', dartWriteData],
@@ -305,6 +329,9 @@ const CSHARP_TEMPLATES = buildTemplateMap(
   ['create_data_account', csharpCreateDataAccount],
   ['create_token', csharpCreateToken],
   ['send_tokens', csharpSendTokens],
+  ['generate_hash_lock', csharpGenerateHashLock],
+  ['wait_for_locked_deposit', csharpWaitForLockedDeposit],
+  ['release_locked', csharpReleaseLocked],
   ['issue_tokens', csharpIssueTokens],
   ['burn_tokens', csharpBurnTokens],
   ['write_data', csharpWriteData],
@@ -337,6 +364,9 @@ const JAVASCRIPT_TEMPLATES = buildTemplateMap(
   ['create_data_account', jsCreateDataAccount],
   ['create_token', jsCreateToken],
   ['send_tokens', jsSendTokens],
+  ['generate_hash_lock', jsGenerateHashLock],
+  ['wait_for_locked_deposit', jsWaitForLockedDeposit],
+  ['release_locked', jsReleaseLocked],
   ['issue_tokens', jsIssueTokens],
   ['burn_tokens', jsBurnTokens],
   ['write_data', jsWriteData],

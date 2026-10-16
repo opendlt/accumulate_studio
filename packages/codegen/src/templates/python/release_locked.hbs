@@ -1,0 +1,19 @@
+        # =========================================================
+        # {{label}} (Action: ReleaseLockedOperation)
+        # =========================================================
+        # The RECIPIENT account releases the deposit and pays the small fee, so the signer
+        # needs credits. A wrong preimage or an expired lock is accepted at submit and only
+        # fails when the transaction executes; sign_submit_and_wait reports that failure.
+        {{varName}}_preimage_bytes = bytes.fromhex({{#if releasePreimageIsRef}}{{releasePreimage}}{{else}}"{{releasePreimage}}"{{/if}})
+        {{varName}}_signer = SmartSigner(client.v3, {{keyVarName}}_kp, {{signerUrl}})
+        {{varName}}_result = {{varName}}_signer.sign_submit_and_wait(
+            principal={{#if releaseAccountIsRef}}{{releaseAccount}}{{else}}"{{releaseAccount}}"{{/if}},
+            body=TxBody.release_locked_operation({{#if lockedTxIdIsRef}}{{lockedTxId}}{{else}}"{{lockedTxId}}"{{/if}}, {{varName}}_preimage_bytes),
+            max_attempts=45,
+        )
+        if {{varName}}_result.txid:
+            tx_ids.append(("ReleaseLockedOperation", {{varName}}_result.txid))
+        if not {{varName}}_result.success:
+            print(f"ReleaseLockedOperation FAILED: { {{~varName}}_result.error}")
+            sys.exit(1)
+        print(f"ReleaseLockedOperation SUCCESS - TxID: { {{~varName}}_result.txid}")

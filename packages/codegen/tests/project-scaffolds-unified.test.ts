@@ -9,15 +9,22 @@ const ALL_BLOCK_TYPES: BlockType[] = [
   'CreateIdentity', 'CreateKeyBook', 'CreateKeyPage', 'CreateTokenAccount',
   'CreateDataAccount', 'CreateToken', 'SendTokens', 'IssueTokens', 'BurnTokens',
   'WriteData', 'WriteDataTo', 'UpdateKeyPage', 'UpdateKey', 'LockAccount',
-  'UpdateAccountAuth', 'Comment',
+  'UpdateAccountAuth', 'GenerateHashLock', 'WaitForLockedDeposit', 'ReleaseLockedOperation', 'Comment',
 ];
+
+// The HTLC blocks need explicit wiring when no locked SendTokens precedes them: the engine
+// refuses to guess a txid or a recipient and fails loudly instead.
+const EXPLICIT_CONFIG: Partial<Record<BlockType, Record<string, unknown>>> = {
+  WaitForLockedDeposit: { sendTxId: `acc://${'ab'.repeat(32)}@recipient.acme/tokens` },
+  ReleaseLockedOperation: { principal: 'acc://recipient.acme/tokens' },
+};
 
 function flowWithAllBlocks(): Flow {
   const nodes: FlowNode[] = ALL_BLOCK_TYPES.map((type, i) => ({
     id: `${type.toLowerCase()}_${i}`,
     type,
     label: type,
-    config: {},
+    config: EXPLICIT_CONFIG[type] ?? {},
     position: { x: 0, y: i * 100 },
   }));
   const connections: FlowConnection[] = nodes.slice(1).map((n, i) => ({
@@ -66,7 +73,7 @@ describe('unified project scaffolds', () => {
         expect(entry.content.length).toBeGreaterThan(100);
       });
 
-      it('main file has NO stub markers for any of the 25 block types', () => {
+      it('main file has NO stub markers for any of the 28 block types', () => {
         expect(STUB_RE.test(entry.content)).toBe(false);
       });
 

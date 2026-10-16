@@ -34,6 +34,7 @@ const ALL_BLOCK_TYPES: BlockType[] = [
   'WriteData', 'WriteDataTo',
   'UpdateKeyPage', 'UpdateKey', 'LockAccount',
   'UpdateAccountAuth',
+  'GenerateHashLock', 'WaitForLockedDeposit', 'ReleaseLockedOperation',
   // Comment is excluded — it generates no executable code
 ];
 
@@ -101,7 +102,7 @@ function buildFlowForBlock(targetType: BlockType): Flow {
 function getDefaultConfig(
   blockType: BlockType,
   _index: number,
-  _recipe: BlockType[],
+  recipe: BlockType[],
   typeCounts: Record<string, number>,
 ): Record<string, unknown> {
   switch (blockType) {
@@ -172,6 +173,15 @@ function getDefaultConfig(
       };
 
     case 'SendTokens':
+      // Inside the HTLC chain the send is the hash-locked one. It spends from the lite
+      // token account, which the lite identity must sign for (not the ADI key page).
+      if (recipe.includes('GenerateHashLock')) {
+        return {
+          recipients: [{ url: '{{create_token_account.tokenAccountUrl}}', amount: '100000000' }],
+          hashLockFrom: 'generate_hash_lock',
+          signerUrl: '{{generate_keys.liteIdentity}}',
+        };
+      }
       return {
         recipients: [
           { url: 'acc://recipient.acme/tokens', amount: '100' },

@@ -1,0 +1,43 @@
+            // =========================================================
+            // {{label}} (GenerateHashLock)
+            // =========================================================
+            // The lock is a hash of a secret preimage. The preimage stays with you until the
+            // release transaction reveals it on-chain.
+{{#if preimageHex}}
+            var {{varName}}PreimageBytes = Convert.FromHexString("{{preimageHex}}");
+{{else}}
+            var {{varName}}PreimageBytes = RandomNumberGenerator.GetBytes(32);
+{{/if}}
+            var {{varName}}Preimage = Convert.ToHexString({{varName}}PreimageBytes).ToLowerInvariant();
+{{#if hashIsDouble}}
+            var {{varName}}HashBytes = SHA256.HashData(SHA256.HashData({{varName}}PreimageBytes));
+{{else}}
+            var {{varName}}HashBytes = SHA256.HashData({{varName}}PreimageBytes);
+{{/if}}
+            var {{varName}}Hash = Convert.ToHexString({{varName}}HashBytes).ToLowerInvariant();
+            var {{varName}}HashAlgorithm = "{{hashAlgorithm}}";
+            // Whole seconds in UTC: the node needs 10 minutes to 30 days of headroom and rejects fractions
+            var {{varName}}ExpirationAt = DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.UtcNow.AddMinutes({{expirationMinutes}}).ToUnixTimeSeconds());
+            var {{varName}}Expiration = {{varName}}ExpirationAt.ToUnixTimeSeconds();
+            var {{varName}}ExpirationIso = {{varName}}ExpirationAt.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            // The signer takes the dictionary form, which does no validation, so validate the
+            // typed form built from the same three values first.
+            try
+            {
+                new HashLockOptions
+                {
+                    HashAlgorithm = HashLockAlgorithm.{{#if hashIsDouble}}SHA256D{{else}}SHA256{{/if}},
+                    Hash = {{varName}}HashBytes,
+                    Expiration = {{varName}}ExpirationAt,
+                }.ValidateForSubmit();
+            }
+            catch (ArgumentException ex)
+            {
+                Fail($"invalid hash lock: {ex.Message}");
+            }
+            var {{varName}}Lock = new HeaderOptions { HashLock = TxBody.HashLock({{varName}}HashAlgorithm, {{varName}}Hash, {{varName}}ExpirationAt) };
+            Console.WriteLine("Hash lock ready:");
+            Console.WriteLine($"  algorithm: { {{~varName}}HashAlgorithm}");
+            Console.WriteLine($"  hash:      { {{~varName}}Hash}");
+            Console.WriteLine($"  expires:   { {{~varName}}ExpirationIso}");
+            Console.WriteLine($"  PREIMAGE:  { {{~varName}}Preimage}");

@@ -39,6 +39,7 @@ const CREDIT_COSTS: Record<string, number> = {
   SendTokens: 1,
   IssueTokens: 1,
   BurnTokens: 1,
+  ReleaseLockedOperation: 1,
   AddCredits: 1,
   TransferCredits: 1,
   BurnCredits: 1,
@@ -53,6 +54,8 @@ const CREDIT_COSTS: Record<string, number> = {
   WaitForBalance: 0,
   WaitForCredits: 0,
   GenerateKeys: 0,
+  GenerateHashLock: 0,
+  WaitForLockedDeposit: 0,
   Comment: 0,
 };
 

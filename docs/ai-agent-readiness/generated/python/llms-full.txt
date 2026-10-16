@@ -152,7 +152,7 @@ The node could not determine which partition should handle the request.
 - Python type: `ValidationError`
 - fix: Build the envelope through TxBody + SmartSigner rather than by hand. Every transaction needs a header with a valid `principal` — that URL is the routing key, and without it the node rejects the request before validating anything else.
 
-## Operations (25)
+## Operations (28)
 
 ### generate_keys  —  Generate Keys  [utility]
 Symbols:
@@ -201,6 +201,34 @@ Outputs:
 Requires: keypair
 Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_TX_NOT_SETTLED, ACC_UNAUTHORIZED_SIGNER
 Examples: examples/wait_for_credits.py
+
+### generate_hash_lock  —  Generate Hash Lock  [utility]
+Symbols:
+  - `HashLockOptions` — `(hashAlgorithm: str, hash: bytes, expiration: datetime)`
+  - `HashLockOptions.validate_for_submit` — `(self) -> None`
+Inputs:
+  - `hashAlgorithm` (str, optional) — sha256 (default) or sha256d
+  - `expirationMinutes` (int, optional) — Minutes until the lock expires, 15 to 43200 (default 30)
+  - `preimage` (str, optional) — Optional hex preimage, 1 to 256 bytes; 32 random bytes when empty
+Outputs:
+  - `preimage` (str)
+  - `hash` (str)
+  - `hashAlgorithm` (str)
+  - `expiration` (int)
+  - `expirationIso` (str)
+Errors: ACC_NETWORK_UNAVAILABLE
+
+### wait_for_locked_deposit  —  Wait For Locked Deposit  [utility]
+Symbols:
+  - `Accumulate.v3.query` — `(self, url: str) -> dict`
+Inputs:
+  - `sendTxId` (str, required) — Txid of the hash-locked SendTokens
+  - `maxAttempts` (int, optional) — Polling attempts (default 60)
+  - `delayMs` (int, optional) — Delay between attempts in ms (default 2000)
+Outputs:
+  - `lockedTxId` (str)
+Requires: keypair
+Errors: ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 
 ### add_credits  —  Add Credits  [credits]
 Symbols:
@@ -337,8 +365,10 @@ Symbols:
   - `TxBody.send_tokens_single` — `(to_url: str, amount: str) -> dict`
   - `TxBody.send_tokens` — `(recipients: list[tuple[str, str]]) -> dict`
   - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict, hash_lock: HashLockOptions | None = None, max_attempts: int = 30) -> TransactionResult`
 Inputs:
   - `recipients` (list[tuple[str, str]], required) — List of (url, amount) tuples
+  - `hashLock` (HashLockOptions, optional) — Optional hash lock; pass as hash_lock= to SmartSigner.sign_submit_and_wait
 Outputs:
   - `txHash` (str)
 Requires: keypair, credits
@@ -395,6 +425,19 @@ Outputs:
 Requires: keypair, credits
 Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 Examples: examples/write_data_to.py
+
+### release_locked  —  Release Locked  [transaction]
+Symbols:
+  - `TxBody.release_locked_operation` — `(locked_txid: str, preimage: bytes | str) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> TransactionResult`
+Inputs:
+  - `principal` (str, required) — Recipient account URL that holds the locked deposit
+  - `lockedTxId` (str, required) — Txid of the locked deposit (not of the send)
+  - `preimage` (str, required) — Hex preimage that hashes to the lock
+Outputs:
+  - `txHash` (str)
+Requires: keypair, credits
+Errors: ACC_INSUFFICIENT_CREDITS, ACC_NETWORK_UNAVAILABLE, ACC_UNAUTHORIZED_SIGNER
 
 ### query_account  —  Query Account  [query]
 Symbols:

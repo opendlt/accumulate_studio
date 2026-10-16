@@ -35,6 +35,7 @@ export type TransactionType =
   | 'SendTokens'
   | 'IssueTokens'
   | 'BurnTokens'
+  | 'ReleaseLockedOperation'
   // Credit Operations
   | 'AddCredits'
   | 'TransferCredits'
@@ -59,6 +60,8 @@ export type UtilityBlockType =
   | 'WaitForBalance'
   | 'WaitForCredits'
   | 'GenerateKeys'
+  | 'GenerateHashLock'
+  | 'WaitForLockedDeposit'
   | 'CoSign'
   | 'Comment';
 
@@ -131,6 +134,20 @@ export interface SendTokensConfig {
     url: string;
     amount: string;
   }>;
+  /**
+   * Node id of an upstream GenerateHashLock block. When set the send carries that
+   * block's hash lock, so each recipient gets a locked deposit instead of a balance.
+   */
+  hashLockFrom?: string;
+}
+
+export interface ReleaseLockedOperationConfig {
+  /** The recipient account that holds the locked deposit */
+  principal?: string;
+  signerUrl?: string;
+  lockedTxId?: string;
+  /** Hex preimage; resolved from the upstream GenerateHashLock when empty */
+  preimage?: string;
 }
 
 export interface IssueTokensConfig {
@@ -232,6 +249,20 @@ export interface GenerateKeysConfig {
   algorithm?: 'Ed25519' | 'RCD1' | 'BTC' | 'ETH';
 }
 
+export interface GenerateHashLockConfig {
+  hashAlgorithm?: 'sha256' | 'sha256d';
+  expirationMinutes?: number;
+  /** Optional hex preimage; 32 random bytes are generated when empty */
+  preimage?: string;
+}
+
+export interface WaitForLockedDepositConfig {
+  /** Txid of the hash-locked SendTokens; resolved from the upstream locked send when empty */
+  sendTxId?: string;
+  maxAttempts?: number;
+  delayMs?: number;
+}
+
 export interface CommentConfig {
   text: string;
 }
@@ -276,6 +307,9 @@ export type SpecificBlockConfig =
   | WaitForBalanceConfig
   | WaitForCreditsConfig
   | GenerateKeysConfig
+  | ReleaseLockedOperationConfig
+  | GenerateHashLockConfig
+  | WaitForLockedDepositConfig
   | CommentConfig;
 
 // =============================================================================
@@ -509,6 +543,37 @@ export const BLOCK_CATALOG: Record<BlockType, BlockDefinition> = {
             },
           },
         },
+        hashLockFrom: {
+          type: 'string',
+          description: 'Optional. Node id of a Generate Hash Lock block. When set, the send is hash-locked: the recipient is not credited until a Release Locked Operation reveals the preimage.',
+        },
+      },
+      required: [],
+    },
+  },
+
+  ReleaseLockedOperation: {
+    type: 'ReleaseLockedOperation',
+    category: 'token',
+    name: 'Release Locked Operation',
+    description: 'Release a hash-locked deposit by revealing the preimage',
+    icon: 'unlock',
+    color: '#F59E0B',
+    transactionType: 'ReleaseLockedOperation',
+    inputs: [
+      { id: 'principal', name: 'Recipient Account', type: 'url', required: true },
+      { id: 'signer', name: 'Signer', type: 'keypair', required: true },
+    ],
+    outputs: [
+      { id: 'txHash', name: 'Transaction Hash', type: 'string', required: true },
+    ],
+    configSchema: {
+      type: 'object',
+      properties: {
+        principal: { type: 'string', description: 'Recipient account URL that holds the locked deposit (auto-resolved from the upstream locked send)' },
+        signerUrl: { type: 'string', description: 'Key page that signs the release; it must have credits (auto-resolved from upstream)' },
+        lockedTxId: { type: 'string', description: 'Txid of the locked deposit, not of the send (auto-resolved from upstream Wait for Locked Deposit)' },
+        preimage: { type: 'string', description: 'Hex preimage that hashes to the lock (auto-resolved from upstream Generate Hash Lock)' },
       },
       required: [],
     },
@@ -942,6 +1007,56 @@ export const BLOCK_CATALOG: Record<BlockType, BlockDefinition> = {
       properties: {
         algorithm: { type: 'string', enum: ['Ed25519', 'RCD1', 'BTC', 'ETH'], default: 'Ed25519' },
       },
+    },
+  },
+
+  GenerateHashLock: {
+    type: 'GenerateHashLock',
+    category: 'token',
+    name: 'Generate Hash Lock',
+    description: 'Create a secret preimage, its hash and an expiration for an HTLC',
+    icon: 'lock-keyhole',
+    color: '#64748B',
+    inputs: [],
+    outputs: [
+      { id: 'preimage', name: 'Preimage (hex)', type: 'string', required: true },
+      { id: 'hash', name: 'Hash (hex)', type: 'string', required: true },
+      { id: 'hashAlgorithm', name: 'Hash Algorithm', type: 'string', required: true },
+      { id: 'expiration', name: 'Expiration (unix seconds)', type: 'int', required: true },
+      { id: 'expirationIso', name: 'Expiration (ISO 8601)', type: 'string', required: true },
+    ],
+    configSchema: {
+      type: 'object',
+      properties: {
+        hashAlgorithm: { type: 'string', enum: ['sha256', 'sha256d'], default: 'sha256', description: 'Hash algorithm (HASH160 is SDK-level only)' },
+        expirationMinutes: { type: 'number', description: 'Minutes until the lock expires, 15 to 43200 (default: 30). The node requires at least 10 minutes and at most 30 days ahead.' },
+        preimage: { type: 'string', description: 'Optional hex preimage, 1 to 256 bytes. Leave empty to generate 32 random bytes.' },
+      },
+      required: [],
+    },
+  },
+
+  WaitForLockedDeposit: {
+    type: 'WaitForLockedDeposit',
+    category: 'token',
+    name: 'Wait for Locked Deposit',
+    description: 'Poll until the locked deposit produced by a hash-locked send is delivered',
+    icon: 'clock',
+    color: '#64748B',
+    inputs: [
+      { id: 'sendTxId', name: 'Locked Send Txid', type: 'string', required: true },
+    ],
+    outputs: [
+      { id: 'lockedTxId', name: 'Locked Deposit Txid', type: 'string', required: true },
+    ],
+    configSchema: {
+      type: 'object',
+      properties: {
+        sendTxId: { type: 'string', description: 'Txid of the hash-locked send (auto-resolved from the upstream locked send)' },
+        maxAttempts: { type: 'number', description: 'Max polling attempts (default: 60)' },
+        delayMs: { type: 'number', description: 'Delay between attempts (default: 2000)' },
+      },
+      required: [],
     },
   },
 
