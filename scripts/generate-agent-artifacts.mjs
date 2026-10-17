@@ -204,7 +204,7 @@ const REPO_META = {
     projectRoot: '.',
     rootIsProject: true,
     toolchain: '.NET 9 SDK',
-    setup: ['dotnet restore Acme.Net.Sdk.sln'],
+    setup: ['git submodule update --init --recursive   # test/vectors; a plain clone does not fetch it', 'dotnet restore Acme.Net.Sdk.sln'],
     build: 'dotnet build Acme.Net.Sdk.sln -c Release',
     test: [
       { cmd: 'dotnet test test/Acme.Net.Sdk.Tests', desc: 'unit suite', network: false },
@@ -452,6 +452,17 @@ function renderHtlcFull(lang, m) {
   return L;
 }
 
+/**
+ * SDK-level notes that belong to no single operation: the manifest's `agent_notes` (header fields 5-7,
+ * the v3 proof methods). They used to sit hand-written in each SDK's llms.txt, which `gen:agent:dist`
+ * overwrites, so they are carried by the manifest and rendered into both files.
+ */
+function renderAgentNotes(m) {
+  const notes = m.agent_notes || [];
+  if (!notes.length) return [];
+  return ['## Other API notes', ...notes.map((n) => `- ${n}`), ''];
+}
+
 // ---- llms.txt (concise router) --------------------------------------------
 function renderLlms(lang, m) {
   const meta = LANG_META[lang];
@@ -494,6 +505,7 @@ function renderLlms(lang, m) {
   L.push('- **One canonical client:** connect with `' + m.entrypoints[0]?.symbol + '`, build with `TxBody`, sign with `SmartSigner`. Do not hand-roll envelopes/signing, and ignore any alternate or legacy client classes — this is the only path you need.');
   L.push('');
   for (const line of checkHtlcRefundWording(renderHtlcLlms(lang, m))) L.push(line);
+  for (const line of renderAgentNotes(m)) L.push(line);
   // RB-04. A terminal-based agent that finds this never writes a program for a
   // balance check: it is one command instead of create-project/compile/run/delete.
   L.push('## CLI (no code required)');
@@ -574,6 +586,7 @@ function renderLlmsFull(lang, m) {
     }
   }
   for (const line of checkHtlcRefundWording(renderHtlcFull(lang, m))) L.push(line);
+  for (const line of renderAgentNotes(m)) L.push(line);
   L.push(`## Operations (${m.operations.filter((o) => o.op !== 'comment').length})`);
   L.push('');
   const groups = opsByCategory(m.operations);

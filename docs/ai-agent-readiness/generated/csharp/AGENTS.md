@@ -9,6 +9,7 @@ The C# SDK for the Accumulate blockchain. Published as `Acme.Net.Sdk` (v2.5.0).
 Toolchain: **.NET 9 SDK**
 
 ```bash
+git submodule update --init --recursive   # test/vectors; a plain clone does not fetch it
 dotnet restore Acme.Net.Sdk.sln
 ```
 

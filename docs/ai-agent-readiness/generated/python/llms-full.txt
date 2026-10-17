@@ -201,6 +201,9 @@ Notes:
 - **Refund status:** Refund on expiry is the protocol design but is NOT currently functional on the network (core issue https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578): an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Do not promise or rely on a refund; use small amounts and always release.
 - The `accumulate` CLI has no HTLC commands: use the library API.
 
+## Other API notes
+- v3 proof methods: `AccumulateV3Client.major_header_range / minor_root_range / anchor_receipt`; `v3.Receipt` models `forHeight`, `complete`, `partition`, `startsAtMainState`.
+
 ## Operations (28)
 
 ### generate_keys  —  Generate Keys  [utility]

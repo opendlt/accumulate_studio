@@ -1261,5 +1261,9 @@
       ]
     }
   ],
-  "notes": "JavaScript SDK uses camelCase conventions. TxBody methods are static. SmartSigner handles signing, submission and waiting. Uses async/await with Promises."
+  "notes": "JavaScript SDK uses camelCase conventions. TxBody methods are static. SmartSigner handles signing, submission and waiting. Uses async/await with Promises.",
+  "agent_notes": [
+    "`SignOptions` also takes `expire`, `holdUntil` and `authorities` (header fields 5-7). All of fields 5-8 are part of the transaction hash; `signExisting` re-signs the envelope's own transaction, so they survive a hand-off to a co-signer.",
+    "v3 proof methods: `majorHeaderRange`, `minorRootRange`, `anchorReceipt`; `api_v3.Receipt` has `forHeight`, `complete`, `partition`, `startsAtMainState`; `NetworkGlobals.blockInterval` (seconds)."
+  ]
 }
