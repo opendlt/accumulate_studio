@@ -405,7 +405,7 @@ cc = os.path.join(ev, 'p10', 'clean-checkout-final.txt')
 if os.path.exists(cc):
     c = read('docs/hash-lock-example/evidence/p10/clean-checkout-final.txt')
     c9 = read('docs/hash-lock-example/evidence/p9/clean-checkout-final.txt')
-    check('P9.2 the earlier clean-checkout proof (before HASH160) passed in 3 orders too', 'ALLDONE' in c9 and c9.count('exit=0') == 8)
+    check('P9.2 the earlier clean-checkout proof (before HASH160) passed in 3 orders too', 'ALLDONE' in c9 and 'clone exit=0' in c9 and all(f'{s} exit=0' in c9 for s in ('A-npm-ci', 'A-build-types', 'A-build', 'A-typecheck', 'B-build-types', 'B-typecheck', 'B-build', 'C-typecheck')))
     check('P9.2 clean checkout: the requested order, CI order and a bare typecheck all exit 0 (7 steps)', 'ALLDONE' in c and all(f'{s} exit=0' in c for s in ('A-npm-ci', 'A-build-types', 'A-build', 'A-typecheck', 'B-build-types', 'B-typecheck', 'B-build', 'C-typecheck')), str(c.count('exit=0')) + ' steps exit 0')
 rr = os.path.join(ROOT, 'docs/hash-lock-example/RELEASE-READINESS.md')
 if os.path.exists(rr):
