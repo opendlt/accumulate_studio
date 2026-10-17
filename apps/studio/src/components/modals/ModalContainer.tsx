@@ -7,7 +7,8 @@ import { ExecuteConfirmModal } from './ExecuteConfirmModal';
 import { PrerequisiteAssistantModal } from './PrerequisiteAssistantModal';
 import { WelcomeModal } from './WelcomeModal';
 import { ShortcutsModal } from './ShortcutsModal';
-import { executionEngine } from '../../services/execution';
+import { runFlow } from '../../services/execution/run-flow';
+import { useToast } from '../ui';
 import type { VariableValues } from '../../services/flow-variables';
 
 // =============================================================================
@@ -34,6 +35,7 @@ export const ModalContainer: React.FC = () => {
   const activeModal = useUIStore((state) => state.activeModal);
   const closeModal = useUIStore((state) => state.closeModal);
   const flow = useFlowStore((state) => state.flow);
+  const { addToast } = useToast();
 
   // Handle close
   const handleClose = useCallback(() => {
@@ -41,13 +43,10 @@ export const ModalContainer: React.FC = () => {
   }, [closeModal]);
 
   // Handle execution confirm
-  const handleExecuteConfirm = useCallback(async (variables: VariableValues) => {
-    try {
-      await executionEngine.executeFlow(flow, variables);
-    } catch (error) {
-      console.error('Execution failed:', error);
-    }
-  }, [flow]);
+  const handleExecuteConfirm = useCallback(
+    (variables: VariableValues) => runFlow(flow, variables, addToast),
+    [flow, addToast]
+  );
 
   return (
     <>

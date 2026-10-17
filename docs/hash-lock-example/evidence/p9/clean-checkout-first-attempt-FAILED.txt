@@ -1,0 +1,10 @@
+cloning branch feat/htlc-golden-path at 70b4c58 into a fresh directory
+clone exit=0
+clone HEAD: 70b4c58
+npm-ci exit=0
+build-types exit=0
+build exit=2
+typecheck exit=0
+untracked/modified after the build: 1 (see below)
+ M apps/mcp-server/src/generated/content.ts
+ALLDONE

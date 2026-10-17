@@ -80,8 +80,8 @@ export function variableErrors(variables: FlowVariable[], values: VariableValues
 }
 
 /**
- * The values a run uses: each variable's default, overlaid with `provided` (trimmed). Names the flow
- * does not declare are ignored. Throws, naming every offender, when a value is missing or malformed,
+ * The values a run uses: each variable's default, overlaid with `provided` (trimmed; an empty entry
+ * keeps the default). Names the flow does not declare are ignored. Throws, naming every offender, when a value is missing or malformed,
  * so the engine fails before the first network call instead of sending `acc://{{ADI_NAME}}.acme`.
  */
 export function resolveRunVariables(
@@ -92,8 +92,10 @@ export function resolveRunVariables(
   const asText: VariableValues = {};
 
   for (const variable of variables) {
-    const entered = provided[variable.name];
-    const value = entered !== undefined ? entered.trim() : variable.default;
+    // An empty entry keeps the default (clearing an optional field must not blank it); with no
+    // default there is nothing to keep and it stays an empty value, as it always did
+    const entered = provided[variable.name]?.trim();
+    const value = entered === undefined || (entered === '' && !isEmpty(variable.default)) ? variable.default : entered;
     asText[variable.name] = isEmpty(value) ? '' : String(value);
     if (value !== undefined && value !== null) resolved[variable.name] = value;
   }

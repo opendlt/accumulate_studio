@@ -32,7 +32,7 @@ npm run build:codegen
 | `npm test` | all workspace suites | no |
 | `npm run typecheck` | all workspaces | no |
 | `npm run lint` | all workspaces | no |
-| `npm run harness:test` | agent-harness unit tests (61) | no |
+| `npm run harness:test` | agent-harness unit tests (74) | no |
 | `npm run harness:selftest` | task-spec well-formedness | no |
 | `npm run test:mcp` | MCP protocol over stdio (needs `build:mcp` first) | no |
 | `npm run validate:manifests` | SDK manifests vs block catalog | no |

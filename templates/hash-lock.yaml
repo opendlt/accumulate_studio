@@ -147,6 +147,8 @@ blocks:
       principal: "{{generate_keys.liteTokenAccount}}"
       signerUrl: "{{generate_keys.liteIdentity}}"
       to: "{{create_sender_account.tokenAccountUrl}}"
+      # Base units (5 ACME): the code generator prints a literal verbatim. Studio's own flow
+      # template uses the NUMBER 500000000 for this step, because Studio reads a string as whole ACME.
       amount: "500000000"
 
   - id: wait_for_sender_balance

@@ -1189,9 +1189,12 @@ function computeNodeVars(
           }
           vars.releasePreimage = rawPreimage.toLowerCase();
           vars.releasePreimageIsRef = false;
-        } else {
+        } else if (/\{\{[^}]+\}\}/.test(String((node.config as Record<string, unknown> | undefined)?.preimage ?? ''))) {
           vars.releasePreimage = rawPreimage;
           vars.releasePreimageIsRef = true;
+        } else {
+          // Neither hex nor a {{reference}}: emitted bare it would be an undefined identifier in every language
+          throw new Error(`ReleaseLockedOperation "${node.id}": preimage must be hex (1 to 256 bytes) or a reference such as {{create_hash_lock.preimage}}`);
         }
       } else if (tracker?.lastGenerateHashLockVarName) {
         vars.releasePreimage = `${tracker.lastGenerateHashLockVarName}${htlcSfx.preimage}`;

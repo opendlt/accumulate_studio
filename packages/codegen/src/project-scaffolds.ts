@@ -11,6 +11,7 @@
 import type { Flow, GeneratedFile, SDKLanguage, SDKMap } from '@accumulate-studio/types';
 import { generateCodeFromManifest, isHashLockNode } from './manifest-generator';
 import { loadAllManifests } from './manifest-loader';
+import { toSnakeCase, toKebabCase } from './template-engine';
 
 // =============================================================================
 // Unified engine accessor
@@ -443,28 +444,6 @@ This project was automatically generated from a visual flow definition.
 // =============================================================================
 // Utility Functions
 // =============================================================================
-
-function toSnakeCase(str: string): string {
-  return str
-    .replace(/[^a-zA-Z0-9]/g, '_')
-    // A run of capitals is one word (HTLC -> htlc), not one word per letter
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
-    .toLowerCase()
-    .replace(/^_/, '')
-    .replace(/_+/g, '_');
-}
-
-function toKebabCase(str: string): string {
-  return str
-    .replace(/[^a-zA-Z0-9]/g, '-')
-    // A run of capitals is one word (HTLC -> htlc), not one word per letter
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-    .toLowerCase()
-    .replace(/^-/, '')
-    .replace(/-+/g, '-');
-}
 
 function toPascalCase(str: string): string {
   return str

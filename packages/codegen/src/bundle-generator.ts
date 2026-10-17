@@ -9,6 +9,7 @@ import type {
 } from '@accumulate-studio/types';
 import { serializeFlowToYaml } from './flow-serializer';
 import { PROJECT_GENERATORS } from './project-scaffolds';
+import { toSnakeCase, toKebabCase } from './template-engine';
 import { generateAssertions, type GeneratedAssertions } from './assertions-generator';
 import {
   generateAgentTask,
@@ -416,34 +417,6 @@ function getLanguageDisplayName(language: SDKLanguage): string {
     csharp: 'C#',
   };
   return names[language] ?? language;
-}
-
-/**
- * Convert string to kebab-case
- */
-function toKebabCase(str: string): string {
-  return str
-    .replace(/[^a-zA-Z0-9]/g, '-')
-    // A run of capitals is one word (HTLC -> htlc), not one word per letter
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
-    .toLowerCase()
-    .replace(/^-/, '')
-    .replace(/-+/g, '-');
-}
-
-/**
- * Convert string to snake_case
- */
-function toSnakeCase(str: string): string {
-  return str
-    .replace(/[^a-zA-Z0-9]/g, '_')
-    // A run of capitals is one word (HTLC -> htlc), not one word per letter
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
-    .toLowerCase()
-    .replace(/^_/, '')
-    .replace(/_+/g, '_');
 }
 
 // =============================================================================
