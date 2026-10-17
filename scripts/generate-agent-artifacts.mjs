@@ -351,7 +351,7 @@ const HTLC_SUMMARY =
   'A hash lock is a header field (`hashLock`, TransactionHeader field 8) on an ordinary `send_tokens`, not a new transaction type. The sender is debited at once; each recipient gets a `SyntheticLockedDeposit` (type 0x37) instead of a normal deposit and is credited only when a `ReleaseLockedOperation` (type 0x18) reveals the preimage.';
 
 const HTLC_FACTS = [
-  'Algorithms: `sha256` (SHA-256 of the preimage) and `sha256d` (SHA-256 of that hash). Both hashes are 32 bytes. The protocol also defines HASH160 (20 bytes); it is SDK-level only and Studio-generated code does not use it.',
+  'Algorithms: `sha256` (SHA-256 of the preimage, 32 bytes), `sha256d` (SHA-256 of that hash, 32 bytes) and `hash160` (RIPEMD-160 of the SHA-256, 20 bytes, as in Bitcoin). The hash length must match the algorithm.',
   'Expiration: absolute UTC, whole seconds, 10 minutes to 30 days ahead of the node clock, checked at submit and again at execute. Use 15 minutes or more for clock skew.',
   'Preimage: 1 to 256 bytes, hashed raw with no prefix. The release publishes it on-chain.',
   'The release is signed by the RECIPIENT account holding the locked deposit, and that signer pays its fee (about 0.01 credits).',
@@ -360,7 +360,7 @@ const HTLC_FACTS = [
 
 // Core never runs the expiry refund, so no generated document may promise one.
 const HTLC_REFUND =
-  'Refund on expiry is the protocol design but is NOT currently functional on the network (see `docs/hash-lock-example/CORE-ISSUE-refund.md` in accumulate-studio): an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Do not promise or rely on a refund; use small amounts and always release.';
+  'Refund on expiry is the protocol design but is NOT currently functional on the network (core issue https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578): an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Do not promise or rely on a refund; use small amounts and always release.';
 
 /**
  * A generated HTLC section must say the refund does not work and must never promise one. The manifests
@@ -403,7 +403,7 @@ function htlcNotes(step) {
 }
 
 function htlcCliLine(lang) {
-  return `Not exposed by the \`${LANG_META[lang].cliCommand}\` CLI: library API only.`;
+  return `The \`${LANG_META[lang].cliCommand}\` CLI has no HTLC commands: use the library API.`;
 }
 
 /** Concise HTLC section for llms.txt. */

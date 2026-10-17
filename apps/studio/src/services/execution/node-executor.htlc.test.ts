@@ -64,6 +64,17 @@ describe('createHashLock (browser crypto, no Buffer)', () => {
     expect(lock.hash).not.toBe(sha256(PREIMAGE));
   });
 
+  it('hash160: hash is RIPEMD-160 of the SHA-256 digest, 20 bytes (the node\'s HASH160)', async () => {
+    const lock = await createHashLock({ hashAlgorithm: 'hash160', preimage: PREIMAGE });
+    expect(lock.hashAlgorithm).toBe('hash160');
+    expect(lock.hash).toBe(createHash('ripemd160').update(Buffer.from(sha256(PREIMAGE), 'hex')).digest('hex'));
+    expect(lock.hash).toHaveLength(40);
+    // a random preimage hashes the same way
+    const random = await createHashLock({ hashAlgorithm: 'HASH160' });
+    expect(random.hashAlgorithm).toBe('hash160');
+    expect(random.hash).toBe(createHash('ripemd160').update(Buffer.from(sha256(random.preimage), 'hex')).digest('hex'));
+  });
+
   it('defaults to sha256, 30 minutes and a random 32-byte preimage', async () => {
     const a = await createHashLock({}, 1_700_000_123_456);
     const b = await createHashLock({}, 1_700_000_123_456);
@@ -94,7 +105,6 @@ describe('createHashLock (browser crypto, no Buffer)', () => {
 
   it.each([
     [{ hashAlgorithm: 'md5' }, /unsupported hash algorithm/],
-    [{ hashAlgorithm: 'hash160' }, /unsupported hash algorithm/],
     [{ expirationMinutes: 14 }, /between 15 and 43200/],
     [{ expirationMinutes: 43201 }, /between 15 and 43200/],
     [{ expirationMinutes: 15.5 }, /whole number/],

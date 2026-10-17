@@ -18,6 +18,9 @@ using Acme.Net.Sdk.Protocol.Generated;
 using Acme.Net.Sdk.Signing;
 using Acme.Net.Sdk.Transactions;
 using Acme.Net.Sdk.Helpers;
+{{#if usesHash160}}
+using Org.BouncyCastle.Crypto.Digests;
+{{/if}}
 
 class Program
 {
@@ -29,6 +32,18 @@ class Program
         Console.Error.WriteLine($"FAILED: {message}");
         Environment.Exit(1);
     }
+{{#if usesHash160}}
+
+    // RIPEMD-160 (HASH160 = RIPEMD160(SHA256(x))): .NET has no built-in RIPEMD-160, so use BouncyCastle.
+    static byte[] Ripemd160Hash(byte[] data)
+    {
+        var digest = new RipeMD160Digest();
+        digest.BlockUpdate(data, 0, data.Length);
+        var output = new byte[digest.GetDigestSize()];
+        digest.DoFinal(output, 0);
+        return output;
+    }
+{{/if}}
 
     // Walks a path of object properties; null if any segment is missing.
     static JsonElement? Dig(JsonElement e, params string[] path)

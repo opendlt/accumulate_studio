@@ -256,6 +256,8 @@ describe('Specific template flows', () => {
       expect(t.flow.nodes.some((n) => /refund/i.test(`${n.id} ${n.label ?? ''}`))).toBe(false);
       expect(text).toMatch(/refund/i);
       expect(text).toMatch(/not currently functional|NOT currently functional/);
+      // and says where the defect is tracked
+      expect(text).toContain('https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578');
     });
 
     it('uses only default-allowed block types and 17 nodes', () => {

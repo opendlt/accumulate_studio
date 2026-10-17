@@ -9,7 +9,9 @@
     final {{varName}}PreimageBytes = randomBytes(32);
 {{/if}}
     final {{varName}}Preimage = toHexString({{varName}}PreimageBytes);
-{{#if hashIsDouble}}
+{{#if hashIsHash160}}
+    final {{varName}}HashBytes = Uint8List.fromList(RIPEMD160Digest().process(Uint8List.fromList(sha256.convert({{varName}}PreimageBytes).bytes)));
+{{else if hashIsDouble}}
     final {{varName}}HashBytes = Uint8List.fromList(sha256.convert(sha256.convert({{varName}}PreimageBytes).bytes).bytes);
 {{else}}
     final {{varName}}HashBytes = Uint8List.fromList(sha256.convert({{varName}}PreimageBytes).bytes);
@@ -23,7 +25,7 @@
     final {{varName}}Expiration = {{varName}}ExpirationAt.millisecondsSinceEpoch ~/ 1000;
     final {{varName}}ExpirationIso = {{varName}}ExpirationAt.toIso8601String().replaceAll('.000Z', 'Z');
     final {{varName}}Lock = HashLockOptions(
-      hashAlgorithm: HashAlgorithm.{{#if hashIsDouble}}SHA256D{{else}}SHA256{{/if}},
+      hashAlgorithm: HashAlgorithm.{{#if hashIsHash160}}HASH160{{else if hashIsDouble}}SHA256D{{else}}SHA256{{/if}},
       hash: {{varName}}HashBytes,
       expiration: {{varName}}ExpirationAt,
     );

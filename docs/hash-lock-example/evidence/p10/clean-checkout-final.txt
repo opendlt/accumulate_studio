@@ -1,0 +1,15 @@
+fresh clone of feat/htlc-hash160 at 5cd6cd5 (clone exit=0)
+A. npm ci; npm run build:types; npm run build; npm run typecheck
+  A-npm-ci exit=0
+  A-build-types exit=0
+  A-build exit=0
+  A-typecheck exit=0
+B. CI order from a clean tree: npm run build:types; npm run typecheck; npm run build
+  B-build-types exit=0
+  B-typecheck exit=0
+  B-build exit=0
+C. bare npm run typecheck straight after npm ci (no build:types)
+  C-typecheck exit=0
+tracked files changed by building (git diff --stat, line count): 0
+untracked files after the last build (outside ignored output): 0
+ALLDONE

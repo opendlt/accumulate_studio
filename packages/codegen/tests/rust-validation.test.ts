@@ -36,6 +36,7 @@ import {
   expectWrongPreimageRejected,
   harnessEnv,
   wrongPreimageFlow,
+  hash160Flow,
   type HarnessReport,
 } from './htlc-report';
 
@@ -256,6 +257,13 @@ describe('Rust Generated Code Validation', () => {
           writeBin(wrongBin, wrongPreimageFlow(flow), manifest);
           cargo('build', wrongBin, `${name} (wrong preimage)`, 300000);
           expectWrongPreimageRejected(runMock(wrongBin, name, 90000));
+        }, 400000);
+
+        it.skipIf(!HAS_CARGO || !HAS_PYTHON)('runs the hash-lock flow with a HASH160 lock end to end', () => {
+          const h160Bin = `${binName}_hash160`;
+          writeBin(h160Bin, hash160Flow(flow), manifest);
+          cargo('build', h160Bin, `${name} (hash160)`, 300000);
+          expectHashLockRun(runMock(h160Bin, name, 90000), 'hash160');
         }, 400000);
       }
 

@@ -991,7 +991,7 @@
           "name": "hashAlgorithm",
           "type": "str",
           "required": false,
-          "description": "sha256 (default) or sha256d"
+          "description": "sha256 (default), sha256d or hash160"
         },
         {
           "name": "expirationMinutes",
@@ -1031,9 +1031,10 @@
       "requires": [],
       "examples": [],
       "notes": [
-        "Nothing is sent to the network. The preimage (1 to 256 bytes) is the secret: keep it until the release transaction reveals it on-chain. sha256 and sha256d are supported here; hash160 is SDK-level only.",
+        "Nothing is sent to the network. The preimage (1 to 256 bytes) is the secret: keep it until the release transaction reveals it on-chain. sha256, sha256d and hash160 are supported here.",
         "The node requires an expiration 10 minutes to 30 days ahead; 15 minutes or more leaves room for clock skew. The expiration must be whole UTC seconds.",
-        "The expiration is fixed when the lock is made, and the node checks the 10-minute floor again when the send is submitted, so create the lock right before the locked send: every wait in between shortens the margin."
+        "The expiration is fixed when the lock is made, and the node checks the 10-minute floor again when the send is submitted, so create the lock right before the locked send: every wait in between shortens the margin.",
+        "hash160 is RIPEMD160(SHA256(preimage)), 20 bytes, computed with RIPEMD160Digest from package:pointycastle (add pointycastle to pubspec.yaml); package:crypto has no RIPEMD-160."
       ]
     },
     {

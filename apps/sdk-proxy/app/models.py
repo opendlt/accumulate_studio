@@ -84,8 +84,8 @@ class SendTokensRequest(SessionRequest):
     signer_url: str | None = None
     # Optional hash lock (HTLC), all three or none. The recipient then gets a
     # SyntheticLockedDeposit that only a ReleaseLockedOperation can unlock.
-    hash_algorithm: str | None = None   # "sha256" | "sha256d"
-    hash: str | None = None             # hex of the hash (32 bytes)
+    hash_algorithm: str | None = None   # "sha256" | "sha256d" | "hash160"
+    hash: str | None = None             # hex of the hash (32 bytes; 20 bytes for hash160)
     expiration: int | None = None       # absolute unix SECONDS (node: 10 min .. 30 days ahead)
 
     @model_validator(mode="after")
@@ -95,8 +95,8 @@ class SendTokensRequest(SessionRequest):
             return self
         if any(v is None for v in given):
             raise ValueError("hash_algorithm, hash and expiration must be given together")
-        if self.hash_algorithm.strip().lower() not in ("sha256", "sha256d"):
-            raise ValueError("hash_algorithm must be 'sha256' or 'sha256d'")
+        if self.hash_algorithm.strip().lower() not in ("sha256", "sha256d", "hash160"):
+            raise ValueError("hash_algorithm must be 'sha256', 'sha256d' or 'hash160'")
         try:
             bytes.fromhex(self.hash)
         except ValueError:

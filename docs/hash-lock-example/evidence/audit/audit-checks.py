@@ -168,7 +168,7 @@ missing = [r for r in refs if '<' not in r and not r.endswith(('e2e-', 'mock-run
 check('every evidence path referenced by STATUS.md exists', not missing, f'{len(refs)} referenced; missing: {missing}')
 
 ev = os.path.join(ROOT, 'docs/hash-lock-example/evidence')
-e2e = [f for f in sorted(os.listdir(os.path.join(ev, 'e2e'))) if f.endswith('.json') and 'invalid' not in f and 'shared-target' not in f and 'postd31' not in f]
+e2e = [f for f in sorted(os.listdir(os.path.join(ev, 'e2e'))) if f.endswith('.json') and 'invalid' not in f and 'shared-target' not in f and 'postd31' not in f and 'hash160' not in f]
 verdicts = {f: json.load(open(os.path.join(ev, 'e2e', f), encoding='utf-8')) for f in e2e}
 check('25 counted live runs, every verifier JSON has RESULT PASS', len(e2e) == 25 and all(v['RESULT'] == 'PASS' for v in verdicts.values()), f'{len(e2e)} files')
 per_lang = {l: sorted(f for f in e2e if f.startswith(l + '-')) for l in LANGS}
@@ -202,6 +202,49 @@ if post_files:
         if not (printed and on_chain and printed.group(1).lower() == on_chain.lower()):
             pre.append(f)
     check('post-D-31: release result.preimage == the preimage the program printed', not pre, str(pre))
+
+# HASH160 (D-41): one published run per language, a wrong-preimage negative, the probe, the compile proof and the mock runs
+h160_files = sorted(f for f in os.listdir(os.path.join(ev, 'e2e')) if f.endswith('-hash160-1.json'))
+if h160_files:
+    h160 = {f: json.load(open(os.path.join(ev, 'e2e', f), encoding='utf-8')) for f in h160_files}
+    check('HASH160: one published run per language, every verifier JSON RESULT PASS with 16/16 checks',
+          [f.split('-')[0] for f in h160_files] == sorted(LANGS) and all(v['RESULT'] == 'PASS' and len(v['checks']) == 16 and all(c['ok'] for c in v['checks']) for v in h160.values()),
+          f'{len(h160)} runs')
+    bad_lock = []
+    for f, v in h160.items():
+        text = json.dumps(v['raw'].get('send', {}))
+        m = re.search(r'"hashLock": [{][^}]*"hashAlgorithm": "([A-Za-z0-9]+)", "hash": "([0-9a-f]+)"', text)
+        if not (m and m.group(1).lower() == 'hash160' and len(m.group(2)) == 40):
+            bad_lock.append(f)
+    check('HASH160: the on-chain send header of every run carries hashAlgorithm hash160 with a 20-byte hash', not bad_lock, str(bad_lock))
+    for lang in LANGS:
+        log = read(f'docs/hash-lock-example/evidence/e2e/logs/{lang}-hash160-1.log')
+        marks = [m for m in ('git+ssh', ' path = ', 'file:', 'ProjectReference', '(local SDK)') if m in log]
+        reg_marker = {'python': '==2.5.0', 'javascript': 'accumulate-sdk-opendlt@2.5.2', 'dart': 'opendlt_accumulate 2.5.0', 'rust': 'version = "2.5.0"', 'csharp': 'Acme.Net.Sdk'}[lang]
+        check(f'HASH160 log {lang}: registry version, no local path', reg_marker in log and not marks, str(marks))
+    pre160 = []
+    for f, v in h160.items():
+        printed = re.search(r'PREIMAGE: +([0-9a-fA-F]+)', read('docs/hash-lock-example/evidence/e2e/logs/' + f.replace('.json', '.log')))
+        on_chain = (v['raw'].get('release') or {}).get('result', {}).get('preimage')
+        if not (printed and on_chain and printed.group(1).lower() == on_chain.lower()):
+            pre160.append(f)
+    check('HASH160: release result.preimage == the preimage the program printed', not pre160, str(pre160))
+    neg160 = json.load(open(os.path.join(ev, 'hash160', 'python-wrong-hash160.json'), encoding='utf-8'))
+    probe160 = json.load(open(os.path.join(ev, 'hash160', 'python-probe-positive.json'), encoding='utf-8'))
+    check('HASH160: the wrong-preimage negative PASSED in negative mode (deposit never released, receiver unchanged)', neg160['RESULT'] == 'PASS' and neg160.get('mode') == 'negative' and all(c['ok'] for c in neg160['checks']), f"{len(neg160['checks'])} checks")
+    check('HASH160: the Python probe on the published SDK PASSED independently', probe160['RESULT'] == 'PASS' and all(c['ok'] for c in probe160['checks']), f"{len(probe160['checks'])} checks")
+    comp = read('docs/hash-lock-example/evidence/hash160/compile-all-5-languages.txt')
+    check('HASH160: compile proof against ripemd / pointycastle / BouncyCastle in all five languages (dart analyze: 0 errors)',
+          'ALLDONE' in comp and 'files with residue: 0' in comp and all(s in comp for s in ('python py_compile exit=0', 'javascript node --check exit=0', 'dart pub get exit=0', 'dart analyze exit=2 (0 errors', 'rust cargo check exit=0', 'csharp dotnet build exit=0')))
+    suites = read('docs/hash-lock-example/evidence/hash160/validation-suites.txt')
+    check('HASH160: the mock-execution test passed in all five validation suites', 'ALLDONE' in suites and all(f'{l}: exit=0' in suites and '1 passed' in suites for l in LANGS), '')
+# the issue is filed: the link is where users read about the refund
+ISSUE = 'https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578'
+check('the refund issue (filed upstream) is linked from the Studio template copy and the generated SDK docs',
+      ISSUE in read('apps/studio/src/data/flow-templates.ts') and all(ISSUE in read(f'docs/ai-agent-readiness/generated/{l}/llms-full.txt') for l in LANGS))
+check('no document or code still says HASH160 is unsupported or "SDK-level only"',
+      not [r for r in tracked if r and r.endswith(('.md', '.ts', '.mjs', '.hbs', '.json', '.py', '.txt')) and 'MASTER_PROMPT' not in r and 'RUNBOOK' not in r and 'STATUS.md' not in r and 'evidence/' not in r and 'AUDIT.md' not in r
+           and re.search(r'HASH160.{0,60}(SDK-level only|not supported)|no HASH160', read(r), re.I)])
 
 # P7.4: the release's on-chain result.preimage equals the preimage the generated program printed
 def find_str(obj, key):
@@ -352,15 +395,17 @@ check('P8.3 every generated llms.txt and llms-full.txt carries the HTLC section'
 check('P8.4 README template list, example README and PROGRESS entry',
       has('README.md', 'hash-lock.yaml') and os.path.exists(os.path.join(ROOT, 'docs/hash-lock-example/README.md')) and has('docs/ai-agent-readiness/PROGRESS.md', 'Hash Lock (HTLC) golden path'))
 # P9
-for tag in ('p9', 'p9b'):
+for tag in ('p9', 'p9b', 'p10'):
     gate = os.path.join(ev, tag, 'gate-summary.txt')
     if os.path.exists(gate):
         g = read(f'docs/hash-lock-example/evidence/{tag}/gate-summary.txt')
         check(f'P9 gate run {tag}: every step exit 0 and ALLDONE', 'ALLDONE' in g and all(l.split('exit=')[1].split()[0] == '0' for l in g.split(chr(10)) if 'exit=' in l),
               f"{g.count('exit=0')} steps exit 0")
-cc = os.path.join(ev, 'p9', 'clean-checkout-final.txt')
+cc = os.path.join(ev, 'p10', 'clean-checkout-final.txt')
 if os.path.exists(cc):
-    c = read('docs/hash-lock-example/evidence/p9/clean-checkout-final.txt')
+    c = read('docs/hash-lock-example/evidence/p10/clean-checkout-final.txt')
+    c9 = read('docs/hash-lock-example/evidence/p9/clean-checkout-final.txt')
+    check('P9.2 the earlier clean-checkout proof (before HASH160) passed in 3 orders too', 'ALLDONE' in c9 and 'clone exit=0' in c9 and all(f'{s} exit=0' in c9 for s in ('A-npm-ci', 'A-build-types', 'A-build', 'A-typecheck', 'B-build-types', 'B-typecheck', 'B-build', 'C-typecheck')))
     check('P9.2 clean checkout: the requested order, CI order and a bare typecheck all exit 0 (7 steps)', 'ALLDONE' in c and all(f'{s} exit=0' in c for s in ('A-npm-ci', 'A-build-types', 'A-build', 'A-typecheck', 'B-build-types', 'B-typecheck', 'B-build', 'C-typecheck')), str(c.count('exit=0')) + ' steps exit 0')
 rr = os.path.join(ROOT, 'docs/hash-lock-example/RELEASE-READINESS.md')
 if os.path.exists(rr):
@@ -374,7 +419,7 @@ if os.path.exists(rr):
 check('D-1 variables ADI_NAME (required) and LOCK_AMOUNT (default 1.00000000)', has('apps/studio/src/data/flow-templates.ts', "name: 'LOCK_AMOUNT'", "default: '1.00000000'") and 'ADI_NAME' in flow_seg)
 check('D-1 assertions: status for locked_send and release, no balance.delta in the template', 'locked_send' in ft and 'release_locked' in ft and 'balance.delta' not in flow_seg)
 check('D-2 SendTokens hash-lock extension is the single flat field hashLockFrom (decision D-07)', has('packages/types/src/blocks.ts', 'hashLockFrom'))
-check('D-2 GenerateHashLock options: sha256 / sha256d only, HASH160 excluded', "enum: ['sha256', 'sha256d']" in blocks_ts and 'HASH160 is SDK-level only' in blocks_ts)
+check('D-2 GenerateHashLock options: sha256, sha256d and hash160 (HASH160 added by the user, D-41)', "enum: ['sha256', 'sha256d', 'hash160']" in blocks_ts and 'SDK-level only' not in blocks_ts)
 check('D-3 minimum SDK versions are the scaffold pins', all(s in scaf for s in ('>=2.5.0', '^2.5.2', '^2.5.0', '2.5.*')))
 check('D-4 no refund step in the flow; HTLC not in the CLI; no 9th canonical task',
       not any('refund' in (i + t).lower() for i, t in flow_nodes) and 'SDK-only' in read('packages/codegen/src/manifest-generator.ts')

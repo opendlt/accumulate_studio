@@ -10,4 +10,5 @@ dependencies:
   opendlt_accumulate:
     path: ../../../../../../opendlt-dart-v2v3-sdk/unified
   crypto: ^3.0.3
+  pointycastle: ^3.9.1
 publish_to: none

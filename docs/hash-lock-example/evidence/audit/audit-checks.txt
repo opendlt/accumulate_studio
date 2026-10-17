@@ -1,4 +1,4 @@
-C:\Accumulate_Stuff\on-boarding-platform\accumulate-studio\docs\hash-lock-example\evidence\audit\audit-checks.py:343: FutureWarning: Possible nested set at position 2
+C:\Accumulate_Stuff\on-boarding-platform\accumulate-studio\docs\hash-lock-example\evidence\audit\audit-checks.py:386: FutureWarning: Possible nested set at position 2
   check('P7.6 action-palette e2e for the new blocks: 15 passed live', re.search(r'Tests +15 passed', re.sub(chr(27) + r'[[][0-9;]*m', '', palette)) is not None)
 PASS catalog: GenerateHashLock in BLOCK_CATALOG
 PASS catalog: GenerateHashLock -> generate_hash_lock in block-op-map
@@ -58,7 +58,7 @@ PASS the 10 changed pre-existing snapshots differ ONLY in the ADI_NAME default l
 PASS only zero-to-hero and adi-creation changed
 PASS no product text says a lock is refunded (only guards and the failed-deposit bounce note match): 9 pattern hits, 9 allowed, 0 unexplained
 PASS every product file that mentions refund also carries the not-functional caveat
-PASS every evidence path referenced by STATUS.md exists: 58 referenced; missing: []
+PASS every evidence path referenced by STATUS.md exists: 63 referenced; missing: []
 PASS 25 counted live runs, every verifier JSON has RESULT PASS: 25 files
 PASS per language: published-1, published-2, sha256d-1, local-1, wrong-1
 PASS positive runs passed 16 checks, negative runs 9
@@ -71,6 +71,20 @@ PASS post-D-31 log dart: registry version, no local path: []
 PASS post-D-31 log rust: registry version, no local path: []
 PASS post-D-31 log csharp: registry version, no local path: []
 PASS post-D-31: release result.preimage == the preimage the program printed: []
+PASS HASH160: one published run per language, every verifier JSON RESULT PASS with 16/16 checks: 5 runs
+PASS HASH160: the on-chain send header of every run carries hashAlgorithm hash160 with a 20-byte hash: []
+PASS HASH160 log python: registry version, no local path: []
+PASS HASH160 log javascript: registry version, no local path: []
+PASS HASH160 log dart: registry version, no local path: []
+PASS HASH160 log rust: registry version, no local path: []
+PASS HASH160 log csharp: registry version, no local path: []
+PASS HASH160: release result.preimage == the preimage the program printed: []
+PASS HASH160: the wrong-preimage negative PASSED in negative mode (deposit never released, receiver unchanged): 11 checks
+PASS HASH160: the Python probe on the published SDK PASSED independently: 15 checks
+PASS HASH160: compile proof against ripemd / pointycastle / BouncyCastle in all five languages (dart analyze: 0 errors)
+PASS HASH160: the mock-execution test passed in all five validation suites
+PASS the refund issue (filed upstream) is linked from the Studio template copy and the generated SDK docs
+PASS no document or code still says HASH160 is unsupported or "SDK-level only"
 PASS P7.4 every positive run: release result.preimage == the preimage the program printed == the release body: 20 runs; mismatches: []
 PASS published log python-published-1 shows the registry version and no local path
 PASS published log python-published-2 shows the registry version and no local path
@@ -157,21 +171,23 @@ PASS P8.3 every generated llms.txt and llms-full.txt carries the HTLC section
 PASS P8.4 README template list, example README and PROGRESS entry
 PASS P9 gate run p9: every step exit 0 and ALLDONE: 14 steps exit 0
 PASS P9 gate run p9b: every step exit 0 and ALLDONE: 14 steps exit 0
+PASS P9 gate run p10: every step exit 0 and ALLDONE: 14 steps exit 0
+PASS P9.2 the earlier clean-checkout proof (before HASH160) passed in 3 orders too
 PASS P9.2 clean checkout: the requested order, CI order and a bare typecheck all exit 0 (7 steps): 9 steps exit 0
 PASS P9.5 RELEASE-READINESS states 2 consecutive published runs per language, cites D-03, never claims 3
 PASS P9.5 RELEASE-READINESS: SDK fixes awaiting publish none (D-04a), core issue, human checkpoints
 PASS D-1 variables ADI_NAME (required) and LOCK_AMOUNT (default 1.00000000)
 PASS D-1 assertions: status for locked_send and release, no balance.delta in the template
 PASS D-2 SendTokens hash-lock extension is the single flat field hashLockFrom (decision D-07)
-PASS D-2 GenerateHashLock options: sha256 / sha256d only, HASH160 excluded
+PASS D-2 GenerateHashLock options: sha256, sha256d and hash160 (HASH160 added by the user, D-41)
 PASS D-3 minimum SDK versions are the scaffold pins
 PASS D-4 no refund step in the flow; HTLC not in the CLI; no 9th canonical task
 PASS Appendix D: every expected file changed on the branch (flow.ts excluded: no new AssertionType): 94 files; not changed: []
 PASS Appendix D: packages/types flow.ts untouched because no AssertionType was added
 PASS Appendix D: no file outside the repo changed (the 5 SDK repos and accumulate-core: git status clean at each real repo root)
-PASS every HTLC branch commit is a single line (empty body): 19 commits
+PASS every HTLC branch commit is a single line (empty body): 21 commits
 PASS no attribution trailer in any HTLC branch commit
-HTLC commits (oldest first, merges and the payload-scan commit excluded): 19
+HTLC commits (oldest first, merges and the payload-scan commit excluded): 21
   6fa8c7f Sync package-lock for pyright and typescript-language-server so npm ci works
   28f1d6c Align SDK pins and manifests to 2.5, quote the Dart pubspec description, and sign Token Transfer fund-sender with the lite identity
   a968987 Add HTLC golden-path runbook, execution status, P0-P2 evidence and core refund issue draft
@@ -191,6 +207,8 @@ HTLC commits (oldest first, merges and the payload-scan commit excluded): 19
   70b4c58 Make the Hash Lock follow-ups real: a random suffix in every default ADI name, acronym-safe project slugs, and Token Transfer funding in base units, with the 15 affected snapshots reviewed line by line
   cf17206 Fix the confirmed code-review findings and the clean-checkout build order: empty optional variables keep their default, release signing and preimage checks, a visible refusal toast, one set of slug helpers, a release credit assertion, and build:libs ahead of build and typecheck
   ce20a37 Record P9 results, decisions D-34 to D-40, the 163-check audit and the release readiness summary in the HTLC status
-GitHub/PR merge commits in main..HEAD, not ours: 3
+  d636c84 Prove the random-suffix ADI name live on Kermit: five published-registry runs, one per language, started together and independently verified, with the evidence, drivers and audit updated
+  5cd6cd5 Add HASH160 to the Hash Lock golden path: a browser RIPEMD-160 in Studio, the proxy, MCP and all five code generators, the filed refund issue linked from the copy and generated docs, and the live proof on Kermit
+GitHub/PR merge commits in main..HEAD, not ours: 7
 
-171 checks, 171 PASS, 0 FAIL
+187 checks, 187 PASS, 0 FAIL

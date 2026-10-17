@@ -9,7 +9,9 @@
         {{varName}}_preimage_bytes = os.urandom(32)
 {{/if}}
         {{varName}}_preimage = {{varName}}_preimage_bytes.hex()
-{{#if hashIsDouble}}
+{{#if hashIsHash160}}
+        {{varName}}_hash_bytes = ripemd160(hashlib.sha256({{varName}}_preimage_bytes).digest())
+{{else if hashIsDouble}}
         {{varName}}_hash_bytes = hashlib.sha256(hashlib.sha256({{varName}}_preimage_bytes).digest()).digest()
 {{else}}
         {{varName}}_hash_bytes = hashlib.sha256({{varName}}_preimage_bytes).digest()

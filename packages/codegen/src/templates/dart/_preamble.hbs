@@ -14,6 +14,9 @@ import 'dart:math';
 {{/if}}
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
+{{#if usesHash160}}
+import 'package:pointycastle/digests/ripemd160.dart';
+{{/if}}
 import 'package:opendlt_accumulate/opendlt_accumulate.dart';
 
 const String defaultV2 = 'https://kermit.accumulatenetwork.io/v2';

@@ -10,7 +10,9 @@
     getrandom::getrandom(&mut {{varName}}_preimage_bytes).unwrap_or_else(|e| fail(&format!("no random bytes: {}", e)));
 {{/if}}
     let {{varName}}_preimage = hex::encode(&{{varName}}_preimage_bytes);
-{{#if hashIsDouble}}
+{{#if hashIsHash160}}
+    let {{varName}}_hash_bytes = Ripemd160::digest(Sha256::digest(&{{varName}}_preimage_bytes)).to_vec();
+{{else if hashIsDouble}}
     let {{varName}}_hash_bytes = Sha256::digest(Sha256::digest(&{{varName}}_preimage_bytes)).to_vec();
 {{else}}
     let {{varName}}_hash_bytes = Sha256::digest(&{{varName}}_preimage_bytes).to_vec();
@@ -20,7 +22,7 @@
     // Whole Unix seconds: the node needs 10 minutes to 30 days of headroom
     let {{varName}}_now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64;
     let {{varName}}_expiration: i64 = {{varName}}_now + {{expirationMinutes}} * 60;
-    let {{varName}}_lock = TxBody::hash_lock(HashAlgorithm::{{#if hashIsDouble}}Sha256D{{else}}Sha256{{/if}}, {{varName}}_hash_bytes.clone(), {{varName}}_expiration);
+    let {{varName}}_lock = TxBody::hash_lock(HashAlgorithm::{{#if hashIsHash160}}Hash160{{else if hashIsDouble}}Sha256D{{else}}Sha256{{/if}}, {{varName}}_hash_bytes.clone(), {{varName}}_expiration);
     {{varName}}_lock.validate_for_submit({{varName}}_now).unwrap_or_else(|e| fail(&format!("invalid hash lock: {}", e)));
     let {{varName}}_expiration_iso = {{varName}}_lock.expiration.clone().unwrap_or_default();
     println!("Hash lock ready:");

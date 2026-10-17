@@ -1075,7 +1075,7 @@ const keyRotationFlow: Flow = {
 // is another party. The lock is a header field on an ordinary SendTokens: the sender is
 // debited at once and the receiver is credited only when the release reveals the preimage.
 // There is no refund step on purpose: the protocol design refunds on expiry, but that path
-// is unreachable in current core (docs/hash-lock-example/CORE-ISSUE-refund.md).
+// is unreachable in current core (core issue https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578).
 const hashLockFlow: Flow = {
   version: '1.0',
   name: 'Hash Lock (HTLC) Payment',
@@ -1451,12 +1451,12 @@ export const GOLDEN_PATH_TEMPLATES: FlowTemplate[] = [
       'Credit the ADI key page: it signs the lock and pays for the release',
       'Create the sender and receiver token accounts',
       'Fund the sender account from the lite token account',
-      'Create the hash lock: a secret preimage, its SHA-256 hash and a 30 minute expiration',
+      'Create the hash lock: a secret preimage, its hash (SHA-256 by default; the block also offers sha256d and hash160) and a 30 minute expiration',
       'Send with the hash lock: the sender is debited now, the receiver is NOT credited yet',
       'Wait for the locked deposit: a release targets the deposit that the send produced, not the send itself',
       'Release the deposit by revealing the preimage. The receiver signs and pays the small fee, and the preimage becomes public',
       'Wait for the receiver balance to increase',
-      'Refund on expiry is the protocol design but is NOT currently functional on the network: a lock that is never released strands the funds, so use small amounts and always release',
+      'Refund on expiry is the protocol design but is NOT currently functional on the network: a lock that is never released strands the funds, so use small amounts and always release (core issue https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578)',
     ],
     prerequisites: [
       'None - fully self-contained!',

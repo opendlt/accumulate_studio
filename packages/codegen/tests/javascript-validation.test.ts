@@ -25,6 +25,7 @@ import {
   expectWrongPreimageRejected,
   harnessEnv,
   wrongPreimageFlow,
+  hash160Flow,
   type HarnessReport,
 } from './htlc-report';
 
@@ -257,6 +258,27 @@ describe('JavaScript Generated Code Validation', () => {
             output = (error.stdout || '') + (error.stderr || '');
           }
           expectWrongPreimageRejected(extractJson(output) as unknown as HarnessReport | null);
+        }, 90000);
+
+        it('runs the hash-lock flow with a HASH160 lock end to end', () => {
+          if (!harnessReady) {
+            console.warn('JavaScript harness not ready, skipping hash160 check');
+            return;
+          }
+          const code = generateCodeFromManifest(hash160Flow(flow), 'javascript', 'sdk', manifest);
+          const file = join(JS_HARNESS_BIN_DIR, `${name.replace(/-/g, '_')}_hash160.mjs`);
+          writeFileSync(file, code);
+          let output: string;
+          try {
+            output = execSync(
+              `python "${JS_HARNESS_PY}" "${file}" "${JS_HARNESS_DIR}"`,
+              { encoding: 'utf-8', timeout: 60000, env: harnessEnv(name) },
+            );
+          } catch (err) {
+            const error = err as { stderr?: string; stdout?: string };
+            output = (error.stdout || '') + (error.stderr || '');
+          }
+          expectHashLockRun(extractJson(output) as unknown as HarnessReport | null, 'hash160');
         }, 90000);
       }
 

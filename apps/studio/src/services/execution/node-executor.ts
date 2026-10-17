@@ -31,6 +31,7 @@ import type {
 import { AccumulateAPI } from '../network/api';
 import { abortableDelay } from '../network/fetch-with-timeout';
 import type { ExecutionContext } from './index';
+import { ripemd160 } from './ripemd160';
 
 // =============================================================================
 // Types
@@ -95,7 +96,7 @@ export function parseCreditAmount(amount: string | number): number {
 // from crypto.subtle (https or localhost only), hex by hand. The node limits are 10 min..30 days;
 // the block enforces 15 min..30 days so clock skew between this browser and the node cannot flip a
 // lock into a rejected one.
-export type HashLockAlgorithm = 'sha256' | 'sha256d';
+export type HashLockAlgorithm = 'sha256' | 'sha256d' | 'hash160';
 
 export interface HashLock {
   preimage: string;          // hex, the secret
@@ -139,8 +140,8 @@ export async function createHashLock(
   nowMs: number = Date.now()
 ): Promise<HashLock> {
   const algorithm = String(opts.hashAlgorithm || 'sha256').toLowerCase();
-  if (algorithm !== 'sha256' && algorithm !== 'sha256d') {
-    throw new Error(`GenerateHashLock: unsupported hash algorithm "${opts.hashAlgorithm}" (use sha256 or sha256d)`);
+  if (algorithm !== 'sha256' && algorithm !== 'sha256d' && algorithm !== 'hash160') {
+    throw new Error(`GenerateHashLock: unsupported hash algorithm "${opts.hashAlgorithm}" (use sha256, sha256d or hash160)`);
   }
   // '' / null / undefined mean "the default", exactly as the code generator reads them
   const rawMinutes = opts.expirationMinutes;
@@ -160,6 +161,8 @@ export async function createHashLock(
     : globalThis.crypto.getRandomValues(new Uint8Array(32));
   let digest = new Uint8Array(await subtle.digest('SHA-256', preimage));
   if (algorithm === 'sha256d') digest = new Uint8Array(await subtle.digest('SHA-256', digest));
+  // HASH160 (Bitcoin's OP_HASH160) = RIPEMD160(SHA256(x)): 20 bytes, and crypto.subtle has no RIPEMD
+  if (algorithm === 'hash160') digest = ripemd160(digest);
 
   const expiration = Math.floor(nowMs / 1000) + minutes * 60;
   return {

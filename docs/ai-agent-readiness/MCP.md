@@ -11,7 +11,7 @@ The Accumulate MCP server (`accumulate-studio-mcp`) gives an AI agent all three 
 - **Sign/submit:** `tx.submit`, `tx.wait` (only in `SIGN_AND_SUBMIT`)
 - **Network:** `net.list`, `net.select`, `net.status`
 - **Verify:** `proof.get_receipt`, `proof.verify_receipt`, `trace.synthetics`
-- **Hash locks (HTLC):** `tx.build` takes an optional `hashLock` header `{hashAlgorithm: "sha256" | "sha256d", hash, expiration}` on `sendTokens` and builds `releaseLockedOperation` (`{lockedTxID, preimage}`) to release it. The lock is validated like the node (32-byte hash, expiration 10 minutes to 30 days ahead) and `tx.submit` re-checks it. Refund on expiry is the protocol design but is not currently functional on the network, so an unreleased lock strands the funds.
+- **Hash locks (HTLC):** `tx.build` takes an optional `hashLock` header `{hashAlgorithm: "sha256" | "sha256d" | "hash160", hash, expiration}` on `sendTokens` and builds `releaseLockedOperation` (`{lockedTxID, preimage}`) to release it. The lock is validated like the node (32-byte hash, 20 bytes for hash160, expiration 10 minutes to 30 days ahead) and `tx.submit` re-checks it. Refund on expiry is the protocol design but is not currently functional on the network, so an unreleased lock strands the funds.
 
 ### Resources (readable context — available in every permission mode)
 
