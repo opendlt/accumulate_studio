@@ -424,7 +424,9 @@ function getLanguageDisplayName(language: SDKLanguage): string {
 function toKebabCase(str: string): string {
   return str
     .replace(/[^a-zA-Z0-9]/g, '-')
-    .replace(/([A-Z])/g, '-$1')
+    // A run of capitals is one word (HTLC -> htlc), not one word per letter
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
     .toLowerCase()
     .replace(/^-/, '')
     .replace(/-+/g, '-');
@@ -436,7 +438,9 @@ function toKebabCase(str: string): string {
 function toSnakeCase(str: string): string {
   return str
     .replace(/[^a-zA-Z0-9]/g, '_')
-    .replace(/([A-Z])/g, '_$1')
+    // A run of capitals is one word (HTLC -> htlc), not one word per letter
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
     .toLowerCase()
     .replace(/^_/, '')
     .replace(/_+/g, '_');

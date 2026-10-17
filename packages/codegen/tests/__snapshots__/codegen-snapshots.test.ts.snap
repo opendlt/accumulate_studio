@@ -34,7 +34,7 @@ class Program
         try
         {
             // Flow variables (customize these for your use case)
-            var adi_name = $"adi-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";  // 
+            var adi_name = $"adi-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}-{Random.Shared.Next(0x1000000):x6}";  // 
             var key_book_name = "";  // 
 
 
@@ -484,7 +484,7 @@ class Program
         try
         {
             // Flow variables (customize these for your use case)
-            var adi_name = $"adi-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";  // 
+            var adi_name = $"adi-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}-{Random.Shared.Next(0x1000000):x6}";  // 
             var lock_amount = "100000000";  // 
 
 
@@ -1369,7 +1369,7 @@ class Program
         try
         {
             // Flow variables (customize these for your use case)
-            var adi_name = $"adi-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";  // 
+            var adi_name = $"adi-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}-{Random.Shared.Next(0x1000000):x6}";  // 
             var token_account_name = "";  // 
 
 
@@ -1518,6 +1518,7 @@ exports[`Codegen Snapshots > dart SDK > adi-creation generates expected dart cod
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:opendlt_accumulate/opendlt_accumulate.dart';
@@ -1536,7 +1537,7 @@ Future<void> main() async {
   final txIds = <MapEntry<String, String>>[];
   try {
     // Flow variables (customize these for your use case)
-    final adi_name = 'adi-\${DateTime.now().millisecondsSinceEpoch ~/ 1000}';  // 
+    final adi_name = 'adi-\${DateTime.now().millisecondsSinceEpoch ~/ 1000}-\${Random().nextInt(0x1000000).toRadixString(16).padLeft(6, '0')}';  // 
     final key_book_name = '';  // 
 
 
@@ -2067,7 +2068,7 @@ Future<void> main() async {
   final txIds = <MapEntry<String, String>>[];
   try {
     // Flow variables (customize these for your use case)
-    final adi_name = 'adi-\${DateTime.now().millisecondsSinceEpoch ~/ 1000}';  // 
+    final adi_name = 'adi-\${DateTime.now().millisecondsSinceEpoch ~/ 1000}-\${Random().nextInt(0x1000000).toRadixString(16).padLeft(6, '0')}';  // 
     final lock_amount = '100000000';  // 
 
 
@@ -3028,6 +3029,7 @@ exports[`Codegen Snapshots > dart SDK > zero-to-hero generates expected dart cod
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:opendlt_accumulate/opendlt_accumulate.dart';
@@ -3046,7 +3048,7 @@ Future<void> main() async {
   final txIds = <MapEntry<String, String>>[];
   try {
     // Flow variables (customize these for your use case)
-    final adi_name = 'adi-\${DateTime.now().millisecondsSinceEpoch ~/ 1000}';  // 
+    final adi_name = 'adi-\${DateTime.now().millisecondsSinceEpoch ~/ 1000}-\${Random().nextInt(0x1000000).toRadixString(16).padLeft(6, '0')}';  // 
     final token_account_name = '';  // 
 
 
@@ -3248,7 +3250,7 @@ async function main() {
     const client = Accumulate.custom(V2_ENDPOINT, V3_ENDPOINT);
     const txIds = [];
     try {
-        const adi_name = \`adi-\${Math.floor(Date.now() / 1000)}\`;  // 
+        const adi_name = \`adi-\${Math.floor(Date.now() / 1000)}-\${Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, "0")}\`;  // 
         const key_book_name = "";  // 
 
 
@@ -3653,7 +3655,7 @@ async function main() {
     const client = Accumulate.custom(V2_ENDPOINT, V3_ENDPOINT);
     const txIds = [];
     try {
-        const adi_name = \`adi-\${Math.floor(Date.now() / 1000)}\`;  // 
+        const adi_name = \`adi-\${Math.floor(Date.now() / 1000)}-\${Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, "0")}\`;  // 
         const lock_amount = "100000000";  // 
 
 
@@ -4378,7 +4380,7 @@ async function main() {
     const client = Accumulate.custom(V2_ENDPOINT, V3_ENDPOINT);
     const txIds = [];
     try {
-        const adi_name = \`adi-\${Math.floor(Date.now() / 1000)}\`;  // 
+        const adi_name = \`adi-\${Math.floor(Date.now() / 1000)}-\${Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, "0")}\`;  // 
         const token_account_name = "";  // 
 
 
@@ -4506,6 +4508,7 @@ Network: devnet
 """
 
 import time
+import os
 
 from accumulate_client import Accumulate, NetworkStatusOptions
 from accumulate_client.convenience import TxBody, SmartSigner
@@ -4588,7 +4591,7 @@ def main():
     tx_ids = []
 
     # Flow variables (customize these for your use case)
-    adi_name = f"adi-{int(time.time())}"  # 
+    adi_name = f"adi-{int(time.time())}-{os.urandom(3).hex()}"  # 
     key_book_name = ""  # 
 
     try:
@@ -5037,7 +5040,7 @@ def main():
     tx_ids = []
 
     # Flow variables (customize these for your use case)
-    adi_name = f"adi-{int(time.time())}"  # 
+    adi_name = f"adi-{int(time.time())}-{os.urandom(3).hex()}"  # 
     lock_amount = "100000000"  # 
 
     try:
@@ -5878,6 +5881,7 @@ Network: devnet
 """
 
 import time
+import os
 
 from accumulate_client import Accumulate, NetworkStatusOptions
 from accumulate_client.convenience import TxBody, SmartSigner
@@ -5960,7 +5964,7 @@ def main():
     tx_ids = []
 
     # Flow variables (customize these for your use case)
-    adi_name = f"adi-{int(time.time())}"  # 
+    adi_name = f"adi-{int(time.time())}-{os.urandom(3).hex()}"  # 
     token_account_name = ""  # 
 
     try:
@@ -6127,7 +6131,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut tx_ids: Vec<(&str, String)> = Vec::new();
 
     // Flow variables (customize these for your use case)
-    let adi_name = format!("adi-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs());  // 
+    let adi_name = format!("adi-{}-{:06x}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(), std::hash::BuildHasher::hash_one(&std::collections::hash_map::RandomState::new(), 0u8) & 0xffffff);  // 
     let key_book_name = "".to_string();  // 
 
 
@@ -6635,7 +6639,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut tx_ids: Vec<(&str, String)> = Vec::new();
 
     // Flow variables (customize these for your use case)
-    let adi_name = format!("adi-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs());  // 
+    let adi_name = format!("adi-{}-{:06x}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(), std::hash::BuildHasher::hash_one(&std::collections::hash_map::RandomState::new(), 0u8) & 0xffffff);  // 
     let lock_amount = "100000000".to_string();  // 
 
 
@@ -7563,7 +7567,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut tx_ids: Vec<(&str, String)> = Vec::new();
 
     // Flow variables (customize these for your use case)
-    let adi_name = format!("adi-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs());  // 
+    let adi_name = format!("adi-{}-{:06x}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(), std::hash::BuildHasher::hash_one(&std::collections::hash_map::RandomState::new(), 0u8) & 0xffffff);  // 
     let token_account_name = "".to_string();  // 
 
 

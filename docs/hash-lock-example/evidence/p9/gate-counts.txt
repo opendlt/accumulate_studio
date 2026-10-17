@@ -1,0 +1,21 @@
+P9 gate counts, first run (tree = the commit that adds D-31 random ADI suffix, D-32 acronym slugs, D-33 Token Transfer fund_sender)
+venv first on PATH, REQUIRE_TOOLCHAINS=1. Script helper wrote gate-summary.txt; raw logs were in C:\tmp\p9-logs (not committed).
+
+typecheck                 exit 0
+npm test                  exit 0
+  apps/mcp-server         39 passed
+  apps/studio             732 passed  (P8: 730; +2 SendTokens amount guard)
+  packages/agent-pack     51 passed
+  packages/codegen        603 passed, 135 skipped (live-gated)  (P8: 574; +29 = 20 adi-name-default, 6 slug scaffolds, 3 case helpers)
+  packages/verification   17 passed
+  total                   1,442 passed, 135 skipped   (P8: 1,411 / 135; P6/P7: 1,399 / 135)
+validate:manifests        exit 0, 28/28 blocks in each of the 5 manifests
+validate:canonical        exit 0
+harness:test              exit 0, 74/74
+verify:codegen            exit 0, 45/45 clean
+build:mcp + test:mcp      exit 0, 39/39
+lint                      exit 0, 0 errors / 95 warnings (= ceiling)
+proxy pytest              65 passed
+npm run build (ALL)       exit 0
+gen:agent + gen:mcp       no drift (sha256 of every generated file identical before and after a re-run)
+snapshots                 15 CHANGED ON PURPOSE (D-31/D-32 review: 3 templates x 5 languages, ADI_NAME default line + the import it needs), 0 other

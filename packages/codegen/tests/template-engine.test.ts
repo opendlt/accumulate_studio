@@ -26,11 +26,30 @@ describe('Case conversion utilities', () => {
     it('handles spaces', () => {
       expect(toSnakeCase('Hello World')).toBe('hello_world');
     });
+
+    it('keeps a run of capitals together', () => {
+      expect(toSnakeCase('Hash Lock (HTLC) Payment')).toBe('hash_lock_htlc_payment');
+      expect(toSnakeCase('Create ADI')).toBe('create_adi');
+      expect(toSnakeCase('HTLCPayment')).toBe('htlc_payment');
+      expect(toSnakeCase('parseHTTPResponse')).toBe('parse_http_response');
+      expect(toSnakeCase('ADI')).toBe('adi');
+    });
+
+    it('still splits ordinary words and digits', () => {
+      expect(toSnakeCase('Zero to Hero')).toBe('zero_to_hero');
+      expect(toSnakeCase('Step2Go')).toBe('step2_go');
+      expect(toSnakeCase('Multi-Signature Setup')).toBe('multi_signature_setup');
+    });
   });
 
   describe('toKebabCase', () => {
     it('converts PascalCase', () => {
       expect(toKebabCase('CreateIdentity')).toBe('create-identity');
+    });
+
+    it('keeps a run of capitals together', () => {
+      expect(toKebabCase('Hash Lock (HTLC) Payment')).toBe('hash-lock-htlc-payment');
+      expect(toKebabCase('HTLCPayment')).toBe('htlc-payment');
     });
   });
 

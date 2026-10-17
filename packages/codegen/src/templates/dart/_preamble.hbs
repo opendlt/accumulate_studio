@@ -7,6 +7,10 @@ import 'dart:convert';
 import 'dart:io';
 {{#if hasHashLock}}
 import 'dart:math';
+{{else}}
+{{#if usesRandomName}}
+import 'dart:math';
+{{/if}}
 {{/if}}
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';

@@ -395,7 +395,10 @@ const tokenTransferFlow: Flow = {
         // stays pending forever.
         signerUrl: '{{generate_keys.liteIdentity}}',
         to: '{{create_sender_account.tokenAccountUrl}}',
-        amount: '500000000',
+        // A NUMBER is base units (5 ACME): the generated code emits it verbatim and the Studio
+        // executor passes a number through unscaled. The string '500000000' would be read as
+        // 500,000,000 ACME in Studio (strings are whole ACME there) and the node would refuse it.
+        amount: 500000000,
       },
       position: pos(10),
     },

@@ -58,6 +58,8 @@ export interface TemplateContext {
   hasData: boolean;
   /** Flow uses a hash lock (HTLC): GenerateHashLock, WaitForLockedDeposit, ReleaseLockedOperation or a locked SendTokens */
   hasHashLock: boolean;
+  /** The default ADI name (ADI_NAME or a CreateIdentity with no url) draws a random suffix, so the preamble imports the random source */
+  usesRandomName: boolean;
 
   // Manifest data
   manifest: SDKMap | null;
@@ -135,6 +137,8 @@ export function generateCodeFromManifest(
   let hasQuery = false;
   let hasData = false;
   let hasHashLock = false;
+  // Two programs started in the same second would pick the same `adi-<seconds>` name (D-26)
+  let usesRandomName = (flow.variables || []).some((v) => v.name === 'ADI_NAME');
 
   for (const node of sortedNodes) {
     if (node.type === 'GenerateKeys') hasKeyGen = true;
@@ -144,6 +148,7 @@ export function generateCodeFromManifest(
     if (node.type === 'WriteData' || node.type === 'WriteDataTo') hasData = true;
     if (isTransactionType(node.type)) hasTransactions = true;
     if (isHashLockNode(node)) hasHashLock = true;
+    if (node.type === 'CreateIdentity' && !(node.config as Record<string, unknown> | undefined)?.url) usesRandomName = true;
   }
 
   // Build the base context (shared across all templates)
@@ -163,12 +168,13 @@ export function generateCodeFromManifest(
     hasQuery,
     hasData,
     hasHashLock,
+    usesRandomName,
     manifest,
   };
 
   // Build flow variable definitions with sensible defaults
   const FLOW_VAR_DEFAULTS_PYTHON: Record<string, string> = {
-    ADI_NAME: 'f"adi-{int(time.time())}"',
+    ADI_NAME: 'f"adi-{int(time.time())}-{os.urandom(3).hex()}"',
     TOKEN_SYMBOL: '"TKN"',
     DATA_CONTENT: '"48656c6c6f20576f726c64"',  // hex("Hello World")
     TRANSFER_AMOUNT: '"100000000"',
@@ -176,7 +182,7 @@ export function generateCodeFromManifest(
     INITIAL_ISSUE_AMOUNT: '"100000000000"',
   };
   const FLOW_VAR_DEFAULTS_DART: Record<string, string> = {
-    ADI_NAME: "'adi-${DateTime.now().millisecondsSinceEpoch ~/ 1000}'",
+    ADI_NAME: "'adi-${DateTime.now().millisecondsSinceEpoch ~/ 1000}-${Random().nextInt(0x1000000).toRadixString(16).padLeft(6, '0')}'",
     TOKEN_SYMBOL: "'TKN'",
     DATA_CONTENT: "'48656c6c6f20576f726c64'",  // hex("Hello World")
     TRANSFER_AMOUNT: "'100000000'",
@@ -184,7 +190,7 @@ export function generateCodeFromManifest(
     INITIAL_ISSUE_AMOUNT: "'100000000000'",
   };
   const FLOW_VAR_DEFAULTS_RUST: Record<string, string> = {
-    ADI_NAME: 'format!("adi-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs())',
+    ADI_NAME: 'format!("adi-{}-{:06x}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(), std::hash::BuildHasher::hash_one(&std::collections::hash_map::RandomState::new(), 0u8) & 0xffffff)',
     TOKEN_SYMBOL: '"TKN".to_string()',
     DATA_CONTENT: '"48656c6c6f20576f726c64".to_string()',  // hex("Hello World")
     TRANSFER_AMOUNT: '"100000000".to_string()',
@@ -192,7 +198,7 @@ export function generateCodeFromManifest(
     INITIAL_ISSUE_AMOUNT: '"100000000000".to_string()',
   };
   const FLOW_VAR_DEFAULTS_JAVASCRIPT: Record<string, string> = {
-    ADI_NAME: '`adi-${Math.floor(Date.now() / 1000)}`',
+    ADI_NAME: '`adi-${Math.floor(Date.now() / 1000)}-${Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, "0")}`',
     TOKEN_SYMBOL: '"TKN"',
     DATA_CONTENT: '"48656c6c6f20576f726c64"',  // hex("Hello World")
     TRANSFER_AMOUNT: '"100000000"',
@@ -200,7 +206,7 @@ export function generateCodeFromManifest(
     INITIAL_ISSUE_AMOUNT: '"100000000000"',
   };
   const FLOW_VAR_DEFAULTS_CSHARP: Record<string, string> = {
-    ADI_NAME: '$"adi-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"',
+    ADI_NAME: '$"adi-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}-{Random.Shared.Next(0x1000000):x6}"',
     TOKEN_SYMBOL: '"TKN"',
     DATA_CONTENT: '"48656c6c6f20576f726c64"',  // hex("Hello World")
     TRANSFER_AMOUNT: '"100000000"',
@@ -956,12 +962,12 @@ function computeNodeVars(
         rawAdiUrl = String(config.url);
         adiUrlRef = isVarRef(rawAdiUrl);
       } else {
-        // Generate dynamic timestamp-based ADI URL to avoid name collisions
-        if (isJs) rawAdiUrl = '`acc://adi-${Math.floor(Date.now() / 1000)}.acme`';
-        else if (isRust) rawAdiUrl = 'format!("acc://adi-{}.acme", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs())';
-        else if (isDart) rawAdiUrl = "'acc://adi-${DateTime.now().millisecondsSinceEpoch ~/ 1000}.acme'";
-        else if (isCSharp) rawAdiUrl = '$"acc://adi-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.acme"';
-        else rawAdiUrl = 'f"acc://adi-{int(time.time())}.acme"'; // Python
+        // Generate a dynamic ADI URL (unix seconds plus a random suffix) to avoid name collisions
+        if (isJs) rawAdiUrl = '`acc://adi-${Math.floor(Date.now() / 1000)}-${Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, "0")}.acme`';
+        else if (isRust) rawAdiUrl = 'format!("acc://adi-{}-{:06x}.acme", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(), std::hash::BuildHasher::hash_one(&std::collections::hash_map::RandomState::new(), 0u8) & 0xffffff)';
+        else if (isDart) rawAdiUrl = "'acc://adi-${DateTime.now().millisecondsSinceEpoch ~/ 1000}-${Random().nextInt(0x1000000).toRadixString(16).padLeft(6, '0')}.acme'";
+        else if (isCSharp) rawAdiUrl = '$"acc://adi-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}-{Random.Shared.Next(0x1000000):x6}.acme"';
+        else rawAdiUrl = 'f"acc://adi-{int(time.time())}-{os.urandom(3).hex()}.acme"'; // Python
         adiUrlRef = true;
       }
       vars.adiUrl = rawAdiUrl;

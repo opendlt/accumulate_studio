@@ -43,7 +43,7 @@ Open the template gallery, pick **Hash Lock (HTLC) Payment**, Execute on Kermit,
 | Rust | crates.io `accumulate-sdk` 2.5.0 | `cargo run` |
 | C# | NuGet `Acme.Net.Sdk` 2.5.0 | `dotnet run` |
 
-A program takes 1–4 minutes. It exits non-zero on any failure of the locked send, the deposit wait or the release, and prints the node's reason (a wrong preimage prints `preimage does not match hash`). Generated programs name the ADI `adi-<unix seconds>` by default, so two started in the same second collide: set a unique `ADI_NAME`.
+A program takes 1–4 minutes. It exits non-zero on any failure of the locked send, the deposit wait or the release, and prints the node's reason (a wrong preimage prints `preimage does not match hash`). Generated programs name the ADI `adi-<unix seconds>-<6 random hex>` by default, so programs started in the same second do not collide (decision D-31). Set `ADI_NAME` to choose your own.
 
 **From an agent** (MCP, `--permission-mode SIGN_AND_SUBMIT` to submit): `tx.build` takes an optional `hashLock` header `{hashAlgorithm, hash, expiration}` on `sendTokens`, validated like the node (`sha256`/`sha256d`, a 32-byte hash, an expiration 10 minutes to 30 days ahead; 15+ recommended), and builds `releaseLockedOperation` with `{lockedTxID, preimage}`. `tx.submit` re-checks the window. The `hash-lock` prompt walks through the flow.
 
