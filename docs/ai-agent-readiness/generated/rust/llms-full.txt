@@ -164,9 +164,10 @@ Symbols:
   - `HashLockOptions::validate_for_submit` — `(&self, now_unix: i64) -> Result<()>`
   - `HashAlgorithm` — `enum { Sha256, Sha256D, Hash160 }`
 Notes:
-  - Nothing is sent to the network. The preimage (1 to 256 bytes) is the secret: keep it until the release transaction reveals it on-chain. sha256 and sha256d are supported here; hash160 is SDK-level only.
+  - Nothing is sent to the network. The preimage (1 to 256 bytes) is the secret: keep it until the release transaction reveals it on-chain. sha256, sha256d and hash160 are supported here.
   - The node requires an expiration 10 minutes to 30 days ahead; 15 minutes or more leaves room for clock skew. The expiration must be whole UTC seconds.
   - The expiration is fixed when the lock is made, and the node checks the 10-minute floor again when the send is submitted, so create the lock right before the locked send: every wait in between shortens the margin.
+  - hash160 is RIPEMD160(SHA256(preimage)), 20 bytes, computed with the ripemd crate (add ripemd = "0.1" to Cargo.toml) next to sha2; pass HashAlgorithm::Hash160.
 
 ### 2. Send with the lock — `send_tokens`
 Symbols:
@@ -195,13 +196,13 @@ Notes:
   - A release that fails at execute is reported as a success or a timeout by the SDK wait; poll the transaction and read status, statusNo and error.message. Do not use wait_for_tx (it cannot see a v3 string status).
 
 ### Limits and rules
-- Algorithms: `sha256` (SHA-256 of the preimage) and `sha256d` (SHA-256 of that hash). Both hashes are 32 bytes. The protocol also defines HASH160 (20 bytes); it is SDK-level only and Studio-generated code does not use it.
+- Algorithms: `sha256` (SHA-256 of the preimage, 32 bytes), `sha256d` (SHA-256 of that hash, 32 bytes) and `hash160` (RIPEMD-160 of the SHA-256, 20 bytes, as in Bitcoin). The hash length must match the algorithm.
 - Expiration: absolute UTC, whole seconds, 10 minutes to 30 days ahead of the node clock, checked at submit and again at execute. Use 15 minutes or more for clock skew.
 - Preimage: 1 to 256 bytes, hashed raw with no prefix. The release publishes it on-chain.
 - The release is signed by the RECIPIENT account holding the locked deposit, and that signer pays its fee (about 0.01 credits).
 - Needs a node at 1.4.6.4 or later (1.4.6.3 used a different header field). `hashLock` is part of the transaction hash; headers without it are byte-identical to before.
-- **Refund status:** Refund on expiry is the protocol design but is NOT currently functional on the network (see `docs/hash-lock-example/CORE-ISSUE-refund.md` in accumulate-studio): an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Do not promise or rely on a refund; use small amounts and always release.
-- Not exposed by the `accumulate` CLI: library API only.
+- **Refund status:** Refund on expiry is the protocol design but is NOT currently functional on the network (core issue https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578): an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Do not promise or rely on a refund; use small amounts and always release.
+- The `accumulate` CLI has no HTLC commands: use the library API.
 
 ## Operations (28)
 
@@ -258,7 +259,7 @@ Symbols:
   - `HashLockOptions::validate_for_submit` — `(&self, now_unix: i64) -> Result<()>`
   - `HashAlgorithm` — `enum { Sha256, Sha256D, Hash160 }`
 Inputs:
-  - `hashAlgorithm` (str, optional) — sha256 (default) or sha256d
+  - `hashAlgorithm` (str, optional) — sha256 (default), sha256d or hash160
   - `expirationMinutes` (int, optional) — Minutes until the lock expires, 15 to 43200 (default 30)
   - `preimage` (str, optional) — Optional hex preimage, 1 to 256 bytes; 32 random bytes when empty
 Outputs:

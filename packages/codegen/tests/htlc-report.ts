@@ -18,6 +18,8 @@ export const WRONG_PREIMAGE = 'ab'.repeat(32);
 
 export interface HtlcSummary {
   locked_sends: number;
+  /** The hash algorithm of each locked send, as the node would read it */
+  lock_algorithms?: Array<string | number>;
   locked_deposits_found: number;
   releases: Array<{ ok: boolean; error: string | null }>;
   released_deposits: number;
@@ -42,7 +44,7 @@ export function harnessEnv(templateName: string): NodeJS.ProcessEnv {
 }
 
 /** The happy path: the whole flow ran and the node-side mock saw a correct lock and release. */
-export function expectHashLockRun(report: HarnessReport | null): void {
+export function expectHashLockRun(report: HarnessReport | null, algorithm?: string): void {
   expect(report, 'the harness produced no JSON report').not.toBeNull();
   const r = report!;
   expect(r.error, `harness error: ${r.error}`).toBeNull();
@@ -51,6 +53,7 @@ export function expectHashLockRun(report: HarnessReport | null): void {
   const h = r.htlc!;
   expect(h.violations, `protocol rules broken: ${h.violations.join('; ')}`).toEqual([]);
   expect(h.locked_sends).toBe(1);
+  if (algorithm) expect(h.lock_algorithms?.map((a) => String(a).toLowerCase()), 'the lock used another algorithm').toEqual([algorithm]);
   expect(h.locked_deposits_found, 'the locked deposit was never found').toBe(1);
   expect(h.releases).toEqual([{ ok: true, error: null }]);
   expect(h.released_deposits).toBe(1);
@@ -67,6 +70,15 @@ export function expectWrongPreimageRejected(report: HarnessReport | null): void 
   expect(r.htlc, 'the program never reached the release').toBeDefined();
   expect(r.htlc!.releases).toEqual([{ ok: false, error: 'preimage does not match hash' }]);
   expect(r.htlc!.released_deposits).toBe(0);
+}
+
+/** The same flow with a HASH160 lock (RIPEMD160(SHA256(preimage)), a 20-byte hash). */
+export function hash160Flow(flow: Flow): Flow {
+  const copy = JSON.parse(JSON.stringify(flow)) as Flow;
+  const lock = copy.nodes.find((n) => n.id === 'create_hash_lock');
+  if (!lock) throw new Error('hash-lock flow has no create_hash_lock node');
+  (lock.config as Record<string, unknown>).hashAlgorithm = 'hash160';
+  return copy;
 }
 
 /** The same flow, but the release reveals a wrong (well-formed) literal preimage. */

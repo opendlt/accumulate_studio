@@ -8,7 +8,9 @@
 {{else}}
         const {{varName}}Preimage = randomBytes(32).toString("hex");
 {{/if}}
-{{#if hashIsDouble}}
+{{#if hashIsHash160}}
+        const {{varName}}Hash = requireHex("hash", createHash("ripemd160").update(createHash("sha256").update(Buffer.from({{varName}}Preimage, "hex")).digest()).digest("hex"), 20, 20);
+{{else if hashIsDouble}}
         const {{varName}}Hash = requireHex("hash", createHash("sha256").update(createHash("sha256").update(Buffer.from({{varName}}Preimage, "hex")).digest()).digest("hex"), 32, 32);
 {{else}}
         const {{varName}}Hash = requireHex("hash", createHash("sha256").update(Buffer.from({{varName}}Preimage, "hex")).digest("hex"), 32, 32);
@@ -17,7 +19,7 @@
         // Whole seconds in UTC: the node needs 10 minutes to 30 days of headroom and rejects fractions
         const {{varName}}Expiration = Math.floor(Date.now() / 1000) + {{expirationMinutes}} * 60;
         const {{varName}}ExpirationIso = new Date({{varName}}Expiration * 1000).toISOString().replace(".000Z", "Z");
-        const {{varName}}Lock = TxBody.hashLock(core.HashAlgorithm.{{#if hashIsDouble}}SHA256D{{else}}SHA256{{/if}}, {{varName}}Hash, new Date({{varName}}Expiration * 1000));
+        const {{varName}}Lock = TxBody.hashLock(core.HashAlgorithm.{{#if hashIsHash160}}HASH160{{else if hashIsDouble}}SHA256D{{else}}SHA256{{/if}}, {{varName}}Hash, new Date({{varName}}Expiration * 1000));
         helpers.validateHashLockForSubmit({{varName}}Lock);
         console.log("Hash lock ready:");
         console.log(`  algorithm: ${ {{~varName}}HashAlgorithm}`);

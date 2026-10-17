@@ -158,7 +158,7 @@ describe('MCP protocol — built bundle', () => {
     const lock = build.inputSchema.properties.hashLock;
     assert.ok(lock, 'hashLock is declared');
     assert.deepEqual(lock.required, ['hashAlgorithm', 'hash', 'expiration']);
-    assert.deepEqual(lock.properties.hashAlgorithm.enum, ['sha256', 'sha256d']);
+    assert.deepEqual(lock.properties.hashAlgorithm.enum, ['sha256', 'sha256d', 'hash160']);
     assert.ok(!build.inputSchema.required.includes('hashLock'), 'hashLock stays optional');
   });
 
@@ -180,6 +180,14 @@ describe('MCP protocol — built bundle', () => {
     assert.match(warnings, /credited only when a releaseLockedOperation/);
     assert.match(warnings, /not currently functional/i);
     assert.doesNotMatch(warnings, /refunded to the sender/i);
+  });
+
+  test('a locked sendTokens accepts hash160 with its 20-byte hash', async () => {
+    const hash = 'AB'.repeat(20);
+    const out = await buildSend(client, { hashAlgorithm: 'HASH160', hash, expiration: rfc3339(inMinutes(90)) });
+    assert.equal(out.ok, true, JSON.stringify(out.errors));
+    assert.equal(out.data.transaction.header.hashLock.hashAlgorithm, 'hash160');
+    assert.equal(out.data.transaction.header.hashLock.hash, hash.toLowerCase());
   });
 
   test('a locked sendTokens accepts sha256d and an RFC 3339 expiration', async () => {
@@ -212,7 +220,9 @@ describe('MCP protocol — built bundle', () => {
     const cases = [
       ['not an object', 'abc', /must be an object/],
       ['an array', [good], /must be an object/],
-      ['hash160', { ...good, hashAlgorithm: 'hash160' }, /hash160 is not supported/],
+      ['hash160 with a 32-byte hash', { ...good, hashAlgorithm: 'hash160' }, /must be 20 bytes for HASH160, got 32/],
+      ['hash160 with a 19-byte hash', { ...good, hashAlgorithm: 'hash160', hash: 'ab'.repeat(19) }, /must be 20 bytes for HASH160, got 19/],
+      ['a 20-byte hash for sha256', { ...good, hash: 'ab'.repeat(20) }, /must be 32 bytes for sha256, got 20/],
       ['an unknown algorithm', { ...good, hashAlgorithm: 'md5' }, /unsupported hashlock algorithm/],
       ['no algorithm', { hash: good.hash, expiration: good.expiration }, /unsupported hashlock algorithm/],
       ['no hash', { ...good, hash: undefined }, /hash cannot be empty/],

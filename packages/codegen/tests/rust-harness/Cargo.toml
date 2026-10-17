@@ -16,6 +16,7 @@ url = "2"
 # The hash-lock template draws its preimage from the OS RNG (the scaffold adds the same
 # dependency to projects that use a hash lock).
 getrandom = "0.2"
+ripemd = "0.1"
 
 [build-dependencies]
 # Embeds an asInvoker manifest so Windows' Installer Detection heuristic does not

@@ -60,6 +60,8 @@ export interface TemplateContext {
   hasHashLock: boolean;
   /** The default ADI name (ADI_NAME or a CreateIdentity with no url) draws a random suffix, so the preamble imports the random source */
   usesRandomName: boolean;
+  /** A GenerateHashLock uses HASH160, so the preamble brings in a RIPEMD-160 implementation */
+  usesHash160: boolean;
 
   // Manifest data
   manifest: SDKMap | null;
@@ -85,6 +87,11 @@ function isTransactionType(type: string): boolean {
 }
 
 /** True for the three HTLC blocks and for a SendTokens that carries a hash lock. */
+/** A GenerateHashLock that uses HASH160 (RIPEMD-160 of SHA-256): its program needs a RIPEMD-160 implementation. */
+export function isHash160Node(node: FlowNode): boolean {
+  return node.type === 'GenerateHashLock' && String((node.config as Record<string, unknown> | undefined)?.hashAlgorithm ?? '').toLowerCase() === 'hash160';
+}
+
 export function isHashLockNode(node: FlowNode): boolean {
   if (node.type === 'GenerateHashLock' || node.type === 'WaitForLockedDeposit' || node.type === 'ReleaseLockedOperation') return true;
   return node.type === 'SendTokens' && Boolean((node.config as Record<string, unknown> | undefined)?.hashLockFrom);
@@ -139,6 +146,7 @@ export function generateCodeFromManifest(
   let hasHashLock = false;
   // Two programs started in the same second would pick the same `adi-<seconds>` name (D-26)
   let usesRandomName = (flow.variables || []).some((v) => v.name === 'ADI_NAME');
+  let usesHash160 = false;
 
   for (const node of sortedNodes) {
     if (node.type === 'GenerateKeys') hasKeyGen = true;
@@ -148,6 +156,7 @@ export function generateCodeFromManifest(
     if (node.type === 'WriteData' || node.type === 'WriteDataTo') hasData = true;
     if (isTransactionType(node.type)) hasTransactions = true;
     if (isHashLockNode(node)) hasHashLock = true;
+    if (isHash160Node(node)) usesHash160 = true;
     if (node.type === 'CreateIdentity' && !(node.config as Record<string, unknown> | undefined)?.url) usesRandomName = true;
   }
 
@@ -169,6 +178,7 @@ export function generateCodeFromManifest(
     hasData,
     hasHashLock,
     usesRandomName,
+    usesHash160,
     manifest,
   };
 
@@ -1125,11 +1135,12 @@ function computeNodeVars(
     case 'GenerateHashLock': {
       // Never run the algorithm through isVarRef: 'sha256' matches the identifier pattern.
       const algo = String(config.hashAlgorithm || 'sha256').toLowerCase();
-      if (algo !== 'sha256' && algo !== 'sha256d') {
-        throw new Error(`GenerateHashLock "${node.id}": unsupported hashAlgorithm "${String(config.hashAlgorithm)}" (use sha256 or sha256d; HASH160 is SDK-level only)`);
+      if (algo !== 'sha256' && algo !== 'sha256d' && algo !== 'hash160') {
+        throw new Error(`GenerateHashLock "${node.id}": unsupported hashAlgorithm "${String(config.hashAlgorithm)}" (use sha256, sha256d or hash160)`);
       }
       vars.hashAlgorithm = algo;
       vars.hashIsDouble = algo === 'sha256d';
+      vars.hashIsHash160 = algo === 'hash160';
       const rawMinutes = config.expirationMinutes;
       const minutes = rawMinutes === undefined || rawMinutes === null || rawMinutes === '' ? 30 : Number(rawMinutes);
       // The node needs 10 minutes to 30 days of headroom; 15 minutes leaves room for clock skew and latency.

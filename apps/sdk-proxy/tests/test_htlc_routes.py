@@ -151,6 +151,16 @@ def test_sha256d_is_forwarded(api, node):
     assert _find(v3.envelopes[0], "hashLock")["hashAlgorithm"] == "sha256d"
 
 
+def test_hash160_is_forwarded_with_its_20_byte_hash(api, node):
+    v3 = node()
+    token = mint_session(api, "sess-htlc")
+    r = _send(api, token, **_lock(hash_algorithm="hash160", hash="ab" * 20))
+    assert r.json()["success"] is True, r.text
+    sent = _find(v3.envelopes[0], "hashLock")
+    assert sent["hashAlgorithm"].lower() == "hash160"
+    assert sent["hash"] == "ab" * 20
+
+
 def test_send_without_a_lock_has_no_hash_lock(api, node):
     """Positive control for _find: an ordinary send must carry no lock."""
     v3 = node()
@@ -185,6 +195,7 @@ def test_incomplete_or_malformed_lock_is_rejected_before_signing(api, node, bad)
         ({"expiration": int(time.time()) + 60}, "expir"),            # under the node's 10 min floor
         ({"expiration": int(time.time()) + 31 * 24 * 3600}, "expir"),  # over 30 days
         ({"hash": "ab" * 20}, "32 bytes"),                          # HASH160-sized hash for sha256
+        ({"hash_algorithm": "hash160"}, "20 bytes"),                # sha256-sized hash for hash160
     ],
 )
 def test_lock_the_node_would_refuse_never_gets_submitted(api, node, over, needle):

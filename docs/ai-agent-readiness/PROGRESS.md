@@ -649,6 +649,6 @@ A 9th golden path, **Hash Lock (HTLC) Payment** (`hash-lock`): lock tokens to a 
 - **MCP:** `tx.build` / `tx.submit` take an optional `hashLock` header and build `releaseLockedOperation`; a `hash-lock` prompt. Protocol tests 27 → 39.
 - **Agent docs:** the generator now writes an HTLC section into every SDK's `llms.txt` / `llms-full.txt` (and an HTLC test row into `AGENTS.md`), from the manifests. The generator refuses to emit a refund promise.
 
-**Known limits.** Refund on expiry is the protocol design but is **not currently functional** in core (an unreleased lock strands the funds; write-up in `CORE-ISSUE-refund.md`, not yet filed). HASH160 is not offered. HTLC is not in the CLI.
+**Known limits.** Refund on expiry is the protocol design but is **not currently functional** in core (an unreleased lock strands the funds; tracked upstream at https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578). HTLC is not in the Go `accumulate` CLI (its source has no hash-lock support); the SDKs have it.
 
 **Still open.** `npm run gen:agent:dist` has not been run (it writes into the five SDK repos and needs a human), so the SDK repos still carry their old hand-written HTLC text, which says the tokens are refunded. That run would also drop two non-HTLC hand-written bullets from each SDK's `llms.txt` / `llms-full.txt` (header fields 5-7 and the v3 proof methods), because the manifests do not carry them: move them into the manifests first.

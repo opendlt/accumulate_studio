@@ -254,7 +254,7 @@ export interface GenerateKeysConfig {
 }
 
 export interface GenerateHashLockConfig {
-  hashAlgorithm?: 'sha256' | 'sha256d';
+  hashAlgorithm?: 'sha256' | 'sha256d' | 'hash160';
   expirationMinutes?: number;
   /** Optional hex preimage; 32 random bytes are generated when empty */
   preimage?: string;
@@ -1035,7 +1035,7 @@ export const BLOCK_CATALOG: Record<BlockType, BlockDefinition> = {
     configSchema: {
       type: 'object',
       properties: {
-        hashAlgorithm: { type: 'string', enum: ['sha256', 'sha256d'], default: 'sha256', description: 'Hash algorithm (HASH160 is SDK-level only)' },
+        hashAlgorithm: { type: 'string', enum: ['sha256', 'sha256d', 'hash160'], default: 'sha256', description: 'Hash algorithm: sha256 (32 bytes), sha256d (SHA-256 twice, 32 bytes) or hash160 (RIPEMD-160 of SHA-256, 20 bytes, as in Bitcoin)' },
         expirationMinutes: { type: 'number', description: 'Minutes until the lock expires, 15 to 43200 (default: 30). The node requires at least 10 minutes and at most 30 days ahead. The clock starts when this block runs and the node checks it again when the send is submitted, so place the block right before the locked send.' },
         preimage: { type: 'string', description: 'Optional hex preimage, 1 to 256 bytes. Leave empty to generate 32 random bytes.' },
       },

@@ -1,6 +1,6 @@
 # Draft core issue: HTLC refund-on-expiry is unreachable; expired locks strand the funds
 
-> **Status: DRAFT. A human files this.** The executor does not post it (MASTER_PROMPT §3).
+> **Status: FILED upstream as [work_items/4578](https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578) ("HTLC: expired locks may never refund").** This file is the original draft the filed issue came from; the upstream issue is the one to follow.
 > Target repo: `accumulate-core` (GitLab). Suggested labels: `bug`, `htlc`, `protocol`.
 
 ## Summary

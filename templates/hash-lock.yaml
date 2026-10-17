@@ -8,7 +8,7 @@
 # the locked DEPOSIT (produced by the send), not the send itself.
 #
 # There is deliberately NO refund step. Refund on expiry is the protocol design, but it is
-# not currently functional on the network (see docs/hash-lock-example/CORE-ISSUE-refund.md):
+# not currently functional on the network (core issue https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578):
 # a lock that is never released strands the funds. This flow always releases.
 version: "1.0"
 name: "Hash Lock (HTLC) Payment"

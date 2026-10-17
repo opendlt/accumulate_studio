@@ -7,20 +7,26 @@ A hash-time-locked payment on Accumulate, as a Studio flow and as generated code
 The sender locks tokens to a SHA-256 hash. The receiver is credited only when someone reveals the preimage. In one run:
 
 1. Create keys, fund from the faucet, buy credits, create an ADI with a sender and a receiver token account, fund the sender.
-2. **Generate Hash Lock**: a random 32-byte preimage, its hash (`sha256` or `sha256d`) and an expiration (default 30 minutes).
+2. **Generate Hash Lock**: a random 32-byte preimage, its hash (`sha256`, `sha256d` or `hash160`) and an expiration (default 30 minutes).
 3. **Send Tokens** with the lock (the `hashLock` header on an ordinary SendTokens). The sender is debited at once; the receiver gets a *locked deposit* and its balance does **not** change.
 4. **Wait for Locked Deposit**: find the deposit among the send's `produced` records. A release targets the deposit, not the send.
 5. **Release Locked Operation**: the receiver reveals the preimage. The receiver's balance rises by `LOCK_AMOUNT`.
 
 The flow is 17 steps, cloned from Token Transfer so it reuses paths that are proven in every language. One ADI owns both accounts; in a real swap the receiver is another party. Flow variables: `ADI_NAME` (required), `LOCK_AMOUNT` (default `1.00000000` ACME).
 
+## Hash algorithms
+
+`sha256` (the default), `sha256d` (SHA-256 twice) and `hash160` (RIPEMD-160 of the SHA-256, 20 bytes, as in Bitcoin), selectable on the Generate Hash Lock block. All three are generated for Python, JavaScript, Dart, Rust and C# and were run live on Kermit with the published SDKs (`evidence/e2e/` for sha256 and sha256d, `evidence/hash160/` for hash160). HASH160 needs a RIPEMD-160 implementation, which the generated project brings: Python uses `hashlib` with a built-in fallback (OpenSSL 3 builds of Python may lack it), JavaScript uses `node:crypto`, Dart adds `pointycastle`, Rust adds the `ripemd` crate and C# adds `BouncyCastle.Cryptography`.
+
 ## Limits
 
-- **No refund.** The protocol design refunds an unreleased lock when it expires, but that path is unreachable in current core: an unclaimed lock is never refunded and cannot be released after it expires, so the funds are stranded. The flow therefore always releases, and no Studio, MCP or generated text promises a refund. The defect is written up in [`CORE-ISSUE-refund.md`](CORE-ISSUE-refund.md), awaiting a human to file it. Use small amounts.
-- **No HASH160.** The protocol defines it; Studio offers `sha256` and `sha256d` only (RUNBOOK D-4). Both ran live in all five languages.
-- **SDK-only in the CLI.** CLI mode refuses a flow that contains an HTLC block: it emits a comment saying so and exits 1, never a half-built command list (STATUS D-10). Use the generated SDK program, Studio, or the MCP tools.
+- **No refund.** The protocol design refunds an unreleased lock when it expires, but that path is unreachable in current core: an unclaimed lock is never refunded and cannot be released after it expires, so the funds are stranded. The flow therefore always releases, and no Studio, MCP or generated text promises a refund. The defect is tracked upstream as [accumulate #4578](https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578); the write-up is [`CORE-ISSUE-refund.md`](CORE-ISSUE-refund.md). Use small amounts.
 - A locked send in Studio takes exactly one recipient. The protocol allows several (one deposit each, one shared hash).
 - Testnet only. The proof is on Kermit (core 1.4.6.7). HTLC needs a node at 1.4.6.4 or later. Never run it against mainnet.
+
+## The CLI
+
+The Go `accumulate` CLI has no HTLC support: its source has no hash-lock code, and `accumulate tx execute [account] [body]` cannot set the `hashLock` transaction header. Only the SDKs implement HTLC, which is what Studio generates. Studio's CLI tab therefore says so and emits no commands for a flow with an HTLC block: a comment plus `exit 1`, never a half-built command list (STATUS D-10).
 
 ## How to run it
 

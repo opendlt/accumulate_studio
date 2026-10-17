@@ -1,0 +1,21 @@
+P10 gate counts (HASH160 branch feat/htlc-hash160): the tree that became the HASH160 code commit. Venv first on PATH, REQUIRE_TOOLCHAINS=1.
+Every step in gate-summary.txt exited 0. Raw logs were in C:\tmp\p10-logs (not committed).
+
+typecheck                 exit 0
+npm test                  exit 0
+  apps/mcp-server         40 passed   (P9b: 39; +1 hash160 build test)
+  apps/studio             755 passed  (P9b: 741)
+  packages/agent-pack     51 passed
+  packages/codegen        617 passed, 135 skipped (live-gated)   (P9b: 605; +12 = htlc-codegen 7, validation suites 5)
+  packages/verification   17 passed
+  total                   1,480 passed, 135 skipped   (P9b 1,453; P9 1,442; P8 1,411; baseline 1,195)
+validate:manifests        exit 0, 28/28 blocks in each of the 5 manifests (5 manifests reported 28/28)
+validate:canonical        exit 0
+harness:test              exit 0, 74 passing
+verify:codegen            exit 0, 45/45 generations clean (0 errors, 0 warnings)
+build:mcp + test:mcp      exit 0, 40/40
+lint                      exit 0, ✖ 95 problems (0 errors, 95 warnings)
+proxy pytest              67 passed, 12 warnings in 5.17s   (P9b: 65)
+npm run build (ALL)       exit 0
+gen:agent + gen:mcp       no drift (sha256 of every generated file identical before and after a re-run)
+snapshots                 UNCHANGED: 45/45 (HASH160 only changes flows that use it; existing outputs are byte-identical)

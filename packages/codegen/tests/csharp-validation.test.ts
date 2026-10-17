@@ -25,6 +25,7 @@ import {
   expectWrongPreimageRejected,
   harnessEnv,
   wrongPreimageFlow,
+  hash160Flow,
   type HarnessReport,
 } from './htlc-report';
 
@@ -294,6 +295,27 @@ describe('C# Generated Code Validation', () => {
             output = (error.stdout || '') + (error.stderr || '');
           }
           expectWrongPreimageRejected(extractJson(output) as unknown as HarnessReport | null);
+        }, 180000);
+
+        it('runs the hash-lock flow with a HASH160 lock end to end', () => {
+          if (!harnessReady) {
+            console.warn('C# harness not ready, skipping hash160 check');
+            return;
+          }
+          const code = generateCodeFromManifest(hash160Flow(flow), 'csharp', 'sdk', manifest);
+          const file = join(CSHARP_HARNESS_BIN_DIR, `${name.replace(/-/g, '_')}_hash160.cs`);
+          writeFileSync(file, code);
+          let output: string;
+          try {
+            output = execSync(
+              `python "${CSHARP_HARNESS_PY}" "${file}" "${CSHARP_HARNESS_DIR}"`,
+              { encoding: 'utf-8', timeout: 150000, env: harnessEnv(name) },
+            );
+          } catch (err) {
+            const error = err as { stderr?: string; stdout?: string };
+            output = (error.stdout || '') + (error.stderr || '');
+          }
+          expectHashLockRun(extractJson(output) as unknown as HarnessReport | null, 'hash160');
         }, 180000);
       }
 

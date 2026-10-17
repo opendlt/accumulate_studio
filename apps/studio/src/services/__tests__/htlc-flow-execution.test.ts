@@ -52,6 +52,7 @@ import { runAssertions } from '../assertion-runner';
 // ── A stateful fake of the proxy and the chain ───────────────────────────────
 
 const sha256 = (b: Buffer) => createHash('sha256').update(b).digest();
+const hash160 = (b: Buffer) => createHash('ripemd160').update(sha256(b)).digest();
 const hex = (n: number, c = 'a') => c.repeat(n);
 const ADI = 'acc://htlc-test.acme';
 const LITE_ID = `acc://${hex(48, 'b')}`;
@@ -154,7 +155,9 @@ class FakeChain {
     const sendTx = this.txid(body.principal);
     if (body.hash !== undefined) {
       // the node's own checks on a hash lock
-      if (!['sha256', 'sha256d'].includes(body.hash_algorithm) || !/^[0-9a-f]{64}$/.test(body.hash)) {
+      // the hash length must match the algorithm: 32 bytes for sha256 and sha256d, 20 for hash160
+      const hashLength = body.hash_algorithm === 'hash160' ? 40 : 64;
+      if (!['sha256', 'sha256d', 'hash160'].includes(body.hash_algorithm) || !new RegExp(`^[0-9a-f]{${hashLength}}$`).test(body.hash)) {
         return { success: false, error: 'invalid hash lock' };
       }
       const ahead = body.expiration - Date.now() / 1000;
@@ -186,7 +189,7 @@ class FakeChain {
       return { success: false, error: 'Transaction failed: principal is not the recipient (unauthenticated, code 401)' };
     }
     const preimage = Buffer.from(body.fields.preimage, 'hex');
-    const digest = lock.algorithm === 'sha256d' ? sha256(sha256(preimage)) : sha256(preimage);
+    const digest = lock.algorithm === 'sha256d' ? sha256(sha256(preimage)) : lock.algorithm === 'hash160' ? hash160(preimage) : sha256(preimage);
     if (digest.toString('hex') !== lock.hash) {
       return { success: false, error: 'Transaction failed: preimage does not match hash (unauthenticated, code 401)' };
     }
@@ -311,6 +314,20 @@ describe('hash-lock template through the real engine', () => {
     await expect(engine.executeFlow(hashLockFlow())).rejects.toThrow(/ADI_NAME \(Required\)/);
     expect(chain.calls).toHaveLength(0);
     expect(mockStore.startExecution).not.toHaveBeenCalled();
+  });
+
+  it('hash160 works the same way: a 20-byte lock the node judges as RIPEMD160(SHA256(preimage))', async () => {
+    const engine = new ExecutionEngine();
+    await engine.executeFlow(
+      hashLockFlow((f) => {
+        f.nodes.find((n) => n.id === 'create_hash_lock')!.config.hashAlgorithm = 'hash160';
+      }),
+      RUN_VARIABLES
+    );
+    expect(engine.getStatus()).toBe('completed');
+    expect(chain.locks[0].algorithm).toBe('hash160');
+    expect(chain.locks[0].hash).toHaveLength(40);
+    expect(chain.balances.get(`${ADI}/htlc-receiver`)).toBe(100_000_000n);
   });
 
   it('sha256d works the same way', async () => {

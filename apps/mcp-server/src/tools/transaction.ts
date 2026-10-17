@@ -34,8 +34,8 @@ export interface TransactionBody {
 
 /** A hash lock as the node reads it from the transaction header (SendTokens only). */
 export interface HashLockHeader {
-  hashAlgorithm: 'sha256' | 'sha256d';
-  /** 32 bytes as lowercase hex. */
+  hashAlgorithm: 'sha256' | 'sha256d' | 'hash160';
+  /** 32 bytes as lowercase hex (20 bytes for hash160). */
   hash: string;
   /** RFC 3339 UTC in whole seconds. */
   expiration: string;
@@ -256,12 +256,12 @@ export const txBuildTool = {
         properties: {
           hashAlgorithm: {
             type: 'string' as const,
-            enum: ['sha256', 'sha256d'],
-            description: 'sha256 = SHA256(preimage); sha256d = SHA256(SHA256(preimage)). HASH160 is not supported.',
+            enum: ['sha256', 'sha256d', 'hash160'],
+            description: 'sha256 = SHA256(preimage); sha256d = SHA256(SHA256(preimage)); hash160 = RIPEMD160(SHA256(preimage)), 20 bytes.',
           },
           hash: {
             type: 'string' as const,
-            description: 'The lock hash: 32 bytes as 64 hex characters.',
+            description: 'The lock hash as hex: 32 bytes (64 characters) for sha256 and sha256d, 20 bytes (40 characters) for hash160.',
           },
           expiration: {
             type: ['string', 'number'],
@@ -1032,22 +1032,20 @@ function validateHashLock(
   }
   const raw = input as Record<string, unknown>;
 
-  // Algorithm: the protocol also has HASH160, which this tooling does not support
+  // Algorithm: the protocol's three (sha256, sha256d, hash160)
   const algorithm = typeof raw.hashAlgorithm === 'string' ? raw.hashAlgorithm.toLowerCase() : '';
-  if (algorithm === 'hash160') {
-    errors.push('hashlock algorithm hash160 is not supported here; use "sha256" or "sha256d"');
-  } else if (algorithm !== 'sha256' && algorithm !== 'sha256d') {
-    errors.push(`unsupported hashlock algorithm: ${String(raw.hashAlgorithm)}; use "sha256" or "sha256d"`);
+  if (algorithm !== 'sha256' && algorithm !== 'sha256d' && algorithm !== 'hash160') {
+    errors.push(`unsupported hashlock algorithm: ${String(raw.hashAlgorithm)}; use "sha256", "sha256d" or "hash160"`);
   }
 
-  // Hash: 32 bytes of hex
+  // Hash: hex, 32 bytes (20 for HASH160)
   const hash = raw.hash;
   if (typeof hash !== 'string' || hash.length === 0) {
     errors.push('hashlock hash cannot be empty');
   } else if (!/^(?:[0-9a-fA-F]{2})+$/.test(hash)) {
     errors.push('hashlock hash must be hex');
-  } else if (hash.length !== 64) {
-    errors.push(`hashlock hash must be 32 bytes for ${algorithm || 'the algorithm'}, got ${hash.length / 2}`);
+  } else if (hash.length !== (algorithm === 'hash160' ? 40 : 64)) {
+    errors.push(`hashlock hash must be ${algorithm === 'hash160' ? '20 bytes for HASH160' : `32 bytes for ${algorithm || 'the algorithm'}`}, got ${hash.length / 2}`);
   }
 
   // Expiration: required, whole seconds, inside the node's window

@@ -16,6 +16,9 @@ use serde_json::{{lb}}json, Value{{rb}};
 use accumulate_client::generated::enums::HashAlgorithm;
 use accumulate_client::{{lb}}HeaderOptions, TxResult{{rb}};
 {{/if}}
+{{#if usesHash160}}
+use ripemd::Ripemd160;
+{{/if}}
 
 const NETWORK_V2: &str = "https://kermit.accumulatenetwork.io/v2";
 const NETWORK_V3: &str = "https://kermit.accumulatenetwork.io/v3";

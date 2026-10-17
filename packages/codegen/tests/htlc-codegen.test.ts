@@ -8,6 +8,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import type { Flow, FlowNode, SDKLanguage } from '@accumulate-studio/types';
 import { generateCodeFromManifest } from '../src/manifest-generator';
 import { loadManifest } from '../src/manifest-loader';
@@ -115,6 +117,15 @@ const CONTRACT: Record<string, { calls: string[]; exit: string }> = {
   },
 };
 
+/** What a HASH160 (RIPEMD160(SHA256(preimage)), 20 bytes) program must contain, per language. */
+const HASH160: Record<string, string[]> = {
+  python: ['def ripemd160(data)', '_ripemd160_pure', 'ripemd160(hashlib.sha256(', '"hash160"'],
+  javascript: ['createHash("ripemd160")', 'core.HashAlgorithm.HASH160', ', 20, 20)', '"hash160"'],
+  dart: ["import 'package:pointycastle/digests/ripemd160.dart';", 'RIPEMD160Digest().process', 'HashAlgorithm.HASH160', "'hash160'"],
+  rust: ['use ripemd::Ripemd160;', 'Ripemd160::digest(Sha256::digest(', 'HashAlgorithm::Hash160', '"hash160"'],
+  csharp: ['using Org.BouncyCastle.Crypto.Digests;', 'static byte[] Ripemd160Hash(byte[] data)', 'Ripemd160Hash(SHA256.HashData(', 'HashLockAlgorithm.HASH160', '"hash160"'],
+};
+
 describe('HTLC code generation', () => {
   for (const lang of LANGUAGES) {
     describe(lang, () => {
@@ -149,6 +160,14 @@ describe('HTLC code generation', () => {
         expect(d).not.toMatch(/\{\{|\[object Object\]|\bundefined\b/);
       });
 
+      it('lets a hash160 lock hash RIPEMD-160 over SHA-256 and brings what it needs', () => {
+        const h = generate(htlcFlow({ lock: { hashAlgorithm: 'hash160' } }), lang);
+        expect(h).not.toMatch(/\{\{|\[object Object\]|undefined/);
+        for (const needle of HASH160[lang]) expect(h, `${lang}: ${needle}`).toContain(needle);
+        // a flow that does not use HASH160 carries none of it
+        expect(code, `${lang}: sha256 flow`).not.toMatch(/ripemd|pointycastle|bouncycastle/i);
+      });
+
       it('uses an explicit preimage and rejects bad ones', () => {
         const hex = 'ab'.repeat(32);
         expect(generate(htlcFlow({ lock: { preimage: hex } }), lang)).toContain(hex);
@@ -170,8 +189,8 @@ describe('HTLC code generation', () => {
   });
 
   describe('fails loudly on a flow that cannot work', () => {
-    it('rejects an unsupported algorithm (HASH160 is SDK-level only)', () => {
-      expect(() => generate(htlcFlow({ lock: { hashAlgorithm: 'hash160' } }), 'python')).toThrow(/unsupported hashAlgorithm/);
+    it('rejects an unsupported algorithm', () => {
+      expect(() => generate(htlcFlow({ lock: { hashAlgorithm: 'md5' } }), 'python')).toThrow(/unsupported hashAlgorithm.*sha256, sha256d or hash160/);
     });
 
     it('rejects an expiration the node would refuse', () => {
@@ -208,6 +227,49 @@ describe('HTLC code generation', () => {
     expect(cli).toContain('SDK-only');
     expect(cli).not.toContain('accumulate tx create');
     expect(cli).toContain('exit 1');
+  });
+
+  it('adds the RIPEMD-160 dependency to HASH160 projects, and only those', () => {
+    const file = (flow: Flow, lang: SDKLanguage, re: RegExp) => PROJECT_GENERATORS[lang](flow).find((f) => re.test(f.path))!.content;
+    const h = htlcFlow({ lock: { hashAlgorithm: 'hash160' } });
+    const plain = htlcFlow();
+    expect(file(h, 'rust', /Cargo\.toml$/)).toContain('ripemd = "0.1"');
+    expect(file(plain, 'rust', /Cargo\.toml$/)).not.toContain('ripemd');
+    expect(file(h, 'dart', /pubspec\.yaml$/)).toContain('pointycastle: ^3.9.1');
+    expect(file(plain, 'dart', /pubspec\.yaml$/)).not.toContain('pointycastle');
+    expect(file(h, 'csharp', /\.csproj$/)).toContain('BouncyCastle.Cryptography');
+    expect(file(plain, 'csharp', /\.csproj$/)).not.toContain('BouncyCastle');
+    // Python and JavaScript need no extra package (hashlib / node:crypto, with a pure-Python fallback)
+    expect(file(h, 'python', /pyproject\.toml$/)).not.toMatch(/ripemd|pycryptodome/i);
+    expect(file(h, 'javascript', /package\.json$/)).not.toMatch(/ripemd/i);
+  });
+
+  const HAVE_PYTHON = spawnSync('python', ['--version']).status === 0;
+  it('python: the generated RIPEMD-160 still works when hashlib has none (OpenSSL 3 builds)', () => {
+    if (!HAVE_PYTHON) {
+      expect(process.env.REQUIRE_TOOLCHAINS === '1', 'REQUIRE_TOOLCHAINS=1 but python is not on PATH').toBe(false);
+      return;
+    }
+    const code = generate(htlcFlow({ lock: { hashAlgorithm: 'hash160' } }), 'python');
+    const start = code.indexOf('# RIPEMD-160 (used by the HASH160 lock)');
+    const end = code.indexOf('def main():');
+    expect(start).toBeGreaterThan(-1);
+    const script = [
+      'import hashlib',
+      '_orig = hashlib.new',
+      'def _without_ripemd(name, data=b""):',
+      '    if name == "ripemd160":',
+      '        raise ValueError("unsupported hash type ripemd160")',
+      '    return _orig(name, data)',
+      'hashlib.new = _without_ripemd',
+      code.slice(start, end),
+      'print(ripemd160(b"abc").hex())',
+      'print(ripemd160(bytes(range(200))).hex())',
+    ].join('\n');
+    const run = spawnSync('python', ['-c', script], { encoding: 'utf-8' });
+    expect(run.status, run.stderr).toBe(0);
+    const want = [Buffer.from('abc'), Buffer.from(Array.from({ length: 200 }, (_, i) => i))].map((b) => createHash('ripemd160').update(b).digest('hex'));
+    expect(run.stdout.trim().split(/\r?\n/)).toEqual(want);
   });
 
   it('adds the random-bytes crate to Rust projects that use a lock, and only those', () => {

@@ -9,7 +9,9 @@
             var {{varName}}PreimageBytes = RandomNumberGenerator.GetBytes(32);
 {{/if}}
             var {{varName}}Preimage = Convert.ToHexString({{varName}}PreimageBytes).ToLowerInvariant();
-{{#if hashIsDouble}}
+{{#if hashIsHash160}}
+            var {{varName}}HashBytes = Ripemd160Hash(SHA256.HashData({{varName}}PreimageBytes));
+{{else if hashIsDouble}}
             var {{varName}}HashBytes = SHA256.HashData(SHA256.HashData({{varName}}PreimageBytes));
 {{else}}
             var {{varName}}HashBytes = SHA256.HashData({{varName}}PreimageBytes);
@@ -26,7 +28,7 @@
             {
                 new HashLockOptions
                 {
-                    HashAlgorithm = HashLockAlgorithm.{{#if hashIsDouble}}SHA256D{{else}}SHA256{{/if}},
+                    HashAlgorithm = HashLockAlgorithm.{{#if hashIsHash160}}HASH160{{else if hashIsDouble}}SHA256D{{else}}SHA256{{/if}},
                     Hash = {{varName}}HashBytes,
                     Expiration = {{varName}}ExpirationAt,
                 }.ValidateForSubmit();

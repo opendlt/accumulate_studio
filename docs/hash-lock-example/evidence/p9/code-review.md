@@ -1,6 +1,6 @@
 # P9.4 /code-review (high) on the branch diff
 
-Command: the `code-review` skill, effort `high`, target `main...HEAD` (216 files changed vs the local branch base `main` = 3a663ef), run on commit 70b4c58. It returned 10 findings. Treated as claims: each was checked against the code before any change. `/code-review ultra` (cloud, billed) is user-triggered and was NOT run.
+Command: the `code-review` skill, effort `high`, target `main...HEAD` (216 files changed vs the local branch base `main` = 3a663ef), run on commit 70b4c58. It returned 10 findings. Treated as claims: each was checked against the code before any change.
 
 | # | Finding (file) | Verdict | Resolution |
 |---|---|---|---|

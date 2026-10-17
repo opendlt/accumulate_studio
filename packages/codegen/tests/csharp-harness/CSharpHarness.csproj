@@ -12,6 +12,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Acme.Net.Sdk" Version="2.5.*" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.*" />
   </ItemGroup>
   <!--
     No default Compile glob: each generated program defines its own top-level

@@ -9,7 +9,7 @@
  */
 
 import type { Flow, GeneratedFile, SDKLanguage, SDKMap } from '@accumulate-studio/types';
-import { generateCodeFromManifest, isHashLockNode } from './manifest-generator';
+import { generateCodeFromManifest, isHash160Node, isHashLockNode } from './manifest-generator';
 import { loadAllManifests } from './manifest-loader';
 import { toSnakeCase, toKebabCase } from './template-engine';
 
@@ -158,7 +158,7 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 serde_json = "1"
 sha2 = "0.10"
 hex = "0.4"
-url = "2"${flow.nodes.some(isHashLockNode) ? '\ngetrandom = "0.2"' : ''}
+url = "2"${flow.nodes.some(isHashLockNode) ? '\ngetrandom = "0.2"' : ''}${flow.nodes.some(isHash160Node) ? '\nripemd = "0.1"' : ''}
 
 [build-dependencies]
 # Embeds an asInvoker manifest so Windows' Installer Detection heuristic does not
@@ -245,7 +245,7 @@ environment:
 
 dependencies:
   opendlt_accumulate: ^2.5.0
-  crypto: ^3.0.3
+  crypto: ^3.0.3${flow.nodes.some(isHash160Node) ? '\n  pointycastle: ^3.9.1' : ''}
 
 dev_dependencies:
   test: ^1.24.0
@@ -391,7 +391,7 @@ export function generateCSharpProject(flow: Flow): GeneratedFile[] {
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Acme.Net.Sdk" Version="2.5.*" />
+    <PackageReference Include="Acme.Net.Sdk" Version="2.5.*" />${flow.nodes.some(isHash160Node) ? '\n    <PackageReference Include="BouncyCastle.Cryptography" Version="2.*" />' : ''}
   </ItemGroup>
 
 </Project>
