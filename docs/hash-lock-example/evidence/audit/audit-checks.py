@@ -168,7 +168,7 @@ missing = [r for r in refs if '<' not in r and not r.endswith(('e2e-', 'mock-run
 check('every evidence path referenced by STATUS.md exists', not missing, f'{len(refs)} referenced; missing: {missing}')
 
 ev = os.path.join(ROOT, 'docs/hash-lock-example/evidence')
-e2e = [f for f in sorted(os.listdir(os.path.join(ev, 'e2e'))) if f.endswith('.json') and 'invalid' not in f and 'shared-target' not in f]
+e2e = [f for f in sorted(os.listdir(os.path.join(ev, 'e2e'))) if f.endswith('.json') and 'invalid' not in f and 'shared-target' not in f and 'postd31' not in f]
 verdicts = {f: json.load(open(os.path.join(ev, 'e2e', f), encoding='utf-8')) for f in e2e}
 check('25 counted live runs, every verifier JSON has RESULT PASS', len(e2e) == 25 and all(v['RESULT'] == 'PASS' for v in verdicts.values()), f'{len(e2e)} files')
 per_lang = {l: sorted(f for f in e2e if f.startswith(l + '-')) for l in LANGS}
@@ -178,6 +178,30 @@ check('positive runs passed 16 checks, negative runs 9',
       all(len(v['checks']) == (9 if k.endswith('wrong-1.json') else 16) and all(c['ok'] for c in v['checks']) for k, v in verdicts.items()))
 studio = json.load(open(os.path.join(ev, 'p6/verify-studio-run2.json'), encoding='utf-8'))
 check('the in-Studio run verifier JSON has RESULT PASS', studio['RESULT'] == 'PASS', f"{len(studio['checks'])} checks")
+
+# Post-D-31 confirmation: one published run per language with the random-suffix ADI name, started together with no start lock.
+# Kept apart from the 25 counted runs, so the "2 consecutive published runs per language" claim is unchanged.
+post_files = sorted(f for f in os.listdir(os.path.join(ev, 'e2e')) if f.endswith('-postd31-1.json'))
+if post_files:
+    post = {f: json.load(open(os.path.join(ev, 'e2e', f), encoding='utf-8')) for f in post_files}
+    check('post-D-31: one run per language, every verifier JSON RESULT PASS with 16/16 checks',
+          [f.split('-')[0] for f in post_files] == sorted(LANGS) and all(v['RESULT'] == 'PASS' and len(v['checks']) == 16 and all(c['ok'] for c in v['checks']) for v in post.values()),
+          f'{len(post)} runs')
+    names = [re.search(r'@(adi-[0-9]+-[0-9a-f]{6})[.]acme', v['send']) for v in post.values()]
+    check('post-D-31: every ADI name is adi-<seconds>-<6 hex> and the five are distinct',
+          all(names) and len({n.group(1) for n in names if n}) == 5, ', '.join(n.group(1) for n in names if n))
+    reg_proof = {'python': '==2.5.0', 'javascript': 'accumulate-sdk-opendlt@2.5.2', 'dart': 'opendlt_accumulate 2.5.0', 'rust': 'version = "2.5.0"', 'csharp': 'Acme.Net.Sdk'}
+    for lang in LANGS:
+        log = read(f'docs/hash-lock-example/evidence/e2e/logs/{lang}-postd31-1.log')
+        local_marks = [m for m in ('git+ssh', ' path = ', 'file:', 'ProjectReference', '(local SDK)') if m in log]
+        check(f'post-D-31 log {lang}: registry version, no local path', reg_proof[lang] in log and not local_marks, str(local_marks))
+    pre = []
+    for f, v in post.items():
+        printed = re.search(r'PREIMAGE: +([0-9a-fA-F]+)', read('docs/hash-lock-example/evidence/e2e/logs/' + f.replace('.json', '.log')))
+        on_chain = (v['raw'].get('release') or {}).get('result', {}).get('preimage')
+        if not (printed and on_chain and printed.group(1).lower() == on_chain.lower()):
+            pre.append(f)
+    check('post-D-31: release result.preimage == the preimage the program printed', not pre, str(pre))
 
 # P7.4: the release's on-chain result.preimage equals the preimage the generated program printed
 def find_str(obj, key):

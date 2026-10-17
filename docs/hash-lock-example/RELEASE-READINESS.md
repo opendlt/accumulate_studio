@@ -41,7 +41,7 @@ Per language, all on Kermit (core 1.4.6.7), every run verified by `evidence/p6/v
 
 Also: the template run from the Studio gallery in a real browser through the real proxy (17/17 nodes, 7/7 assertions, verifier 14/14, `evidence/p6/`), and the action-palette e2e for the 3 new blocks x 5 languages (15/15 live). Programs run 62-240 s. Invalid attempts are kept as evidence beside the counted ones (`*-invalid-collision`, `*-shared-target-dir`); none was retried away unexamined (STATUS D-26).
 
-**What was not re-run live.** The default ADI name changed after these runs (D-31: `adi-<unix seconds>` became `adi-<unix seconds>-<6 random hex>` in all five languages). It is covered by the five `*-validation` suites (the generated programs run against the faithful node mock with the new name), by 20 new tests that execute the generated name expression in JavaScript and Python and compile-and-run it in Rust, Dart and C#, and by the unchanged ADI naming rules (lowercase letters, digits, hyphen). No live run exercised the suffixed name; one live run per language is the recommended confirmation (section 11).
+**Post-D-31 confirmation (D-38), 2026-10-17.** The default ADI name changed after the runs above (D-31: `adi-<unix seconds>` became `adi-<unix seconds>-<6 random hex>` in all five languages). It was therefore re-proven live: one published-registry run per language from the rebuilt Studio source, all five started together with no start lock (the earlier runs held a 20 s lock to dodge the very collision D-31 fixes). All five PASSED the independent verifier 16/16 (`evidence/e2e/INDEX.md`, last section; `<lang>-postd31-1.json`). The programs read the clock in different seconds, so this shows the suffixed name works end to end on the node; that two names drawn in the same instant differ is pinned by `tests/adi-name-default.test.ts`. These five runs are kept apart from the 25 counted runs, so the release bar stays "2 consecutive published runs per language".
 
 ## 4. Published SDK versions tested
 
@@ -86,6 +86,16 @@ Every counted live run, with the send, the locked deposit and the release txids 
 | csharp | sha256d-1 | PASS | 16/16 | `acc://520e094f91ce3ac53b6c41e6ddb4a5aa9336bc28024fd9d9303d4c750148654d@adi-1792188529.acme/htlc-sender` | `acc://c10111c5914bdb8733b4d02f0a80cfa558ed4a44461e7bd85152a06fd5b1b69c@adi-1792188529.acme/htlc-receiver` | `acc://e51c11c8ab69115f3f556cc5268ff574e1db1c60503d87bc79807ef2d11888e6@adi-1792188529.acme/htlc-receiver` |
 | csharp | local-1 | PASS | 16/16 | `acc://731dc5cf69b0448dff715eb7de86a5c3fe012f97409324d3f20d4527ad49ec5d@adi-1792188353.acme/htlc-sender` | `acc://9243ce6f48d239d95e913771c096e6b5a384a35ad52bb23b20bb75e82a703078@adi-1792188353.acme/htlc-receiver` | `acc://23215fe83f40e2f2fc563782838f7f27d42d532478feae33e6e38c7a27480e28@adi-1792188353.acme/htlc-receiver` |
 | csharp | wrong-1 | PASS | 9/9 | `acc://c62e3bfd61f6559da99a91c7410bfe65b0e158d03269757dff4fab0d9c080447@adi-1792188524.acme/htlc-sender` | `acc://0e4410e56f17b87db8488178a544430456cb7d688b0020f0c9ffad1d2a537114@adi-1792188524.acme/htlc-receiver` | (rejected by the node) |
+
+Post-D-31 confirmation runs (same verifier, same layout; names show the random suffix):
+
+| lang | run | verdict | seconds | checks | SDK | ADI name | send txid | locked deposit txid | release txid |
+|---|---|---|---|---|---|---|---|---|---|
+| python | postd31-1 | PASS | 254 | 16/16 | accumulate-sdk-opendlt==2.5.0 (registry) | `adi-1792221631-2d7e9a` | `acc://ba7b4f9549fe13e3173b215dd6f9d9c1e80993c49efac57b17c3d8f737b0739b@adi-1792221631-2d7e9a.acme/htlc-sender` | `acc://14c5f7fdca4fa21d993f8d277cb9adc5eead5de1047697a09eada62d95024757@adi-1792221631-2d7e9a.acme/htlc-receiver` | `acc://a5d52ffe373c7434388b2365e7ea58ebb02218525531cd83675470367a6999dd@adi-1792221631-2d7e9a.acme/htlc-receiver` |
+| javascript | postd31-1 | PASS | 236 | 16/16 | accumulate-sdk-opendlt@2.5.2 (registry) | `adi-1792221613-3f51e4` | `acc://4d97c6c87940ec6f3bea3c916eedf8e44f1f2d3fc021b8a514e1d3c41765f8b8@adi-1792221613-3f51e4.acme/htlc-sender` | `acc://3e67d7b6083552723090a92657767b4be74ba78c0b6803fe28e9c77792732a02@adi-1792221613-3f51e4.acme/htlc-receiver` | `acc://442655c333e5c06c8e4f841d5e97349753d4c7bde0a75ced430f582dc5336263@adi-1792221613-3f51e4.acme/htlc-receiver` |
+| dart | postd31-1 | PASS | 179 | 16/16 | opendlt_accumulate 2.5.0 (registry) | `adi-1792221537-0e3671` | `acc://b49178abedfe310eb8d10428935a1cd95cfaa137b928312e7eea92782c162577@adi-1792221537-0e3671.acme/htlc-sender` | `acc://adce79f1a54e43d8950bc0a7c2984f20c64d2310b9bfd153ea94679e33e3b06a@adi-1792221537-0e3671.acme/htlc-receiver` | `acc://f9b581d7431cfe30d8786fd9949a6c30336b745f3a6c0bab0462a1e6ef564d61@adi-1792221537-0e3671.acme/htlc-receiver` |
+| rust | postd31-1 | PASS | 272 | 16/16 | accumulate-sdk 2.5.0 (crates.io) | `adi-1792221649-25fb69` | `acc://ef3e1249b6f4764a24ddd12b0960c4d40a62f4e34128e1386358c60a1eb1dd39@adi-1792221649-25fb69.acme/htlc-sender` | `acc://4abcc520496deb0ce6a49183dd9c139b1491752479facb2cadc8278c2c1729b7@adi-1792221649-25fb69.acme/htlc-receiver` | `acc://de49875729138244bb3a0d58e48ca3d2822dc48339ab635c742bbaa03e35dc3a@adi-1792221649-25fb69.acme/htlc-receiver` |
+| csharp | postd31-1 | PASS | 71 | 16/16 | Acme.Net.Sdk 2.5.0 (NuGet) | `adi-1792221445-a55171` | `acc://104bdf148a862dff8a0ddbea92c9d57afdb32b3af3a92d64d52c4f0b56fa516b@adi-1792221445-a55171.acme/htlc-sender` | `acc://8e6a2ecdc50599b5d3158572a544ce85e8a3eb5e2d6f0e91e149db587cadd772@adi-1792221445-a55171.acme/htlc-receiver` | `acc://7b5b37af0af3a19d9af9b0a2a21f410ae727f5609455c41b4dcb94492048cc6c@adi-1792221445-a55171.acme/htlc-receiver` |
 
 Other live evidence:
 - In-Studio run (P6 run 2, ADI `htlc-p6-1792185332`): `evidence/p6/verify-studio-run2.json` (PASS 14/14), `studio-run2-execution-log.txt`, screenshots 01-14. Run 1 was aborted by an edit of mine (a Vite hot reload discards a run in flight) and is recorded as such.
@@ -145,7 +155,7 @@ SDK branch fixes awaiting publish: none (D-04a); published-SDK defects are worke
 | 5 | `sdk-proxy/AGENTS.md` said `>=2.1.0`, `AGENTS.md` said 61 harness tests | **fixed** | factual lines only |
 | 6 | `rust-validation` silently skipped compile and mock tests | **fixed** (D-14) | runs for real |
 | 7 | `gen:agent:dist` drops two non-HTLC hand-written bullets per SDK (header fields 5-7, v3 proof methods) | **fix-now, before dist** | not carried by the manifests; move them in, then run dist (human) |
-| 8 | Live confirmation of the suffixed ADI name (section 3) | **fix-now if you want it** | 5 runs, about 10 minutes, faucet <= 3 each |
+| 8 | Live confirmation of the suffixed ADI name (section 3) | **fixed** (D-38) | 5 published runs, all PASS, 2026-10-17 |
 | 9 | Studio template copy points at the refund issue by repo path, not URL | ship-as-known-limit | the issue is not filed; add the URL when it is |
 | 10 | `FLOW_VAR_DEFAULTS_*` overrides an edited flow default (e.g. LOCK_AMOUNT) in generated code | ship-as-known-limit | the D-1 design, same for every variable; a fix converts decimals in every template |
 | 11 | `apps/mcp-server` imports `@accumulate-studio/verification` without declaring it | ship-as-known-limit | resolves through the workspace; declaring it changes the lockfile |
@@ -160,10 +170,9 @@ SDK branch fixes awaiting publish: none (D-04a); published-SDK defects are worke
 
 ## 11. Human checkpoints (in this order)
 
-1. **Review and push.** The branch is ahead of `origin/feat/htlc-golden-path`; `origin/main` already holds it through PR #5 (merged by you). Pushing needs your approval; `gh` is not installed, open the PR at https://github.com/opendlt/accumulate_studio/compare/main...feat/htlc-golden-path?expand=1
-2. **Optional: live confirmation of D-31** (follow-up 8): one published run per language with the saved drivers in `evidence/e2e/tools/`.
-3. **Optional: `/code-review ultra`.**
-4. **Move the two non-HTLC bullets into the manifests, then `npm run gen:agent:dist`** (writes into the five SDK repos' tracked docs: never run unattended). Until it runs, the SDK repos still say "otherwise the tokens are refunded to the sender".
-5. **File the core issue** (`CORE-ISSUE-refund.md`), then put its URL in the Studio template copy.
-6. **Deploy Studio** (Vercel; the build order matters, see the root `package.json`).
-7. **SDK publishes:** none pending. **Mainnet:** never targeted; HTLC is not confirmed there.
+1. **Review and merge.** The code through `ce20a37` is pushed to `origin/feat/htlc-golden-path` (you approved it); `origin/main` holds the branch through PR #5. Any later commit needs a fresh push approval; `gh` is not installed, open the PR at https://github.com/opendlt/accumulate_studio/compare/main...feat/htlc-golden-path?expand=1
+2. **Optional: `/code-review ultra`.**
+3. **Move the two non-HTLC bullets into the manifests, then `npm run gen:agent:dist`** (writes into the five SDK repos' tracked docs: never run unattended). Until it runs, the SDK repos still say "otherwise the tokens are refunded to the sender".
+4. **File the core issue** (`CORE-ISSUE-refund.md`), then put its URL in the Studio template copy.
+5. **Deploy Studio** (Vercel; the build order matters, see the root `package.json`).
+6. **SDK publishes:** none pending. **Mainnet:** never targeted; HTLC is not confirmed there.
