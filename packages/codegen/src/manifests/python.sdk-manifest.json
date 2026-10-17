@@ -1260,5 +1260,8 @@
       ]
     }
   ],
-  "notes": "Python SDK uses snake_case conventions. TxBody methods are static. SmartSigner handles signing, submission and waiting."
+  "notes": "Python SDK uses snake_case conventions. TxBody methods are static. SmartSigner handles signing, submission and waiting.",
+  "agent_notes": [
+    "v3 proof methods: `AccumulateV3Client.major_header_range / minor_root_range / anchor_receipt`; `v3.Receipt` models `forHeight`, `complete`, `partition`, `startsAtMainState`."
+  ]
 }

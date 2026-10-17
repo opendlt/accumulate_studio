@@ -42,6 +42,9 @@ A hash lock is a header field (`hashLock`, TransactionHeader field 8) on an ordi
 - The `accumulate` CLI has no HTLC commands: use the library API.
 - Inputs, outputs and the per-SDK traps for each step: `llms-full.txt`.
 
+## Other API notes
+- v3 proof methods: `AccumulateV3Client.major_header_range / minor_root_range / anchor_receipt`; `v3.Receipt` models `forHeight`, `complete`, `partition`, `startsAtMainState`.
+
 ## CLI (no code required)
 ```
 pip install accumulate-sdk-opendlt

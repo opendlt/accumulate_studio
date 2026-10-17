@@ -42,6 +42,10 @@ A hash lock is a header field (`hashLock`, TransactionHeader field 8) on an ordi
 - The `accumulate` CLI has no HTLC commands: use the library API.
 - Inputs, outputs and the per-SDK traps for each step: `llms-full.txt`.
 
+## Other API notes
+- `SignOptions` also takes `expire`, `holdUntil` and `authorities` (header fields 5-7). All of fields 5-8 are part of the transaction hash; `signExisting` re-signs the envelope's own transaction, so they survive a hand-off to a co-signer.
+- v3 proof methods: `majorHeaderRange`, `minorRootRange`, `anchorReceipt`; `api_v3.Receipt` has `forHeight`, `complete`, `partition`, `startsAtMainState`; `NetworkGlobals.blockInterval` (seconds).
+
 ## CLI (no code required)
 ```
 npm install -g accumulate-sdk-opendlt

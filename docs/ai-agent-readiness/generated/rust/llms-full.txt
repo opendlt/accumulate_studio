@@ -204,6 +204,10 @@ Notes:
 - **Refund status:** Refund on expiry is the protocol design but is NOT currently functional on the network (core issue https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578): an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Do not promise or rely on a refund; use small amounts and always release.
 - The `accumulate` CLI has no HTLC commands: use the library API.
 
+## Other API notes
+- `HeaderOptions` also carries `expire`, `hold_until` and `authorities` (header fields 5-7). All of fields 5-8 are part of the transaction hash; `sign_existing` co-signs by reusing the hash in the envelope, and `marshal_header_from_json` recomputes it from a received header.
+- v3 proof methods: `major_header_range`, `minor_root_range`, `anchor_receipt`; `Receipt` has `for_height`, `complete`, `partition`, `starts_at_main_state`; `NetworkGlobals.block_interval` (raw JSON `{seconds, nanoseconds}`).
+
 ## Operations (28)
 
 ### generate_keys  —  Generate Keys  [utility]

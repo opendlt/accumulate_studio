@@ -42,6 +42,10 @@ A hash lock is a header field (`hashLock`, TransactionHeader field 8) on an ordi
 - The `accumulate` CLI has no HTLC commands: use the library API.
 - Inputs, outputs and the per-SDK traps for each step: `llms-full.txt`.
 
+## Other API notes
+- `HeaderOptions` also carries `expire`, `hold_until` and `authorities` (header fields 5-7). All of fields 5-8 are part of the transaction hash; `sign_existing` co-signs by reusing the hash in the envelope, and `marshal_header_from_json` recomputes it from a received header.
+- v3 proof methods: `major_header_range`, `minor_root_range`, `anchor_receipt`; `Receipt` has `for_height`, `complete`, `partition`, `starts_at_main_state`; `NetworkGlobals.block_interval` (raw JSON `{seconds, nanoseconds}`).
+
 ## CLI (no code required)
 ```
 cargo install accumulate-sdk
