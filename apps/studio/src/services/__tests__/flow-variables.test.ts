@@ -87,6 +87,17 @@ describe('resolveRunVariables', () => {
     expect(vars).toEqual(declared); // the flow's own defaults are never rewritten
   });
 
+  it('an emptied optional variable keeps its default instead of blanking it', () => {
+    expect(resolveRunVariables(vars, { ADI_NAME: 'a', LOCK_AMOUNT: '' }).LOCK_AMOUNT).toBe('1.00000000');
+    expect(resolveRunVariables(vars, { ADI_NAME: 'a', LOCK_AMOUNT: '   ' }).LOCK_AMOUNT).toBe('1.00000000');
+  });
+
+  it('an empty optional variable with no default stays an empty value', () => {
+    const memo = [v({ name: 'MEMO' })];
+    expect(resolveRunVariables(memo, { MEMO: '' })).toEqual({ MEMO: '' });
+    expect(resolveRunVariables(memo)).toEqual({});
+  });
+
   it('ignores names the flow does not declare', () => {
     expect(resolveRunVariables(vars, { ADI_NAME: 'a', NOPE: 'x' })).not.toHaveProperty('NOPE');
   });

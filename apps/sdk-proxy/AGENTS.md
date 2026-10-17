@@ -49,7 +49,7 @@ Dockerfile          deployment image (not an agent workspace)
 
 - **Credits are scaled ×100 here, exactly once.** ACME ×1e8 happens in the codegen engine; credits ×100 happens in this proxy; the oracle price is never scaled. Adding a second multiplication anywhere produces amounts that are wrong by orders of magnitude and are hard to trace.
 - **This service signs transactions.** It handles private key material. Never log a key, never echo a request body containing one, and never add a debug endpoint that returns one.
-- **Depends on the published Python SDK** (`accumulate-sdk-opendlt>=2.1.0`) from PyPI, not on a local checkout. An SDK change must be published before the proxy can use it.
+- **Depends on the published Python SDK** (`accumulate-sdk-opendlt>=2.5.0`) from PyPI, not on a local checkout. An SDK change must be published before the proxy can use it.
 - **Rate limiting is deliberate.** `slowapi` limits exist because the proxy fronts a public testnet with a shared faucet. Do not remove them to make a test pass.
 - **The Dockerfile is deployment infra**, not a development container. It is not a devcontainer and is not intended as an agent workspace.
 

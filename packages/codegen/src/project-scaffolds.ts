@@ -11,6 +11,7 @@
 import type { Flow, GeneratedFile, SDKLanguage, SDKMap } from '@accumulate-studio/types';
 import { generateCodeFromManifest, isHashLockNode } from './manifest-generator';
 import { loadAllManifests } from './manifest-loader';
+import { toSnakeCase, toKebabCase } from './template-engine';
 
 // =============================================================================
 // Unified engine accessor
@@ -443,24 +444,6 @@ This project was automatically generated from a visual flow definition.
 // =============================================================================
 // Utility Functions
 // =============================================================================
-
-function toSnakeCase(str: string): string {
-  return str
-    .replace(/[^a-zA-Z0-9]/g, '_')
-    .replace(/([A-Z])/g, '_$1')
-    .toLowerCase()
-    .replace(/^_/, '')
-    .replace(/_+/g, '_');
-}
-
-function toKebabCase(str: string): string {
-  return str
-    .replace(/[^a-zA-Z0-9]/g, '-')
-    .replace(/([A-Z])/g, '-$1')
-    .toLowerCase()
-    .replace(/^-/, '')
-    .replace(/-+/g, '-');
-}
 
 function toPascalCase(str: string): string {
   return str

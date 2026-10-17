@@ -9,3 +9,4 @@ These produced `../INDEX.md` and every `../<lang>-<run>.json`. They are NOT part
 - `tally.py`: builds `INDEX.md` from the verifier JSONs and logs (not from the result lines).
 - `palette-e2e.sh`: `RUN_E2E=1 vitest run action-palette-e2e -t "GenerateHashLock|WaitForLockedDeposit|ReleaseLockedOperation"` (15 live tests).
 - `waveA.sh`, `waveC.sh`: how the runs were launched in parallel. The generated programs name the ADI `adi-<unix seconds>`, so two programs that start in the same second collide: the drivers hold a 20 s start lock around each program start (see `claim_slot`).
+- `run-e2e3.sh`, `waveD31.sh` (post-D-31 confirmation, 2026-10-17): `run-e2e2.sh` with the 20 s start lock removed (`claim_slot` is a no-op, because D-31 made the default ADI name unique within a second), and the wave that started the five published-registry runs together (`<lang>-postd31-1`). Rebuild the exporter first (`node build-p7.mjs`): the bundle must contain the post-D-31 generator.

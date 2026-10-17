@@ -9,6 +9,7 @@ import type {
 } from '@accumulate-studio/types';
 import { serializeFlowToYaml } from './flow-serializer';
 import { PROJECT_GENERATORS } from './project-scaffolds';
+import { toSnakeCase, toKebabCase } from './template-engine';
 import { generateAssertions, type GeneratedAssertions } from './assertions-generator';
 import {
   generateAgentTask,
@@ -416,30 +417,6 @@ function getLanguageDisplayName(language: SDKLanguage): string {
     csharp: 'C#',
   };
   return names[language] ?? language;
-}
-
-/**
- * Convert string to kebab-case
- */
-function toKebabCase(str: string): string {
-  return str
-    .replace(/[^a-zA-Z0-9]/g, '-')
-    .replace(/([A-Z])/g, '-$1')
-    .toLowerCase()
-    .replace(/^-/, '')
-    .replace(/-+/g, '-');
-}
-
-/**
- * Convert string to snake_case
- */
-function toSnakeCase(str: string): string {
-  return str
-    .replace(/[^a-zA-Z0-9]/g, '_')
-    .replace(/([A-Z])/g, '_$1')
-    .toLowerCase()
-    .replace(/^_/, '')
-    .replace(/_+/g, '_');
 }
 
 // =============================================================================

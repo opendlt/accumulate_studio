@@ -142,7 +142,9 @@ export async function createHashLock(
   if (algorithm !== 'sha256' && algorithm !== 'sha256d') {
     throw new Error(`GenerateHashLock: unsupported hash algorithm "${opts.hashAlgorithm}" (use sha256 or sha256d)`);
   }
-  const minutes = Number(opts.expirationMinutes ?? 30);
+  // '' / null / undefined mean "the default", exactly as the code generator reads them
+  const rawMinutes = opts.expirationMinutes;
+  const minutes = rawMinutes === undefined || rawMinutes === null || String(rawMinutes).trim() === '' ? 30 : Number(rawMinutes);
   if (!Number.isInteger(minutes) || minutes < MIN_LOCK_MINUTES || minutes > MAX_LOCK_MINUTES) {
     throw new Error(
       `GenerateHashLock: expirationMinutes must be a whole number between ${MIN_LOCK_MINUTES} and ${MAX_LOCK_MINUTES}`
@@ -888,7 +890,13 @@ export class NodeExecutor {
     parsePreimage(preimage); // 1..256 bytes of hex, before a transaction is spent on it
 
     const explicitSigner = config.signerUrl ? this.resolveValue(config.signerUrl, inputs) : '';
-    const signerUrl = explicitSigner || (inputs.keyPageUrl as string | undefined) || keypair.liteTokenAccount;
+    // Same rule as SendTokens: a lite account is governed by its lite identity, so an ADI key page
+    // from an upstream CreateIdentity is not an authority of the principal.
+    const isLitePrincipal = /^acc:\/\/[0-9a-fA-F]{40,}/.test(principal);
+    const signerUrl =
+      explicitSigner ||
+      (isLitePrincipal ? undefined : (inputs.keyPageUrl as string | undefined)) ||
+      keypair.liteTokenAccount;
     this.requireResolved('ReleaseLockedOperation signerUrl', signerUrl);
 
     const result = await this.api.callProxy<{

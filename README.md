@@ -133,6 +133,7 @@ Pre-built workflow templates in `templates/` cover common Accumulate operations:
 - `data-writing.yaml` -- create data accounts and write entries
 - `key-rotation.yaml` -- rotate keys on an existing identity
 - `multi-sig-setup.yaml` -- configure multi-signature accounts
+- `hash-lock.yaml` -- hash-locked (HTLC) payment: lock tokens to a SHA-256 hash, find the locked deposit, release it with the preimage. Refund on expiry is not currently functional on the network; see [`docs/hash-lock-example/README.md`](docs/hash-lock-example/README.md)
 
 ## MCP Server
 
@@ -140,7 +141,7 @@ The MCP server (`apps/mcp-server`) exposes Accumulate operations as tools for Cl
 
 - **Network** -- list networks, select active network, check connectivity
 - **Query** -- account state, chain info, balances
-- **Transaction** -- build, validate, submit, and wait for transactions
+- **Transaction** -- build, validate, submit, and wait for transactions (including hash-locked sends and their release)
 - **Verification** -- fetch receipts, verify Merkle proofs, trace synthetic transactions
 
 Start it with:

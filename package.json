@@ -11,7 +11,8 @@
   "scripts": {
     "dev": "npm run dev --workspace=apps/studio",
     "dev:mcp": "npm run dev --workspace=apps/mcp-server",
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build:libs && npm run build:mcp && npm run build:studio",
+    "build:libs": "npm run build:types && npm run build:verification && npm run build:codegen && npm run build:agent-pack",
     "build:studio": "npm run build --workspace=apps/studio",
     "build:mcp": "npm run build --workspace=apps/mcp-server",
     "build:types": "npm run build --workspace=packages/types",
@@ -20,7 +21,7 @@
     "build:agent-pack": "npm run build --workspace=packages/agent-pack",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run build:libs && npm run typecheck --workspaces --if-present",
     "clean": "rimraf **/dist **/node_modules/.cache",
     "dev:proxy": "cd apps/sdk-proxy && python -m uvicorn app.main:app --reload --port 8000",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:proxy\"",

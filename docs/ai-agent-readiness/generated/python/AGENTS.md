@@ -25,6 +25,7 @@ pip install -e .   # pure Python; no separate build step
 |---|---|:--:|
 | `pytest` | unit suite | no |
 | `pytest tests/integration` | integration suite | **yes** |
+| `pytest tests/test_htlc_golden_vectors.py -q` | hash-lock (HTLC) golden vectors and API | no |
 
 Network-dependent suites talk to a live testnet. If they fail while the unit suite passes, suspect the network before suspecting your change.
 
@@ -64,6 +65,7 @@ node tools/cli-conformance/run.mjs --cmd "python -m accumulate_client.cli" --cwd
 - This repository root IS the package root: `pyproject.toml` here declares `accumulate-sdk-opendlt`. Do not look for a `unified/` subdirectory — that is an artifact of some local working copies and is not part of this repo.
 - The package exports both the canonical path (`Accumulate`/`TxBody`/`SmartSigner`/`QuickStart`) and a legacy `AccumulateClient`. New code uses the canonical path only.
 - `QuickStart` helper methods print progress to stdout. Do not use them in anything whose stdout is parsed.
+- Hash locks (HTLC) are library-only. `hashLock` is TransactionHeader field 8 and part of the transaction hash; `pytest tests/test_htlc_golden_vectors.py -q` pins those bytes. A failing vector means the signing bytes changed — a consensus-visible break, not a test to update. Refund on expiry is not currently functional on the network, so no test or doc may claim it works.
 
 ## Permitted commands
 

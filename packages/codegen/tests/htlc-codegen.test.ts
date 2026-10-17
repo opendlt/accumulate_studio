@@ -220,15 +220,39 @@ describe('HTLC code generation', () => {
     expect(cargo(plain)).not.toContain('getrandom');
   });
 
-  it('asserts no receiver balance change for a locked send', () => {
-    const { assertions } = generateAssertions(htlcFlow());
+  it('credits the receiver on the release, not on the locked send', () => {
+    const { assertions, expectedState } = generateAssertions(htlcFlow());
     const receiverDeltas = assertions.filter((a) => a.type === 'balance.delta' && String(a.account).includes('create_receiver_account'));
-    expect(receiverDeltas).toHaveLength(0);
+    // One delta in total (the locked amount, once), and its message says it happens on release.
+    expect(receiverDeltas).toHaveLength(1);
+    expect(receiverDeltas[0].message).toMatch(/when the lock is released/);
+    expect(expectedState.balanceDeltas['{{create_receiver_account.tokenAccountUrl}}']).toBe('{{LOCK_AMOUNT}}');
+
+    // Without the release the locked send alone credits nobody.
+    const noRelease = htlcFlow();
+    noRelease.nodes = noRelease.nodes.filter((n) => n.id !== 'release_locked');
+    expect(generateAssertions(noRelease).assertions.filter((a) => a.type === 'balance.delta' && String(a.account).includes('create_receiver_account'))).toHaveLength(0);
 
     // Control: the same send without a lock does credit the recipient immediately.
     const unlocked = htlcFlow();
     delete (unlocked.nodes.find((n) => n.id === 'locked_send')!.config as Record<string, unknown>).hashLockFrom;
     const control = generateAssertions(unlocked).assertions.filter((a) => a.type === 'balance.delta' && String(a.account).includes('create_receiver_account'));
     expect(control).toHaveLength(1);
+  });
+
+  it('a release preimage that is neither hex nor a reference is refused instead of emitted as an identifier', () => {
+    for (const bad of ['my-secret', 'Secret1', 'not hex at all']) {
+      for (const lang of LANGUAGES) {
+        expect(() => generate(htlcFlow({ release: { preimage: bad } }), lang), `${lang}: ${bad}`).toThrow(/preimage must be hex/);
+      }
+    }
+  });
+
+  it('a release preimage may still be a hex literal or a reference', () => {
+    const hex = 'ab'.repeat(32);
+    for (const lang of LANGUAGES) {
+      expect(generate(htlcFlow({ release: { preimage: hex } }), lang), lang).toContain(hex);
+      expect(() => generate(htlcFlow({ release: { preimage: '{{create_hash_lock.preimage}}' } }), lang), lang).not.toThrow();
+    }
   });
 });

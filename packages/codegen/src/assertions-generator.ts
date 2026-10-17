@@ -87,7 +87,7 @@ export function generateAssertions(flow: Flow): GeneratedAssertions {
  */
 function generateNodeAssertions(
   node: FlowNode,
-  _flow: Flow
+  flow: Flow
 ): GeneratedAssertions {
   const assertions: FlowAssertion[] = [];
   const expectedState: ExpectedState = {
@@ -205,6 +205,26 @@ function generateNodeAssertions(
 
       // Source account loses tokens (negative delta would need principal URL)
       // Note: We'd need to track the principal separately
+      break;
+    }
+
+    // A locked amount lands only when it is released: assert the credit on the release, for the
+    // recipient of the hash-locked send that this release is for.
+    case 'ReleaseLockedOperation': {
+      const principal = config.principal as string | undefined;
+      const credited = flow.nodes
+        .filter((n) => n.type === 'SendTokens' && (n.config as Record<string, unknown>).hashLockFrom)
+        .flatMap((n) => ((n.config as Record<string, unknown>).recipients as Array<{ url: string; amount: string }> | undefined) ?? [])
+        .find((r) => !principal || r.url === principal);
+      if (credited) {
+        assertions.push({
+          type: 'balance.delta',
+          account: credited.url,
+          delta: credited.amount,
+          message: `${credited.url} should receive ${credited.amount} tokens when the lock is released`,
+        });
+        expectedState.balanceDeltas[credited.url] = credited.amount;
+      }
       break;
     }
 

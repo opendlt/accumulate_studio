@@ -1,0 +1,22 @@
+P8 gate counts (tree = working copy that became the P8 commit; venv first on PATH, REQUIRE_TOOLCHAINS=1)
+Script: the run() helper wrote gate-summary.txt; raw logs were in C:\tmp\p8-logs (not committed).
+
+typecheck                 exit 0
+npm test                  exit 0
+  apps/mcp-server         39 passed   (P7: 27; +12 hashLock / releaseLockedOperation protocol tests)
+  apps/studio             730 passed (44 files)
+  packages/agent-pack     51 passed
+  packages/codegen        574 passed, 135 skipped (live-gated action-palette-e2e)
+  packages/verification   17 passed
+  total                   1,411 passed, 135 skipped   (P6/P7: 1,399 / 135)
+validate:manifests        exit 0, 28/28 blocks covered in each of the 5 manifests
+validate:canonical        exit 0, all canonical tasks covered by every manifest
+harness:test              exit 0, 74 pass / 0 fail
+verify:codegen            exit 0, 45/45 generations clean (0 errors, 0 warnings)
+build:mcp + test:mcp      exit 0, 39/39
+lint                      exit 0, 0 errors / 95 warnings (= baseline ceiling)
+proxy pytest              65 passed
+npm run build (ALL)       exit 0 (first run on this branch)
+gen:agent + gen:mcp       exit 0 twice; sha256 of every file under docs/ai-agent-readiness/generated and
+                          apps/mcp-server/src/generated identical before and after the re-run (gen-drift exit 0)
+snapshots                 0 changed (tests/__snapshots__ untouched; git status clean under packages/)

@@ -27,6 +27,7 @@ cargo build
 | `make test-integration` | integration | **yes** |
 | `make test-conformance` | conformance vectors | no |
 | `cargo test --doc` | doctests (Amount helper) | no |
+| `cargo test --test golden_vectors_1_4_6_7` | hash-lock (HTLC) golden vectors and API | no |
 
 Network-dependent suites talk to a live testnet. If they fail while the unit suite passes, suspect the network before suspecting your change.
 
@@ -68,6 +69,7 @@ node tools/cli-conformance/run.mjs --cmd "cargo run --bin accumulate --" --cwd .
 - The crate is `accumulate-sdk` but the import path is `accumulate_client`. Both are correct and intentional.
 - `golden_bytes_stable` pins the marshaled bytes for all 21 transaction types. If it fails, you changed signing bytes — that is a consensus-visible break, not a test to update.
 - Transaction type codes were wrong for 5 variants historically (LockAccount, BurnCredits, TransferCredits, UpdateAccountAuth, UpdateKey). The golden-byte harness exists to stop that recurring.
+- Hash locks (HTLC) are library-only. `hashLock` is TransactionHeader field 8 and part of the transaction hash; `cargo test --test golden_vectors_1_4_6_7` pins those bytes. A failing vector means the signing bytes changed — a consensus-visible break, not a test to update. Refund on expiry is not currently functional on the network, so no test or doc may claim it works.
 
 ## Permitted commands
 

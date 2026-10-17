@@ -890,6 +890,8 @@ const hashLockFlow: Flow = {
       position: { x: 300, y: 1520 },
     },
     {
+      // amount is in base units (5 ACME): code generators print a literal verbatim. Studio's own flow
+      // template (flow-templates.ts) uses the number 500000000 here, since Studio reads a string as whole ACME.
       id: 'fund_sender',
       type: 'SendTokens',
       label: 'Fund Sender Account',

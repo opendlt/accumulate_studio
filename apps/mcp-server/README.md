@@ -13,6 +13,8 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server that gives an
 
 Each tool ships an `inputSchema`; unknown tools return the full valid tool list; errors are structured and coded.
 
+`tx.build` also takes an optional `hashLock` header on `sendTokens` (`{hashAlgorithm: "sha256" | "sha256d", hash, expiration}`, validated like the node) and builds `releaseLockedOperation` to release it. Refund on expiry is the protocol design but is not currently functional on the network.
+
 ## Permission model (safe by default)
 
 Three tiers gate what an agent may do. The default is **`BUILD_ONLY`** — signing is never enabled implicitly.

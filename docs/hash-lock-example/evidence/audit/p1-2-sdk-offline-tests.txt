@@ -1,0 +1,28 @@
+RUNBOOK P1.2 offline HTLC suites, re-run in the final audit session
+== python (local SDK, venv with pytest)  [count: 19 passed, from `pytest -rA`; the quiet summary line is suppressed by the repo's pytest config]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+exit=0
+  repo python tracked-file status after: 0 modified
+== javascript
+Test Suites: 2 passed, 2 total
+Tests:       62 passed, 62 total
+exit=0
+  repo javascript tracked-file status after: 0 modified
+== dart
+00:00 +25: test/unit/htlc\htlc_api_test.dart: v3 models NetworkGlobals keeps blockInterval raw and tolerates its absence
+00:00 +26: All tests passed!
+exit=0
+  repo dart tracked-file status after: 0 modified
+== rust
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+exit=0
+  repo rust tracked-file status after: 0 modified
+== csharp
+Passed!  - Failed:     0, Passed:    47, Skipped:     0, Total:    47, Duration: 1 s - Acme.Net.Sdk.Tests.dll (net9.0)
+exit=0
+  repo csharp tracked-file status after: 0 modified
+ALLDONE
+
+NOTE on the repo-status lines above: this script ran `git status` in the repository ROOT folders for js/c#, but the Python, Dart and Rust repositories are rooted in their `unified/` subfolder, so those three status lines are not meaningful.
+Checked by hand afterwards at the real roots: the Python run had modified the tracked file `reports/test_env_snapshot.json` (it records the interpreter version; the same side effect STATUS noted in P1.2). It was restored with `git checkout`; all five SDK repos and accumulate-core are clean (`git status --porcelain --untracked-files=no` empty).

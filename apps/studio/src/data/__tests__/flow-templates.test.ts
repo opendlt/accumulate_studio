@@ -302,3 +302,33 @@ describe('Every golden-path template generates code', () => {
   });
 });
 
+describe('SendTokens literal amounts', () => {
+  // Studio reads a STRING amount as whole ACME (x1e8) and a NUMBER as base units, while the generator
+  // prints a literal verbatim as base units. So a long digit string is 5 ACME in generated code but
+  // hundreds of millions of ACME in Studio, which the node refuses (D-20, D-33).
+  const sendAmounts = (flow: (typeof GOLDEN_PATH_TEMPLATES)[number]['flow']) =>
+    flow.nodes
+      .filter((n) => n.type === 'SendTokens')
+      .flatMap((n) => {
+        const c = n.config as Record<string, unknown>;
+        const recipients = (c.recipients as Array<{ amount?: unknown }> | undefined) ?? [];
+        return [c.amount, ...recipients.map((r) => r.amount)].map((amount) => ({ id: n.id, amount }));
+      })
+      .filter((x) => x.amount !== undefined);
+
+  it('no shipped template funds with a base-unit digit string', () => {
+    for (const t of GOLDEN_PATH_TEMPLATES) {
+      for (const { id, amount } of sendAmounts(t.flow)) {
+        const bad = typeof amount === 'string' && /^\d{9,}$/.test(amount);
+        expect(bad, `${t.id}/${id}: amount '${String(amount)}' is a string, so Studio reads it as whole ACME`).toBe(false);
+      }
+    }
+  });
+
+  it('Token Transfer funds the sender with the number 500000000 (5 ACME in base units)', () => {
+    const t = GOLDEN_PATH_TEMPLATES.find((x) => x.id === 'token-transfer')!;
+    const fund = t.flow.nodes.find((n) => n.id === 'fund_sender')!;
+    expect((fund.config as Record<string, unknown>).amount).toBe(500000000);
+  });
+});
+

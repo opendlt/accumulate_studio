@@ -124,6 +124,225 @@ describe('MCP protocol — built bundle', () => {
     }
   });
 
+  // --- tools: hash-locked sendTokens and the release ----------------------
+  const LOCK_HASH = 'ab'.repeat(32);
+  const SENDER = 'acc://sender.acme/tokens';
+  const RECIPIENTS = [{ url: 'acc://receiver.acme/tokens', amount: '100000000' }];
+  const DEPOSIT = `acc://${'cd'.repeat(32)}@receiver.acme/tokens`;
+  const inMinutes = (m) => Date.now() + m * 60_000;
+  const rfc3339 = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+  async function callTool(c, name, args) {
+    const r = await c.send('tools/call', { name, arguments: args });
+    return JSON.parse(r.result.content[0].text);
+  }
+
+  const buildSend = (c, hashLock) =>
+    callTool(c, 'tx.build', {
+      type: 'sendTokens',
+      principal: SENDER,
+      payload: { to: RECIPIENTS },
+      ...(hashLock === undefined ? {} : { hashLock }),
+    });
+
+  const buildRelease = (c, payload) =>
+    callTool(c, 'tx.build', {
+      type: 'releaseLockedOperation',
+      principal: 'acc://receiver.acme/tokens',
+      payload,
+    });
+
+  test('tx.build advertises the optional hashLock header', async () => {
+    const r = await client.send('tools/list');
+    const build = r.result.tools.find((t) => t.name === 'tx.build');
+    const lock = build.inputSchema.properties.hashLock;
+    assert.ok(lock, 'hashLock is declared');
+    assert.deepEqual(lock.required, ['hashAlgorithm', 'hash', 'expiration']);
+    assert.deepEqual(lock.properties.hashAlgorithm.enum, ['sha256', 'sha256d']);
+    assert.ok(!build.inputSchema.required.includes('hashLock'), 'hashLock stays optional');
+  });
+
+  test('a locked sendTokens carries the normalised hashLock and never promises a refund', async () => {
+    // Unix seconds, upper-case hash and a mixed-case algorithm come back in wire form.
+    const seconds = Math.floor(inMinutes(60) / 1000);
+    const out = await buildSend(client, {
+      hashAlgorithm: 'SHA256',
+      hash: LOCK_HASH.toUpperCase(),
+      expiration: seconds,
+    });
+    assert.equal(out.ok, true, JSON.stringify(out.errors));
+    assert.deepEqual(out.data.transaction.header.hashLock, {
+      hashAlgorithm: 'sha256',
+      hash: LOCK_HASH,
+      expiration: rfc3339(seconds * 1000),
+    });
+    const warnings = (out.warnings ?? []).join('\n');
+    assert.match(warnings, /credited only when a releaseLockedOperation/);
+    assert.match(warnings, /not currently functional/i);
+    assert.doesNotMatch(warnings, /refunded to the sender/i);
+  });
+
+  test('a locked sendTokens accepts sha256d and an RFC 3339 expiration', async () => {
+    const expiration = rfc3339(inMinutes(120));
+    const out = await buildSend(client, { hashAlgorithm: 'sha256d', hash: LOCK_HASH, expiration });
+    assert.equal(out.ok, true, JSON.stringify(out.errors));
+    assert.equal(out.data.transaction.header.hashLock.hashAlgorithm, 'sha256d');
+    assert.equal(out.data.transaction.header.hashLock.expiration, expiration);
+  });
+
+  test('a send without a hashLock is unchanged: no lock in the header, no HTLC warnings', async () => {
+    const out = await buildSend(client);
+    assert.equal(out.ok, true);
+    assert.equal(out.data.transaction.header.hashLock, undefined);
+    assert.doesNotMatch((out.warnings ?? []).join('\n'), /hashLock|refund/i);
+  });
+
+  test('an expiration under 15 minutes passes the node floor but warns about the thin margin', async () => {
+    const out = await buildSend(client, {
+      hashAlgorithm: 'sha256',
+      hash: LOCK_HASH,
+      expiration: rfc3339(inMinutes(12)),
+    });
+    assert.equal(out.ok, true, JSON.stringify(out.errors));
+    assert.match((out.warnings ?? []).join('\n'), /under 15 minutes/);
+  });
+
+  test('a hashLock the node would refuse is rejected at build, with the node\'s wording', async () => {
+    const good = { hashAlgorithm: 'sha256', hash: LOCK_HASH, expiration: rfc3339(inMinutes(60)) };
+    const cases = [
+      ['not an object', 'abc', /must be an object/],
+      ['an array', [good], /must be an object/],
+      ['hash160', { ...good, hashAlgorithm: 'hash160' }, /hash160 is not supported/],
+      ['an unknown algorithm', { ...good, hashAlgorithm: 'md5' }, /unsupported hashlock algorithm/],
+      ['no algorithm', { hash: good.hash, expiration: good.expiration }, /unsupported hashlock algorithm/],
+      ['no hash', { ...good, hash: undefined }, /hash cannot be empty/],
+      ['an empty hash', { ...good, hash: '' }, /hash cannot be empty/],
+      ['a non-hex hash', { ...good, hash: 'zz'.repeat(32) }, /must be hex/],
+      ['a 31-byte hash', { ...good, hash: 'ab'.repeat(31) }, /must be 32 bytes for sha256, got 31/],
+      ['a 20-byte hash for sha256d', { ...good, hashAlgorithm: 'sha256d', hash: 'ab'.repeat(20) }, /must be 32 bytes for sha256d, got 20/],
+      ['no expiration', { ...good, expiration: undefined }, /expiration is required/],
+      ['an unparseable expiration', { ...good, expiration: 'tomorrow' }, /must be RFC 3339/],
+      ['an expiration in the past', { ...good, expiration: rfc3339(inMinutes(-5)) }, /at least 10 minutes/],
+      ['an expiration 5 minutes ahead', { ...good, expiration: rfc3339(inMinutes(5)) }, /at least 10 minutes/],
+      ['an expiration 31 days ahead', { ...good, expiration: rfc3339(inMinutes(31 * 24 * 60)) }, /cannot exceed 30 days/],
+      ['milliseconds instead of seconds', { ...good, expiration: inMinutes(60) }, /looks like milliseconds/],
+      ['fractional Unix seconds', { ...good, expiration: Math.floor(inMinutes(60) / 1000) + 0.5 }, /whole Unix seconds/],
+      ['a sub-second RFC 3339 expiration', { ...good, expiration: new Date(Math.floor(inMinutes(60) / 1000) * 1000 + 500).toISOString() }, /whole seconds/],
+    ];
+    for (const [label, hashLock, message] of cases) {
+      const out = await buildSend(client, hashLock);
+      assert.equal(out.ok, false, `${label} must be rejected`);
+      assert.equal(out.errors[0].code, 'INVALID_HASH_LOCK', label);
+      assert.match(out.errors.map((e) => e.message).join('\n'), message, label);
+    }
+  });
+
+  test('a hashLock on any type but sendTokens is rejected, because the node would silently ignore it', async () => {
+    const out = await callTool(client, 'tx.build', {
+      type: 'addCredits',
+      principal: SENDER,
+      payload: { recipient: 'acc://sender.acme/book/1', amount: 100 },
+      hashLock: { hashAlgorithm: 'sha256', hash: LOCK_HASH, expiration: rfc3339(inMinutes(60)) },
+    });
+    assert.equal(out.ok, false);
+    assert.equal(out.errors[0].code, 'INVALID_HASH_LOCK');
+    assert.match(out.errors[0].message, /only honoured on sendTokens/);
+  });
+
+  test('releaseLockedOperation is a known type with the protocol field names and a real credit estimate', async () => {
+    const out = await buildRelease(client, { lockedTxID: DEPOSIT, preimage: 'ef'.repeat(32) });
+    assert.equal(out.ok, true, JSON.stringify(out.errors));
+    assert.equal(out.data.transaction.body.type, 'releaseLockedOperation');
+    assert.equal(out.data.transaction.body.payload.lockedTxID, DEPOSIT);
+    // 1 credit, not the unknown-type default of 10.
+    assert.equal(out.data.transaction.estimatedCredits, 1);
+    const warnings = (out.warnings ?? []).join('\n');
+    assert.match(warnings, /recipient account of the locked deposit/);
+    assert.match(warnings, /fails at execute/);
+  });
+
+  test('a release written with the SDK spelling lockedTxId is sent under the wire name lockedTxID', async () => {
+    const out = await buildRelease(client, { lockedTxId: DEPOSIT, preimage: 'ef'.repeat(32) });
+    assert.equal(out.ok, true, JSON.stringify(out.errors));
+    const payload = out.data.transaction.body.payload;
+    assert.equal(payload.lockedTxID, DEPOSIT);
+    assert.equal(payload.lockedTxId, undefined);
+  });
+
+  test('a malformed release is rejected at build, with the node\'s wording', async () => {
+    const cases = [
+      ['no locked id', { preimage: 'ef'.repeat(32) }, /locked transaction ID is required/],
+      ['a send-style id with no hash', { lockedTxID: 'acc://receiver.acme/tokens', preimage: 'ef' }, /must be a transaction id of the form acc:\/\/<64 hex>@/],
+      ['no preimage', { lockedTxID: DEPOSIT }, /preimage is required/],
+      ['an empty preimage', { lockedTxID: DEPOSIT, preimage: '' }, /preimage is required/],
+      ['an odd-length preimage', { lockedTxID: DEPOSIT, preimage: 'abc' }, /even-length hex/],
+      ['a non-hex preimage', { lockedTxID: DEPOSIT, preimage: 'zz' }, /even-length hex/],
+      ['a 257-byte preimage', { lockedTxID: DEPOSIT, preimage: 'ab'.repeat(257) }, /preimage too large \(max 256 bytes\)/],
+    ];
+    for (const [label, payload, message] of cases) {
+      const out = await buildRelease(client, payload);
+      assert.equal(out.ok, false, `${label} must be rejected`);
+      assert.equal(out.errors[0].code, 'INVALID_PAYLOAD', label);
+      assert.match(out.errors.map((e) => e.message).join('\n'), message, label);
+    }
+    // The boundary itself is valid: 256 bytes.
+    const edge = await buildRelease(client, { lockedTxID: DEPOSIT, preimage: 'ab'.repeat(256) });
+    assert.equal(edge.ok, true, JSON.stringify(edge.errors));
+  });
+
+  test('tx.submit re-checks the lock window and the type, before any network call', async () => {
+    const c = new McpClient(['--permission-mode', 'SIGN_AND_SUBMIT']);
+    await c.initialize();
+    const built = await buildSend(c, {
+      hashAlgorithm: 'sha256',
+      hash: LOCK_HASH,
+      expiration: rfc3339(inMinutes(60)),
+    });
+    assert.equal(built.ok, true, JSON.stringify(built.errors));
+    const submit = (transaction) =>
+      callTool(c, 'tx.submit', { transaction, signature: 'aa'.repeat(64), signer: 'bb'.repeat(32) });
+
+    // The lock expired between build and submit.
+    const stale = structuredClone(built.data.transaction);
+    stale.header.hashLock.expiration = rfc3339(inMinutes(2));
+    const expired = await submit(stale);
+    assert.equal(expired.ok, false);
+    assert.equal(expired.errors[0].code, 'INVALID_HASH_LOCK');
+    assert.match(expired.errors[0].message, /at least 10 minutes/);
+
+    // A hand-built transaction with a lock on the wrong type.
+    const wrongType = structuredClone(built.data.transaction);
+    wrongType.body.type = 'addCredits';
+    const ignored = await submit(wrongType);
+    assert.equal(ignored.ok, false);
+    assert.equal(ignored.errors[0].code, 'INVALID_HASH_LOCK');
+    assert.match(ignored.errors[0].message, /only honoured on sendTokens/);
+
+    // A malformed lock supplied directly, bypassing tx.build.
+    const bad = structuredClone(built.data.transaction);
+    bad.header.hashLock.hash = 'ab'.repeat(20);
+    const short = await submit(bad);
+    assert.equal(short.ok, false);
+    assert.equal(short.errors[0].code, 'INVALID_HASH_LOCK');
+    assert.match(short.errors[0].message, /must be 32 bytes/);
+    c.close();
+  });
+
+  test('tx.submit stays refused in BUILD_ONLY even with a valid lock', async () => {
+    const built = await buildSend(client, {
+      hashAlgorithm: 'sha256',
+      hash: LOCK_HASH,
+      expiration: rfc3339(inMinutes(60)),
+    });
+    const r = await callTool(client, 'tx.submit', {
+      transaction: built.data.transaction,
+      signature: 'aa'.repeat(64),
+      signer: 'bb'.repeat(32),
+    });
+    assert.equal(r.ok, false);
+    assert.match(JSON.stringify(r.errors), /SIGN_AND_SUBMIT|PERMISSION/i);
+  });
+
   // --- resources -----------------------------------------------------------
   test('lists static resources', async () => {
     const r = await client.send('resources/list');

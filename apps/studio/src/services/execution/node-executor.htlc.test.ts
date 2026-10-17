@@ -80,6 +80,13 @@ describe('createHashLock (browser crypto, no Buffer)', () => {
     expect(lock.expirationIso).toBe(new Date(lock.expiration * 1000).toISOString());
   });
 
+  it('treats an empty expirationMinutes as the default 30, like the code generator', async () => {
+    for (const empty of ['', '   ']) {
+      const lock = await createHashLock({ expirationMinutes: empty }, 1_700_000_123_456);
+      expect(lock.expiration).toBe(1_700_000_123 + 30 * 60);
+    }
+  });
+
   it('accepts expirationMinutes arriving as a string from the config modal', async () => {
     const lock = await createHashLock({ expirationMinutes: '20' }, 1_700_000_000_000);
     expect(lock.expiration).toBe(1_700_000_000 + 20 * 60);
@@ -364,6 +371,27 @@ describe('NodeExecutor: HTLC blocks', () => {
       });
       expect(out.txId).toBe('acc://rel@x');
       expect(out.lockedTxId).toBe(LOCKED_TX);
+    });
+
+    it('signs a release into a LITE account with the lite identity, not an upstream ADI key page', async () => {
+      api.callProxy.mockResolvedValue({ success: true, tx_hash: 'acc://rel@x' });
+      const lite = `acc://${'ab'.repeat(20)}/ACME`;
+      await executor.execute(
+        node('r', 'ReleaseLockedOperation', { principal: lite, lockedTxId: LOCKED_TX, preimage: PREIMAGE }),
+        { keypair, keyPageUrl: BOOK },
+        context
+      );
+      expect(lastCall()[1]).toMatchObject({ principal: lite, signer_url: keypair.liteTokenAccount });
+    });
+
+    it('signs a release into an ADI account with the upstream key page when no signerUrl is set', async () => {
+      api.callProxy.mockResolvedValue({ success: true, tx_hash: 'acc://rel@x' });
+      await executor.execute(
+        node('r', 'ReleaseLockedOperation', { principal: RECEIVER, lockedTxId: LOCKED_TX, preimage: PREIMAGE }),
+        { keypair, keyPageUrl: BOOK },
+        context
+      );
+      expect(lastCall()[1]).toMatchObject({ principal: RECEIVER, signer_url: BOOK });
     });
 
     it('a release that fails at execute (wrong preimage) fails the node with the node\'s message', async () => {

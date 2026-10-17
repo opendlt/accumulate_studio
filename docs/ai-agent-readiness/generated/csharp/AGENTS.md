@@ -24,6 +24,7 @@ dotnet build Acme.Net.Sdk.sln -c Release
 |---|---|:--:|
 | `dotnet test test/Acme.Net.Sdk.Tests` | unit suite | no |
 | `dotnet test test/Acme.Net.Sdk.AccountTests` | account suite | **yes** |
+| `dotnet test --filter FullyQualifiedName~GoldenVector` | hash-lock (HTLC) golden vectors and API | no |
 
 Network-dependent suites talk to a live testnet. If they fail while the unit suite passes, suspect the network before suspecting your change.
 
@@ -65,6 +66,7 @@ node tools/cli-conformance/run.mjs --cmd "dotnet run --project src/Acme.Net.Sdk.
 - `AcmeClient` is `[Obsolete]`. Use `Accumulate` / `TxBody` / `SmartSigner`.
 - Transaction type codes were wrong for 5 variants historically; `TransactionCodec` was also missing `MarshalUpdateKey` and `MarshalTransferCredits`. Treat marshaling changes as consensus-visible.
 - Url objects (`Lid`, `Lta`) need `.String()`; stored URL strings do not. Calling `.String()` on a string is a compile error.
+- Hash locks (HTLC) are library-only. `hashLock` is TransactionHeader field 8 and part of the transaction hash; `dotnet test --filter FullyQualifiedName~GoldenVector` pins those bytes. A failing vector means the signing bytes changed — a consensus-visible break, not a test to update. Refund on expiry is not currently functional on the network, so no test or doc may claim it works.
 
 ## Permitted commands
 

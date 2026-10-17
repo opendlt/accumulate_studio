@@ -2,7 +2,7 @@
 
 > Honest, commit-referenced status. `artifact-verify` measures the **live registries**, so registry-facing KPIs only flip green after the fixed packages are **republished** — source fixes below are on each repo's `main`, pending a maintainer publish. This file is not auto-generated.
 
-Last updated: 2026-07-29
+Last updated: 2026-10-16
 
 ## Legend
 - ✅ done & verified · 🟡 done in source, pending republish · ⏳ code-complete, gated on a secret · ⬜ not started
@@ -638,3 +638,17 @@ NuGet `Acme.Net.Sdk` + `Acme.Net.Sdk.Cli` **2.3.6** · npm **2.3.5**.
 The Studio visual editor has no co-sign *block*, so a multi-sig spend cannot yet be
 composed on the canvas — only in code or via the CLI. Adding one means a new block
 type plus codegen in five languages; it is a feature, not a patch.
+
+### Hash Lock (HTLC) golden path — 2026-10-16
+
+A 9th golden path, **Hash Lock (HTLC) Payment** (`hash-lock`): lock tokens to a SHA-256 hash, find the locked deposit, release it with the preimage. Branch `feat/htlc-golden-path`; the plan, evidence and decisions are in `docs/hash-lock-example/` (start at `README.md`; the phase ledger is `STATUS.md`).
+
+- **Studio:** three new blocks (Generate Hash Lock, Wait for Locked Deposit, Release Locked Operation) plus a hash-lock option on Send Tokens; the template runs live in Studio through the sdk-proxy.
+- **Codegen:** all five languages. Generated programs exit non-zero on any failure of the lock, the deposit wait or the release.
+- **Proof:** run on Kermit and verified on chain by a script that trusts nothing the program printed. Per language: 2 consecutive runs from the public registry (PyPI `accumulate-sdk-opendlt` 2.5.0, npm `accumulate-sdk-opendlt` 2.5.2, pub.dev `opendlt_accumulate` 2.5.0, crates.io `accumulate-sdk` 2.5.0, NuGet `Acme.Net.Sdk` 2.5.0), one local-SDK run, one `sha256d` lock, one wrong-preimage run that must fail. The in-Studio browser run also passed. Index: `docs/hash-lock-example/evidence/e2e/INDEX.md`.
+- **MCP:** `tx.build` / `tx.submit` take an optional `hashLock` header and build `releaseLockedOperation`; a `hash-lock` prompt. Protocol tests 27 → 39.
+- **Agent docs:** the generator now writes an HTLC section into every SDK's `llms.txt` / `llms-full.txt` (and an HTLC test row into `AGENTS.md`), from the manifests. The generator refuses to emit a refund promise.
+
+**Known limits.** Refund on expiry is the protocol design but is **not currently functional** in core (an unreleased lock strands the funds; write-up in `CORE-ISSUE-refund.md`, not yet filed). HASH160 is not offered. HTLC is not in the CLI.
+
+**Still open.** `npm run gen:agent:dist` has not been run (it writes into the five SDK repos and needs a human), so the SDK repos still carry their old hand-written HTLC text, which says the tokens are refunded. That run would also drop two non-HTLC hand-written bullets from each SDK's `llms.txt` / `llms-full.txt` (header fields 5-7 and the v3 proof methods), because the manifests do not carry them: move them into the manifests first.

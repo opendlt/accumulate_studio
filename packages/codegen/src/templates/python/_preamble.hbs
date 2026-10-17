@@ -15,6 +15,10 @@ from datetime import datetime, timedelta, timezone
 {{#unless hasKeyGen}}
 import hashlib
 {{/unless}}
+{{else}}
+{{#if usesRandomName}}
+import os
+{{/if}}
 {{/if}}
 
 from accumulate_client import Accumulate{{#if hasTransactions}}, NetworkStatusOptions{{/if}}
