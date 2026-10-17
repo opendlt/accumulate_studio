@@ -1,7 +1,7 @@
 {
   "name": "accumulate-studio-mcp",
   "version": "1.1.0",
-  "description": "Model Context Protocol server for the Accumulate blockchain — 14 typed tools, 8 golden-path prompts, and readable context resources (concepts, network registry, per-SDK operation catalogs) with a READ_ONLY/BUILD_ONLY/SIGN_AND_SUBMIT permission model.",
+  "description": "Model Context Protocol server for the Accumulate blockchain — 14 typed tools, 9 golden-path prompts, and readable context resources (concepts, network registry, per-SDK operation catalogs) with a READ_ONLY/BUILD_ONLY/SIGN_AND_SUBMIT permission model.",
   "license": "MIT",
   "repository": "github:opendlt/accumulate_studio",
   "keywords": [

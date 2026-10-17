@@ -129,6 +129,7 @@ const REPO_META = {
       { cmd: 'pytest', desc: 'unit suite', network: false },
       { cmd: 'pytest tests/integration', desc: 'integration suite', network: true },
     ],
+    htlcTest: 'pytest tests/test_htlc_golden_vectors.py -q',
     lint: ['ruff check .', 'ruff format --check .'],
     layout: [
       'src/accumulate_client/  the package',
@@ -156,6 +157,7 @@ const REPO_META = {
       { cmd: 'make test-conformance', desc: 'conformance vectors', network: false },
       { cmd: 'cargo test --doc', desc: 'doctests (Amount helper)', network: false },
     ],
+    htlcTest: 'cargo test --test golden_vectors_1_4_6_7',
     lint: ['make lint   # clippy', 'make fmt-check'],
     layout: [
       'src/            the crate',
@@ -182,6 +184,7 @@ const REPO_META = {
       { cmd: 'dart test', desc: 'full suite', network: false },
       { cmd: 'dart test test/integration', desc: 'integration', network: true },
     ],
+    htlcTest: 'dart test test/unit/htlc test/conformance/codec/golden_vectors_1_4_6_7_test.dart',
     lint: ['dart analyze', 'dart format --output=none --set-exit-if-changed .'],
     layout: [
       'lib/            the package',
@@ -207,6 +210,7 @@ const REPO_META = {
       { cmd: 'dotnet test test/Acme.Net.Sdk.Tests', desc: 'unit suite', network: false },
       { cmd: 'dotnet test test/Acme.Net.Sdk.AccountTests', desc: 'account suite', network: true },
     ],
+    htlcTest: 'dotnet test --filter FullyQualifiedName~GoldenVector',
     lint: ['dotnet format --verify-no-changes'],
     layout: [
       'src/Acme.Net.Sdk/               the library',
@@ -235,6 +239,7 @@ const REPO_META = {
       { cmd: 'npm run test:integration', desc: 'integration', network: true },
       { cmd: 'npm run test:all', desc: 'everything except browser', network: true },
     ],
+    htlcTest: 'npx jest --config=test/jest.config.cjs test/htlc-api.test.ts test/golden-vectors.test.ts',
     lint: ['npm run lint', 'npm run format:check'],
     layout: [
       'src/     TypeScript sources',
@@ -330,6 +335,123 @@ function opsByCategory(operations) {
   return groups;
 }
 
+// ---- hash-locked transfers (HTLC) -------------------------------------------
+// Every SDK's hand-written llms.txt / llms-full.txt carried an HTLC section, and
+// `gen:agent:dist` overwrites those files, so the section has to come from here.
+// The per-SDK API (symbols and traps) is read from the manifests; the protocol
+// facts are the same for all five SDKs and live in the constants below.
+const HTLC_STEPS = [
+  { op: 'generate_hash_lock', title: 'Make the secret and the lock' },
+  { op: 'send_tokens', title: 'Send with the lock' },
+  { op: 'wait_for_locked_deposit', title: 'Find the locked deposit' },
+  { op: 'release_locked', title: 'Release it with the preimage' },
+];
+
+const HTLC_SUMMARY =
+  'A hash lock is a header field (`hashLock`, TransactionHeader field 8) on an ordinary `send_tokens`, not a new transaction type. The sender is debited at once; each recipient gets a `SyntheticLockedDeposit` (type 0x37) instead of a normal deposit and is credited only when a `ReleaseLockedOperation` (type 0x18) reveals the preimage.';
+
+const HTLC_FACTS = [
+  'Algorithms: `sha256` (SHA-256 of the preimage) and `sha256d` (SHA-256 of that hash). Both hashes are 32 bytes. The protocol also defines HASH160 (20 bytes); it is SDK-level only and Studio-generated code does not use it.',
+  'Expiration: absolute UTC, whole seconds, 10 minutes to 30 days ahead of the node clock, checked at submit and again at execute. Use 15 minutes or more for clock skew.',
+  'Preimage: 1 to 256 bytes, hashed raw with no prefix. The release publishes it on-chain.',
+  'The release is signed by the RECIPIENT account holding the locked deposit, and that signer pays its fee (about 0.01 credits).',
+  'Needs a node at 1.4.6.4 or later (1.4.6.3 used a different header field). `hashLock` is part of the transaction hash; headers without it are byte-identical to before.',
+];
+
+// Core never runs the expiry refund, so no generated document may promise one.
+const HTLC_REFUND =
+  'Refund on expiry is the protocol design but is NOT currently functional on the network (see `docs/hash-lock-example/CORE-ISSUE-refund.md` in accumulate-studio): an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Do not promise or rely on a refund; use small amounts and always release.';
+
+/**
+ * A generated HTLC section must say the refund does not work and must never promise one. The manifests
+ * are hand-edited, so this fails the run if a note regresses to the old "refunded to the sender" claim.
+ */
+function checkHtlcRefundWording(lines) {
+  const text = lines.join('\n');
+  if (!/NOT currently functional/.test(text)) throw new Error('HTLC section is missing the refund caveat');
+  if (/refunded to the sender|tokens are refunded/i.test(text)) {
+    throw new Error('HTLC section promises a refund, but core never executes the expiry refund');
+  }
+  return lines;
+}
+
+/** The signer call that carries the lock is the one that takes the header options. */
+const HTLC_LOCK_CALL = /hash.?lock|HeaderOptions/i;
+
+/** The manifest operations the section is built from; a missing one is a manifest bug, not a skip. */
+function htlcOps(lang, m) {
+  return HTLC_STEPS.map((step) => {
+    const op = m.operations.find((o) => o.op === step.op);
+    if (!op) throw new Error(`${lang} manifest has no "${step.op}" operation: the HTLC section is generated from it`);
+    return { ...step, operation: op };
+  });
+}
+
+/** send_tokens has many symbols; show the body builder and the call that takes the lock. */
+function htlcSymbols(step) {
+  const symbols = step.operation.symbols || [];
+  if (step.op !== 'send_tokens') return symbols;
+  const lockCalls = symbols.filter((s) => HTLC_LOCK_CALL.test(`${s.symbol} ${s.signature || ''}`));
+  if (!lockCalls.length) throw new Error('send_tokens has no symbol that takes the hash lock');
+  return [symbols[0], ...lockCalls];
+}
+
+/** send_tokens notes are mostly about plain transfers; keep the ones about the lock. */
+function htlcNotes(step) {
+  const notes = step.operation.notes || [];
+  return step.op === 'send_tokens' ? notes.filter((n) => /lock/i.test(n)) : notes;
+}
+
+function htlcCliLine(lang) {
+  return `Not exposed by the \`${LANG_META[lang].cliCommand}\` CLI: library API only.`;
+}
+
+/** Concise HTLC section for llms.txt. */
+function renderHtlcLlms(lang, m) {
+  const L = [];
+  L.push('## Hash-locked transfers (HTLC) — library API only');
+  L.push(HTLC_SUMMARY);
+  L.push('');
+  htlcOps(lang, m).forEach((step, i) => {
+    const names = [...new Set(htlcSymbols(step).map((s) => `\`${s.symbol}\``))].join(', ');
+    L.push(`${i + 1}. **${step.title}** (\`${step.op}\`): ${names}`);
+  });
+  L.push('');
+  for (const f of HTLC_FACTS) L.push(`- ${f}`);
+  L.push(`- **Refund status:** ${HTLC_REFUND}`);
+  L.push(`- ${htlcCliLine(lang)}`);
+  L.push('- Inputs, outputs and the per-SDK traps for each step: `llms-full.txt`.');
+  L.push('');
+  return L;
+}
+
+/** Full HTLC section for llms-full.txt: symbols and the manifest notes for each step. */
+function renderHtlcFull(lang, m) {
+  const L = [];
+  L.push('## Hash-locked transfers (HTLC, Accumulate 1.4.6.4+) — library API only');
+  L.push(HTLC_SUMMARY);
+  L.push('');
+  L.push('Four steps, in order. Each is also listed under Operations below with its inputs and outputs.');
+  L.push('');
+  htlcOps(lang, m).forEach((step, i) => {
+    L.push(`### ${i + 1}. ${step.title} — \`${step.op}\``);
+    L.push('Symbols:');
+    for (const s of htlcSymbols(step)) L.push(`  - \`${s.symbol}\`${s.signature ? ` — \`${s.signature}\`` : ''}`);
+    const notes = htlcNotes(step);
+    if (notes.length) {
+      L.push('Notes:');
+      for (const n of notes) L.push(`  - ${n}`);
+    }
+    L.push('');
+  });
+  L.push('### Limits and rules');
+  for (const f of HTLC_FACTS) L.push(`- ${f}`);
+  L.push(`- **Refund status:** ${HTLC_REFUND}`);
+  L.push(`- ${htlcCliLine(lang)}`);
+  L.push('');
+  return L;
+}
+
 // ---- llms.txt (concise router) --------------------------------------------
 function renderLlms(lang, m) {
   const meta = LANG_META[lang];
@@ -371,6 +493,7 @@ function renderLlms(lang, m) {
   );
   L.push('- **One canonical client:** connect with `' + m.entrypoints[0]?.symbol + '`, build with `TxBody`, sign with `SmartSigner`. Do not hand-roll envelopes/signing, and ignore any alternate or legacy client classes — this is the only path you need.');
   L.push('');
+  for (const line of checkHtlcRefundWording(renderHtlcLlms(lang, m))) L.push(line);
   // RB-04. A terminal-based agent that finds this never writes a program for a
   // balance check: it is one command instead of create-project/compile/run/delete.
   L.push('## CLI (no code required)');
@@ -450,6 +573,7 @@ function renderLlmsFull(lang, m) {
       L.push('');
     }
   }
+  for (const line of checkHtlcRefundWording(renderHtlcFull(lang, m))) L.push(line);
   L.push(`## Operations (${m.operations.filter((o) => o.op !== 'comment').length})`);
   L.push('');
   const groups = opsByCategory(m.operations);
@@ -527,7 +651,10 @@ function renderAgents(lang, m) {
   L.push('');
   L.push('| Command | Covers | Needs network |');
   L.push('|---|---|:--:|');
-  for (const t of repo.test) {
+  const tests = repo.htlcTest
+    ? [...repo.test, { cmd: repo.htlcTest, desc: 'hash-lock (HTLC) golden vectors and API', network: false }]
+    : repo.test;
+  for (const t of tests) {
     L.push(`| \`${t.cmd}\` | ${t.desc} | ${t.network ? '**yes**' : 'no'} |`);
   }
   L.push('');
@@ -572,6 +699,11 @@ function renderAgents(lang, m) {
   L.push('## Gotchas');
   L.push('');
   for (const g of repo.gotchas) L.push(`- ${g}`);
+  if (repo.htlcTest) {
+    L.push(
+      `- Hash locks (HTLC) are library-only. \`hashLock\` is TransactionHeader field 8 and part of the transaction hash; \`${repo.htlcTest}\` pins those bytes. A failing vector means the signing bytes changed — a consensus-visible break, not a test to update. Refund on expiry is not currently functional on the network, so no test or doc may claim it works.`,
+    );
+  }
   L.push('');
 
   L.push('## Permitted commands');

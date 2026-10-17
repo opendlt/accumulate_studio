@@ -152,6 +152,53 @@ The node could not determine which partition should handle the request.
 - Python type: `ValidationError`
 - fix: Build the envelope through TxBody + SmartSigner rather than by hand. Every transaction needs a header with a valid `principal` — that URL is the routing key, and without it the node rejects the request before validating anything else.
 
+## Hash-locked transfers (HTLC, Accumulate 1.4.6.4+) — library API only
+A hash lock is a header field (`hashLock`, TransactionHeader field 8) on an ordinary `send_tokens`, not a new transaction type. The sender is debited at once; each recipient gets a `SyntheticLockedDeposit` (type 0x37) instead of a normal deposit and is credited only when a `ReleaseLockedOperation` (type 0x18) reveals the preimage.
+
+Four steps, in order. Each is also listed under Operations below with its inputs and outputs.
+
+### 1. Make the secret and the lock — `generate_hash_lock`
+Symbols:
+  - `HashLockOptions` — `(hashAlgorithm: str, hash: bytes, expiration: datetime)`
+  - `HashLockOptions.validate_for_submit` — `(self) -> None`
+Notes:
+  - Nothing is sent to the network. The preimage (1 to 256 bytes) is the secret: keep it until the release transaction reveals it on-chain. sha256 and sha256d are supported here; hash160 is SDK-level only.
+  - The node requires an expiration 10 minutes to 30 days ahead; 15 minutes or more leaves room for clock skew. The expiration must be whole UTC seconds.
+
+### 2. Send with the lock — `send_tokens`
+Symbols:
+  - `TxBody.send_tokens_single` — `(to_url: str, amount: str) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict, hash_lock: HashLockOptions | None = None, max_attempts: int = 30) -> TransactionResult`
+Notes:
+  - A hash-locked send debits the sender immediately. The recipient is credited only when a ReleaseLockedOperation reveals the preimage; until then the recipient balance does not change. The lock is a transaction HEADER field (hashLock), not a new transaction type, and it is silently ignored on every transaction type except SendTokens.
+  - The lock expiration must be 10 minutes to 30 days ahead (whole UTC seconds, checked against the node clock at submit and at execute); use at least 15 minutes. Refund on expiry is the protocol design but is NOT currently functional on the network: an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Use small amounts and always release.
+  - Python: import HashLockOptions from accumulate_client.tx.header, NOT from the package top level (the top-level name resolves to a different class). Build it as HashLockOptions(hashAlgorithm='sha256', hash=<32 bytes>, expiration=<UTC datetime>) and call validate_for_submit().
+
+### 3. Find the locked deposit — `wait_for_locked_deposit`
+Symbols:
+  - `Accumulate.v3.query` — `(self, url: str) -> dict`
+Notes:
+  - A release targets the locked DEPOSIT (a SyntheticLockedDeposit), not the send. Find it among the send's produced records: the first whose message.transaction.body.type is syntheticLockedDeposit and whose status is delivered. A query error on a produced id means it is not ready yet. Never trust produced.total (it can exceed the records returned); scan the records themselves.
+  - No SDK ships a helper for this, so generated code contains the polling loop.
+
+### 4. Release it with the preimage — `release_locked`
+Symbols:
+  - `TxBody.release_locked_operation` — `(locked_txid: str, preimage: bytes | str) -> dict`
+  - `SmartSigner.sign_submit_and_wait` — `(self, principal: str, body: dict) -> TransactionResult`
+Notes:
+  - The principal is the RECIPIENT account that holds the deposit, and that account's authority must sign and have credits (the release fee, about 0.01 credits, is paid by the recipient's signer).
+  - A wrong preimage, an expired lock or a double release is ACCEPTED at submit and FAILS at execute (for example 'preimage does not match hash'). Always check the final transaction status, not the submit response. After a successful release the deposit's result carries the release txid and the recipient balance increases by the locked amount.
+  - Refund on expiry is the protocol design but is NOT currently functional on the network: an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Use small amounts and always release.
+
+### Limits and rules
+- Algorithms: `sha256` (SHA-256 of the preimage) and `sha256d` (SHA-256 of that hash). Both hashes are 32 bytes. The protocol also defines HASH160 (20 bytes); it is SDK-level only and Studio-generated code does not use it.
+- Expiration: absolute UTC, whole seconds, 10 minutes to 30 days ahead of the node clock, checked at submit and again at execute. Use 15 minutes or more for clock skew.
+- Preimage: 1 to 256 bytes, hashed raw with no prefix. The release publishes it on-chain.
+- The release is signed by the RECIPIENT account holding the locked deposit, and that signer pays its fee (about 0.01 credits).
+- Needs a node at 1.4.6.4 or later (1.4.6.3 used a different header field). `hashLock` is part of the transaction hash; headers without it are byte-identical to before.
+- **Refund status:** Refund on expiry is the protocol design but is NOT currently functional on the network (see `docs/hash-lock-example/CORE-ISSUE-refund.md` in accumulate-studio): an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Do not promise or rely on a refund; use small amounts and always release.
+- Not exposed by the `accumulate` CLI: library API only.
+
 ## Operations (28)
 
 ### generate_keys  —  Generate Keys  [utility]

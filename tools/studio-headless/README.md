@@ -8,7 +8,7 @@ For every other artifact in this program an agent can verify its own output — 
 
 ```bash
 npm run build:headless       # bundle it (esbuild)
-npm run verify:codegen       # 8 templates x 5 languages, no network — the CI gate
+npm run verify:codegen       # 9 templates x 5 languages, no network — the CI gate
 
 npm run studio:headless -- --list
 npm run studio:headless -- --template token-transfer --lang rust

@@ -146,7 +146,7 @@ function createServer(): Server {
         tools: {},
         // Resources give an agent the context it needs to USE the tools (the
         // 1e8 rule, the credit prerequisite chain, the operation catalogs).
-        // Prompts expose the 8 validated golden paths as invocable workflows.
+        // Prompts expose the 9 validated golden paths as invocable workflows.
         resources: {},
         prompts: {},
       },
@@ -329,7 +329,8 @@ AVAILABLE TOOLS:
     acc.get_balance    Get token balance for a token account
 
   Transaction:
-    tx.build           Build a transaction body
+    tx.build           Build a transaction body (sendTokens takes an optional
+                       hashLock header; releaseLockedOperation releases it)
     tx.estimate_credits Estimate credits required
     tx.validate_prereqs Validate prerequisites
     tx.submit          Submit a signed transaction
@@ -353,7 +354,7 @@ RESOURCES (read for context — available in every permission mode):
 
 PROMPTS (invocable workflows):
   lite-account-setup, create-adi, zero-to-hero, token-transfer,
-  data-writing, custom-token, multi-sig-setup, key-rotation
+  data-writing, custom-token, multi-sig-setup, key-rotation, hash-lock
 
 EXAMPLES:
   # Start with default BUILD_ONLY mode

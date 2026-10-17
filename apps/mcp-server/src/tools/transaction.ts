@@ -32,6 +32,15 @@ export interface TransactionBody {
   payload: Record<string, unknown>;
 }
 
+/** A hash lock as the node reads it from the transaction header (SendTokens only). */
+export interface HashLockHeader {
+  hashAlgorithm: 'sha256' | 'sha256d';
+  /** 32 bytes as lowercase hex. */
+  hash: string;
+  /** RFC 3339 UTC in whole seconds. */
+  expiration: string;
+}
+
 export interface BuiltTransaction {
   body: TransactionBody;
   header: {
@@ -39,6 +48,7 @@ export interface BuiltTransaction {
     initiator?: string;
     memo?: string;
     metadata?: Record<string, unknown>;
+    hashLock?: HashLockHeader;
   };
   hash?: string;
   estimatedCredits?: number;
@@ -78,6 +88,7 @@ export interface TxBuildArgs {
   initiator?: string;
   memo?: string;
   metadata?: Record<string, unknown>;
+  hashLock?: unknown;
 }
 
 export interface TxBuildResult {
@@ -93,7 +104,7 @@ export async function txBuild(args: TxBuildArgs): Promise<ToolResponse<TxBuildRe
   try {
     requirePermission(OperationCategory.BUILD);
 
-    const { type, principal, payload, initiator, memo, metadata } = args;
+    const { type, principal, payload, initiator, memo, metadata, hashLock } = args;
 
     // Validate principal URL
     if (!principal || !principal.startsWith('acc://')) {
@@ -122,6 +133,7 @@ export async function txBuild(args: TxBuildArgs): Promise<ToolResponse<TxBuildRe
       'writeData',
       'writeDataTo',
       'lockAccount',
+      'releaseLockedOperation',
       'acmeFaucet',
     ];
 
@@ -149,17 +161,34 @@ export async function txBuild(args: TxBuildArgs): Promise<ToolResponse<TxBuildRe
     }
     warnings.push(...payloadValidation.warnings);
 
+    // Validate the optional hash lock the way the node does
+    let validatedLock: HashLockHeader | undefined;
+    if (hashLock !== undefined && hashLock !== null) {
+      const lockValidation = validateHashLockForType(type, hashLock);
+      if (lockValidation.errors.length > 0) {
+        return errorResponse(
+          lockValidation.errors.map((e) => ({
+            code: 'INVALID_HASH_LOCK',
+            message: e,
+          }))
+        );
+      }
+      validatedLock = lockValidation.hashLock;
+      warnings.push(...lockValidation.warnings);
+    }
+
     // Build the transaction
     const transaction: BuiltTransaction = {
       body: {
         type,
-        payload,
+        payload: normalizePayload(type, payload),
       },
       header: {
         principal,
         initiator,
         memo,
         metadata,
+        hashLock: validatedLock,
       },
     };
 
@@ -196,7 +225,7 @@ export const txBuildTool = {
     properties: {
       type: {
         type: 'string' as const,
-        description: 'Transaction type (e.g., sendTokens, createIdentity, addCredits)',
+        description: 'Transaction type (e.g., sendTokens, createIdentity, addCredits, releaseLockedOperation)',
       },
       principal: {
         type: 'string' as const,
@@ -217,6 +246,31 @@ export const txBuildTool = {
       metadata: {
         type: 'object' as const,
         description: 'Optional metadata',
+      },
+      hashLock: {
+        type: 'object' as const,
+        description:
+          'Optional hash lock, sendTokens only (the node ignores it on every other type, so any other type is rejected here). ' +
+          'The sender is debited now; each recipient gets a locked deposit and is credited only when a releaseLockedOperation ' +
+          'reveals the preimage. Refund on expiry is the protocol design but is NOT currently functional on the network.',
+        properties: {
+          hashAlgorithm: {
+            type: 'string' as const,
+            enum: ['sha256', 'sha256d'],
+            description: 'sha256 = SHA256(preimage); sha256d = SHA256(SHA256(preimage)). HASH160 is not supported.',
+          },
+          hash: {
+            type: 'string' as const,
+            description: 'The lock hash: 32 bytes as 64 hex characters.',
+          },
+          expiration: {
+            type: ['string', 'number'],
+            description:
+              'Absolute UTC time as RFC 3339 in whole seconds (e.g. 2026-01-01T12:00:00Z) or integer Unix seconds. ' +
+              'Must be 10 minutes to 30 days ahead of the node clock; 15+ minutes leaves a margin for clock skew.',
+          },
+        },
+        required: ['hashAlgorithm', 'hash', 'expiration'],
       },
     },
     required: ['type', 'principal', 'payload'],
@@ -574,6 +628,21 @@ export async function txSubmit(args: TxSubmitArgs): Promise<ToolResponse<TxSubmi
       ]);
     }
 
+    // The node checks the lock window at submit too, and a transaction may not have come from tx.build
+    let submitLock: HashLockHeader | undefined;
+    if (transaction.header.hashLock !== undefined && transaction.header.hashLock !== null) {
+      const lockValidation = validateHashLockForType(transaction.body.type, transaction.header.hashLock);
+      if (lockValidation.errors.length > 0) {
+        return errorResponse(
+          lockValidation.errors.map((e) => ({
+            code: 'INVALID_HASH_LOCK',
+            message: e,
+          }))
+        );
+      }
+      submitLock = lockValidation.hashLock;
+    }
+
     // Submit the transaction
     const response = await fetch(config.v2Endpoint, {
       method: 'POST',
@@ -591,6 +660,7 @@ export async function txSubmit(args: TxSubmitArgs): Promise<ToolResponse<TxSubmi
                   initiator: transaction.header.initiator ?? signer,
                   memo: transaction.header.memo,
                   metadata: transaction.header.metadata,
+                  hashLock: submitLock,
                 },
                 body: transaction.body,
               },
@@ -870,10 +940,175 @@ function validatePayload(
       }
       break;
 
+    case 'releaseLockedOperation': {
+      const lockedTxID = payload.lockedTxID ?? payload.lockedTxId;
+      if (!lockedTxID || typeof lockedTxID !== 'string') {
+        errors.push(
+          'locked transaction ID is required: releaseLockedOperation needs a "lockedTxID", the txid of the syntheticLockedDeposit'
+        );
+      } else if (!/^acc:\/\/[0-9a-fA-F]{64}@.+/.test(lockedTxID)) {
+        errors.push(
+          'lockedTxID must be a transaction id of the form acc://<64 hex>@<recipient account>; use the locked deposit (a produced record of the send), not the send txid'
+        );
+      }
+
+      const preimage = payload.preimage;
+      if (!preimage || typeof preimage !== 'string') {
+        errors.push('preimage is required (hex string, 1-256 bytes)');
+      } else if (!/^(?:[0-9a-fA-F]{2})+$/.test(preimage)) {
+        errors.push('preimage must be an even-length hex string');
+      } else if (preimage.length > 512) {
+        errors.push('preimage too large (max 256 bytes)');
+      }
+
+      warnings.push(
+        'The principal must be the recipient account of the locked deposit, signed by that account\'s authority, and the signer pays the fee.',
+        'A wrong preimage, an expired lock or a double release is accepted at submit and fails at execute: poll the release with tx.wait and read its error.'
+      );
+      break;
+    }
+
     // Add more type-specific validations as needed
   }
 
   return { errors, warnings };
+}
+
+/**
+ * Use the protocol's field name for a release (the wire name is lockedTxID; SDKs call it lockedTxId)
+ */
+function normalizePayload(
+  type: string,
+  payload: Record<string, unknown>
+): Record<string, unknown> {
+  if (type === 'releaseLockedOperation' && payload.lockedTxID === undefined && payload.lockedTxId !== undefined) {
+    const { lockedTxId, ...rest } = payload;
+    return { ...rest, lockedTxID: lockedTxId };
+  }
+  return payload;
+}
+
+/** The node accepts a lock only inside this window of its own clock (checked at submit and at execute). */
+const HASH_LOCK_MIN_AHEAD_MS = 10 * 60 * 1000;
+const HASH_LOCK_MAX_AHEAD_MS = 30 * 24 * 60 * 60 * 1000;
+/** Studio keeps a margin over the 10-minute floor for clock skew and latency. */
+const HASH_LOCK_COMFORT_MS = 15 * 60 * 1000;
+
+/**
+ * Validate a hash lock for a transaction type. A lock is honoured on sendTokens only: the node
+ * silently ignores it elsewhere, so accepting it would let an agent believe funds are locked.
+ */
+function validateHashLockForType(
+  type: string,
+  input: unknown
+): { hashLock?: HashLockHeader; errors: string[]; warnings: string[] } {
+  if (type !== 'sendTokens') {
+    return {
+      errors: [
+        `hashLock is only honoured on sendTokens (the node silently ignores it on ${type}); remove it, or build a sendTokens`,
+      ],
+      warnings: [],
+    };
+  }
+  return validateHashLock(input);
+}
+
+/**
+ * Validate a hash lock like the node (chain/send_tokens.go): sha256 or sha256d, a 32-byte hash,
+ * and an expiration 10 minutes to 30 days ahead. Returns the header as it goes on the wire.
+ */
+function validateHashLock(
+  input: unknown,
+  nowMs: number = Date.now()
+): { hashLock?: HashLockHeader; errors: string[]; warnings: string[] } {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) {
+    return {
+      errors: ['hashLock must be an object {hashAlgorithm, hash, expiration}'],
+      warnings,
+    };
+  }
+  const raw = input as Record<string, unknown>;
+
+  // Algorithm: the protocol also has HASH160, which this tooling does not support
+  const algorithm = typeof raw.hashAlgorithm === 'string' ? raw.hashAlgorithm.toLowerCase() : '';
+  if (algorithm === 'hash160') {
+    errors.push('hashlock algorithm hash160 is not supported here; use "sha256" or "sha256d"');
+  } else if (algorithm !== 'sha256' && algorithm !== 'sha256d') {
+    errors.push(`unsupported hashlock algorithm: ${String(raw.hashAlgorithm)}; use "sha256" or "sha256d"`);
+  }
+
+  // Hash: 32 bytes of hex
+  const hash = raw.hash;
+  if (typeof hash !== 'string' || hash.length === 0) {
+    errors.push('hashlock hash cannot be empty');
+  } else if (!/^(?:[0-9a-fA-F]{2})+$/.test(hash)) {
+    errors.push('hashlock hash must be hex');
+  } else if (hash.length !== 64) {
+    errors.push(`hashlock hash must be 32 bytes for ${algorithm || 'the algorithm'}, got ${hash.length / 2}`);
+  }
+
+  // Expiration: required, whole seconds, inside the node's window
+  let expirationMs: number | undefined;
+  const expiration = raw.expiration;
+  if (expiration === undefined || expiration === null || expiration === '') {
+    errors.push('hashlock expiration is required');
+  } else if (typeof expiration === 'number') {
+    if (!Number.isInteger(expiration) || expiration <= 0) {
+      errors.push('hashlock expiration must be whole Unix seconds');
+    } else if (expiration > 100_000_000_000) {
+      errors.push('hashlock expiration looks like milliseconds; pass Unix seconds or an RFC 3339 string');
+    } else {
+      expirationMs = expiration * 1000;
+    }
+  } else if (typeof expiration === 'string') {
+    const match = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.exec(expiration);
+    const parsed = match ? Date.parse(expiration) : NaN;
+    if (Number.isNaN(parsed)) {
+      errors.push('hashlock expiration must be RFC 3339 (e.g. 2026-01-01T12:00:00Z) or Unix seconds');
+    } else if (parsed % 1000 !== 0) {
+      errors.push('hashlock expiration must be whole seconds; sub-second values can change the transaction hash');
+    } else {
+      expirationMs = parsed;
+    }
+  } else {
+    errors.push('hashlock expiration must be RFC 3339 (e.g. 2026-01-01T12:00:00Z) or Unix seconds');
+  }
+
+  if (expirationMs !== undefined) {
+    const ahead = expirationMs - nowMs;
+    if (ahead < HASH_LOCK_MIN_AHEAD_MS) {
+      errors.push('hashlock expiration must be at least 10 minutes in the future');
+    } else if (ahead > HASH_LOCK_MAX_AHEAD_MS) {
+      errors.push('hashlock expiration cannot exceed 30 days');
+    } else if (ahead < HASH_LOCK_COMFORT_MS) {
+      warnings.push(
+        'hashLock expires in under 15 minutes; the node rejects less than 10, so clock skew or a slow submit can still fail it'
+      );
+    }
+  }
+
+  if (errors.length > 0 || expirationMs === undefined) {
+    return { errors, warnings };
+  }
+
+  warnings.push(
+    'hashLock: the sender is debited now but the recipient is credited only when a releaseLockedOperation reveals the preimage.',
+    'Release the syntheticLockedDeposit (a produced record of the send), not the send txid; the recipient signer needs credits.',
+    'Refund on expiry is the protocol design but is NOT currently functional on the network: an unreleased lock strands the funds. Use small amounts.'
+  );
+
+  return {
+    hashLock: {
+      hashAlgorithm: algorithm as HashLockHeader['hashAlgorithm'],
+      hash: (hash as string).toLowerCase(),
+      expiration: new Date(expirationMs).toISOString().replace(/\.\d{3}Z$/, 'Z'),
+    },
+    errors,
+    warnings,
+  };
 }
 
 /**
@@ -896,6 +1131,7 @@ function getBaseCredits(type: string): number {
     writeData: 1, // Plus data credits
     writeDataTo: 1,
     lockAccount: 3,
+    releaseLockedOperation: 1, // 0.01 credits on the fee schedule, rounded up
     acmeFaucet: 0, // Faucet is free
   };
 

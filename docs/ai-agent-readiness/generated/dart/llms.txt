@@ -25,6 +25,23 @@ final r = await signer.signSubmitAndWait(principal: principal, body: body);
 - **Errors are typed:** catch `AccError` (`on AccError catch (e) {`) and branch on the code. The full catalog — every code, its `retryable` flag, and the fix — is the **Error catalog** section of `llms-full.txt`. **Retry ONLY `ACC_NETWORK_UNAVAILABLE` / `ACC_INTERNAL`;** every other code is a condition that will not change on its own, so retrying it just burns turns.
 - **One canonical client:** connect with `Accumulate`, build with `TxBody`, sign with `SmartSigner`. Do not hand-roll envelopes/signing, and ignore any alternate or legacy client classes — this is the only path you need.
 
+## Hash-locked transfers (HTLC) — library API only
+A hash lock is a header field (`hashLock`, TransactionHeader field 8) on an ordinary `send_tokens`, not a new transaction type. The sender is debited at once; each recipient gets a `SyntheticLockedDeposit` (type 0x37) instead of a normal deposit and is credited only when a `ReleaseLockedOperation` (type 0x18) reveals the preimage.
+
+1. **Make the secret and the lock** (`generate_hash_lock`): `HashLockOptions`, `HashLockOptions.validateForSubmit`, `HashAlgorithm`
+2. **Send with the lock** (`send_tokens`): `TxBody.sendTokensSingle`, `SmartSigner.signSubmitAndWait`
+3. **Find the locked deposit** (`wait_for_locked_deposit`): `AccumulateV3.rawCall`
+4. **Release it with the preimage** (`release_locked`): `TxBody.releaseLockedOperation`, `SmartSigner.signSubmitAndWait`
+
+- Algorithms: `sha256` (SHA-256 of the preimage) and `sha256d` (SHA-256 of that hash). Both hashes are 32 bytes. The protocol also defines HASH160 (20 bytes); it is SDK-level only and Studio-generated code does not use it.
+- Expiration: absolute UTC, whole seconds, 10 minutes to 30 days ahead of the node clock, checked at submit and again at execute. Use 15 minutes or more for clock skew.
+- Preimage: 1 to 256 bytes, hashed raw with no prefix. The release publishes it on-chain.
+- The release is signed by the RECIPIENT account holding the locked deposit, and that signer pays its fee (about 0.01 credits).
+- Needs a node at 1.4.6.4 or later (1.4.6.3 used a different header field). `hashLock` is part of the transaction hash; headers without it are byte-identical to before.
+- **Refund status:** Refund on expiry is the protocol design but is NOT currently functional on the network (see `docs/hash-lock-example/CORE-ISSUE-refund.md` in accumulate-studio): an unreleased lock is never refunded and cannot be released after it expires, so the funds are stranded. Do not promise or rely on a refund; use small amounts and always release.
+- Not exposed by the `accumulate` CLI: library API only.
+- Inputs, outputs and the per-SDK traps for each step: `llms-full.txt`.
+
 ## CLI (no code required)
 ```
 dart pub global activate opendlt_accumulate
