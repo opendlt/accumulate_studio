@@ -171,7 +171,7 @@ SDK branch fixes awaiting publish: none (D-04a); published-SDK defects are worke
 | 4 | Root `build` / `typecheck` failed on a clean checkout | **fixed** (D-34) | found by the clean-checkout proof |
 | 5 | `sdk-proxy/AGENTS.md` said `>=2.1.0`, `AGENTS.md` said 61 harness tests | **fixed** | factual lines only |
 | 6 | `rust-validation` silently skipped compile and mock tests | **fixed** (D-14) | runs for real |
-| 7 | `gen:agent:dist` drops two non-HTLC hand-written bullets per SDK (header fields 5-7, v3 proof methods) | **fix-now, before dist** | not carried by the manifests; move them in, then run dist (human) |
+| 7 | `gen:agent:dist` dropped two non-HTLC hand-written bullets per SDK (header fields 5-7, v3 proof methods), and a C# setup line | **fixed** | carried by the manifests (`agent_notes`) and the generator; `gen:agent:dist` ran 2026-10-17 |
 | 8 | Live confirmation of the suffixed ADI name (section 3) | **fixed** (D-38) | 5 published runs, all PASS, 2026-10-17 |
 | 9 | Studio template copy and generated docs link the refund issue | **fixed** (D-42) | the issue is filed upstream: https://gitlab.com/accumulatenetwork/accumulate/-/work_items/4578 |
 | 9b | HASH160 was not offered in Studio (RUNBOOK D-4) | **fixed** (D-41) | all five languages, Studio, proxy and MCP; proven live |
@@ -189,6 +189,6 @@ SDK branch fixes awaiting publish: none (D-04a); published-SDK defects are worke
 ## 11. Human checkpoints (in this order)
 
 1. **Review and merge.** `feat/htlc-hash160` (the HASH160 work, on top of `origin/main`) is local until you approve a push; `origin/main` already holds `feat/htlc-golden-path` through PR #6; `gh` is not installed, open the PR at https://github.com/opendlt/accumulate_studio/compare/main...feat/htlc-golden-path?expand=1
-2. **Move the two non-HTLC bullets into the manifests, then `npm run gen:agent:dist`** (writes into the five SDK repos' tracked docs: never run unattended). Until it runs, the SDK repos still say "otherwise the tokens are refunded to the sender".
+2. **Review and merge the five SDK docs branches** (`docs/agent-docs-hash-lock` in each SDK repo). `npm run gen:agent:dist` ran on 2026-10-17 after the two non-HTLC bullets and a C# setup line moved into the manifests and generator; until those branches merge, the SDK repos' `main` still says "otherwise the tokens are refunded to the sender".
 3. **Deploy Studio** (Vercel; the build order matters, see the root `package.json`).
 4. **SDK publishes:** none pending. **Mainnet:** never targeted; HTLC is not confirmed there.
