@@ -257,6 +257,8 @@ for tpl in ('token-transfer', 'multi-sig-setup'):
         last = read(f'docs/hash-lock-example/evidence/p2/{tpl}-{lang}.verify.txt').strip().split(chr(10))[-1]
         check(f'P2 live regression {tpl}/{lang}: every txid delivered, 0 failing', '0 failing' in last, last[-40:])
 scaf = read('packages/codegen/src/project-scaffolds.ts')
+jst = open('C:/tmp/js-template-test/package.json', encoding='utf-8').read() if os.path.exists('C:/tmp/js-template-test/package.json') else ''
+check('P2 js-template-test depends on accumulate-sdk-opendlt (not accumulate.js)', 'accumulate-sdk-opendlt' in jst and 'accumulate.js' not in jst)
 check('P2 scaffold pins: py >=2.5.0, rust 2.5, dart ^2.5.0, js ^2.5.2, c# 2.5.*',
       all(s in scaf for s in ('>=2.5.0', '"2.5"', '^2.5.0', '^2.5.2', '2.5.*')))
 want = {'python': '2.5.0', 'javascript': '2.5.2', 'dart': '2.5.0', 'rust': '2.5.0', 'csharp': '2.5.0'}
@@ -381,10 +383,16 @@ appendix += [f'docs/ai-agent-readiness/generated/{l}/{f}' for l in LANGS for f i
 missing_changes = sorted(p for p in set(appendix) if p not in changed)
 check('Appendix D: every expected file changed on the branch (flow.ts excluded: no new AssertionType)', not missing_changes, f'{len(set(appendix))} files; not changed: {missing_changes}')
 check('Appendix D: packages/types flow.ts untouched because no AssertionType was added', 'packages/types/src/flow.ts' not in changed)
-check('Appendix D: no file outside the repo changed (the 5 SDK repos and accumulate-core are clean of our edits)',
-      all(subprocess.run(['git', '-C', d, 'status', '--porcelain', '--untracked-files=no'], capture_output=True, text=True).stdout.strip() == ''
-          for d in ['C:/Accumulate_Stuff/opendlt-python-v2v3-sdk', 'C:/Accumulate_Stuff/opendlt-javascript-v2v3-sdk', 'C:/Accumulate_Stuff/opendlt-dart-v2v3-sdk',
-                    'C:/Accumulate_Stuff/opendlt-rust-v2v3-sdk', 'C:/Accumulate_Stuff/opendlt-c-sharp-v2v3-sdk', 'C:/Accumulate_Stuff/accumulate-core']))
+def clean_repo(path):
+    r = subprocess.run(['git', '-C', path, 'status', '--porcelain', '--untracked-files=no'], capture_output=True, text=True)
+    return r.returncode == 0 and r.stdout.strip() == ''
+
+
+outside = ['C:/Accumulate_Stuff/opendlt-python-v2v3-sdk/unified', 'C:/Accumulate_Stuff/opendlt-javascript-v2v3-sdk/javascript',
+           'C:/Accumulate_Stuff/opendlt-dart-v2v3-sdk/unified', 'C:/Accumulate_Stuff/opendlt-rust-v2v3-sdk/unified',
+           'C:/Accumulate_Stuff/opendlt-c-sharp-v2v3-sdk', 'C:/Accumulate_Stuff/accumulate-core']
+check('Appendix D: no file outside the repo changed (the 5 SDK repos and accumulate-core: git status clean at each real repo root)',
+      all(clean_repo(d) for d in outside), ', '.join(d.split('/')[-1] for d in outside if not clean_repo(d)))
 
 # --- 6. git history -------------------------------------------------------------------------------
 # `main` is the local branch base (3a663ef). origin/main has since merged this branch's earlier phases

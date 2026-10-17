@@ -1,0 +1,187 @@
+C:\Accumulate_Stuff\on-boarding-platform\accumulate-studio\docs\hash-lock-example\evidence\audit\audit-checks.py:319: FutureWarning: Possible nested set at position 2
+  check('P7.6 action-palette e2e for the new blocks: 15 passed live', re.search(r'Tests +15 passed', re.sub(chr(27) + r'[[][0-9;]*m', '', palette)) is not None)
+PASS catalog: GenerateHashLock in BLOCK_CATALOG
+PASS catalog: GenerateHashLock -> generate_hash_lock in block-op-map
+PASS prerequisites: GenerateHashLock has an entry
+PASS executor: case GenerateHashLock
+PASS catalog: WaitForLockedDeposit in BLOCK_CATALOG
+PASS catalog: WaitForLockedDeposit -> wait_for_locked_deposit in block-op-map
+PASS prerequisites: WaitForLockedDeposit has an entry
+PASS executor: case WaitForLockedDeposit
+PASS catalog: ReleaseLockedOperation in BLOCK_CATALOG
+PASS catalog: ReleaseLockedOperation -> release_locked in block-op-map
+PASS prerequisites: ReleaseLockedOperation has an entry
+PASS executor: case ReleaseLockedOperation
+PASS template python/generate_hash_lock.hbs exists
+PASS template python/wait_for_locked_deposit.hbs exists
+PASS template python/release_locked.hbs exists
+PASS template python/send_tokens.hbs has the hashLock branch
+PASS manifest python: the 3 HTLC ops
+PASS manifest python: send_tokens takes hashLock
+PASS MCP content: python catalog lists the 3 ops
+PASS template javascript/generate_hash_lock.hbs exists
+PASS template javascript/wait_for_locked_deposit.hbs exists
+PASS template javascript/release_locked.hbs exists
+PASS template javascript/send_tokens.hbs has the hashLock branch
+PASS manifest javascript: the 3 HTLC ops
+PASS manifest javascript: send_tokens takes hashLock
+PASS MCP content: javascript catalog lists the 3 ops
+PASS template dart/generate_hash_lock.hbs exists
+PASS template dart/wait_for_locked_deposit.hbs exists
+PASS template dart/release_locked.hbs exists
+PASS template dart/send_tokens.hbs has the hashLock branch
+PASS manifest dart: the 3 HTLC ops
+PASS manifest dart: send_tokens takes hashLock
+PASS MCP content: dart catalog lists the 3 ops
+PASS template rust/generate_hash_lock.hbs exists
+PASS template rust/wait_for_locked_deposit.hbs exists
+PASS template rust/release_locked.hbs exists
+PASS template rust/send_tokens.hbs has the hashLock branch
+PASS manifest rust: the 3 HTLC ops
+PASS manifest rust: send_tokens takes hashLock
+PASS MCP content: rust catalog lists the 3 ops
+PASS template csharp/generate_hash_lock.hbs exists
+PASS template csharp/wait_for_locked_deposit.hbs exists
+PASS template csharp/release_locked.hbs exists
+PASS template csharp/send_tokens.hbs has the hashLock branch
+PASS manifest csharp: the 3 HTLC ops
+PASS manifest csharp: send_tokens takes hashLock
+PASS MCP content: csharp catalog lists the 3 ops
+PASS flow template and YAML have the same 17 (id, type) steps in the same order: 17 vs 17
+PASS the steps match RUNBOOK D-1 (ids and order)
+PASS MCP template entry matches the Studio registry entry (name, category, time): {"name": "Hash Lock (HTLC) Payment", "category": "advanced", "estimatedTime": "10 min"}
+PASS templates/index.ts mirrors the YAML (hash-lock entry exists)
+PASS main has 40 snapshots; HEAD has 45 (40 + hash-lock x 5), none dropped: 40 -> 45
+PASS exactly the 5 added snapshots are hash-lock x 5 languages
+PASS 30 of the 40 pre-existing snapshots are byte-identical to main: 30 identical, 10 changed
+PASS the 10 changed pre-existing snapshots differ ONLY in the ADI_NAME default line (+ the import it needs): csharp SDK adi-creation: -1 +1; csharp SDK zero-to-hero: -1 +1; dart SDK adi-creation: -1 +2; dart SDK zero-to-hero: -1 +2; javascript SDK adi-creation: -1 +1; javascript SDK zero-to-hero: -1 +1; python SDK adi-creation: -1 +2; python SDK zero-to-hero: -1 +2; rust SDK adi-creation: -1 +1; rust SDK zero-to-hero: -1 +1
+PASS only zero-to-hero and adi-creation changed
+PASS no product text says a lock is refunded (only guards and the failed-deposit bounce note match): 9 pattern hits, 9 allowed, 0 unexplained
+PASS every product file that mentions refund also carries the not-functional caveat
+PASS every evidence path referenced by STATUS.md exists: 53 referenced; missing: []
+PASS 25 counted live runs, every verifier JSON has RESULT PASS: 25 files
+PASS per language: published-1, published-2, sha256d-1, local-1, wrong-1
+PASS positive runs passed 16 checks, negative runs 9
+PASS the in-Studio run verifier JSON has RESULT PASS: 14 checks
+PASS P7.4 every positive run: release result.preimage == the preimage the program printed == the release body: 20 runs; mismatches: []
+PASS published log python-published-1 shows the registry version and no local path
+PASS published log python-published-2 shows the registry version and no local path
+PASS published log javascript-published-1 shows the registry version and no local path
+PASS published log javascript-published-2 shows the registry version and no local path
+PASS published log dart-published-1 shows the registry version and no local path
+PASS published log dart-published-2 shows the registry version and no local path
+PASS published log rust-published-1 shows the registry version and no local path
+PASS published log rust-published-2 shows the registry version and no local path
+PASS published log csharp-published-1 shows the registry version and no local path
+PASS published log csharp-published-2 shows the registry version and no local path
+PASS local log python-local-1 shows a local path link
+PASS local log javascript-local-1 shows a local path link
+PASS local log dart-local-1 shows a local path link
+PASS local log rust-local-1 shows a local path link
+PASS local log csharp-local-1 shows a local path link
+PASS P0.4 Kermit core version recorded and >= 1.4.6.4: 1.4.6.7
+PASS P0.5 ground-truth probe passed and includes the wrong-preimage negative
+PASS P0.6 core issue draft: file:line, the fix (ReleaseTxID == nil), drafted not filed
+PASS P0.1 toolchain present: node: v24.20.0
+PASS P0.1 toolchain present: python: Python 3.14.7
+PASS P0.1 toolchain present: dart: Dart SDK version: 3.9.4 (stable) (Tue Sep 30 12:08:50 2025 -0700) on "windows_x64"
+PASS P0.1 toolchain present: cargo: cargo 1.90.0 (840b83a10 2025-07-30)
+PASS P0.1 toolchain present: dotnet: 9.0.305
+PASS P0.1 toolchain present: git: git version 2.43.0.windows.1
+PASS P1.3 every Appendix C defect has a triage row with a resolution: 15 defects; missing rows: []
+PASS P1.3 no (c) blocker and no SDK-branch fix
+PASS P1.1 reference program exists (python): C:/tmp/htlc-probe-python/htlc_ref.py
+PASS P1.1 reference program exists (javascript): C:/tmp/htlc-probe-js/htlc.mjs
+PASS P1.1 reference program exists (dart): C:/tmp/htlc-probe-dart/bin/htlc_probe_dart.dart
+PASS P1.1 reference program exists (rust): C:/tmp/htlc-probe-rust/src/main.rs
+PASS P1.1 reference program exists (csharp): C:/tmp/htlc-probe-csharp/Program.cs
+PASS P2 live regression token-transfer/python: every txid delivered, 0 failing: en-transfer-python.log: 7 ids, 0 failing
+PASS P2 live regression token-transfer/javascript: every txid delivered, 0 failing: ransfer-javascript.log: 7 ids, 0 failing
+PASS P2 live regression token-transfer/dart: every txid delivered, 0 failing: ken-transfer-dart.log: 10 ids, 0 failing
+PASS P2 live regression token-transfer/rust: every txid delivered, 0 failing: oken-transfer-rust.log: 7 ids, 0 failing
+PASS P2 live regression token-transfer/csharp: every txid delivered, 0 failing: en-transfer-csharp.log: 7 ids, 0 failing
+PASS P2 live regression multi-sig-setup/python: every txid delivered, 0 failing: i-sig-setup-python.log: 9 ids, 0 failing
+PASS P2 live regression multi-sig-setup/javascript: every txid delivered, 0 failing: g-setup-javascript.log: 9 ids, 0 failing
+PASS P2 live regression multi-sig-setup/dart: every txid delivered, 0 failing: ti-sig-setup-dart.log: 12 ids, 0 failing
+PASS P2 live regression multi-sig-setup/rust: every txid delivered, 0 failing: lti-sig-setup-rust.log: 9 ids, 0 failing
+PASS P2 live regression multi-sig-setup/csharp: every txid delivered, 0 failing: i-sig-setup-csharp.log: 9 ids, 0 failing
+PASS P2 js-template-test depends on accumulate-sdk-opendlt (not accumulate.js)
+PASS P2 scaffold pins: py >=2.5.0, rust 2.5, dart ^2.5.0, js ^2.5.2, c# 2.5.*
+PASS P2 manifests carry the current SDK versions
+PASS P2 sdk-proxy pins >=2.5.0 (pyproject, requirements)
+PASS P2 CSharpHarness.csproj pins Acme.Net.Sdk 2.5.*
+PASS P2 check-canonical-coverage PUBLISHED_VERSION updated
+PASS P3.4 icons unlock + lock-keyhole in BlockNode.tsx
+PASS P3.4 icons unlock + lock-keyhole in BlockItem.tsx
+PASS P3.5 ExecuteConfirmModal CREDIT_COSTS has ReleaseLockedOperation
+PASS P3.5 hand-maintained list updated: flow-serializer.ts
+PASS P3.5 hand-maintained list updated: assertions-generator.ts
+PASS P3.5 hand-maintained list updated: agent-files.ts
+PASS P3.5 manifest-generator TX_TYPES has ReleaseLockedOperation
+PASS P3.3 ResourceKind 'locked-deposit' and full-chain defaultRecipe
+PASS P3.6 no Buffer call in Studio browser code: []
+PASS P4.3 template-loader registers the 15 new templates (import + map entry each): 30
+PASS P4.4 python preamble has the HTLC imports behind hasHashLock
+PASS P4.4 javascript preamble has the HTLC imports behind hasHashLock
+PASS P4.4 dart preamble has the HTLC imports behind hasHashLock
+PASS P4.4 rust preamble has the HTLC imports behind hasHashLock
+PASS P4.4 csharp preamble has the HTLC imports behind hasHashLock
+PASS P4.4 Rust scaffold adds getrandom for HTLC flows (D-12)
+PASS P4.5 failure semantics: every language defines a non-zero exit (Python in the HTLC templates, the others in the preamble), and htlc-codegen pins it
+PASS P4.7 CLI mode refuses HTLC flows with an SDK-only comment
+PASS P4.8 hard-coded block list includes the new blocks: action-palette-codegen.test.ts
+PASS P4.8 hard-coded block list includes the new blocks: project-scaffolds-unified.test.ts
+PASS P4.8 hard-coded block list includes the new blocks: action-palette-e2e.test.ts
+PASS P5.1 registry entry: category advanced, tags tokens/advanced/htlc, 10 min
+PASS P5.1 MCP parser constraint: key order, no apostrophe in name
+PASS P5.2 templates/hash-lock.yaml and templates/index.ts exist
+PASS P5.3 flow-templates test has the hash-lock case (order, refs, lock)
+PASS P5.4 mock router htlc_mock.py exists and every *-validation suite lists hash-lock
+PASS P6.1 proxy: models, tokens route and generic route carry the lock and the release
+PASS P6.1 proxy pytest file exists
+PASS P6.4 amount test covers LOCK_AMOUNT
+PASS P6.5 in-Studio run: 14 screenshots and the verifier JSON
+PASS P7.6 action-palette e2e for the new blocks: 15 passed live
+PASS P8.2 MCP: validTypes has releaseLockedOperation; hashLock on build and submit
+PASS P8.2 MCP protocol tests cover hashLock and the release
+PASS P8.3 generator HTLC section + refund guard
+PASS P8.3 every generated llms.txt and llms-full.txt carries the HTLC section
+PASS P8.4 README template list, example README and PROGRESS entry
+PASS P9 gate run p9: every step exit 0 and ALLDONE: 14 steps exit 0
+PASS P9 gate run p9b: every step exit 0 and ALLDONE: 14 steps exit 0
+PASS P9.2 clean checkout: the requested order, CI order and a bare typecheck all exit 0 (7 steps): 9 steps exit 0
+PASS P9.5 RELEASE-READINESS states 2 consecutive published runs per language, cites D-03, never claims 3
+PASS P9.5 RELEASE-READINESS: SDK fixes awaiting publish none (D-04a), core issue, human checkpoints
+PASS D-1 variables ADI_NAME (required) and LOCK_AMOUNT (default 1.00000000)
+PASS D-1 assertions: status for locked_send and release, no balance.delta in the template
+PASS D-2 SendTokens hash-lock extension is the single flat field hashLockFrom (decision D-07)
+PASS D-2 GenerateHashLock options: sha256 / sha256d only, HASH160 excluded
+PASS D-3 minimum SDK versions are the scaffold pins
+PASS D-4 no refund step in the flow; HTLC not in the CLI; no 9th canonical task
+PASS Appendix D: every expected file changed on the branch (flow.ts excluded: no new AssertionType): 94 files; not changed: []
+PASS Appendix D: packages/types flow.ts untouched because no AssertionType was added
+PASS Appendix D: no file outside the repo changed (the 5 SDK repos and accumulate-core: git status clean at each real repo root)
+PASS every HTLC branch commit is a single line (empty body): 18 commits
+PASS no attribution trailer in any HTLC branch commit
+HTLC commits (oldest first, merges and the payload-scan commit excluded): 18
+  6fa8c7f Sync package-lock for pyright and typescript-language-server so npm ci works
+  28f1d6c Align SDK pins and manifests to 2.5, quote the Dart pubspec description, and sign Token Transfer fund-sender with the lite identity
+  a968987 Add HTLC golden-path runbook, execution status, P0-P2 evidence and core refund issue draft
+  3c7fc41 Record that the HTLC branch is pushed and the PR is still to be opened
+  73617f3 Add the Hash Lock (HTLC) blocks to the catalog and to the code generator for all five languages
+  15e0fc0 Record P3 and P4 results, decisions D-06 to D-13 and the P5 hand-over in the HTLC status
+  7917314 Note in the HTLC status that the branch is pushed through the P3 and P4 commits
+  c93e0e1 Add the Hash Lock (HTLC) golden-path template with a strict node mock in all five validation suites, and make the Rust suite run for real
+  802262a Record P5 results, decisions D-14 to D-18, the Rust suite rework and the P6 hand-over in the HTLC status
+  2e78eeb Run the Hash Lock (HTLC) golden path live in Studio: proxy hash-lock and release routes, executor blocks, a required-variable prompt in the Execute dialog, and the Kermit run verified on chain
+  2073942 Record P6 results, decisions D-19 to D-23, the live Studio run and the P7 hand-over in the HTLC status
+  b5980bf Prove the Hash Lock (HTLC) golden path live on Kermit in all five languages: 25 independently verified runs, the sha256d lock, wrong-preimage negatives and the palette e2e for the new blocks
+  6bf168a Record P7 results, decisions D-24 to D-27, the live evidence index and the P8 hand-over in the HTLC status
+  80cca10 Note in the HTLC status that the branch is pushed through the P7 commits
+  4f0bd41 Expose the Hash Lock (HTLC) golden path to agents: MCP hashLock header and releaseLockedOperation with protocol tests, a manifest-driven HTLC section in the generated SDK docs that never promises a refund, and the example docs
+  cd212a5 Record P8 results, decisions D-28 to D-33 (P9 scope from the user) and the P9 hand-over in the HTLC status
+  70b4c58 Make the Hash Lock follow-ups real: a random suffix in every default ADI name, acronym-safe project slugs, and Token Transfer funding in base units, with the 15 affected snapshots reviewed line by line
+  cf17206 Fix the confirmed code-review findings and the clean-checkout build order: empty optional variables keep their default, release signing and preimage checks, a visible refusal toast, one set of slug helpers, a release credit assertion, and build:libs ahead of build and typecheck
+GitHub/PR merge commits in main..HEAD, not ours: 3
+
+163 checks, 163 PASS, 0 FAIL
